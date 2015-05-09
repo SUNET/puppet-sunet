@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# do not edit by hand
+
+src_image="<%= @image_src %>"
+size="<%= @size %>"
+dhcp="<%= @dhcp ? 'yes' : 'no' %>"
+hostname="<%= @name %>"
+bridge="<%= @bridge %>"
+cpus="<%= @cpus %>"
+mem="<%= @memory %>"
+repo="<%= @repo %>"
+tag="<%= @tagpattern %>"
+ip="<%= @ip %>"
+gateway="<%= @gateway %>"
+netmask="<%= @netmask %>"
+resolver="<%= @resolver %>"
+ip6="<%= @ip6 %>"
+gateway6="<%= @gateway6 %>"
+netmask6="<%= @netmask6 %>"
+password="<%= @password %>"
+
+
+cd "/var/lib/libvirt/cloud-init"
+
+id=$(uuidgen)
+
+seed=${hostname}_seed.img
+disk=${hostname}.img
+
+rm -f ${seed}
+truncate --size 2M ${seed}
+mkfs.vfat -n cidata ${seed} 2>/dev/null
+
+if [ "x${password}" != "x" ]; then
+   pass="password: ${password}"
+fi
+
+user_data=$(mktemp)
+cat > ${user_data} <<EOF
+#cloud-config
+user: root
+ssh_pwauth: False
+ssh_authorized_keys:
+   - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDVvB4gdJ6EWRmx8xUSxrhoUNnWxEf8ZwAqhzC1+7XBY/hSd/cbEotLB9gxgqt0CLW56VU4FPLTw8snD8tgsyZN6KH1Da7UXno8oMk8tJdwLQM0Ggx3aWuztItkDfBc3Lfvq5T07YfphqJO7rcSGbS4QQdflXuOM9JLi6NStVao0ia4aE6Tj68pVVb3++XYvqvbU6NtEICvkTxEY93YpnRSfeAi64hsbaqSTN4kpeltzoSD1Rikz2aQFtFXE03ZC48HtGGhdMFA/Ade6KWBDaXxHGARVQ9/UccfhaR2XSjVxSZ8FBNOzNsH4k9cQIb2ndkEOXZXnjF5ZjdI4ZU0F+t7 leifj+00060AD478D6@sunet.se
+runcmd:
+   - ["mkdir","/tmp/seed"]
+   - ["mount","/dev/vdb","/tmp/seed"]
+   - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
+   - ["cd","/root"]
+   - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
+disable_root: 0
+EOF
+
+meta_data=$(mktemp)
+cat > ${meta_data} <<EOF
+#cloud-config
+instance-id: iid-${id}
+local-hostname: ${hostname}
+disable_root: 0
+EOF
+
+dns=""
+if [ "x${resolver}" != "x" ]; then
+   dns="dns-nameservers ${resolver}"
+fi
+
+if [ "x${dhcp}" = "xyes" ]; then
+cat >> ${meta_data} <<EOF
+network-interfaces: |
+    auto eth0
+    iface eth0 inet dhcp
+    ${dns}
+EOF
+else
+  if [ "x${ip}" != "x" ]; then
+     cat >> ${meta_data} <<EOF
+network-interfaces: |
+    auto eth0
+    iface eth0 inet static
+        address ${ip}
+        netmask ${netmask}
+        gateway ${gateway}
+        ${dns}
+
+EOF
+  fi
+
+  if [ "x${ip6}" != "x" ]; then
+     cat >> ${meta_data} <<EOF
+network-interfaces: |
+    auto eth0
+    iface eth0 inet6 static
+        address ${ip6}
+        netmask ${netmask6}
+        gateway ${gateway6}
+        ${dns}
+
+EOF
+  fi
+fi
+
+mcopy -i ${seed} ${user_data} ::user-data 2>/dev/null
+mcopy -i ${seed} ${meta_data} ::meta-data 2>/dev/null
+mcopy -i ${seed} /etc/cosmos/apt/bootstrap-cosmos.sh /etc/cosmos/apt/cosmos_1.2-2_all.deb ::
+mkdir -p "/var/lib/libvirt/images/${hostname}"
+mv ${seed} "/var/lib/libvirt/images/${hostname}"
+virsh pool-refresh default
+
+virsh vol-clone --pool default ${src_image} ${hostname}/${disk}
+
+virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --network bridge=${bridge} --boot hd --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio
+
+rm -f ${user_data}
+rm -f ${meta_data}

@@ -1,0 +1,8 @@
+ICI_CA_KEY_ID=<%= @pkcs11_key_id %>
+ICI_CA_KEY_SLOT=<%= @pkcs11_key_slot %>
+ICI_PKCS11=<%= @pkcs11_module %>
+ICI_PKCS11_PIN=<%= @pkcs11_pin %>
+ICI_MD=sha256
+ICI_PUBLIC_URL=<%= @public_repo_url %>
+SOFTHSM_CONF=/var/lib/ici/<%= @name %>/softhsm.conf
+export SOFTHSM_CONF

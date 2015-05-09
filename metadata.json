@@ -1,0 +1,14 @@
+{
+  "name": "puppet-sunet",
+  "version": "1.0.0",
+  "author": "Leif Joahansson",
+  "summary": "Various SUNET-blessed puppet modules",
+  "license": "BSD",
+  "source": "git://github.com/SUNET/puppet-sunet",
+  "project_page": "https://github.com/SUNET/puppet-sunet",
+  "issues_url": "https://github.com/SUNET/puppet-sunet/issues",
+  "description": "Slices and dices - mostly ubuntu",
+  "dependencies": [
+  
+  ]
+}

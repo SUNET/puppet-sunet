@@ -1,0 +1,37 @@
+#!/bin/bash
+declare -rx PROGNAME=${0##*/}
+declare -rx PROGPATH=${0%/*}/
+
+function cleanup {
+	#if [ -e "$TMPFILE" ] ; then
+		#rm "$TMPFILE"
+	#fi
+	exit $1
+}
+
+if [ -r "${PROGPATH}utils.sh" ] ; then
+	source "${PROGPATH}utils.sh"
+else
+	echo "Can't find utils.sh."
+	printf "Currently being run from %s\n" "$PROGPATH"
+	# since we couldn't define STATE_UNKNOWN since reading utils.sh failed, we use 3 here but everywhere else after this use cleanup $STATE
+	cleanup 3
+fi
+
+STATE=$STATE_UNKNOWN
+
+
+if [ -f /var/run/reboot-required.pkgs ]
+then
+	pkg=`cat /var/run/reboot-required.pkgs`
+fi
+
+if [ -f /var/run/reboot-required ]
+then
+	echo "Reboot WARNING: System reboot required by package $pkg"
+        cleanup $STATE_WARNING;
+fi
+      echo "Reboot OK: No reboot required"
+      cleanup $STATE_OK;
+cleanup $STATE;
+ 
