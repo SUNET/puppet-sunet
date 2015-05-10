@@ -13,7 +13,8 @@ define sunet::cloudimage (
   $netmask6    = "64",
   $gateway6    = undef,
   $tagpattern  = undef,
-  $repo        = undef
+  $repo        = undef,
+  $ssh_keys    = undef
 )
 {
   package {'mtools': ensure => latest }
