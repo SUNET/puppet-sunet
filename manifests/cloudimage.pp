@@ -1,13 +1,4 @@
-class sunet::cloudimage {
-   package {'cpu-checker': ensure => latest } ->
-   package {'mtools': ensure => latest } ->
-   package {'kvm': ensure => latest } ->
-   package {'libvirt-bin': ensure => latest } ->
-   package {'uuid-runtime': ensure => latest } ->
-   package {'virtinst': ensure => latest }
-}
-
-define sunet::cloudimage::vm (
+define sunet::cloudimage (
   $image_url   = "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img",
   $dhcp        = true,
   $size        = "1G",
