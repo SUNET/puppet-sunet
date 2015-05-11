@@ -17,14 +17,14 @@ define sunet::cloudimage (
   $ssh_keys    = undef
 )
 {
-  package {'mtools': ensure => latest }
-  package {'libvirt-bin': ensure => latest }
-  package {'uuid-runtime': ensure => latest }
-  package {'virtinst': ensure => latest }
-
   $image_url_a = split($image_url,"/")
   $image_name = $image_url_a[-1]
   $image_src = "/var/lib/libvirt/images/${image_name}"
+
+  package {'mtools': ensure => latest } ->
+  package {'libvirt-bin': ensure => latest } ->
+  package {'uuid-runtime': ensure => latest } ->
+  package {'virtinst': ensure => latest } ->
   file { "/var/lib/libvirt/images/${name}": ensure => directory } ->
   exec {"wget -O${image_src} ${image_url}":
      onlyif => "test ! -f ${image_src}"
