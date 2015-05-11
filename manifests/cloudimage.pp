@@ -1,4 +1,13 @@
-define sunet::cloudimage (
+class sunet::cloudimage {
+   package {'cpu-checker': ensure => latest } ->
+   package {'mtools': ensure => latest } ->
+   package {'kvm': ensure => latest } ->
+   package {'libvirt-bin': ensure => latest } ->
+   package {'uuid-runtime': ensure => latest } ->
+   package {'virtinst': ensure => latest }
+}
+
+define sunet::cloudimage::vm (
   $image_url   = "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img",
   $dhcp        = true,
   $size        = "1G",
@@ -20,12 +29,6 @@ define sunet::cloudimage (
   $image_url_a = split($image_url,"/")
   $image_name = $image_url_a[-1]
   $image_src = "/var/lib/libvirt/images/${image_name}"
-  package {'cpu-checker': ensure => latest } ->
-  package {'mtools': ensure => latest } ->
-  package {'kvm': ensure => latest } ->
-  package {'libvirt-bin': ensure => latest } ->
-  package {'uuid-runtime': ensure => latest } ->
-  package {'virtinst': ensure => latest } ->
   file { "/var/lib/libvirt/images/${name}": ensure => directory } ->
   exec {"wget -O${image_src} ${image_url}":
      onlyif => "test ! -f ${image_src}"
