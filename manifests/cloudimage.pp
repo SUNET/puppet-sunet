@@ -20,7 +20,7 @@ define sunet::cloudimage (
   $image_url_a = split($image_url,"/")
   $image_name = $image_url_a[-1]
   $image_src = "/var/lib/libvirt/images/${image_name}"
-
+  package {'cpu-checker': ensure => latest } ->
   package {'mtools': ensure => latest } ->
   package {'libvirt-bin': ensure => latest } ->
   package {'uuid-runtime': ensure => latest } ->
