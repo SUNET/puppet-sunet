@@ -22,6 +22,7 @@ define sunet::cloudimage (
   $image_src = "/var/lib/libvirt/images/${image_name}"
   package {'cpu-checker': ensure => latest } ->
   package {'mtools': ensure => latest } ->
+  package {'kvm': ensure => latest } ->
   package {'libvirt-bin': ensure => latest } ->
   package {'uuid-runtime': ensure => latest } ->
   package {'virtinst': ensure => latest } ->
