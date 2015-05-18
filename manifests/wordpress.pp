@@ -15,11 +15,12 @@ $myqsl_version     = "5.7")
    }
    $pwd = hiera("${name}_db_password",'NOT_SET_IN_HIERA')
    file {"/data/${name}": ensure => directory } ->
-   file {"/data/${name}/html": ensure => directory } ->
+   file { "/data/${name}/html": ensure => directory } ->
+   file { "/data/${name}/shibboleth": ensure => directory } ->
    sunet::docker_run { "${name}_wordpress":
       image       => $wordpress_image,
       imagetag    => $wordpress_version,
-      volumes     => ["/data/${name}/html:/var/www/html"],
+      volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/shibboleth:/etc/shibboleth"],
       ports       => ["8080:80"],
       env         => [ "SERVICE_NAME=${name}",
                        "SP_HOSTNAME=${sp_hostname}",
