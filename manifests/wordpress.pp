@@ -2,6 +2,7 @@
 
 define sunet::wordpress (
 $db_host           = undef,
+$wordpress_image   = "wordpress",
 $wordpress_version = "4.1.1", 
 $myqsl_version     = "5.7") 
 {
@@ -14,7 +15,7 @@ $myqsl_version     = "5.7")
    file {"/data/${name}": ensure => directory } ->
    file {"/data/${name}/html": ensure => directory } ->
    sunet::docker_run { "${name}_wordpress":
-      image       => "wordpress",
+      image       => $wordpress_image,
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html"],
       ports       => ["8080:80"],
