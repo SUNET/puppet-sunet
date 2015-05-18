@@ -2,6 +2,8 @@
 
 define sunet::wordpress (
 $db_host           = undef,
+$sp_hostname       = undef,
+$sp_contact        = undef,
 $wordpress_image   = "wordpress",
 $wordpress_version = "4.1.1", 
 $myqsl_version     = "5.7") 
@@ -20,6 +22,8 @@ $myqsl_version     = "5.7")
       volumes     => ["/data/${name}/html:/var/www/html"],
       ports       => ["8080:80"],
       env         => [ "SERVICE_NAME=${name}",
+                       "SP_HOSTNAME=${sp_hostname}",
+                       "SP_CONTACT=${sp_contact}",
                        "WORDPRESS_DB_HOST=${db_hostname}",
                        "WORDPRESS_DB_USER=${name}",
                        "WORDPRESS_DB_NAME=${name}",
