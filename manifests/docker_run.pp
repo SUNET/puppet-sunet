@@ -9,8 +9,10 @@ define sunet::docker_run(
   $extra_parameters    = [],
   $command             = "",
   $hostname            = undef,
+  $start_on            = $docker::params::service_name,
+  $stop_on             = $docker::params::service_name
 ) {
-
+  include docker::params
   # Make container use unbound resolver on dockerhost
   # If docker was just installed, facter will not know the IP of docker0. Thus the pick.
   $dns = $net ? {
@@ -41,6 +43,8 @@ define sunet::docker_run(
     pre_start          => 'run-parts /usr/local/etc/docker.d',
     post_start         => 'run-parts /usr/local/etc/docker.d',
     pre_stop           => 'run-parts /usr/local/etc/docker.d',
+    start_on           => $start_on,
+    stop_on            => $stop_on,
   }
 
 }
