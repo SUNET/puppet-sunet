@@ -37,7 +37,7 @@ if [ "x$ACTION" = "xpre-start" ]; then
     service unbound status > /dev/null
     if [ $? -ne 0 ]; then
 	logger -t "${logtag}" "Service unbound not running! Aborting."
-	exit 0
+	exit 1
     fi
     if [ -f "${CIDFILE}" ]; then
         # Clean away the CID file in pre-start if the container is in fact not running
