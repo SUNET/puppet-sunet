@@ -6,12 +6,22 @@ $sp_hostname       = undef,
 $sp_contact        = undef,
 $wordpress_image   = "wordpress",
 $wordpress_version = "4.1.1", 
-$myqsl_version     = "5.7") 
+$myqsl_version     = "5.7",
+$db_user           = undef,
+$d_name            = undef)
 {
    include augeas
    $db_hostname = $db_host ? {
       undef   => "${name}_mysql.docker",
       default => $db_host
+   }
+   $db_user = $db_user ? {
+      undef   => "${name}",
+      default => $db_user
+   }
+   $db_name = $db_user ? {
+      undef   => "${name}",
+      default => $db_name
    }
    $pwd = hiera("${name}_db_password",'NOT_SET_IN_HIERA')
    file {"/data/${name}": ensure => directory } ->
@@ -26,8 +36,8 @@ $myqsl_version     = "5.7")
                        "SP_HOSTNAME=${sp_hostname}",
                        "SP_CONTACT=${sp_contact}",
                        "WORDPRESS_DB_HOST=${db_hostname}",
-                       "WORDPRESS_DB_USER=${name}",
-                       "WORDPRESS_DB_NAME=${name}",
+                       "WORDPRESS_DB_USER=${db_user}",
+                       "WORDPRESS_DB_NAME=${db_name}",
                        "WORDPRESS_DB_PASSWORD=${pwd}" ]
    }
 
@@ -39,20 +49,20 @@ $myqsl_version     = "5.7")
           image       => "mysql",
           imagetag    => $mysql_version,
           volumes     => ["/data/${name}/db:/var/lib/mysql"],
-          env         => ["MYSQL_USER=${name}",
+          env         => ["MYSQL_USER=${db_user}",
                           "MYSQL_PASSWORD=${pwd}",
                           "MYSQL_ROOT_PASSWORD=${pwd}",
-                          "MYSQL_DATABASE=${name}"]
+                          "MYSQL_DATABASE=${db_name}"]
       }
       package {['mysql-client','mysql-client-5.5','automysqlbackup']: ensure => latest } -> 
       augeas { 'automysqlbackup_settings': 
          incl    => "/etc/default/automysqlbackup",
          lens    => "Shellvars.lns",
          changes => [
-            "set USERNAME ${name}",
+            "set USERNAME ${db_user}",
             "set PASSWORD ${pwd}",
             "set DBHOST ${db_hostname}",
-            "set DBNAMES ${name}"
+            "set DBNAMES ${db_name}"
          ]
       }
    }
