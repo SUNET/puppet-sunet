@@ -44,7 +44,7 @@ $myqsl_version     = "5.7")
                           "MYSQL_ROOT_PASSWORD=${pwd}",
                           "MYSQL_DATABASE=${name}"]
       }
-      package {'automysqlbackup': ensure => latest } -> 
+      package {['mysql-client','mysql-client-5.5','automysqlbackup']: ensure => latest } -> 
       augeas { 'automysqlbackup_settings': 
          incl    => "/etc/default/automysqlbackup",
          lens    => "Shellvars.lns",
