@@ -7,21 +7,21 @@ $sp_contact        = undef,
 $wordpress_image   = "wordpress",
 $wordpress_version = "4.1.1", 
 $myqsl_version     = "5.7",
-$db_user           = undef,
-$d_name            = undef)
+$mysql_user        = undef,
+$mysql_db_name     = undef)
 {
    include augeas
    $db_hostname = $db_host ? {
       undef   => "${name}_mysql.docker",
       default => $db_host
    }
-   $db_user = $db_user ? {
+   $db_user = $mysql_user ? {
       undef   => "${name}",
-      default => $db_user
+      default => $mysql_user
    }
-   $db_name = $db_user ? {
+   $db_name = $mysql_db_name ? {
       undef   => "${name}",
-      default => $db_name
+      default => $mysql_db_name
    }
    $pwd = hiera("${name}_db_password",'NOT_SET_IN_HIERA')
    file {"/data/${name}": ensure => directory } ->
