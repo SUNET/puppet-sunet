@@ -27,7 +27,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        notify  => $nrpe_service
    }
    file { "/etc/nagios/nrpe.cfg" :
-       notify  => Service['nagios-nrpe-server'],
+       notify  => Service[$nrpe_service],
        ensure  => 'file',
        mode    => '0640',
        group   => 'nagios',
