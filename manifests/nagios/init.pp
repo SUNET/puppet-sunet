@@ -1,3 +1,6 @@
+include stdlib
+include concat
+
 class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
 
    $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
