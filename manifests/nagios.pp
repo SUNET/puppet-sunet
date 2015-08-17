@@ -52,6 +52,9 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    sunet::nagios::nrpe_command {'check_total_procs':
       command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
    }
+   sunet::nagios::nrpe_command {'check_total_procs_lax':
+      command_line => '/usr/lib/nagios/plugins/check_procs -w 250 -c 400'
+   }
    sunet::nagios::nrpe_command {'check_uptime':
       command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
    }
