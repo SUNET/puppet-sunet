@@ -228,19 +228,6 @@ connection_timeout=300
 # to match the argument format the plugins expect.  Remember, these are
 # examples only!
 
-
-# The following examples use hardcoded command arguments...
-
-command[check_users]=/usr/lib/nagios/plugins/check_users -w 5 -c 10
-command[check_load]=/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20
-command[check_root]=/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /
-command[check_boot]=/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot
-command[check_zombie_procs]=/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z
-command[check_total_procs]=/usr/lib/nagios/plugins/check_procs -w 150 -c 200 
-command[check_uptime]=/usr/lib/nagios/plugins/check_uptime.pl -f
-command[check_reboot]=/usr/lib/nagios/plugins/check_reboot
-command[check_mailq]=/usr/lib/nagios/plugins/check_mailq -w 20 -c 100
-
 # The following examples allow user-supplied arguments and can
 # only be used if the NRPE daemon was compiled with support for 
 # command arguments *AND* the dont_blame_nrpe directive in this
