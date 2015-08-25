@@ -3,7 +3,7 @@ include stdlib
 define sunet::cloudimage (
   $image_url   = "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img",
   $dhcp        = true,
-  $size        = "1G",
+  $size        = "10G",
   $bridge      = "br0",
   $memory      = "1024",
   $cpus        = "1",
