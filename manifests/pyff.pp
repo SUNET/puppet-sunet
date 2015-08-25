@@ -1,6 +1,4 @@
 define pyff($version = "latest") {
-   docker::image {'docker.sunet.se/varnish': }
-   docker::image {'docker.sunet.se/pyff': }
    sunet::docker_run{"pound-${name}":
       image    => "docker.sunet.se/pound",
       imagetag => "latest",
