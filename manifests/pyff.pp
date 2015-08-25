@@ -20,6 +20,5 @@ define pyff($version = "latest") {
       image-tag => $version,
       volumes   => ['/opt/metadata:/opt/metadata'],
       env       => ['DATADIR=/opt/metadata','LOGLEVEL=INFO'],
-      command   => 'pyffd -p 8080 -f '
    }
 }
