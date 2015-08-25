@@ -14,18 +14,18 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        ensure  => 'running',
        enable  => 'true',
        require => Package[$nrpe_service],
-   }
+   } ->
    concat {"/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg":
        owner => root,
        group => root,
        mode  => '0644'
-   } 
+   } ->
    concat::fragment {"sunet_nrpe_commands":
        target  => "/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg",
        content => "# Do not edit by hand - maintained by puppet",
        order   => '10',
        notify  => Service[$nrpe_service]
-   }
+   } ->
    file { "/etc/nagios/nrpe.cfg" :
        notify  => Service[$nrpe_service],
        ensure  => 'file',

@@ -6,16 +6,14 @@ class sunet::dockerhost {
      repos              => 'main',
      key                => 'A88D21E9',
      include_src        => false
-  }
+  } ->
   package {'lxc-docker':
      ensure             => latest,
-  }
-
+  } ->
   class {'docker':
      manage_package     => false,
-  }
-
-  package { 'unbound': ensure => 'latest' }
+  } ->
+  package { 'unbound': ensure => 'latest' } ->
   service { 'unbound': ensure => 'running' }
 
   file { '/usr/local/etc/docker.d/20unbound':
