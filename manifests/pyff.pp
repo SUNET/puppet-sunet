@@ -1,4 +1,4 @@
-define pyff($version = "latest") {
+define sunet::pyff($version = "latest") {
    sunet::docker_run{"pound-${name}":
       image    => "docker.sunet.se/pound",
       imagetag => "latest",
