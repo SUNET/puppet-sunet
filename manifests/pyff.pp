@@ -9,7 +9,7 @@ define sunet::pyff($version = "latest") {
    }
    sunet::docker_run {"varnish-${name}":
       image    => 'docker.sunet.se/varnish',
-      env      => ["BACKEND_PORT=tcp://pyff-${name}.docker:8080"]
+      env      => ["BACKEND_PORT=tcp://pyff-${name}.docker:8080"],
       ports    => ['80:80'],
       start_on => "docker-pyff-${name}"
    }
@@ -17,6 +17,6 @@ define sunet::pyff($version = "latest") {
       image     => 'docker.sunet.se/pyff',
       image-tag => $version,
       volumes   => ['/opt/metadata:/opt/metadata'],
-      env       => ['DATADIR=/opt/metadata','LOGLEVEL=INFO'],
+      env       => ['DATADIR=/opt/metadata','LOGLEVEL=INFO']
    }
 }
