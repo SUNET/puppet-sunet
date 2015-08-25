@@ -69,6 +69,10 @@ if [ "x${resolver}" != "x" ]; then
    dns="dns-nameservers ${resolver}"
 fi
 
+if [ "x${ip}" != "x" ]; then
+   dhcp="no"
+fi
+
 if [ "x${dhcp}" = "xyes" ]; then
 cat >> ${meta_data} <<EOF
 network-interfaces: |
