@@ -1,3 +1,5 @@
+include stdlib
+
 define sunet::cloudimage (
   $image_url   = "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img",
   $dhcp        = true,
@@ -17,6 +19,8 @@ define sunet::cloudimage (
   $ssh_keys    = undef
 )
 {
+  ensure_resource('package','mtools',{ensure => 'installed'})
+  ensure_resource('package','virtinst',{ensure => 'installed'})
   $image_url_a = split($image_url,"/")
   $image_name = $image_url_a[-1]
   $image_src = "/var/lib/libvirt/images/${image_name}"
