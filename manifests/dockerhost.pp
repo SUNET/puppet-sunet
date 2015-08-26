@@ -13,7 +13,7 @@ class sunet::dockerhost {
   class {'docker':
      manage_package     => false,
   } ->
-  file { '/usr/local/etc/docker.d': ensure => directory } ->
+  file { '/usr/local/etc/docker.d': ensure => 'directory' } ->
   file { '/usr/local/etc/docker.d/20unbound':
     ensure  => file,
     path    => '/usr/local/etc/docker.d/20unbound',
