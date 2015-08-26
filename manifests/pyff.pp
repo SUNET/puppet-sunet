@@ -1,4 +1,4 @@
-define sunet::pyff($version = "latest") {
+define sunet::pyff($version = "latest", $image = "docker.sunet.se/pyff") {
    sunet::docker_run{"pound-${name}":
       image    => "docker.sunet.se/pound",
       imagetag => "latest",
@@ -14,7 +14,7 @@ define sunet::pyff($version = "latest") {
       start_on => "docker-pyff-${name}"
    }
    sunet::docker_run {"pyff-${name}":
-      image     => 'docker.sunet.se/pyff',
+      image     => $image,
       imagetag => $version,
       volumes   => ['/opt/metadata:/opt/metadata'],
       env       => ['DATADIR=/opt/metadata','LOGLEVEL=INFO']
