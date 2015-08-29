@@ -1,4 +1,4 @@
-define sunet::pollen($server = "https://random.nordu.net", $device = "/dev/random") {
+define sunet::pollen($device = "/dev/random") {
    package {"pollinate": ensure => latest } ->
    file { "/etc/default/pollinate": 
       ensure => file,
