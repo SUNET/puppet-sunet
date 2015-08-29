@@ -10,6 +10,6 @@ define sunet::pollinate($device = "/dev/random") {
       command => "pollinate -r",
       user    => root,
       hour    => "*",
-      minute  => "*/15"
+      minute  => "0"
    }
 }
