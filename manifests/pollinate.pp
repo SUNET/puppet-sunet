@@ -7,7 +7,7 @@ define sunet::pollen($device = "/dev/random") {
       content => template("sunet/pollen/pollinate.erb")
    } ->
    cron {"repollinate": 
-      command => "pollinate -r"
+      command => "pollinate -r",
       user    => root,
       hour    => "*",
       minute  => "*/15"
