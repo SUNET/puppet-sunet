@@ -1,5 +1,6 @@
 class sunet::simple_entropy {
-   include haveged
+   package {'haveged': ensure => latest } ->
+   service {'haveged': ensure => running }
    sunet::pollinate { 'https://random.nordu.net/': }
    service {"rng-tools":
       ensure    => stopped,
