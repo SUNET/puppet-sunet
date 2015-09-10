@@ -32,6 +32,10 @@ define sunet::etcd_node(
       ports            => ["${::ipaddress_eth1}:2380:2380","${::ipaddress_eth1}:2379:2379","${::ipaddress_docker0}:4001:2379"]
    }
    if !$proxy {
+      sunet::docker_run { "etcd_browser_${name}":
+         image         => 'docker.sunet.se/etcd_browser',
+         ports         => [ "${::ipaddress_eth1}:8000:8000" ]
+      }
       ufw::allow { "allow-etcd-peer":
          ip   => "${::ipaddress_eth1}",
          port => 2380
