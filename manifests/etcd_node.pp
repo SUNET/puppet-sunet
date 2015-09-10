@@ -34,10 +34,6 @@ define sunet::etcd_node(
    if !$proxy {
       sunet::docker_run { "etcd_browser_${name}":
          image         => 'docker.sunet.se/etcd-browser',
-         #volumes       => [ "/etc/ssl:/etc/ssl" ],
-         #env           => [ "ETCDCTL_CA_FILE=/etc/ssl/certs/infra.crt",
-         #                   "ETCDCTL_KEY_FILE=/etc/ssl/private/${::fqdn}_infra.key",
-         #                   "ETCDCTL_CERT_FILE=/etc/ssl/certs/${::fqdn}_infra.crt" ],
          ports         => [ "${::ipaddress_eth1}:8000:8000" ]
       }
       ufw::allow { "allow-etcd-client-on-docker0": 
