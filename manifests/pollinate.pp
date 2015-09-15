@@ -1,4 +1,5 @@
 define sunet::pollinate($device = "/dev/random") {
+   apt::ppa {'ppa:ndn/pollen': } ->
    package {"pollinate": ensure => latest } ->
    file { "/etc/default/pollinate": 
       ensure => file,
