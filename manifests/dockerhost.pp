@@ -13,6 +13,9 @@ class sunet::dockerhost {
   class {'docker':
      manage_package     => false,
   } ->
+  package { 'unbound': ensure => 'latest' } ->
+  service { 'unbound': ensure => 'running' }
+
   file { '/usr/local/etc/docker.d': ensure => 'directory' } ->
   file { '/usr/local/etc/docker.d/20unbound':
     ensure  => file,
@@ -20,8 +23,6 @@ class sunet::dockerhost {
     mode    => '0755',
     content => template('sunet/dockerhost/20unbound.erb'),
   } ->
-  package { 'unbound': ensure => 'latest' } ->
-  service { 'unbound': ensure => 'running' } ->
   file { '/etc/unbound/unbound.conf.d/': ensure => directory } ->
   file { '/etc/unbound/unbound.conf.d/docker.conf':
     ensure  => file,
