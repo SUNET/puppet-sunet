@@ -20,14 +20,14 @@ class sunet::dockerhost {
     mode    => '0755',
     content => template('sunet/dockerhost/20unbound.erb'),
   } ->
+  package { 'unbound': ensure => 'latest' } ->
   file { '/etc/unbound/unbound.conf.d/docker.conf':
     ensure  => file,
     path    => '/etc/unbound/unbound.conf.d/docker.conf',
     mode    => '0644',
     content => template('sunet/dockerhost/unbound_docker.conf.erb'),
     notify  => Service['unbound'],
-  }
-  package { 'unbound': ensure => 'latest' } ->
+  } ->
   service { 'unbound': ensure => 'running' }
 
   ensure_resource('file','/etc/logrotate.d',{ ensure => directory })
