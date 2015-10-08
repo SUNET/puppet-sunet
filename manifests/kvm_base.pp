@@ -102,9 +102,6 @@ define sunet::kvm_base(
   }
 
   include augeas
-  file { "/etc/libvirt/qemu/${name}.xml":
-    ensure    => 'present',
-  } ->
 
   $_augeas_update_mac = $mac ? {
     undef   => [],
@@ -112,6 +109,10 @@ define sunet::kvm_base(
   }
 
   $_augeas_changes = flatten([$_augeas_update_mac])
+
+  file { "/etc/libvirt/qemu/${name}.xml":
+    ensure    => 'present',
+  } ->
 
   augeas{ "configure_domain_${name}":
     incl    => "/etc/libvirt/qemu/${name}.xml",
