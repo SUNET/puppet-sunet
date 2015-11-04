@@ -6,7 +6,7 @@ class sunet::server(
   Boolean $ntpd_config = true,
   Boolean $scriptherder = true,
   Boolean $unattended_upgrades = false,
-  Booelan $disable_ipv6_privacy = false,
+  Boolean $disable_ipv6_privacy = false,
 ) {
 
   if $fail2ban {
