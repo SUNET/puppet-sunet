@@ -98,4 +98,9 @@ define sunet::snippets::scriptherder() {
     user     => 'root',
     special  => 'daily',
   }
+
+  # remove old cronjob maintained outside of puppet
+  file { '/etc/cron.daily/scriptherder_cleanup':
+    ensure   => 'absent',
+  }
 }
