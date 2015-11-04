@@ -7,6 +7,7 @@ class sunet::server(
   Boolean $scriptherder = true,
   Boolean $unattended_upgrades = false,
   Boolean $disable_ipv6_privacy = false,
+  Boolean $disable_all_local_users = false,
 ) {
 
   if $fail2ban {
@@ -48,5 +49,7 @@ class sunet::server(
     sunet::snippets::disable_ipv6_privacy { 'disable_ipv6_privacy': }
   }
 
+  if $disable_all_local_users {
+    class { 'sunet::security::disable_all_local_users': }
+  }
 }
-
