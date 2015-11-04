@@ -82,3 +82,20 @@ define sunet::snippets::disable_ipv6_privacy() {
     refreshonly => true,
   }
 }
+
+# Set up scriptherder. XXX scriptherder is not *installed* here. Figure out how to.
+define sunet::snippets::scriptherder() {
+  $scriptherder_dir = '/var/cache/scriptherder'
+
+  file { $scriptherder_dir:
+    ensure  => 'directory',
+    mode    => '1777',    # like /tmp, so user-cronjobs can also use scriptherder
+  }
+
+  # Remove scriptherder data older than 7 days.
+  cron { 'scriptherder_cleanup':
+    command  => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +7 -print0 | xargs -0 rm -f)",
+    user     => 'root',
+    special  => 'daily',
+  }
+}

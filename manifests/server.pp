@@ -34,11 +34,7 @@ class sunet::server(
   }
 
   if $scriptherder {
-    file { '/var/cache/scriptherder':
-      ensure  => 'directory',
-      path    => '/var/cache/scriptherder',
-      mode    => '1777',    # like /tmp, so user-cronjobs can also use scriptherder
-    }
+    sunet::snippets::scriptherder { 'sunet_scriptherder': }
   }
 
   if $unattended_upgrades {
