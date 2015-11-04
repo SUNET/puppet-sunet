@@ -11,7 +11,7 @@ define sunet::snippets::ethernet_bonding() {
       package {'ifenslave-2.6': ensure => 'present' }
     }
 
-    file_line { 'load_module_at_boot':
+    sunet::snippets::file_line { 'load_module_at_boot':
       filename => '/etc/modules',
       line     => 'bonding',
     }
