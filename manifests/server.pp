@@ -5,6 +5,8 @@ class sunet::server(
   Boolean $sshd_config = true,
   Boolean $ntpd_config = true,
   Boolean $scriptherder = true,
+  Boolean $unattended_upgrades = false,
+  Booelan $disable_ipv6_privacy = false,
 ) {
 
   if $fail2ban {
@@ -23,7 +25,7 @@ class sunet::server(
   }
 
   if $sshd_config {
-    sunet::security::configure_sshd { 'basic_sshd_config' }
+    sunet::security::configure_sshd { 'basic_sshd_config': }
   }
 
   if $ntpd_config {
@@ -36,6 +38,14 @@ class sunet::server(
       path    => '/var/cache/scriptherder',
       mode    => '1777',    # like /tmp, so user-cronjobs can also use scriptherder
     }
+  }
+
+  if $unattended_upgrades {
+    sunet::security::unattended_upgrades { 'unattended_upgrades': }
+  }
+
+  if $disable_ipv6_privacy {
+    sunet::snippets::disable_ipv6_privacy { 'disable_ipv6_privacy': }
   }
 
 }

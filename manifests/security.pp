@@ -22,7 +22,20 @@ class sunet::security::configure_sshd() {
   sunet::snippets::file_line { 'no_sftp_subsystem':
     ensure   => 'comment',
     filename => '/etc/ssh/sshd_config',
-    line     => 'Subsystem sftp /usr/lib/openssh/sftp-server',
+    line     => 'Subsystem sftp',
     notify   => Service['ssh'],
+  }
+}
+
+# Make sure automatic security upgrades are activated
+class sunet::security::unattended_upgrades() {
+  file { '/etc/dpkg/unattended-upgrades.debconf':
+    ensure  => present,
+    content => template('eduid/common/unattended-upgrades.debconf.erb'),
+    } ->
+  exec { 'enable_unattended_upgrades':
+    command => 'debconf-set-selections /etc/dpkg/unattended-upgrades.debconf && dpkg-reconfigure -fdebconf unattended-upgrades',
+    unless  => 'debconf-show unattended-upgrades | grep -q "unattended-upgrades/enable_auto_updates: true$"',
+    path    => ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
   }
 }
