@@ -25,7 +25,7 @@ class sunet::server(
   }
 
   if $sshd_config {
-    sunet::security::configure_sshd { 'basic_sshd_config': }
+    class { 'sunet::security::configure_sshd': }
   }
 
   if $ntpd_config {
@@ -41,7 +41,7 @@ class sunet::server(
   }
 
   if $unattended_upgrades {
-    sunet::security::unattended_upgrades { 'unattended_upgrades': }
+    class { 'sunet::security::unattended_upgrades': }
   }
 
   if $disable_ipv6_privacy {
