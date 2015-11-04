@@ -31,7 +31,7 @@ class sunet::security::configure_sshd() {
 class sunet::security::unattended_upgrades() {
   file { '/etc/dpkg/unattended-upgrades.debconf':
     ensure  => present,
-    content => template('eduid/common/unattended-upgrades.debconf.erb'),
+    content => template('sunet/security/unattended-upgrades.debconf.erb'),
     } ->
   exec { 'enable_unattended_upgrades':
     command => 'debconf-set-selections /etc/dpkg/unattended-upgrades.debconf && dpkg-reconfigure -fdebconf unattended-upgrades',
