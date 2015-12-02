@@ -1,13 +1,13 @@
 class sunet::server(
-  Boolean $fail2ban = true,
-  Boolean $encrypted_swap = true,
-  Boolean $ethernet_bonding = true,
-  Boolean $sshd_config = true,
-  Boolean $ntpd_config = true,
-  Boolean $scriptherder = true,
-  Boolean $unattended_upgrades = false,
-  Boolean $disable_ipv6_privacy = false,
-  Boolean $disable_all_local_users = false,
+  $fail2ban = true,
+  $encrypted_swap = true,
+  $ethernet_bonding = true,
+  $sshd_config = true,
+  $ntpd_config = true,
+  $scriptherder = true,
+  $unattended_upgrades = false,
+  $disable_ipv6_privacy = false,
+  $disable_all_local_users = false,
 ) {
 
   if $fail2ban {
