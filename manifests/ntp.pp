@@ -1,7 +1,5 @@
 # Install and configure NTP service
-class sunet::ntp(
-  Boolean $disable_pool_ntp_org = false,
-) {
+class sunet::ntp($disable_pool_ntp_org = false) {
    package { 'ntp': ensure => 'latest' }
    service { 'ntp':
       name       => 'ntp',
