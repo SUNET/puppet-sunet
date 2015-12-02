@@ -2,7 +2,7 @@ define sunet::pollinate($device = "/dev/random") {
    case $::operatingsystem {
       'Ubuntu': {
          case $::operatingsystemrelease {
-            '12.04' => apt::ppa {'ppa:ndn/pollen': }
+            '12.04': apt::ppa {'ppa:ndn/pollen': }
          }
       }
    } ->
