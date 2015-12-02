@@ -1,5 +1,19 @@
+# ###################################################
+# #
+# # This file is managed with
+# #
+# #  #####   #    #  #####   #####   ######   #####
+# #  #    #  #    #  #    #  #    #  #          #
+# #  #    #  #    #  #    #  #    #  #####      #
+# #  #####   #    #  #####   #####   #          #
+# #  #       #    #  #       #       #          #
+# #  #        ####   #       #       ######     #
+# #
+# # ... so you can't just change it locally.
+# #
+# ###################################################
 server:
 	local-zone: docker. static
 	interface: 127.0.0.1
-	interface: 172.17.42.1
+	interface: <%= @ipaddress_docker0 %>
 	access-control: 172.16.0.0/12 allow
