@@ -1,6 +1,6 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  String $docker_version = "1.8.3-0~${::lsbdistcodename}",
+  $docker_version = "1.8.3-0~${::lsbdistcodename}",
 ) {
 
   # Remove old versions, if installed
