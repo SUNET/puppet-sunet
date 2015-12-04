@@ -1,28 +1,27 @@
 # Install docker from https://get.docker.com/ubuntu
-class sunet::dockerhost {
+class sunet::dockerhost(
+  $docker_version = "1.8.3-0~${::lsbdistcodename}",
+) {
 
-  package { 'lxc-docker-1.6.2' :
-     ensure             => 'purged',
-  } ->
-
-  package { 'lxc-docker' :
-     ensure             => 'purged',
+  # Remove old versions, if installed
+  package { ['lxc-docker-1.6.2', 'lxc-docker'] :
+     ensure => 'purged',
   } ->
 
   file {'/etc/apt/sources.list.d/docker.list':
-     ensure             => 'absent',
+     ensure => 'absent',
   }
 
   apt::source {'docker_official':
-     location           => 'https://apt.dockerproject.org/repo',
-     release            => "ubuntu-${::lsbdistcodename}",
-     repos              => 'main',
-     key                => '2C52609D',
-     include_src        => false
+     location    => 'https://apt.dockerproject.org/repo',
+     release     => "ubuntu-${::lsbdistcodename}",
+     repos       => 'main',
+     key         => '2C52609D',
+     include_src => false
   } ->
 
   package { 'docker-engine' :
-     ensure             => 'installed',
+     ensure => $docker_version,
   } ->
 
   class {'docker':

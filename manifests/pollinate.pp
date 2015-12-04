@@ -1,5 +1,7 @@
 define sunet::pollinate($device = "/dev/random") {
-   apt::ppa {'ppa:ndn/pollen': } ->
+   if ($::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '12.04') {
+      apt::ppa {'ppa:ndn/pollen': }
+   }
    package {"pollinate": ensure => latest } ->
    file { "/etc/default/pollinate": 
       ensure => file,

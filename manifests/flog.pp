@@ -9,7 +9,7 @@ class sunet::flog {
        username => 'postgres',
        group    => 'postgres',
    } ->
-   sunet::add_user_to_group { 'postgres_ssl_cert_access':
+   sunet::snippets::add_user_to_group { 'postgres_ssl_cert_access':
        username => 'postgres',
        group    => 'ssl-cert',
    } ->
