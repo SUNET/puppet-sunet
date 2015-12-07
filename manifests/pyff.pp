@@ -1,4 +1,4 @@
-define sunet::pyff($version = "latest", $image = "docker.sunet.se/pyff", $ip = undef) {
+define sunet::pyff($version = "latest", $image = "docker.sunet.se/pyff", $dir = "/opt/metadata", $ip = undef) {
    $ip_addr = $ip ? {
       undef   => "",
       default => "${ip}:"
@@ -20,7 +20,7 @@ define sunet::pyff($version = "latest", $image = "docker.sunet.se/pyff", $ip = u
    sunet::docker_run {"pyff-${name}":
       image     => $image,
       imagetag => $version,
-      volumes   => ['/opt/metadata:/opt/metadata'],
+      volumes   => ["$dir:/opt/metadata"],
       env       => ['DATADIR=/opt/metadata','LOGLEVEL=INFO']
    }
 }
