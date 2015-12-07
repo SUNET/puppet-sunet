@@ -4,6 +4,7 @@ define sunet::docker_run(
   $imagetag            = hiera('sunet_docker_default_tag', 'latest'),
   $volumes             = [],
   $ports               = [],
+  $expose              = [],
   $env                 = [],
   $net                 = 'bridge',
   $extra_parameters    = [],
@@ -21,9 +22,13 @@ define sunet::docker_run(
   }
 
   $image_tag = "${image}:${imagetag}"
-  docker::image { $image_tag : } ->
+  docker::image { "${name}_${image_tag}" :  # make it possible to use the same docker image more than once on a node
+    image              => $image_tag,
+    require            => [Package['docker-engine'],
+                           ],
+  } ->
 
-  docker::run {$name :
+  docker::run { $name :
     use_name           => true,
     image              => $image_tag,
     volumes            => flatten([$volumes,
@@ -32,6 +37,7 @@ define sunet::docker_run(
                            ]),
     hostname           => $hostname,
     ports              => $ports,
+    expose             => $expose,
     env                => $env,
     net                => $net,
     extra_parameters   => flatten([$extra_parameters,
