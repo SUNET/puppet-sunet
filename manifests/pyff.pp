@@ -14,7 +14,7 @@ define sunet::pyff($version = "latest", $image = "docker.sunet.se/pyff", $dir = 
    sunet::docker_run {"varnish-${name}":
       image    => 'docker.sunet.se/varnish',
       env      => ["BACKEND_PORT=tcp://pyff-${name}.docker:8080"],
-      ports    => ['${ip_addr}80:80'],
+      ports    => ["${ip_addr}80:80"],
       start_on => "docker-pyff-${name}"
    }
    sunet::docker_run {"pyff-${name}":
