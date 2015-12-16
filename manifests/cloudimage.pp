@@ -19,7 +19,7 @@ define sunet::cloudimage (
   $ssh_keys    = undef
 )
 {
-  ensure_resource('package',['cpu-checker','mtools','kvm','libvirt-bin','virtinst'],{ensure => 'installed'})
+  ensure_resource('package',['cpu-checker','mtools','kvm','libvirt-bin','virtinst'],{ensure => 'latest'})
   $image_url_a = split($image_url,"/")
   $image_name = $image_url_a[-1]
   $image_src = "/var/lib/libvirt/images/${image_name}"
