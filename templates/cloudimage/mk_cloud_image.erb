@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # do not edit by hand
 
 src_image="<%= @image_src %>"
@@ -21,8 +23,8 @@ gateway6="<%= @gateway6 %>"
 netmask6="<%= @netmask6 %>"
 password="<%= @password %>"
 
-
-cd "/var/lib/libvirt/images"
+mkdir -p "/var/lib/libvirt/images/${hostname}"
+cd "/var/lib/libvirt/images/${hostname}"
 
 id=$(uuidgen)
 
@@ -112,18 +114,21 @@ fi
 mcopy -i ${seed} ${user_data} ::user-data 2>/dev/null
 mcopy -i ${seed} ${meta_data} ::meta-data 2>/dev/null
 mcopy -i ${seed} /etc/cosmos/apt/bootstrap-cosmos.sh /etc/cosmos/apt/cosmos_1.2-2_all.deb ::
-mkdir -p "/var/lib/libvirt/images/${hostname}"
-mv ${seed} "/var/lib/libvirt/images/${hostname}"
+
+rm -f ${user_data}
+rm -f ${meta_data}
+
 virsh pool-refresh default
 
-virsh vol-clone --pool default ${src_image} ${hostname}/${disk} 
-virsh vol-resize --pool default ${hostname}/${disk} ${size}
+if [ ! -f /var/lib/libvirt/images/${hostname}/${disk} ]; then
+    test -f /var/lib/libvirt/images/${disk} || virsh vol-clone --pool default ${src_image} ${disk}
+    virsh vol-resize --pool default ${disk} ${size}
+    mv /var/lib/libvirt/images/${disk} /var/lib/libvirt/images/${hostname}/${disk}
+fi
 
 network="--network bridge=${bridge}"
 install_options=""
 
-rm -f ${user_data}
-rm -f ${meta_data}
 # Optional settings
 if [ "x${mac}" != "x" ]; then
    network="${network},mac=${mac}"
