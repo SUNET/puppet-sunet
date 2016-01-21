@@ -5,6 +5,7 @@
 src_image="<%= @image_src %>"
 size="<%= @size %>"
 dhcp="<%= @dhcp ? 'yes' : 'no' %>"
+mac="<%= @mac %>"
 hostname="<%= @name %>"
 bridge="<%= @bridge %>"
 cpus="<%= @cpus %>"
@@ -115,10 +116,20 @@ mkdir -p "/var/lib/libvirt/images/${hostname}"
 mv ${seed} "/var/lib/libvirt/images/${hostname}"
 virsh pool-refresh default
 
-virsh vol-clone --pool default ${src_image} ${hostname}/${disk} 
+virsh vol-clone --pool default ${src_image} ${hostname}/${disk}
 virsh vol-resize --pool default ${hostname}/${disk} ${size}
 
-virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --network bridge=${bridge} --boot hd --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio
+network_mac=""
+if [ "x${mac}" != "x" ]; then
+   network_mac=",mac=${mac}"
+fi
+
+network="--network bridge=${bridge}${network_mac}"
+
+virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
+    ${network} \
+    --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio \
+    --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio
 
 rm -f ${user_data}
 rm -f ${meta_data}
