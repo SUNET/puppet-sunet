@@ -19,7 +19,7 @@ define sunet::cloudimage (
   $repo        = undef,
   $ssh_keys    = undef,
   $description = '',
-  $hypervisor  = 'qemu:///system',
+  $apt_dir     = '/etc/cosmos/apt',
 )
 {
   ensure_resource('package','mtools',{ensure => 'installed'})
