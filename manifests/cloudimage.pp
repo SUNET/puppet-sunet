@@ -17,7 +17,7 @@ define sunet::cloudimage (
   $gateway6    = undef,
   $tagpattern  = undef,
   $repo        = undef,
-  $ssh_keys    = undef
+  $ssh_keys    = undef,
   $description = '',
   $hypervisor  = 'qemu:///system',
 )
