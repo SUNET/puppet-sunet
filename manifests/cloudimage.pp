@@ -18,6 +18,8 @@ define sunet::cloudimage (
   $tagpattern  = undef,
   $repo        = undef,
   $ssh_keys    = undef
+  $description = '',
+  $hypervisor  = 'qemu:///system',
 )
 {
   ensure_resource('package','mtools',{ensure => 'installed'})
