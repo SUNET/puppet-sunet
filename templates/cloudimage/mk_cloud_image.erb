@@ -122,8 +122,11 @@ rm -f ${meta_data}
 
 virsh pool-refresh default
 
-virsh vol-clone --pool default ${src_image} ${disk}
-virsh vol-resize --pool default ${disk} ${size}
+if [ ! -f /var/lib/libvirt/images/${hostname}/${disk} ]; then
+    test -f /var/lib/libvirt/images/${disk} || virsh vol-clone --pool default ${src_image} ${disk}
+    virsh vol-resize --pool default ${disk} ${size}
+    mv /var/lib/libvirt/images/${disk} /var/lib/libvirt/images/${hostname}/${disk}
+fi
 
 network="--network bridge=${bridge}"
 install_options=""
