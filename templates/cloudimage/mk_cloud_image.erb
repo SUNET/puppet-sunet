@@ -119,12 +119,10 @@ virsh pool-refresh default
 virsh vol-clone --pool default ${src_image} ${hostname}/${disk}
 virsh vol-resize --pool default ${hostname}/${disk} ${size}
 
-network_mac=""
+network="--network bridge=${bridge}"
 if [ "x${mac}" != "x" ]; then
-   network_mac=",mac=${mac}"
+   network="${network},mac=${mac}"
 fi
-
-network="--network bridge=${bridge}${network_mac}"
 
 virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
     ${network} \
