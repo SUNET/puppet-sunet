@@ -58,8 +58,6 @@ runcmd:
    - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
    - ["cd","/root"]
    - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
-   - "cosmos -v update"
-   - "cosmos -v apply"
 disable_root: 0
 EOF
 
