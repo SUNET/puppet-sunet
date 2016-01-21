@@ -1,10 +1,13 @@
 #!/bin/bash
 
+set -e
+
 # do not edit by hand
 
 src_image="<%= @image_src %>"
 size="<%= @size %>"
 dhcp="<%= @dhcp ? 'yes' : 'no' %>"
+mac="<%= @mac %>"
 hostname="<%= @name %>"
 bridge="<%= @bridge %>"
 cpus="<%= @cpus %>"
@@ -19,9 +22,11 @@ ip6="<%= @ip6 %>"
 gateway6="<%= @gateway6 %>"
 netmask6="<%= @netmask6 %>"
 password="<%= @password %>"
+description="<%= @description %>"
+apt_dir="<%= @apt_dir %>"
 
-
-cd "/var/lib/libvirt/images"
+mkdir -p "/var/lib/libvirt/images/${hostname}"
+cd "/var/lib/libvirt/images/${hostname}"
 
 id=$(uuidgen)
 
@@ -44,7 +49,7 @@ ssh_pwauth: False
 <% if @ssh_keys %>
 ssh_authorized_keys:
 <% @ssh_keys.each do |key| %>
-   - <%= @key %>
+   - <%= key %>
 <% end %>
 <% end %>
 runcmd:
@@ -110,15 +115,33 @@ fi
 
 mcopy -i ${seed} ${user_data} ::user-data 2>/dev/null
 mcopy -i ${seed} ${meta_data} ::meta-data 2>/dev/null
-mcopy -i ${seed} /etc/cosmos/apt/bootstrap-cosmos.sh /etc/cosmos/apt/cosmos_1.2-2_all.deb ::
-mkdir -p "/var/lib/libvirt/images/${hostname}"
-mv ${seed} "/var/lib/libvirt/images/${hostname}"
-virsh pool-refresh default
-
-virsh vol-clone --pool default ${src_image} ${hostname}/${disk} 
-virsh vol-resize --pool default ${hostname}/${disk} ${size}
-
-virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --network bridge=${bridge} --boot hd --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio
+mcopy -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
 
 rm -f ${user_data}
 rm -f ${meta_data}
+
+virsh pool-refresh default
+
+if [ ! -f /var/lib/libvirt/images/${hostname}/${disk} ]; then
+    test -f /var/lib/libvirt/images/${disk} || virsh vol-clone --pool default ${src_image} ${disk}
+    virsh vol-resize --pool default ${disk} ${size}
+    mv /var/lib/libvirt/images/${disk} /var/lib/libvirt/images/${hostname}/${disk}
+fi
+
+network="--network bridge=${bridge}"
+install_options=""
+
+# Optional settings
+if [ "x${mac}" != "x" ]; then
+   network="${network},mac=${mac}"
+fi
+if [ "x${description}" != "x" ]; then
+   install_options="${install_options} --description '${description}'"
+fi
+
+# use eval to expand the $install_options properly
+eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
+    --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio \
+    --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio \
+    ${network} \
+    ${install_options}
