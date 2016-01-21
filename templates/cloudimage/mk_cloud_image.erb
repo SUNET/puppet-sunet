@@ -22,6 +22,8 @@ ip6="<%= @ip6 %>"
 gateway6="<%= @gateway6 %>"
 netmask6="<%= @netmask6 %>"
 password="<%= @password %>"
+description="<%= @description %>"
+apt_dir="<%= @apt_dir %>"
 
 mkdir -p "/var/lib/libvirt/images/${hostname}"
 cd "/var/lib/libvirt/images/${hostname}"
@@ -113,7 +115,7 @@ fi
 
 mcopy -i ${seed} ${user_data} ::user-data 2>/dev/null
 mcopy -i ${seed} ${meta_data} ::meta-data 2>/dev/null
-mcopy -i ${seed} /etc/cosmos/apt/bootstrap-cosmos.sh /etc/cosmos/apt/cosmos_1.2-2_all.deb ::
+mcopy -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
 
 rm -f ${user_data}
 rm -f ${meta_data}
@@ -132,6 +134,9 @@ install_options=""
 # Optional settings
 if [ "x${mac}" != "x" ]; then
    network="${network},mac=${mac}"
+fi
+if [ "x${description}" != "x" ]; then
+   install_options="${install_options} --description '${description}'"
 fi
 
 # use eval to expand the $install_options properly
