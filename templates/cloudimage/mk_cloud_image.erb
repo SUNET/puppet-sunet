@@ -136,10 +136,10 @@ if [ "x${mac}" != "x" ]; then
    network="${network},mac=${mac}"
 fi
 if [ "x${hypervisor}" != "x" ]; then
-   install_options="${install_options} --connect '${hypervisor}'"
+   install_options="${install_options} --connect \'${hypervisor}\'"
 fi
 if [ "x${description}" != "x" ]; then
-   install_options="${install_options} --description '${description}'"
+   install_options="${install_options} --description \'${description}\'"
 fi
 
 
