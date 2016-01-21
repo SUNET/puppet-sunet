@@ -5,6 +5,7 @@
 src_image="<%= @image_src %>"
 size="<%= @size %>"
 dhcp="<%= @dhcp ? 'yes' : 'no' %>"
+mac="<%= @mac %>"
 hostname="<%= @name %>"
 bridge="<%= @bridge %>"
 cpus="<%= @cpus %>"
@@ -118,7 +119,19 @@ virsh pool-refresh default
 virsh vol-clone --pool default ${src_image} ${hostname}/${disk} 
 virsh vol-resize --pool default ${hostname}/${disk} ${size}
 
-virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --network bridge=${bridge} --boot hd --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio
+network="--network bridge=${bridge}"
+install_options=""
 
 rm -f ${user_data}
 rm -f ${meta_data}
+# Optional settings
+if [ "x${mac}" != "x" ]; then
+   network="${network},mac=${mac}"
+fi
+
+# use eval to expand the $install_options properly
+eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
+    --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio \
+    --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio \
+    ${network} \
+    ${install_options}
