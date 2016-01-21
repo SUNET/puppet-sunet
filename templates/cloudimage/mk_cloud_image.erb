@@ -136,14 +136,14 @@ if [ "x${mac}" != "x" ]; then
    network="${network},mac=${mac}"
 fi
 if [ "x${hypervisor}" != "x" ]; then
-   install_options="${install_options} --connect \'${hypervisor}\'"
+   install_options="${install_options} --connect '${hypervisor}'"
 fi
 if [ "x${description}" != "x" ]; then
-   install_options="${install_options} --description \'${description}\'"
+   install_options="${install_options} --description '${description}'"
 fi
 
-
-virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
+# use eval to expand the $install_options properly
+eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
     --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio \
     --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio \
     ${network} \
