@@ -40,7 +40,7 @@ define sunet::cloudimage (
      mode    => "0755"
   } ->
   exec { "${name}_init":
-     command => "/var/lib/libvirt/images/${name}/${name}-init.sh",
+     command => "/var/lib/libvirt/images/${name}/${name}-init.sh > /var/lib/libvirt/images/${name}/cloudimage.log 2>&1",
      onlyif  => "test ! -f /var/lib/libvirt/images/${name}/${name}.img"
   }
 }
