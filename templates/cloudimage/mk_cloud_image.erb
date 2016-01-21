@@ -25,7 +25,8 @@ password="<%= @password %>"
 hypervisor="<%= @hypervisor %>"
 description="<%= @description %>"
 
-cd "/var/lib/libvirt/images"
+mkdir -p "/var/lib/libvirt/images/${hostname}"
+cd "/var/lib/libvirt/images/${hostname}"
 
 id=$(uuidgen)
 
@@ -115,12 +116,14 @@ fi
 mcopy -i ${seed} ${user_data} ::user-data 2>/dev/null
 mcopy -i ${seed} ${meta_data} ::meta-data 2>/dev/null
 mcopy -i ${seed} /etc/cosmos/apt/bootstrap-cosmos.sh /etc/cosmos/apt/cosmos_1.2-2_all.deb ::
-mkdir -p "/var/lib/libvirt/images/${hostname}"
-mv ${seed} "/var/lib/libvirt/images/${hostname}"
+
+rm -f ${user_data}
+rm -f ${meta_data}
+
 virsh pool-refresh default
 
-virsh vol-clone --pool default ${src_image} ${hostname}/${disk}
-virsh vol-resize --pool default ${hostname}/${disk} ${size}
+virsh vol-clone --pool default ${src_image} ${disk}
+virsh vol-resize --pool default ${disk} ${size}
 
 network="--network bridge=${bridge}"
 install_options=""
@@ -142,6 +145,3 @@ virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon v
     --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio \
     ${network} \
     ${install_options}
-
-rm -f ${user_data}
-rm -f ${meta_data}
