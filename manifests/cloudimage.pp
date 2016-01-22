@@ -17,7 +17,9 @@ define sunet::cloudimage (
   $gateway6    = undef,
   $tagpattern  = undef,
   $repo        = undef,
-  $ssh_keys    = undef
+  $ssh_keys    = undef,
+  $description = '',
+  $apt_dir     = '/etc/cosmos/apt',
 )
 {
   ensure_resource('package',['cpu-checker','mtools','kvm','libvirt-bin','virtinst'],{ensure => 'latest'})
