@@ -84,6 +84,8 @@ network-interfaces: |
     auto eth0
     iface eth0 inet dhcp
     ${dns}
+
+    source-directory interfaces.d
 EOF
 else
   if [ "x${ip}" != "x" ]; then
@@ -96,6 +98,7 @@ network-interfaces: |
         gateway ${gateway}
         ${dns}
 
+    source-directory interfaces.d
 EOF
   fi
 
@@ -109,6 +112,7 @@ network-interfaces: |
         gateway ${gateway6}
         ${dns}
 
+    source-directory interfaces.d
 EOF
   fi
 fi
