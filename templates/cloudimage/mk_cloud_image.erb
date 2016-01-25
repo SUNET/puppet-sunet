@@ -39,6 +39,8 @@ if [ ! -f ${seed} ]; then
     mkfs.vfat -n cidata ${seed} 2>/dev/null
 fi
 
+chmod 600 ${seed}
+
 if [ "x${password}" != "x" ]; then
    pass="password: ${password}"
 fi
@@ -130,6 +132,8 @@ if [ ! -f /var/lib/libvirt/images/${disk} ]; then
     test -f /var/lib/libvirt/images/${disk} || virsh vol-clone --pool default ${src_image} ${disk}
     virsh vol-resize --pool default ${disk} ${size}
 fi
+
+chmod 600 ${disk}
 
 network="--network bridge=${bridge}"
 install_options=""
