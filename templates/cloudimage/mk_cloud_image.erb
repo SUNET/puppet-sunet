@@ -25,8 +25,7 @@ password="<%= @password %>"
 description="<%= @description %>"
 apt_dir="<%= @apt_dir %>"
 
-mkdir -p "/var/lib/libvirt/images/${hostname}"
-cd "/var/lib/libvirt/images/${hostname}"
+cd "/var/lib/libvirt/images/"
 
 id=$(uuidgen)
 
@@ -127,10 +126,9 @@ rm -f ${meta_data}
 
 virsh pool-refresh default
 
-if [ ! -f /var/lib/libvirt/images/${hostname}/${disk} ]; then
+if [ ! -f /var/lib/libvirt/images/${disk} ]; then
     test -f /var/lib/libvirt/images/${disk} || virsh vol-clone --pool default ${src_image} ${disk}
     virsh vol-resize --pool default ${disk} ${size}
-    mv /var/lib/libvirt/images/${disk} /var/lib/libvirt/images/${hostname}/${disk}
 fi
 
 network="--network bridge=${bridge}"
@@ -146,7 +144,7 @@ fi
 
 # use eval to expand the $install_options properly
 eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
-    --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio \
-    --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio \
+    --disk path=/var/lib/libvirt/images/${disk},format=qcow2,bus=virtio \
+    --disk path=/var/lib/libvirt/images/${seed},bus=virtio \
     ${network} \
     ${install_options}
