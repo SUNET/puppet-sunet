@@ -14,7 +14,7 @@ if [ -f ${reinst} ]; then
    echo ""
    ls -l ${reinst}
    echo ""
-   tar tzvf ${reinst}
+   tar tzvf ${reinst} || true
    echo ""
    echo "Press enter to overwrite it, or CTRL+C to abort"
    read foo
