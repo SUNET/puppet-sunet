@@ -105,7 +105,15 @@ network-interfaces: |
 EOF
   fi
 
-  if [ "x${ip6}" != "x" ]; then
+  if [ "x${ip6}" = "xauto" ]; then
+     cat >> ${meta_data} <<EOF
+network-interfaces: |
+    auto eth0
+    iface eth0 inet6 auto
+        ${dns}
+
+EOF
+  elif [ "x${ip6}" != "x" ]; then
      cat >> ${meta_data} <<EOF
 network-interfaces: |
     auto eth0
