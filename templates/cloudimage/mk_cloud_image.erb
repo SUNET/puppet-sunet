@@ -80,6 +80,9 @@ if [ "x${resolver}" != "x" ]; then
    dns="dns-nameservers ${resolver}"
 fi
 
+#
+# IPv4
+#
 if [ "x${ip}" != "x" ]; then
    dhcp="no"
 fi
@@ -104,17 +107,21 @@ network-interfaces: |
 
 EOF
   fi
+fi
 
-  if [ "x${ip6}" = "xauto" ]; then
-     cat >> ${meta_data} <<EOF
+#
+# IPv6
+#
+if [ "x${ip6}" = "xauto" ]; then
+    cat >> ${meta_data} <<EOF
 network-interfaces: |
     auto eth0
     iface eth0 inet6 auto
         ${dns}
 
 EOF
-  elif [ "x${ip6}" != "x" ]; then
-     cat >> ${meta_data} <<EOF
+elif [ "x${ip6}" != "x" ]; then
+    cat >> ${meta_data} <<EOF
 network-interfaces: |
     auto eth0
     iface eth0 inet6 static
@@ -124,7 +131,6 @@ network-interfaces: |
         ${dns}
 
 EOF
-  fi
 fi
 
 mcopy -o -i ${seed} ${user_data} ::user-data 2>/dev/null
