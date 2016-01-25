@@ -53,6 +53,7 @@ ssh_authorized_keys:
 <% end %>
 <% end %>
 runcmd:
+   - "grep -q '^GRUB_TERMINAL=serial$' /etc/default/grub.d/50-cloudimg-settings.cfg || echo -e '\n"# sunet cloud-init: enable grub on serial console\nGRUB_TERMINAL=serial' >> /etc/default/grub.d/50-cloudimg-settings.cfg"
    - ["mkdir","/tmp/seed"]
    - ["mount","/dev/vdb","/tmp/seed"]
    - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
