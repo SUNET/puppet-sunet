@@ -33,9 +33,12 @@ id=$(uuidgen)
 seed=${hostname}_seed.img
 disk=${hostname}.img
 
-rm -f ${seed}
-truncate --size 2M ${seed}
-mkfs.vfat -n cidata ${seed} 2>/dev/null
+if [ ! -f ${seed} ]; then
+    # If the seed file exists, just update it with new user-data and meta-data below
+    # to facilitate reinstalls with 'sunet-reinstall'
+    truncate --size 2M ${seed}
+    mkfs.vfat -n cidata ${seed} 2>/dev/null
+fi
 
 if [ "x${password}" != "x" ]; then
    pass="password: ${password}"
@@ -58,7 +61,7 @@ runcmd:
    - ["mount","/dev/vdb","/tmp/seed"]
    - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
    - ["cd","/root"]
-   - "test -f /tmp/seed/reinst.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/reinst.tgz)"
+   - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
    - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
 disable_root: 0
 EOF
