@@ -117,9 +117,9 @@ EOF
   fi
 fi
 
-mcopy -i ${seed} ${user_data} ::user-data 2>/dev/null
-mcopy -i ${seed} ${meta_data} ::meta-data 2>/dev/null
-mcopy -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
+mcopy -o -i ${seed} ${user_data} ::user-data 2>/dev/null
+mcopy -o -i ${seed} ${meta_data} ::meta-data 2>/dev/null
+mcopy -o -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
 
 rm -f ${user_data}
 rm -f ${meta_data}
