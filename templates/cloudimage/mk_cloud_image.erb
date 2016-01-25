@@ -58,7 +58,7 @@ runcmd:
    - ["mount","/dev/vdb","/tmp/seed"]
    - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
    - ["cd","/root"]
-   - "test -f /tmp/seed/reinst.tgz && (echo "Unpacking files from previous installation:"; cd /; tar zxvf /tmp/seed/reinst.tgz)"
+   - "test -f /tmp/seed/reinst.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/reinst.tgz)"
    - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
 disable_root: 0
 EOF
