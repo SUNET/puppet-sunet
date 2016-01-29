@@ -5,7 +5,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
 
    $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
    $nagios_ip_v6 = hiera('nagios_ip_v6', '2001:948:4:6::111')
-   $allowed_hosts = "${nagios_ip_v4},${nagios_ip_v6}"
+   $allowed_hosts = "127.0.0.1,127.0.1.0,${nagios_ip_v4},${nagios_ip_v6}"
 
    package {$nrpe_service:
        ensure => 'latest',
