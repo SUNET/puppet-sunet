@@ -65,12 +65,6 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    sunet::nagios::nrpe_command {'check_mailq':
       command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
    }
-   sunet::nagios::nrpe_command {'check_process_pidfile':
-      command_line => '/usr/lib/nagios/plugins/check_process -C ACPU -P $ARG1$ -N $ARG2$'
-   }
-   sunet::nagios::nrpe_command {'check_process_name':
-      command_line => '/usr/lib/nagios/plugins/check_process -C PCPU -p $ARG2$ -N $ARG2$'
-   }
    file { "/usr/lib/nagios/plugins/check_uptime.pl" :
        ensure  => 'file',
        mode    => '0751',
