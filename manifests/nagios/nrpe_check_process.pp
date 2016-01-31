@@ -4,7 +4,7 @@ define nrpe_check_process ($display_name = undef) {
       undef   => $name,
       default => $alias
    }
-   sunet::nagios::nrpe_command {'check_process_pidfile':
+   sunet::nagios::nrpe_command {"check_process_${name}":
      command_line => "/usr/lib/nagios/plugins/check_process -C PCPU -p $name -N $process_display_name"
    }
 }
