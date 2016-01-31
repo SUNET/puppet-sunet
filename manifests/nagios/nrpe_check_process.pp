@@ -1,5 +1,5 @@
 
-define nrpe_check_process ($display_name = undef) {
+define sunet::nagios::nrpe_check_process ($display_name = undef) {
    $process_display_name = $alias ? {
       undef   => $name,
       default => $alias
