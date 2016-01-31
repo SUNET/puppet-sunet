@@ -65,6 +65,12 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    sunet::nagios::nrpe_command {'check_mailq':
       command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
    }
+   sunet::nagios::nrpe_command {'check_process_pidfile':
+      command_line => '/usr/lib/nagios/plugins/check_process -C \$ARG1\$ -P \$ARG2\$ -N \$ARG3\$'
+   }
+   sunet::nagios::nrpe_command {'check_process_name':
+      command_line => '/usr/lib/nagios/plugins/check_process -C \$ARG1\$ -p \$ARG2\$ -N \$ARG3\$'
+   }
    file { "/usr/lib/nagios/plugins/check_uptime.pl" :
        ensure  => 'file',
        mode    => '0751',
@@ -78,6 +84,13 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        group   => 'nagios',
        require => Package['nagios-nrpe-server'],
        content => template('sunet/nagioshost/check_reboot.erb'),
+   }
+   file { "/usr/lib/nagios/plugins/check_process" :
+       ensure  => 'file',
+       mode    => '0751',
+       group   => 'nagios',
+       require => Package['nagios-nrpe-server'],
+       content => template('sunet/nagioshost/check_process.erb'),
    }
    ufw::allow { "allow-nrpe-v4":
        from  => "${nagios_ip_v4}",
