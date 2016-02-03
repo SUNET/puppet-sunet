@@ -10,7 +10,7 @@ script
     UCRANDOM_PORT="<%= @port %>"
     test -f /etc/default/ucrandom && . /etc/default/ucrandom
     if [ "x$ENABLE_UCRANDOM" = "xyes" ]; then
-        exec start-stop-daemon --chdir /var/run --name ucrandom --start --startas /usr/bin/ucrandom -d ${UCRANDOM_DEVICE} -p ${UCRANDOM_PORT} ${UCRANDOM_SERVER}
+        exec /usr/bin/ucrandom -d ${UCRANDOM_DEVICE} -p ${UCRANDOM_PORT} ${UCRANDOM_SERVER}
     else:
         echo "ucrandom disabled - enable it in /etc/default/ucrandom"
     fi
