@@ -62,10 +62,15 @@ def _recv_addr(s,addr,port,length):
 def _recv(hosts,port,length):
     for host in hosts:
        try:
-          s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-          s.settimeout(10)
           name,aliases,addrs = socket.gethostbyaddr(host)
           for addr in addrs:
+              s = None
+              if '.' in addr:
+                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+              else:
+                 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+              assert (s is not None)
+              s.settimeout(10)
               try:
                   return _recv_addr(s,addr,port,length)
               except Exception, iex:
