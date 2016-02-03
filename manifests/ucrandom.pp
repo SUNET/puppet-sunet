@@ -5,7 +5,7 @@ define sunet::ucrandom(
    file {'/usr/bin/ucrandom': 
       owner   => root,
       group   => root,
-      mode    => '0775',
+      mode    => '0755',
       content => template("sunet/ucrandom/ucrandom.erb")
    } ->
    file {'/etc/init/ucrandom.conf': 
