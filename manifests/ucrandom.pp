@@ -1,5 +1,4 @@
 define sunet::ucrandom(
-   $server="random.nordu.net",
    $port="4711",
    $device="/dev/random") {
    
