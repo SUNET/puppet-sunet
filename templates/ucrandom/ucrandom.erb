@@ -111,7 +111,7 @@ def _loop(args,opts):
                 sleep_time *= 2
                 if sleep_time > 32:
                     sleep_time = 1
-                logger.info("have %d in pool - sleeping %d seconds..." % (avail, sleep_time))
+                logger.debug("have %d in pool - sleeping %d seconds..." % (avail, sleep_time))
             time.sleep(sleep_time)
 
 def usage():
