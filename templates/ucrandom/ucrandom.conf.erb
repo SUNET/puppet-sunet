@@ -1,0 +1,17 @@
+description "ucrandom"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+script
+    ENABLE_UCRANDOM="yes"
+    UCRANDOM_DEVICE="<%= @device %>"
+    UCRANDOM_SERVER="<%= @server %>"
+    UCRANDOM_PORT="<%= @port %>"
+    test -f /etc/default/ucrandom && . /etc/default/ucrandom
+    if [ "x$ENABLE_UCRANDOM" = "xyes" ]; then
+        exec start-stop-daemon --chdir /var/run --name ucrandom --start --startas /usr/bin/ucrandom -d ${UCRANDOM_DEVICE} -p ${UCRANDOM_PORT} ${UCRANDOM_SERVER}
+    else:
+        echo "ucrandom disabled - enable it in /etc/default/ucrandom"
+    fi
+end script
