@@ -38,8 +38,8 @@ define sunet::docker_run(
         default => $stop_on,
       }
     } else {
-      $dns => undef
-      $req => []
+      $dns = undef
+      $req = []
       $_start_on = $start_on ? {
         undef   => $docker::params::service_name,
         default => $start_on,
