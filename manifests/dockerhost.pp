@@ -27,10 +27,15 @@ class sunet::dockerhost(
      ensure => $docker_version,
   }
 
+  $docker_dns = $run_unbound ? {
+    true  => pick($::ipaddress_docker0, '172.17.0.1'),  # 172.17.0.1 in case docker0 does not exist yet (bootstrap)
+    false => undef,
+  }
+
   class {'docker':
      manage_package              => false,
      use_upstream_package_source => false,
-     dns                         => pick($::ipaddress_docker0, '172.17.0.1'),
+     dns                         => $docker_dns,
   }
 
   file {
