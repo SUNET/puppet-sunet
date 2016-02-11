@@ -1,9 +1,10 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  $docker_version      = "1.8.3-0~${::lsbdistcodename}",
-  $run_unbound         = true,
-  $run_docker_cleanup  = true,
-  $dns_ttl             = '5',  # used in run-parts template
+  $docker_version            = "1.8.3-0~${::lsbdistcodename}",
+  $run_unbound               = true,
+  $run_docker_cleanup        = true,
+  $dns_ttl                   = '5',  # used in run-parts template
+  $manage_dockerhost_unbound = false,
 ) {
 
   # Remove old versions, if installed
@@ -117,14 +118,18 @@ class sunet::dockerhost(
   }
 
   if $run_unbound {
-    file {
-      '/etc/unbound/unbound.conf.d/unbound.conf':  # configuration to forward queries to .docker to the docker-unbound
+    if $manage_dockerhost_unbound {
+      sunet::unbound { 'sunet_dockerhost_unbound': }
+
+      file {
+        '/etc/unbound/unbound.conf.d/unbound.conf':  # configuration to forward queries to .docker to the docker-unbound
         ensure  => file,
         path    => '/etc/unbound/unbound.conf.d/unbound.conf',
         mode    => '0644',
         content => template('sunet/dockerhost/unbound.conf.erb'),
         notify  => Service['unbound'],
         ;
+      }
     }
 
     sunet::docker_run { 'unbound':
