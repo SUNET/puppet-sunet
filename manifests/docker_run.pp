@@ -25,7 +25,7 @@ define sunet::docker_run(
     if $use_unbound {
       # If docker was just installed, facter will not know the IP of docker0. Thus the pick.
       # Get default address from Hiera since it is different in Docker 1.8 and 1.9.
-     $dns => pick($::ipaddress_docker0, hiera('dockerhost_ip', '172.17.0.1'))
+     $dns = pick($::ipaddress_docker0, hiera('dockerhost_ip', '172.17.0.1'))
      $req = [Service['unbound']]
       # If start_on/stop_on is not explicitly provided, a container in bridge mode should
       # start/stop on the container 'docker-unbound' to make DNS registration work.
