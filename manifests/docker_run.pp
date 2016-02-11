@@ -8,17 +8,33 @@ define sunet::docker_run(
   $env                 = [],
   $net                 = 'bridge',
   $extra_parameters    = [],
-  $command             = "",
+  $command             = undef,
   $hostname            = undef,
   $start_on            = $docker::params::service_name,
   $stop_on             = $docker::params::service_name
 ) {
-  include docker::params
-  # Make container use unbound resolver on dockerhost
-  # If docker was just installed, facter will not know the IP of docker0. Thus the pick.
-  $dns = $net ? {
-    'host'  => [],  # docker refuses --dns with --net host
-    default => [pick($::ipaddress_docker0, '172.17.42.1')],
+
+  # Figure out some parameters that depend on whether this container runs in host or bridge networking mode
+  if $net == 'host' {
+    $dns = []  # docker refuses --dns with --net host
+    $req = []
+    $_start_on = $start_on
+    $_stop_on = $stop_on
+  } else {
+    # If docker was just installed, facter will not know the IP of docker0. Thus the pick.
+    # Get default address from Hiera since it is different in Docker 1.8 and 1.9.
+    $dns = pick($::ipaddress_docker0, hiera('dockerhost_ip', '172.17.0.1'))
+    $req = [Service['unbound']]
+    # If start_on/stop_on is not explicitly provided, a container in bridge mode should
+    # start/stop on the container 'docker-unbound' to make DNS registration work.
+    $_start_on = $start_on ? {
+      undef => 'docker-unbound',
+      default => $start_on,
+    }
+    $_stop_on = $stop_on ? {
+      undef => 'docker-unbound',
+      default => $stop_on,
+    }
   }
 
   $image_tag = "${image}:${imagetag}"
@@ -32,9 +48,9 @@ define sunet::docker_run(
     use_name           => true,
     image              => $image_tag,
     volumes            => flatten([$volumes,
-                           '/etc/passwd:/etc/passwd:ro',  # uid consistency
-                           '/etc/group:/etc/group:ro',    # gid consistency
-                           ]),
+                                   '/etc/passwd:/etc/passwd:ro',  # uid consistency
+                                   '/etc/group:/etc/group:ro',    # gid consistency
+                                   ]),
     hostname           => $hostname,
     ports              => $ports,
     expose             => $expose,
@@ -43,14 +59,15 @@ define sunet::docker_run(
     extra_parameters   => flatten([$extra_parameters,
                                    '--rm',
                                    ]),
-    dns                => $dns,
-    verify_checksum    => false,    # Rely on registry security for now. eduID risk #31.
     command            => $command,
+    dns                => $dns,
     pre_start          => 'run-parts /usr/local/etc/docker.d',
     post_start         => 'run-parts /usr/local/etc/docker.d',
     pre_stop           => 'run-parts /usr/local/etc/docker.d',
-    start_on           => $start_on,
-    stop_on            => $stop_on,
+    post_stop          => 'run-parts /usr/local/etc/docker.d',
+    start_on           => $_start_on,
+    stop_on            => $_stop_on,
+    require            => flatten([$req]),
   }
 
 }
