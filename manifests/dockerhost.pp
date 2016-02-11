@@ -1,9 +1,9 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  $docker_version = "1.8.3-0~${::lsbdistcodename}",
-  $run_unbound = true,
-  $run_docker_cleanup = true,
-  $dns_ttl = '5',  # used in run-parts template
+  $docker_version      = "1.8.3-0~${::lsbdistcodename}",
+  $run_unbound         = true,
+  $run_docker_cleanup  = true,
+  $dns_ttl             = '5',  # used in run-parts template
 ) {
 
   # Remove old versions, if installed
