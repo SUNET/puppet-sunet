@@ -10,8 +10,9 @@ define sunet::docker_run(
   $extra_parameters    = [],
   $command             = undef,
   $hostname            = undef,
-  $start_on            = $docker::params::service_name,
-  $stop_on             = $docker::params::service_name
+  $start_on            = undef,
+  $stop_on             = undef,
+  $use_unbound         = false,
 ) {
 
   # Figure out some parameters that depend on whether this container runs in host or bridge networking mode
@@ -21,19 +22,32 @@ define sunet::docker_run(
     $_start_on = $start_on
     $_stop_on = $stop_on
   } else {
-    # If docker was just installed, facter will not know the IP of docker0. Thus the pick.
-    # Get default address from Hiera since it is different in Docker 1.8 and 1.9.
-    $dns = pick($::ipaddress_docker0, hiera('dockerhost_ip', '172.17.0.1'))
-    $req = [Service['unbound']]
-    # If start_on/stop_on is not explicitly provided, a container in bridge mode should
-    # start/stop on the container 'docker-unbound' to make DNS registration work.
-    $_start_on = $start_on ? {
-      undef => 'docker-unbound',
-      default => $start_on,
-    }
-    $_stop_on = $stop_on ? {
-      undef => 'docker-unbound',
-      default => $stop_on,
+    if $use_unbound {
+      # If docker was just installed, facter will not know the IP of docker0. Thus the pick.
+      # Get default address from Hiera since it is different in Docker 1.8 and 1.9.
+     $dns => pick($::ipaddress_docker0, hiera('dockerhost_ip', '172.17.0.1'))
+     $req = [Service['unbound']]
+      # If start_on/stop_on is not explicitly provided, a container in bridge mode should
+      # start/stop on the container 'docker-unbound' to make DNS registration work.
+      $_start_on = $start_on ? {
+        undef => 'docker-unbound',
+        default => $start_on,
+      }
+      $_stop_on = $stop_on ? {
+        undef => 'docker-unbound',
+        default => $stop_on,
+      }
+    } else {
+      $dns => undef
+      $req => []
+      $_start_on = $start_on ? {
+        undef   => $docker::params::service_name,
+        default => $start_on,
+      }
+      $_stop_on = $stop_on ? {
+        undef   => $docker::params::service_name,
+        default => $stop_on,
+      }
     }
   }
 

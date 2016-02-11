@@ -27,8 +27,10 @@ class sunet::dockerhost(
      ensure => $docker_version,
   }
 
+  # If docker was just installed, facter will not know the IP of docker0. Thus the pick.
+  # Get default address from Hiera since it is different in Docker 1.8 and 1.9.
   $docker_dns = $run_unbound ? {
-    true  => pick($::ipaddress_docker0, '172.17.0.1'),  # 172.17.0.1 in case docker0 does not exist yet (bootstrap)
+    true  => pick($::ipaddress_docker0, hiera('dockerhost_ip', '172.17.0.1')),
     false => undef,
   }
 
