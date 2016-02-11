@@ -1,7 +1,7 @@
 # Install and configure an unbound DNS resolver
 class sunet::unbound(
-  $use_apparmor        => true,
-  $use_sunet_resolvers => true,
+  $use_apparmor        = true,
+  $use_sunet_resolvers = true,
 ) {
   package { 'unbound': ensure => 'installed' }
 
