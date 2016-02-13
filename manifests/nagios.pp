@@ -5,7 +5,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
 
    $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
    $nagios_ip_v6 = hiera('nagios_ip_v6', '2001:948:4:6::111')
-   $allowed_hosts = "${nagios_ip_v4},${nagios_ip_v6}"
+   $allowed_hosts = "127.0.0.1,127.0.1.0,${nagios_ip_v4},${nagios_ip_v6}"
 
    package {$nrpe_service:
        ensure => 'latest',
@@ -78,6 +78,13 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        group   => 'nagios',
        require => Package['nagios-nrpe-server'],
        content => template('sunet/nagioshost/check_reboot.erb'),
+   }
+   file { "/usr/lib/nagios/plugins/check_process" :
+       ensure  => 'file',
+       mode    => '0751',
+       group   => 'nagios',
+       require => Package['nagios-nrpe-server'],
+       content => template('sunet/nagioshost/check_process.erb'),
    }
    ufw::allow { "allow-nrpe-v4":
        from  => "${nagios_ip_v4}",

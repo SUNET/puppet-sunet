@@ -32,6 +32,8 @@ $mysql_db_name     = undef)
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/credentials:/etc/shibboleth/credentials"],
       ports       => ["8080:80"],
+      start_on    => "${name}_mysql",
+      stop_on     => "${name}_mysql",
       env         => [ "SERVICE_NAME=${name}",
                        "SP_HOSTNAME=${sp_hostname}",
                        "SP_CONTACT=${sp_contact}",
