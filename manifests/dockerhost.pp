@@ -100,13 +100,15 @@ class sunet::dockerhost(
     ensure => 'absent',
   }
 
-  each(['tcp', 'udp']) |$proto| {
+  if $manage_dockerhost_unbound {
     # Allow Docker containers resolving using caching resolver running on docker host
-    ufw::allow { "allow-docker-resolving_${proto}":
-      port  => '53',
-      ip    => pick($::ipaddress_docker0, '172.17.0.1'),
-      from  => '172.16.0.0/12',
-      proto => $proto,
+    each(['tcp', 'udp']) |$proto| {
+      ufw::allow { "allow-docker-resolving_${proto}":
+        port  => '53',
+        ip    => pick($::ipaddress_docker0, '172.17.0.1'),
+        from  => '172.16.0.0/12',
+        proto => $proto,
+      }
     }
   }
 
