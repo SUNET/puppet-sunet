@@ -1,15 +1,18 @@
 define sunet::private_github_repo(
-      username   = 'github',
-      group      = 'github',
-      url        = undef,
-      id         = 'github'
-      manage_key = true,
+      username    = 'github',
+      group       = 'github',
+      url         = undef,
+      id          = 'github'
+      manage_user = true,
+      manage_key  = true,
 ) {
-   ensure_resource('group',"${group}")
-   sunet::system_user { "${username}": 
-      username  => "${username}",   
-      group     => "${group}"
-   } ->
+   if ($manage_user) {
+      ensure_resource('group',"${group}")
+      sunet::system_user { "${username}": 
+         username  => "${username}",   
+         group     => "${group}"
+      }
+   }
    file { "/home/${username}/.ssh":
       ensure    => directory,
       mode      => '0700',
