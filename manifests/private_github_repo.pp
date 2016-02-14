@@ -5,6 +5,7 @@ define sunet::private_github_repo(
       $id          = 'github',
       $manage_user = true,
       $manage_key  = true,
+      $revision    = 'master'
 ) {
    if ($manage_user) {
       ensure_resource('group',"${group}")
@@ -34,10 +35,11 @@ define sunet::private_github_repo(
       command   => 'ssh-keyscan -H github.com > /etc/ssh/ssh_known_hosts'
    } -> 
    vcsrepo { "${name}":
-      ensure    => present,
+      ensure    => latest,
       provider  => git,
-      source    => "${url}",
-      user      => "${username}"
+      source    => $url,
+      user      => $username,
+      revision  => $revision
    }
    if ($manage_key) {
       exec { "${title}-ssh-keygen":
