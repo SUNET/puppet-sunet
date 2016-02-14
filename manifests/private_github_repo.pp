@@ -14,7 +14,7 @@ define sunet::private_github_repo(
       }
    }
    $ssh_home = $username ? {
-      'root'  => '/root/.ssh',
+      root    => '/root/.ssh',
       default => "/home/${username}/.ssh"
    }
    file { "${ssh_home}":
