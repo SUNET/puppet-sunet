@@ -24,9 +24,7 @@ $mysql_db_name     = undef)
       default => $mysql_db_name
    }
    $pwd = hiera("${name}_db_password",'NOT_SET_IN_HIERA')
-   file {"/data/${name}": ensure => directory } ->
-   file { "/data/${name}/html": ensure => directory } ->
-   file { "/data/${name}/credentials": ensure => directory } ->
+   ensure_resource('file',["/data/${name}","/data/${name}/html","/data/${name}/credentials"], {ensure => directory})
    sunet::docker_run { "${name}_wordpress":
       image       => $wordpress_image,
       imagetag    => $wordpress_version,
