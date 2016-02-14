@@ -2,7 +2,7 @@ define sunet::private_github_repo(
       $username    = 'github',
       $group       = 'github',
       $url         = undef,
-      $id          = 'github'
+      $id          = 'github',
       $manage_user = true,
       $manage_key  = true,
 ) {
