@@ -13,13 +13,17 @@ define sunet::private_github_repo(
          group     => "${group}"
       }
    }
-   file { "/home/${username}/.ssh":
+   $ssh_home = $user ? {
+      'root'  => '/root/.ssh',
+      default => "/home/${username}/.ssh"
+   }
+   file { "${ssh_home}":
       ensure    => directory,
       mode      => '0700',
       owner     => "${username}",
       group     => "${group}"
    } -> 
-   file { "/home/${username}/.ssh/config":
+   file { "${ssh_home}/config":
       ensure    => 'file',
       content   => "Host github.com\n    IdentityFile ~/.ssh/${id}\n",
       mode      => '0644',
