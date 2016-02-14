@@ -1,10 +1,10 @@
 define sunet::private_github_repo(
-      username    = 'github',
-      group       = 'github',
-      url         = undef,
-      id          = 'github'
-      manage_user = true,
-      manage_key  = true,
+      $username    = 'github',
+      $group       = 'github',
+      $url         = undef,
+      $id          = 'github'
+      $manage_user = true,
+      $manage_key  = true,
 ) {
    if ($manage_user) {
       ensure_resource('group',"${group}")
