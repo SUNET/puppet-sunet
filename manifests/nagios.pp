@@ -5,7 +5,9 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
 
    $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
    $nagios_ip_v6 = hiera('nagios_ip_v6', '2001:948:4:6::111')
-   $allowed_hosts = "127.0.0.1,127.0.1.0,${nagios_ip_v4},${nagios_ip_v6}"
+   $nrpe_clients = hiera_array('nrpe_clients',['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
+   #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
+   $allowed_hosts = join($nrpe_clients,",")
 
    package {$nrpe_service:
        ensure => 'latest',
@@ -86,16 +88,13 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        require => Package['nagios-nrpe-server'],
        content => template('sunet/nagioshost/check_process.erb'),
    }
-   ufw::allow { "allow-nrpe-v4":
-       from  => "${nagios_ip_v4}",
-       ip    => 'any',
-       proto => 'tcp',
-       port  => 5666
-   }
-   ufw::allow { "allow-nrpe-v6":
-       from  => "${nagios_ip_v6}",
-       ip    => 'any',
-       proto => 'tcp',
-       port  => 5666
+   $nrpe_clients.each |$client| {
+      $client_name = regsubst($client,'([.:]+)','_','G')
+      ufw::allow { "allow-nrpe-${client_name}":
+         from  => "${client}",
+         ip    => 'any',
+         proto => 'tcp',
+         port  => 5666
+      }
    }
 }
