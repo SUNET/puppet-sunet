@@ -16,7 +16,7 @@ define sunet::exabgp(
       imagetag => $version,
       volumes  => ["${cfg}:${cfg}:ro"],
       ports    => ["${port}:${port}"],
-      command  => flatten(["${cfg}",${extra_arguments}]),
+      command  => flatten([$cfg,$extra_arguments]),
       require  => Exec["if_config_exists_${safe_title}"]
    } ->
    sunet::snippets::no_icmp_redirects {"no_icmp_redirects_${safe_title}": } ->
