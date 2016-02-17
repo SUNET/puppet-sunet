@@ -11,7 +11,7 @@ define sunet::exabgp(
       undef    => $name,
       default  => $config
    }
-   sunet::docker_run {"${safe_title}_exabgp"
+   sunet::docker_run {"${safe_title}_exabgp":
       image    => 'docker.sunet.se/exabgp',
       imagetag => $version,
       volumes  => ["${cfg}:${cfg}:ro"],
