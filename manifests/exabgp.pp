@@ -19,7 +19,7 @@ define sunet::exabgp(
       command  => join(flatten([$cfg,$extra_arguments])," "),
       require  => Exec["if_config_exists_${safe_title}"]
    } ->
-   sunet::snippets::no_icmp_redirects {"no_icmp_redirects_${safe_title}": } ->
+   sunet::snippets::no_icmp_redirects {"no_icmp_redirects_${safe_title}": }
    exec {"if_config_exists_${safe_title}":
       command => '/bin/true',
       onlyif  => "/usr/bin/test -e ${cfg}"
