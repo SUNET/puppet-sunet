@@ -9,11 +9,12 @@ define sunet::exabgp(
 ) {
    $safe_title = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G');
    sunet::docker_run {"${safe_title}_exabgp":
-      image    => 'docker.sunet.se/exabgp',
-      imagetag => $version,
-      volumes  => ["${volume}:${volume}:ro"],
-      ports    => ["${port}:${port}"],
-      command  => join(flatten([$config,$extra_arguments])," "),
+      image       => 'docker.sunet.se/exabgp',
+      imagetag    => $version,
+      volumes     => ["${volume}:${volume}:ro"],
+      ports       => ["${port}:${port}"],
+      environment => ["CONFIG=${config}"],
+      command     => join($extra_arguments," ")
    } ->
    sunet::snippets::no_icmp_redirects {"no_icmp_redirects_${safe_title}": }
 }
