@@ -13,7 +13,7 @@ define sunet::exabgp(
       imagetag    => $version,
       volumes     => ["${volume}:${volume}:ro"],
       ports       => ["${port}:${port}"],
-      environment => ["CONFIG=${config}"],
+      env         => ["CONFIG=${config}"],
       command     => join($extra_arguments," ")
    } ->
    sunet::snippets::no_icmp_redirects {"no_icmp_redirects_${safe_title}": }
