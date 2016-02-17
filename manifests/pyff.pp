@@ -22,7 +22,7 @@ define sunet::pyff($version = "latest", $image = "docker.sunet.se/pyff", $dir = 
    }
    sunet::docker_run {"pyff-${sanitised_title}":
       image     => $image,
-      imagetag => $version,
+      imagetag  => $version,
       volumes   => ["$dir:/opt/metadata"],
       env       => ['DATADIR=/opt/metadata','LOGLEVEL=INFO']
    }
