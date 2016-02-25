@@ -27,6 +27,10 @@ class sunet::server(
 
   if $sshd_config {
     class { 'sunet::security::configure_sshd': }
+    include ufw
+    ufw::allow { "allow-ssh-from-all":
+        port => 22,
+    }
   }
 
   if $ntpd_config {
