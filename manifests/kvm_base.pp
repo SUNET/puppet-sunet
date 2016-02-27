@@ -1,5 +1,8 @@
 # Create/start a KVM virtual machine
 # inspired by http://blogs.thehumanjourney.net/oaubuntu/entry/kvm_vmbuilder_puppet_really_automated
+
+require stdlib
+
 define sunet::kvm_base(
   $repo,
   $tagpattern,
@@ -74,7 +77,7 @@ define sunet::kvm_base(
                           ]
   $_vmbuilder_args = join(flatten($_all_vmbuilder_args), ' ')
 
-  ensure_resource('Package','python-vm-builder',{ensure => latest})
+  ensure_resource('package','python-vm-builder',{ensure => latest})
 
   exec { "create_cosmos_vm_${name}":
     path        => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
