@@ -2,4 +2,10 @@
 
 log syslog all;
 router id <%= @my_router_id %>;
-include /etc/bird/conf.d/*.conf;
+include "/etc/bird/conf.d/*.conf";
+
+table internal;
+protocol device {
+   scan time 10;
+   table internal;
+}
