@@ -1,0 +1,7 @@
+#!/bin/bash
+
+<% if @match %>
+exec curl -s <%= @check_url %> | grep -q <%= @match %>
+<% else %>
+exec curl -o /dev/null -s <%= @check_url %>
+<% end %>
