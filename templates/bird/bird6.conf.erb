@@ -1,6 +1,5 @@
 # Do not edit by hand - maintained by puppet
 
 log syslog;
-router id ${my_router_id};
-
-include "/etc/bird/conf6.d/*.conf";
+router id <%= @my_router_id -%>;
+include /etc/bird/conf6.d/*.conf;
