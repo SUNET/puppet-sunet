@@ -24,14 +24,15 @@ $mysql_db_name     = undef)
       default => $mysql_db_name
    }
    $pwd = hiera("${name}_db_password")
+   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
    ensure_resource('file',["/data/${name}","/data/${name}/html","/data/${name}/credentials"], {ensure => directory})
    sunet::docker_run { "${name}_wordpress":
       image       => $wordpress_image,
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/credentials:/etc/shibboleth/credentials"],
       ports       => ["8080:80"],
-      start_on    => "${name}_mysql",
-      stop_on     => "${name}_mysql",
+      start_on    => "docker-${safe_name}-mysql",
+      stop_on     => "docker-${safe_name}-mysql",
       env         => [ "SERVICE_NAME=${name}",
                        "SP_HOSTNAME=${sp_hostname}",
                        "SP_CONTACT=${sp_contact}",
