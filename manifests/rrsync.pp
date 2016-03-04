@@ -54,6 +54,12 @@ define sunet::rrsync(
     type    => $ssh_key_type,
     key     => $ssh_key,
     target  => "${ssh_home}/authorized_keys",
-    options => "command=\"/usr/bin/rrsync -ro ${directory}\",no-agent-forwarding,no-port-forwarding,no-pty,no-user-rc,no-X11-forwarding"
+    options => [
+      "command=\"/usr/bin/rrsync -ro ${directory}\"",
+      "no-agent-forwarding",
+      "no-port-forwarding",
+      "no-pty,no-user-rc",
+      "no-X11-forwarding"
+    ]
   }
 }
