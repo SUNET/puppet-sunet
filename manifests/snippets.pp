@@ -118,3 +118,19 @@ define sunet::snippets::no_icmp_redirects($order=10) {
       refreshonly => true
    }
 }
+
+define sunet::snippets::secret_file(
+  $hiera_key = undef,
+  $path      = undef,
+  $owner     = root,
+  $group     = root,
+  $mode      = '0400'
+) {
+  $data = hiera($hiera_key)
+  file { $path:
+    owner    => $owner,
+    group    => $group,
+    mode     => $mode,
+    content  => inline_template("<%= @data %>")
+  }
+}
