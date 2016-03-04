@@ -78,5 +78,14 @@ define sunet::wordpress (
          minute  => '*/5'
        }
      }
+     file { "/data/${name}/scripts":
+       ensure => directory
+     } ->
+     file { "/data/${name}/scripts/load_${name}.sh":
+       owner  => 'root',
+       group  => 'root',
+       mode   => '0700',
+       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h ${name}_mysql.docker -u ${db_user} -p${pwd} ${db_name}")
+     }
    }
 }
