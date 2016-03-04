@@ -33,7 +33,7 @@ define sunet::rrsync(
   })
 
   file { "${safe_name}_rrsync_file":
-    target      => '/usr/bin/rsync',
+    path        => '/usr/bin/rsync',
     ensure      => file,
     owner       => 'root',
     mode        => '0755',
