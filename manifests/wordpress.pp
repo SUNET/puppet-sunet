@@ -1,14 +1,16 @@
 # a basic wp setup using docker
 
 define sunet::wordpress (
-$db_host           = undef,
-$sp_hostname       = undef,
-$sp_contact        = undef,
-$wordpress_image   = "wordpress",
-$wordpress_version = "4.1.1", 
-$myqsl_version     = "5.7",
-$mysql_user        = undef,
-$mysql_db_name     = undef)
+  $db_host           = undef,
+  $sp_hostname       = undef,
+  $sp_contact        = undef,
+  $wordpress_image   = "wordpress",
+  $wordpress_version = "4.1.1",
+  $myqsl_version     = "5.7",
+  $mysql_user        = undef,
+  $mysql_db_name     = undef,
+  $mysql_dump        = false
+)
 {
    include augeas
    $db_hostname = $db_host ? {
@@ -66,5 +68,15 @@ $mysql_db_name     = undef)
             "set DBNAMES ${db_name}"
          ]
       }
+     if ($mysql_dump) {
+       file { "/data/${name}/dump":
+         ensure => directory
+       } ->
+       cron { "${name}_mysql_dump":
+         command => "mysqldump -h ${name}_mysql.docker -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql",
+         user    => 'root',
+         minute  => '*/5'
+       }
+     }
    }
 }
