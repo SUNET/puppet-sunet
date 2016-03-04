@@ -58,7 +58,8 @@ define sunet::rrsync(
       "command=\"/usr/bin/rrsync -ro ${directory}\"",
       "no-agent-forwarding",
       "no-port-forwarding",
-      "no-pty,no-user-rc",
+      "no-pty",
+      "no-user-rc",
       "no-X11-forwarding"
     ]
   }
