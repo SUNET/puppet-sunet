@@ -13,7 +13,10 @@
 # #
 # ###################################################
 server:
-	local-zone: docker. static
-	interface: 127.0.0.1
-	interface: <%= @ipaddress_docker0 %>
-	access-control: 172.16.0.0/12 allow
+       interface: 127.0.0.1
+       interface: ::1
+       domain-insecure: docker.
+
+forward-zone:
+        name: docker.
+        forward-addr: <%= @ipaddress_docker0 %>

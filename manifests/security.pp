@@ -17,6 +17,7 @@ class sunet::security::configure_sshd() {
                 "set LogLevel VERBOSE",  # log pubkey used for root login
                 ],
     notify  => Service['ssh'],
+    require => Package['openssh-server'],
   } ->
 
   sunet::snippets::file_line { 'no_sftp_subsystem':
