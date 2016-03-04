@@ -91,6 +91,11 @@ class sunet::dockerhost(
       mode    => '0755',
       content => template('sunet/dockerhost/get_docker_bridge.erb'),
       ;
+    '/usr/local/bin/get_docker_networkmode':
+      ensure  => file,
+      mode    => '0755',
+      content => template('sunet/dockerhost/get_docker_networkmode.erb'),
+      ;
     }
 
   # Remove obsolete files installed earlier
