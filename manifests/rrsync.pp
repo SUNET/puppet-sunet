@@ -32,21 +32,10 @@ define sunet::rrsync(
       group     => "${user}"
   })
 
-  file { "${safe_name}_rrsync_file":
-    path        => '/usr/bin/rrsync',
-    ensure      => file,
-    owner       => 'root',
-    mode        => '0755',
-    group       => 'root',
-    source      => '/usr/share/doc/rsync/scripts/rrsync',
-    before      => Exec["${safe_name}_rrsync_unpack"]
-  }
-
-  exec { "${safe_name}_rrsync_unpack":
-    unless      => "test -f /usr/share/doc/rsync/scripts/rrsync",
-    cwd         => "/usr/share/doc/rsync/scripts",
-    command     => "gunzip rrsync.gz"
-  }
+  ensure_resource('exec','rrsync_unpack',{
+    only_if     => "test ! -f /usr/bin/rrsync",
+    command     => "zcat /usr/share/doc/rsync/scripts/rrsync.gz > /usr/bin/rrsync && chmod a+rx /usr/bin/rrsync"
+  })
 
   ssh_authorized_key { "${safe_name}_rrsync":
     ensure  => present,
