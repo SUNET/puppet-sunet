@@ -126,8 +126,12 @@ define sunet::snippets::secret_file(
   $group     = root,
   $mode      = '0400'
 ) {
+  $thefile = $path ? {
+    undef    => $name,
+    default  => $path
+  }
   $data = hiera($hiera_key)
-  file { $path:
+  file { "${thefile}":
     owner    => $owner,
     group    => $group,
     mode     => $mode,
