@@ -33,7 +33,7 @@ define sunet::rrsync(
   })
 
   ensure_resource('exec','rrsync_unpack',{
-    only_if     => "test ! -f /usr/bin/rrsync",
+    onlyif      => "test ! -f /usr/bin/rrsync",
     command     => "zcat /usr/share/doc/rsync/scripts/rrsync.gz > /usr/bin/rrsync && chmod a+rx /usr/bin/rrsync"
   })
 
