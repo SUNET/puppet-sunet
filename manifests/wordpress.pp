@@ -55,7 +55,8 @@ define sunet::wordpress (
           env         => ["MYSQL_USER=${db_user}",
                           "MYSQL_PASSWORD=${pwd}",
                           "MYSQL_ROOT_PASSWORD=${pwd}",
-                          "MYSQL_DATABASE=${db_name}"]
+                          "MYSQL_DATABASE=${db_name}"],
+          use_unbound => true
       }
       package {['mysql-client','mysql-client-5.5','automysqlbackup']: ensure => latest } -> 
       augeas { 'automysqlbackup_settings': 
