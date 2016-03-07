@@ -6,8 +6,6 @@ class sunet::unbound(
   package { 'unbound': ensure => 'installed' }
 
   if $use_apparmor {
-    include apparmor
-
     apparmor::profile { 'usr.sbin.unbound':
       source => '/etc/apparmor-cosmos/usr.sbin.unbound',
     } ->
