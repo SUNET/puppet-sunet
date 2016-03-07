@@ -8,6 +8,13 @@ class sunet::unbound(
   if $use_apparmor {
     include apparmor
 
+    ensure_resource('file', 'apparmor-cosmos' {ensure => 'directory'}) ->
+    file {
+      '/etc/apparmor-cosmos/usr.sbin.unbound':
+        content => template('sunet/unbound/etc_apparmor_cosmos_usr.sbin.unbound.erb'),
+        ;
+    } ->
+
     apparmor::profile { 'usr.sbin.unbound':
       source => '/etc/apparmor-cosmos/usr.sbin.unbound',
     } ->
