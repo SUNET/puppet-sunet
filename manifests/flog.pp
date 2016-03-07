@@ -64,7 +64,7 @@ class sunet::flog {
        content => template('sunet/flog/dotenv.erb'),
    } ->
    sunet::docker_run {'flog_db':
-      image    => 'docker.sunet.se/library/postgresql-9.3',
+      image    => 'docker.sunet.se/library/postgres-9.3',
       volumes  => ['/etc/ssl:/etc/ssl', '/var/docker/postgresql_data/:/var/lib/postgresql/','/var/log/flog_db/:/var/log/postgresql/'],
    } ->
    sunet::docker_run {'flog_app':
