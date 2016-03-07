@@ -57,6 +57,12 @@ class sunet::flog {
        mode    => '0640',
        content => template('sunet/flog/dotenv.erb'),
    } ->
+   file {'/var/log/flog_cron':
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'www-data',
+      mode   => '1775',
+   } ->
    sunet::docker_run {'flog_db':
       image       => 'docker.sunet.se/library/postgres-9.3',
       volumes     => ['/etc/ssl:/etc/ssl', '/var/docker/postgresql_data/:/var/lib/postgresql/','/var/log/flog_db/:/var/log/postgresql/'],
