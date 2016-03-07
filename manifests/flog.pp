@@ -45,12 +45,6 @@ class sunet::flog {
       group  => 'www-data',
       mode   => '1775',
    } ->
-   file {'/var/log/flog_cron':
-      ensure => 'directory',
-      owner  => 'root',
-      group  => 'www-data',
-      mode   => '1775',
-   } ->
    file { "/opt/flog/nginx/certs/flog.sunet.se.key":
      ensure  => file,
      path    => "/opt/flog/nginx/certs/flog.sunet.se.key",
@@ -70,7 +64,7 @@ class sunet::flog {
    } ->
    sunet::docker_run {'flog_app':
       image       => 'docker.sunet.se/flog/flog_app',
-      volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog/:/opt/flog/logs/'],
+      volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/'],
       use_unbound => true,
       start_on    => 'docker-flog-db',
       stop_on     => 'docker-flog-db',
