@@ -64,19 +64,26 @@ class sunet::flog {
        content => template('sunet/flog/dotenv.erb'),
    } ->
    sunet::docker_run {'flog_db':
-      image    => 'docker.sunet.se/library/postgres-9.3',
-      volumes  => ['/etc/ssl:/etc/ssl', '/var/docker/postgresql_data/:/var/lib/postgresql/','/var/log/flog_db/:/var/log/postgresql/'],
+      image       => 'docker.sunet.se/library/postgres-9.3',
+      volumes     => ['/etc/ssl:/etc/ssl', '/var/docker/postgresql_data/:/var/lib/postgresql/','/var/log/flog_db/:/var/log/postgresql/'],
+      use_unbound => true,
    } ->
    sunet::docker_run {'flog_app':
-      image    => 'docker.sunet.se/flog/flog_app',
-      volumes  => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog/:/opt/flog/logs/'],
+      image       => 'docker.sunet.se/flog/flog_app',
+      volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog/:/opt/flog/logs/'],
+      use_unbound => true,
+      start_on    => 'docker-flog-db'
+      stop_on     => 'docker-flog-db'
    } ->
    sunet::docker_run {'memcached':
-      image    => 'docker.sunet.se/library/memcached',
+      image       => 'docker.sunet.se/library/memcached',
+      use_unbound => true,
    } ->
    sunet::docker_run {'flog_nginx':
       image     => 'docker.sunet.se/eduid/nginx',
       ports     => ['80:80', '443:443'],
       volumes   => ['/opt/flog/nginx/sites-enabled/:/etc/nginx/sites-enabled/','/opt/flog/nginx/certs/:/etc/nginx/certs', '/var/log/flog_nginx/:/var/log/nginx'],
+      start_on  => 'docker-flog-app'
+      stop_on   => 'docker-flog-app'
    }
 }
