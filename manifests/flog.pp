@@ -64,7 +64,7 @@ class sunet::flog {
        content => template('sunet/flog/dotenv.erb'),
    } ->
    sunet::docker_run {'flog_db':
-      image    => 'docker.sunet.se/flog/postgresql-9.3',
+      image    => 'docker.sunet.se/library/postgresql-9.3',
       volumes  => ['/etc/ssl:/etc/ssl', '/var/docker/postgresql_data/:/var/lib/postgresql/','/var/log/flog_db/:/var/log/postgresql/'],
    } ->
    sunet::docker_run {'flog_app':
@@ -75,7 +75,7 @@ class sunet::flog {
       image    => 'docker.sunet.se/library/memcached',
    } ->
    sunet::docker_run {'flog_nginx':
-      image     => 'docker.sunet.se/flog/nginx',
+      image     => 'docker.sunet.se/eduid/nginx',
       ports     => ['80:80', '443:443'],
       volumes   => ['/opt/flog/nginx/sites-enabled/:/etc/nginx/sites-enabled/','/opt/flog/nginx/certs/:/etc/nginx/certs', '/var/log/flog_nginx/:/var/log/nginx'],
    }
