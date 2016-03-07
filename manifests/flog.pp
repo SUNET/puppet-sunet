@@ -72,8 +72,8 @@ class sunet::flog {
       image       => 'docker.sunet.se/flog/flog_app',
       volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog/:/opt/flog/logs/'],
       use_unbound => true,
-      start_on    => 'docker-flog-db'
-      stop_on     => 'docker-flog-db'
+      start_on    => 'docker-flog-db',
+      stop_on     => 'docker-flog-db',
    } ->
    sunet::docker_run {'memcached':
       image       => 'docker.sunet.se/library/memcached',
@@ -83,7 +83,7 @@ class sunet::flog {
       image     => 'docker.sunet.se/eduid/nginx',
       ports     => ['80:80', '443:443'],
       volumes   => ['/opt/flog/nginx/sites-enabled/:/etc/nginx/sites-enabled/','/opt/flog/nginx/certs/:/etc/nginx/certs', '/var/log/flog_nginx/:/var/log/nginx'],
-      start_on  => 'docker-flog-app'
-      stop_on   => 'docker-flog-app'
+      start_on  => 'docker-flog-app',
+      stop_on   => 'docker-flog-app',
    }
 }
