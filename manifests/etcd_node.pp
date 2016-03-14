@@ -29,12 +29,15 @@ define sunet::etcd_node(
       imagetag         => $etcd_version,
       volumes          => ["/data/${name}:/data","/etc/ssl:/etc/ssl"],
       command          => join($args," "),
-      ports            => ["${::ipaddress_eth1}:2380:2380","${::ipaddress_eth1}:2379:2379","${::ipaddress_docker0}:4001:2379"]
+      ports            => ["${::ipaddress_eth1}:2380:2380","${::ipaddress_eth1}:2379:2379","${::ipaddress_docker0}:4001:2379"],
+      use_unbound      => true
    }
    if !$proxy {
       sunet::docker_run { "etcd_browser_${name}":
          image         => 'docker.sunet.se/etcd-browser',
-         ports         => [ "${::ipaddress_eth1}:8000:8000" ]
+         ports         => [ "${::ipaddress_eth1}:8000:8000" ],
+         start_on      => "docker-etcd-${name}",
+         stop_on       => "docker-etcd-${name}"
       }
       ufw::allow { "allow-etcd-client-on-docker0": 
          ip   => "${::ipaddress_docker0}",

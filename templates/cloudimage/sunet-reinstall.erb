@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+reinst="/mnt/seed/sunet-reinstall.tgz"
+
+test -d /mnt/seed || mkdir /mnt/seed
+mount /dev/vdb /mnt/seed
+
+trap "umount /mnt/seed" EXIT
+
+if [ -f ${reinst} ]; then
+   echo "$0: File sunet-reinstall.tgz already exist:"
+   echo ""
+   ls -l ${reinst}
+   echo ""
+   tar tzvf ${reinst} || true
+   echo ""
+   echo "Press enter to overwrite it, or CTRL+C to abort"
+   read foo
+fi
+
+(test -f /etc/sunet-reinstall.keep && cat /etc/sunet-reinstall.keep;
+      echo /etc/ssh/*key*;
+      test -d /etc/hiera/gpg && echo /etc/hiera/gpg/*
+) | xargs tar zcvf ${reinst}
+
+echo ""
+echo "$0: Done"
+echo ""

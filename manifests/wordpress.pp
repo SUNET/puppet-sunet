@@ -1,14 +1,16 @@
 # a basic wp setup using docker
 
 define sunet::wordpress (
-$db_host           = undef,
-$sp_hostname       = undef,
-$sp_contact        = undef,
-$wordpress_image   = "wordpress",
-$wordpress_version = "4.1.1", 
-$myqsl_version     = "5.7",
-$mysql_user        = undef,
-$mysql_db_name     = undef)
+  $db_host           = undef,
+  $sp_hostname       = undef,
+  $sp_contact        = undef,
+  $wordpress_image   = "wordpress",
+  $wordpress_version = "4.1.1",
+  $myqsl_version     = "5.7",
+  $mysql_user        = undef,
+  $mysql_db_name     = undef,
+  $mysql_dump        = false
+)
 {
    include augeas
    $db_hostname = $db_host ? {
@@ -23,17 +25,16 @@ $mysql_db_name     = undef)
       undef   => "${name}",
       default => $mysql_db_name
    }
-   $pwd = hiera("${name}_db_password",'NOT_SET_IN_HIERA')
-   file {"/data/${name}": ensure => directory } ->
-   file { "/data/${name}/html": ensure => directory } ->
-   file { "/data/${name}/credentials": ensure => directory } ->
+   $pwd = hiera("${name}_db_password")
+   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
+   ensure_resource('file',["/data/${name}","/data/${name}/html","/data/${name}/credentials"], {ensure => directory})
    sunet::docker_run { "${name}_wordpress":
       image       => $wordpress_image,
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/credentials:/etc/shibboleth/credentials"],
       ports       => ["8080:80"],
-      start_on    => "${name}_mysql",
-      stop_on     => "${name}_mysql",
+      start_on    => "docker-${safe_name}-mysql",
+      stop_on     => "docker-${safe_name}-mysql",
       env         => [ "SERVICE_NAME=${name}",
                        "SP_HOSTNAME=${sp_hostname}",
                        "SP_CONTACT=${sp_contact}",
@@ -54,7 +55,8 @@ $mysql_db_name     = undef)
           env         => ["MYSQL_USER=${db_user}",
                           "MYSQL_PASSWORD=${pwd}",
                           "MYSQL_ROOT_PASSWORD=${pwd}",
-                          "MYSQL_DATABASE=${db_name}"]
+                          "MYSQL_DATABASE=${db_name}"],
+          use_unbound => true
       }
       package {['mysql-client','mysql-client-5.5','automysqlbackup']: ensure => latest } -> 
       augeas { 'automysqlbackup_settings': 
@@ -67,5 +69,24 @@ $mysql_db_name     = undef)
             "set DBNAMES ${db_name}"
          ]
       }
+     if ($mysql_dump) {
+       file { "/data/${name}/dump":
+         ensure => directory
+       } ->
+       cron { "${name}_mysql_dump":
+         command => "mysqldump -h ${name}_mysql.docker -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql.new && test -s /data/${name}/dump/${db_name}.sql.new && mv /data/${name}/dump/${db_name}.sql.new /data/${name}/dump/${db_name}.sql",
+         user    => 'root',
+         minute  => '*/5'
+       }
+     }
+     file { "/data/${name}/scripts":
+       ensure => directory
+     } ->
+     file { "/data/${name}/scripts/load_${name}.sh":
+       owner  => 'root',
+       group  => 'root',
+       mode   => '0700',
+       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h ${name}_mysql.docker -u ${db_user} -p${pwd} ${db_name}")
+     }
    }
 }

@@ -105,3 +105,82 @@ define sunet::snippets::scriptherder() {
     ensure   => 'absent',
   }
 }
+
+define sunet::snippets::no_icmp_redirects($order=10) {
+   $cfg = "/etc/sysctl.d/${order}_${title}.conf";
+   file { "${cfg}":
+      ensure      => file,
+      content     => "net.ipv4.conf.all.accept_redirects = 0\nnet.ipv6.conf.all.accept_redirects = 0\nnet.ipv4.conf.all.send_redirects = 0",
+      notify      => Exec["refresh-sysctl-${title}"]
+   }
+   exec {"refresh-sysctl-${title}":
+      command     => "sysctl -p ${cfg}", 
+      refreshonly => true
+   }
+}
+
+define sunet::snippets::secret_file(
+  $hiera_key = undef,
+  $path      = undef,
+  $owner     = root,
+  $group     = root,
+  $mode      = '0400'
+) {
+  $thefile = $path ? {
+    undef    => $name,
+    default  => $path
+  }
+  $data = hiera($hiera_key)
+  file { "${thefile}":
+    owner    => $owner,
+    group    => $group,
+    mode     => $mode,
+    content  => inline_template("<%= @data %>")
+  }
+}
+
+define sunet::snippets::ssh_command(
+  $user         = 'root',
+  $manage_user  = false,
+  $ssh_key      = undef,
+  $ssh_key_type = undef,
+  $command      = "ls /tmp"
+) {
+  $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
+
+  if ($manage_user) {
+    ensure_resource('group',"${user}")
+    sunet::system_user { "${user}":
+      username  => "${user}",
+      group     => "${user}"
+    }
+  }
+
+  $ssh_home = $user ? {
+    'root'    => '/root/.ssh',
+    default   => "/home/${user}/.ssh"
+  }
+
+  ensure_resource('file',$ssh_home,{
+      ensure => directory,
+      mode      => '0700',
+      owner     => "${user}",
+      group     => "${user}"
+  })
+
+  ssh_authorized_key { "${safe_name}_key":
+    ensure  => present,
+    user    => $user,
+    type    => $ssh_key_type,
+    key     => $ssh_key,
+    target  => "${ssh_home}/authorized_keys",
+    options => [
+      "command=\"${command}\"",
+      "no-agent-forwarding",
+      "no-port-forwarding",
+      "no-pty",
+      "no-user-rc",
+      "no-X11-forwarding"
+    ]
+  }
+}

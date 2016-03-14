@@ -1,0 +1,9 @@
+# Created from Puppet template
+#
+#   global/overlay/etc/puppet/modules/eduid/templates/dockerhost/scriptherder_docker-cleanup.ini.erb
+#
+# No check of exit status since the job currently does not exit 0 on success
+#
+[check]
+ok      = max_age=25h
+warning = max_age=49h
