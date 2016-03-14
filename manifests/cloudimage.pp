@@ -40,7 +40,7 @@ define sunet::cloudimage (
       path   => "/var/lib/libvirt/images/${name}",
       ensure => directory,
       ;
-    "sunet_files_dir":
+    "${name}_sunet_files_dir":
       ensure => 'directory',
       path   => $script_dir,
       mode   => '0755',
