@@ -21,7 +21,7 @@ define sunet::kvm(
                   "--dns ${resolver}",
                   ]
 
-  sunet::kvm { $name :
+  sunet::kvm_base { $name :
     repo       => $repo,
     tagpattern => $tagpattern,
     suite      => $suite,
