@@ -35,18 +35,20 @@ define sunet::cloudimage (
   $script_dir = "/var/lib/libvirt/sunet-files"
   $init_script = "${script_dir}/${name}/${name}-init.sh"
 
+  ensure_resource('file', $script_dir, {
+    ensure => 'directory',
+    mode   => '0755',
+  })
+
   file {
     "${name}_libvirt_images":
       path   => "/var/lib/libvirt/images/${name}",
       ensure => directory,
       ;
-    $script_dir :
-      ensure => 'directory',
-      mode   => '0755',
-      ;
     "${name}_init_script":
       path    => $init_script,
       content => template("sunet/cloudimage/mk_cloud_image.erb"),
+      require => File[$script_dir],
       mode    => "0755",
       ;
   } ->
