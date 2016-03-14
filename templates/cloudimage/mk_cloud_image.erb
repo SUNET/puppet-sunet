@@ -102,9 +102,8 @@ network-interfaces: |
 
     source-directory interfaces.d
 EOF
-else
-  if [ "x${ip}" != "x" ]; then
-     cat >> ${meta_data} <<EOF
+elif [ "x${ip}" != "x" ]; then
+    cat >> ${meta_data} <<EOF
 network-interfaces: |
     auto eth0
     iface eth0 inet static
@@ -115,7 +114,6 @@ network-interfaces: |
 
     source-directory interfaces.d
 EOF
-  fi
 fi
 
 #
@@ -141,7 +139,6 @@ network-interfaces: |
 
     source-directory interfaces.d
 EOF
-  fi
 fi
 
 mcopy -o -i ${seed} ${user_data} ::user-data 2>/dev/null
