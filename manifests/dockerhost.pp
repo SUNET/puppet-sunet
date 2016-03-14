@@ -123,7 +123,7 @@ class sunet::dockerhost(
 
   if $run_unbound {
     if $manage_dockerhost_unbound {
-      sunet::unbound { 'sunet_dockerhost_unbound': }
+      ensure_resource('class', 'sunet::unbound', {})
 
       file {
         '/etc/unbound/unbound.conf.d/unbound.conf':  # configuration to forward queries to .docker to the docker-unbound
