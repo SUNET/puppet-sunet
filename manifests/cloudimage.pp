@@ -32,12 +32,18 @@ define sunet::cloudimage (
   $image_url_a = split($image_url, "/")
   $image_name = $image_url_a[-1]
   $image_src = "/var/lib/libvirt/images/${image_name}"
-  $init_script = "/var/lib/libvirt/images/${name}/${name}-init.sh"
+  $script_dir = "/var/lib/libvirt/sunet-files"
+  $init_script = "${script_dir}/${name}/${name}-init.sh"
 
   file {
     "${name}_libvirt_images":
       path   => "/var/lib/libvirt/images/${name}",
       ensure => directory,
+      ;
+    "sunet_files_dir":
+      ensure => 'directory',
+      path   => $script_dir,
+      mode   => '0755',
       ;
     "${name}_init_script":
       path    => $init_script,
