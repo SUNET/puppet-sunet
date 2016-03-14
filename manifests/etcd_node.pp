@@ -1,7 +1,9 @@
 define sunet::etcd_node(
-   $disco_url    =   undef,
-   $etcd_version =   'v2.0.8',
-   $proxy        =   true
+  $disco_url    = undef,
+  $etcd_version = 'v2.0.8',
+  $proxy        = true,
+  $etcd_ipaddr  = $::ipaddress_eth1,
+  $etcd_image   = 'quay.io/coreos/etcd',
 )
 {
    include stdlib
@@ -16,8 +18,8 @@ define sunet::etcd_node(
    if $proxy {
       $args = concat($common_args,["--proxy on","--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379"])
    } else {
-      $args = concat($common_args,["--initial-advertise-peer-urls http://${::ipaddress_eth1}:2380",
-            "--advertise-client-urls http://${::ipaddress_eth1}:2379",
+      $args = concat($common_args,["--initial-advertise-peer-urls http://${etcd_ipaddr}:2380",
+            "--advertise-client-urls http://${etcd_ipaddr}:2379",
             "--listen-peer-urls http://0.0.0.0:2380",
             "--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379",
             "--peer-key-file /etc/ssl/private/${::fqdn}_infra.key",
@@ -25,30 +27,30 @@ define sunet::etcd_node(
             "--peer-cert-file /etc/ssl/certs/${::fqdn}_infra.crt"])
    }
    sunet::docker_run { "etcd_${name}":
-      image            => 'quay.io/coreos/etcd',
+      image            => $etcd_image,
       imagetag         => $etcd_version,
       volumes          => ["/data/${name}:/data","/etc/ssl:/etc/ssl"],
       command          => join($args," "),
-      ports            => ["${::ipaddress_eth1}:2380:2380","${::ipaddress_eth1}:2379:2379","${::ipaddress_docker0}:4001:2379"],
-      use_unbound      => true
+      ports            => ["${etcd_ipaddr}:2380:2380","${etcd_ipaddr}:2379:2379","${::ipaddress_docker0}:4001:2379"],
+      use_unbound      => true,
    }
    if !$proxy {
       sunet::docker_run { "etcd_browser_${name}":
          image         => 'docker.sunet.se/etcd-browser',
-         ports         => [ "${::ipaddress_eth1}:8000:8000" ],
+         ports         => [ "${etcd_ipaddr}:8000:8000" ],
          start_on      => "docker-etcd-${name}",
          stop_on       => "docker-etcd-${name}"
       }
-      ufw::allow { "allow-etcd-client-on-docker0": 
+      ufw::allow { "allow-etcd-client-on-docker0":
          ip   => "${::ipaddress_docker0}",
          port => 4001
       }
       ufw::allow { "allow-etcd-peer":
-         ip   => "${::ipaddress_eth1}",
+         ip   => "${etcd_ipaddr}",
          port => 2380
       }
       ufw::allow { "allow-etcd-client":
-         ip   => "${::ipaddress_eth1}",
+         ip   => "${etcd_ipaddr}",
          port => 2379
       }
    }
