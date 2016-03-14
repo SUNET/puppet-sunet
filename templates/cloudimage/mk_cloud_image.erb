@@ -25,17 +25,21 @@ password="<%= @password %>"
 description="<%= @description %>"
 apt_dir="<%= @apt_dir %>"
 
-mkdir -p "/var/lib/libvirt/images/${hostname}"
-cd "/var/lib/libvirt/images/${hostname}"
+cd "/var/lib/libvirt/images/"
 
 id=$(uuidgen)
 
 seed=${hostname}_seed.img
 disk=${hostname}.img
 
-rm -f ${seed}
-truncate --size 2M ${seed}
-mkfs.vfat -n cidata ${seed} 2>/dev/null
+if [ ! -f ${seed} ]; then
+    # If the seed file exists, just update it with new user-data and meta-data below
+    # to facilitate reinstalls with 'sunet-reinstall'
+    truncate --size 2M ${seed}
+    mkfs.vfat -n cidata ${seed} 2>/dev/null
+fi
+
+chmod 600 ${seed}
 
 if [ "x${password}" != "x" ]; then
    pass="password: ${password}"
@@ -52,11 +56,19 @@ ssh_authorized_keys:
    - <%= key %>
 <% end %>
 <% end %>
+write_files:
+  - path: "/etc/default/grub.d/99-sunet-cloud-init.cfg"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      # Enable grub on serial console
+      GRUB_TERMINAL=serial
 runcmd:
    - ["mkdir","/tmp/seed"]
    - ["mount","/dev/vdb","/tmp/seed"]
    - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
-   - "test -f /tmp/seed/reinst.tgz && (cd /; tar zxvf - /tmp/seed/reinst.tgz)"
+   - ["cd","/root"]
+   - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
    - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
 disable_root: 0
 EOF
@@ -74,6 +86,9 @@ if [ "x${resolver}" != "x" ]; then
    dns="dns-nameservers ${resolver}"
 fi
 
+#
+# IPv4
+#
 if [ "x${ip}" != "x" ]; then
    dhcp="no"
 fi
@@ -101,9 +116,21 @@ network-interfaces: |
     source-directory interfaces.d
 EOF
   fi
+fi
 
-  if [ "x${ip6}" != "x" ]; then
-     cat >> ${meta_data} <<EOF
+#
+# IPv6
+#
+if [ "x${ip6}" = "xauto" ]; then
+    cat >> ${meta_data} <<EOF
+network-interfaces: |
+    auto eth0
+    iface eth0 inet6 auto
+        ${dns}
+
+EOF
+elif [ "x${ip6}" != "x" ]; then
+    cat >> ${meta_data} <<EOF
 network-interfaces: |
     auto eth0
     iface eth0 inet6 static
@@ -117,20 +144,21 @@ EOF
   fi
 fi
 
-mcopy -i ${seed} ${user_data} ::user-data 2>/dev/null
-mcopy -i ${seed} ${meta_data} ::meta-data 2>/dev/null
-mcopy -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
+mcopy -o -i ${seed} ${user_data} ::user-data 2>/dev/null
+mcopy -o -i ${seed} ${meta_data} ::meta-data 2>/dev/null
+mcopy -o -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
 
 rm -f ${user_data}
 rm -f ${meta_data}
 
 virsh pool-refresh default
 
-if [ ! -f /var/lib/libvirt/images/${hostname}/${disk} ]; then
+if [ ! -f /var/lib/libvirt/images/${disk} ]; then
     test -f /var/lib/libvirt/images/${disk} || virsh vol-clone --pool default ${src_image} ${disk}
     virsh vol-resize --pool default ${disk} ${size}
-    mv /var/lib/libvirt/images/${disk} /var/lib/libvirt/images/${hostname}/${disk}
 fi
+
+chmod 600 ${disk}
 
 network="--network bridge=${bridge}"
 install_options=""
@@ -145,7 +173,7 @@ fi
 
 # use eval to expand the $install_options properly
 eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
-    --disk path=/var/lib/libvirt/images/${hostname}/${disk},format=qcow2,bus=virtio \
-    --disk path=/var/lib/libvirt/images/${hostname}/${seed},bus=virtio \
+    --disk path=/var/lib/libvirt/images/${disk},format=qcow2,bus=virtio \
+    --disk path=/var/lib/libvirt/images/${seed},bus=virtio \
     ${network} \
     ${install_options}
