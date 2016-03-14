@@ -62,9 +62,9 @@ define sunet::docker_run(
     use_name           => true,
     image              => $image_tag,
     volumes            => flatten([$volumes,
-                           '/etc/passwd:/etc/passwd:ro',  # uid consistency
-                           '/etc/group:/etc/group:ro',    # gid consistency
-                           ]),
+                                   '/etc/passwd:/etc/passwd:ro',  # uid consistency
+                                   '/etc/group:/etc/group:ro',    # gid consistency
+                                   ]),
     hostname           => $hostname,
     ports              => $ports,
     expose             => $expose,

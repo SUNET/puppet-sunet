@@ -1,6 +1,6 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  $docker_version = "1.8.3-0~${::lsbdistcodename}",
+  $docker_version            = "1.8.3-0~${::lsbdistcodename}",
   $run_unbound               = true,
   $run_docker_cleanup        = true,
   $dns_ttl                   = '5',  # used in run-parts template
@@ -17,11 +17,11 @@ class sunet::dockerhost(
   }
 
   apt::source {'docker_official':
-     location    => 'https://apt.dockerproject.org/repo',
-     release     => "ubuntu-${::lsbdistcodename}",
-     repos       => 'main',
-     key         => '58118E89F3A912897C070ADBF76221572C52609D',
-     include     => { 'src' => false },
+     location => 'https://apt.dockerproject.org/repo',
+     release  => "ubuntu-${::lsbdistcodename}",
+     repos    => 'main',
+     key      => '58118E89F3A912897C070ADBF76221572C52609D',
+     include  => { 'src' => false },
   } ->
 
   package { 'docker-engine' :
@@ -40,7 +40,7 @@ class sunet::dockerhost(
      use_upstream_package_source => false,
      dns                         => $docker_dns,
   }
-  
+
   file {
     '/usr/local/etc/docker.d':
       ensure  => 'directory',
