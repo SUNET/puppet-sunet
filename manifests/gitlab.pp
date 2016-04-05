@@ -2,6 +2,9 @@ class sunet::gitlab {
 
     $crowd_password = hiera('crowd_password', 'NOT_SET_IN_HIERA')
 
+    package { 'unbound':
+        ensure => installed
+    } ->
     user { 'git': ensure => present,
         system => true,
         home   => '/var/opt/gitlab',
