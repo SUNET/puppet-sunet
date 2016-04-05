@@ -1,0 +1,20 @@
+external_url 'https://<%= @fqdn %>'
+nginx['redirect_http_to_https'] = true
+gitlab_rails['omniauth_enabled'] = true
+gitlab_rails['omniauth_allow_single_sign_on'] = ['crowd']
+#gitlab_rails['omniauth_auto_sign_in_with_provider'] = 'saml'
+gitlab_rails['omniauth_block_auto_created_users'] = false
+# gitlab_rails['omniauth_auto_link_ldap_user'] = false
+# gitlab_rails['omniauth_auto_link_saml_user'] = false
+gitlab_rails['omniauth_providers'] = [
+    {
+        "name" => "crowd",
+#       "app_id" => "YOUR APP ID",
+#       "app_secret" => "YOUR APP SECRET",
+        "args" => { 
+        "crowd_server_url" => "https://crowd.nordu.net/crowd",
+        "application_name" => "gitlab",
+        "application_password" => "<%= @crowd_password %>"
+        }
+    }
+]
