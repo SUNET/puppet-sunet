@@ -5,6 +5,7 @@ class sunet::dockerhost(
   $run_docker_cleanup        = true,
   $docker_network            = hiera('dockerhost_docker_network', '172.18.0.0/22'),
   $docker_dns                = pick($::ipaddress_eth0, $::ipaddress_bond0, $::ipaddress_br0),
+  $ufw_allow_docker_dns      = true,
 ) {
 
   # Remove old versions, if installed
@@ -99,4 +100,15 @@ class sunet::dockerhost(
     }
   }
 
+  if $ufw_allow_docker_dns {
+    # Allow Docker containers resolving using caching resolver running on docker host
+    each(['tcp', 'udp']) |$proto| {
+      ufw::allow { "dockerhost_ufw_allow_dns_53_${proto}":
+        from  => '172.16.0.0/12',
+        ip    => $docker_dns,
+        port  => '53',
+        proto => $proto,
+      }
+    }
+  }
 }
