@@ -5,6 +5,7 @@ class sunet::gitlab {
     package { 'unbound':
         ensure => installed
     } ->
+
     user { 'git': ensure => present,
         system => true,
         home   => '/var/opt/gitlab',
@@ -25,6 +26,14 @@ class sunet::gitlab {
         home   => '/var/opt/gitlab/postgresql',
         shell  => '/bin/sh',
     } ->
+
+    cron { 'gitlab_backup':
+        command => '/opt/gitlab/bin/gitlab-rake gitlab:backup:create CRON=1',
+        user    => 'root',
+        hour    => 2,
+        minute  => 0,
+    }
+
     sunet::snippets::secret_file { '/etc/gitlab/ssl/gitlab.nordu.net.key':
         hiera_key => 'gitlab_nordu_net_key'
     } ->
@@ -37,12 +46,14 @@ class sunet::gitlab {
     sunet::snippets::secret_file { '/etc/gitlab/ssh_host_ecdsa_key':
         hiera_key => 'ssh_host_ecdsa_key'
     } ->
+
     file { '/etc/gitlab/gitlab.rb':
         ensure  => file,
         path    => '/etc/gitlab/gitlab.rb',
         mode    => '0640',
         content => template('sunet/gitlab/gitlab_rb.erb'),
     } ->
+
     sunet::docker_run { 'gitlab':
         image    => 'gitlab/gitlab-ce',
         imagetag => 'latest',
