@@ -62,4 +62,10 @@ define sunet::docker_run(
     before_stop        => $before_stop,
     docker_service     => true,  # the service 'docker' is maintainer by puppet, so depend on it
   }
+
+  # Remove the upstart file created by earlier versions of garethr-docker
+  exec { "remove_docker_upstart_job_${name}":
+    command => "/bin/rm /etc/init/docker-${name}.conf",
+    onlyif  => "/usr/bin/test -f /etc/init/docker-${name}.conf",
+  }
 }

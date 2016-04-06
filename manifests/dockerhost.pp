@@ -4,8 +4,11 @@ class sunet::dockerhost(
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
   $docker_network            = hiera('dockerhost_docker_network', '172.18.0.0/22'),
-  $docker_dns                = pick($::ipaddress_eth0, $::ipaddress_bond0, $::ipaddress_br0),
+  $docker_dns                = pick($::ipaddress_eth0, $::ipaddress_bond0, $::ipaddress_br0,
+                                    $::ipaddress6_eth0, $::ipaddress6_bond0, $::ipaddress6_br0,
+                                    ),
   $ufw_allow_docker_dns      = true,
+  $manage_dockerhost_unbound = false,
 ) {
 
   # Remove old versions, if installed
@@ -109,6 +112,20 @@ class sunet::dockerhost(
         port  => '53',
         proto => $proto,
       }
+    }
+  }
+
+  if $manage_dockerhost_unbound {
+    ensure_resource('class', 'sunet::unbound', {})
+
+    file {
+      '/etc/unbound/unbound.conf.d/unbound.conf':  # configuration to listen to the $docker_dns IP
+        ensure  => file,
+        path    => '/etc/unbound/unbound.conf.d/unbound.conf',
+        mode    => '0644',
+        content => template('sunet/dockerhost/unbound.conf.erb'),
+        notify  => Service['unbound'],
+        ;
     }
   }
 }
