@@ -10,7 +10,8 @@ define sunet::docker_run(
   $extra_parameters    = [],
   $command             = undef,
   $hostname            = undef,
-  $start_on            = [],    # used with 'depends' for compatibility
+  $depends             = [],
+  $start_on            = [],    # deprecated, used with 'depends' for compatibility
   $stop_on             = [],    # currently not used, kept for compatibility
   $dns                 = [],
   $before_start        = undef, # command executed before starting
@@ -19,6 +20,12 @@ define sunet::docker_run(
 ) {
   if $use_unbound {
     warning("docker-unbound is deprecated, container name resolution should continue to work using docker network with DNS")
+  }
+
+  # Use start_on for docker::run $depends, unless the new argument 'depends' is given
+  $_depends = $depends ? {
+    []      => any2array($start_on),
+    default => flatten([$depends]),
   }
 
   # If a non-default network is used, make sure it is created before this container starts
@@ -51,7 +58,7 @@ define sunet::docker_run(
                                    ]),
     command            => $command,
     dns                => $dns,
-    depends            => $start_on,
+    depends            => $_depends,
     require            => flatten([$req]),
     before_start       => $before_start,
     before_stop        => $before_stop,
