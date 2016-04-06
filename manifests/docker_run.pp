@@ -19,7 +19,7 @@ define sunet::docker_run(
 ) {
 
   if $use_unbound {
-    warn("docker-unbound is deprecated, container name resolution should continue to work using docker network with DNS")
+    warning("docker-unbound is deprecated, container name resolution should continue to work using docker network with DNS")
   }
 
   $req = $net ? {
