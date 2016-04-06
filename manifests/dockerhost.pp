@@ -1,11 +1,10 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  $docker_version            = "1.8.3-0~${::lsbdistcodename}",
+  $docker_version            = "1.10.3-0~${::lsbdistcodename}",
   $docker_extra_parameters   = undef,
-  $run_unbound               = true,
   $run_docker_cleanup        = true,
-  $dns_ttl                   = '5',  # used in run-parts template
-  $manage_dockerhost_unbound = false,
+  $docker_network            = hiera('dockerhost_docker_network', '172.18.0.0/22'),
+  $docker_dns                = pick($::ipaddress_eth0, $::ipaddress_bond0, $::ipaddress_br0),
 ) {
 
   # Remove old versions, if installed
@@ -29,44 +28,22 @@ class sunet::dockerhost(
      ensure => $docker_version,
   }
 
-  # If docker was just installed, facter will not know the IP of docker0. Thus the pick.
-  # Get default address from Hiera since it is different in Docker 1.8 and 1.9.
-  $docker_dns = $run_unbound ? {
-    true  => pick($::ipaddress_docker0, hiera('dockerhost_ip', '172.17.0.1')),
-    false => undef,
-  }
-
   class {'docker':
      manage_package              => false,
      use_upstream_package_source => false,
      dns                         => $docker_dns,
      extra_parameters            => $docker_extra_parameters,
+  } ->
+
+  docker_network { 'docker':  # default network for containers
+    ensure => 'present',
+    subnet => $docker_network,
   }
 
   file {
-    '/usr/local/etc/docker.d':
+    '/usr/local/etc/docker.d':  # XXX obsolete
       ensure  => 'directory',
       mode    => '0755',
-      ;
-    '/usr/local/etc/docker.d/docker_pre-start':
-      ensure  => file,
-      mode    => '0755',
-      content => template('sunet/dockerhost/docker_pre-start.erb'),
-      ;
-    '/usr/local/etc/docker.d/docker_post-start':
-      ensure  => file,
-      mode    => '0755',
-      content => template('sunet/dockerhost/docker_post-start.erb'),
-      ;
-    '/usr/local/etc/docker.d/docker_pre-stop':
-      ensure  => file,
-      mode    => '0755',
-      content => template('sunet/dockerhost/docker_pre-stop.erb'),
-      ;
-    '/usr/local/etc/docker.d/docker_post-stop':
-      ensure  => file,
-      mode    => '0755',
-      content => template('sunet/dockerhost/docker_post-stop.erb'),
       ;
     '/etc/logrotate.d':
       ensure  => 'directory',
@@ -105,20 +82,12 @@ class sunet::dockerhost(
           '/usr/local/bin/sunet_docker_pre-post',  # replaced by run-parts scripts above
           '/usr/local/bin/tarmangel',
           '/etc/unbound/unbound.conf.d/docker.conf',  # moved to unbound docker container
+          '/usr/local/etc/docker.d/docker_pre-start',
+          '/usr/local/etc/docker.d/docker_post-start',
+          '/usr/local/etc/docker.d/docker_pre-stop',
+          '/usr/local/etc/docker.d/docker_post-stop',
           ]:
     ensure => 'absent',
-  }
-
-  if $manage_dockerhost_unbound {
-    # Allow Docker containers resolving using caching resolver running on docker host
-    each(['tcp', 'udp']) |$proto| {
-      ufw::allow { "allow-docker-resolving_${proto}":
-        port  => '53',
-        ip    => pick($::ipaddress_docker0, '172.17.0.1'),
-        from  => '172.16.0.0/12',
-        proto => $proto,
-      }
-    }
   }
 
   if $run_docker_cleanup {
@@ -127,34 +96,6 @@ class sunet::dockerhost(
       command  => "test -x /usr/local/bin/scriptherder && test -x /usr/local/bin/docker-cleanup && /usr/local/bin/scriptherder --mode wrap --syslog --name docker-cleanup -- /usr/local/bin/docker-cleanup",
       user     => 'root',
       special  => 'daily',
-    }
-  }
-
-  if $run_unbound {
-    if $manage_dockerhost_unbound {
-      ensure_resource('class', 'sunet::unbound', {})
-
-      file {
-        '/etc/unbound/unbound.conf.d/unbound.conf':  # configuration to forward queries to .docker to the docker-unbound
-        ensure  => file,
-        path    => '/etc/unbound/unbound.conf.d/unbound.conf',
-        mode    => '0644',
-        content => template('sunet/dockerhost/unbound.conf.erb'),
-        notify  => Service['unbound'],
-        ;
-      }
-    }
-
-    sunet::docker_run { 'unbound':
-      image   => 'docker.sunet.se/eduid/unbound',
-      volumes => ['/etc/unbound/unbound_control.key:/etc/unbound/unbound_control.key:ro',
-                  '/etc/unbound/unbound_control.pem:/etc/unbound/unbound_control.pem:ro',
-                  '/etc/unbound/unbound_server.key:/etc/unbound/unbound_server.key:ro',
-                  '/etc/unbound/unbound_server.pem:/etc/unbound/unbound_server.pem:ro',
-                  '/dev/log:/dev/log',
-                  ],
-      net      => 'host',  # unbound needs to bind to the Docker IP
-      env      => ["unbound_interface=${::ipaddress_docker0}"],
     }
   }
 
