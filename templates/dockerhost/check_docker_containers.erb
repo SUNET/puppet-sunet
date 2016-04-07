@@ -182,7 +182,7 @@ def check_containers(expect, args, logger):
         # Check how long container has been running.
         if started_at.endswith('Z'):
             running_seconds = calc_running_seconds(started_at)
-            msg = '{!s} {!s} {!s}'.format(this, status, timestr(running_seconds))
+            msg = '{!s}[{!s} {!s}]'.format(this, status, timestr(running_seconds))
             if running_seconds >= args.runtime_ok:
                 ok.append(msg)
             elif running_seconds >= args.runtime_warn:
@@ -190,7 +190,7 @@ def check_containers(expect, args, logger):
             else:
                 critical.append(msg)
         else:
-            ok.append('{!s} {!s} (unknown start time)'.format(this, status))
+            ok.append('{!s}[{!s} (unknown start time)]'.format(this, status))
 
     return ', '.join(critical), ', '.join(warning), ', '.join(ok)
 
