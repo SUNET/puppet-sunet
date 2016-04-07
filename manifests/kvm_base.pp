@@ -138,7 +138,7 @@ define sunet::kvm_base::configure_mac_address(
     command     => "virsh define /etc/libvirt/qemu/${name}.xml",
     refreshonly => true,
     subscribe   => Augeas["configure_domain_${name}"],
-    before      => Exec["start_sunet_vm_${name}"],
+    before      => Exec["sunet_start_vm_kvm_${name}"],
   }
 }
 
@@ -154,7 +154,7 @@ define sunet::kvm_base::start_vm() {
   } ->
 
   # Make sure the virtual machine is started
-  exec { "start_kvm_vm_${name}":
+  exec { "sunet_start_vm_kvm_${name}":
     path    => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
     timeout => '60',
     command => "virsh start ${name}",
