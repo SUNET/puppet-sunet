@@ -69,15 +69,10 @@ class sunet::dockerhost(
       mode    => '0440',
       content => template('sunet/dockerhost/etc_sudoers.d_nrpe_dockerhost_checks.erb'),
       ;
-    '/usr/local/bin/get_docker_bridge':
+    '/usr/local/bin/check_docker_containers':
       ensure  => file,
       mode    => '0755',
-      content => template('sunet/dockerhost/get_docker_bridge.erb'),
-      ;
-    '/usr/local/bin/get_docker_networkmode':
-      ensure  => file,
-      mode    => '0755',
-      content => template('sunet/dockerhost/get_docker_networkmode.erb'),
+      content => template('sunet/dockerhost/check_docker_containers.erb'),
       ;
     }
 
@@ -90,6 +85,8 @@ class sunet::dockerhost(
           '/usr/local/etc/docker.d/docker_post-start',
           '/usr/local/etc/docker.d/docker_pre-stop',
           '/usr/local/etc/docker.d/docker_post-stop',
+          '/usr/local/bin/get_docker_bridge',
+          '/usr/local/bin/get_docker_networkmode'
           ]:
     ensure => 'absent',
   }
