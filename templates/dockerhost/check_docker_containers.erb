@@ -1,0 +1,246 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2016, SUNET
+# All rights reserved.
+#
+#   Redistribution and use in source and binary forms, with or
+#   without modification, are permitted provided that the following
+#   conditions are met:
+#
+#     1. Redistributions of source code must retain the above copyright
+#        notice, this list of conditions and the following disclaimer.
+#     2. Redistributions in binary form must reproduce the above
+#        copyright notice, this list of conditions and the following
+#        disclaimer in the documentation and/or other materials provided
+#        with the distribution.
+#     3. Neither the name of the NORDUnet nor the names of its
+#        contributors may be used to endorse or promote products derived
+#        from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# Author: Fredrik Thulin <fredrik@thulin.net>
+#
+"""
+Nagios check to verify that docker containers are running.
+"""
+
+import os
+import re
+import sys
+import json
+import logging
+import argparse
+import datetime
+import subprocess
+
+default_debug = False
+default_init_d = False
+default_runtime_ok = 120
+default_runtime_warn = 60
+
+# Nagios plugin exit status codes
+STATUS = {'OK': 0,
+          'WARNING': 1,
+          'CRITICAL': 2,
+          'UNKNOWN': 3,
+          }
+
+
+def parse_args():
+    """
+    Parse the command line arguments
+    """
+    parser = argparse.ArgumentParser(description = 'Docker container status Nagios check',
+                                     add_help = True,
+                                     formatter_class = argparse.ArgumentDefaultsHelpFormatter,
+                                     )
+
+    parser.add_argument('--debug',
+                        dest='debug',
+                        action='store_true', default=default_debug,
+                        help='Enable debug operation',
+                        )
+    parser.add_argument('--init_d',
+                        dest='init_d',
+                        action='store_true', default=default_init_d,
+                        help='Collect expected containers from /etc/init.d',
+                        )
+    parser.add_argument('--runtime_ok',
+                        dest='runtime_ok',
+                        type=int,
+                        default=default_runtime_ok,
+                        help='Number of seconds a container should have been running to be considered OK',
+                        )
+    parser.add_argument('--runtime_warn',
+                        dest='runtime_warn',
+                        type=int,
+                        default=default_runtime_warn,
+                        help='Number of seconds a container should have been running to be considered non-critical',
+                        )
+
+    return parser.parse_args()
+
+
+def collect_init_d(args, logger):
+    """
+    Deduce the name of all docker containers expected to be running from startup-files in /etc/init.d
+
+    :returns: Docker container names
+    :rtype: [str | unicode]
+    """
+    res = []
+    init_d = '/etc/init.d'
+    files = [this for this in os.listdir(init_d) if os.path.isfile(os.path.join(init_d, this))]
+    for this in files:
+        match = re.match('^docker-(.+)$', this)
+        if match:
+            res.append(match.group(1))
+    return res
+
+def docker_inspect(container):
+    cmd = ['/usr/bin/docker', 'inspect', container]
+    proc = subprocess.Popen(cmd,
+                            cwd='/',
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT,
+                            close_fds=True,
+                            )
+    (stdout, _stderr) = proc.communicate()
+    data = json.loads(stdout)
+    # data is a list of dicts, return the first dict
+    return data[0]
+
+def calc_running_seconds(started_at):
+    # It is shockingly hard to parse an RFC3389 time string in Python
+    # without installing additional modules. I know this is a hack.
+    started_at = started_at.split('.')[0]
+    started_at = datetime.datetime.strptime(started_at, "%Y-%m-%dT%H:%M:%S")
+    now = datetime.datetime.utcnow()
+    delta = now - started_at
+    return delta.total_seconds()
+
+def timestr(seconds):
+    days = 0
+    hours = 0
+    mins = 0
+    if seconds >= 86400:
+        days = int(seconds / 86400)
+        seconds = seconds % 86400
+    if seconds >= 3600:
+        hours = int(seconds / 3600)
+        seconds = seconds % 3600
+    if seconds >= 60:
+        mins = int(seconds / 60)
+        seconds = seconds % 60
+
+    if days:
+        return '{!s}d{!s}h'.format(days, hours)
+    if hours:
+        return '{!s}h{!s}m'.format(hours, mins)
+    if mins:
+        return '{!s}m{!s}s'.format(mins, seconds)
+    return '{!s}s'.format(seconds)
+
+
+def check_containers(expect, args, logger):
+    critical = []
+    warning = []
+    ok = []
+
+    for this in expect:
+        data = docker_inspect(this)
+        if not data:
+            critical.append('{!s} not found'.format(this))
+            continue
+        try:
+            status = data['State']['Status']
+            running = data['State']['Running']
+            started_at = data['State']['StartedAt']
+
+            logger.debug('{!s}: status {!s}, running {!s}, started_at {!s}'.format(
+                         this, status, running, started_at))
+        except KeyError:
+            warning.append('{!s} unparsable'.format(this))
+            continue
+
+        if not running:
+            critical.append('{!s} not running'.format(this))
+            continue
+
+        # Check how long container has been running.
+        if started_at.endswith('Z'):
+            running_seconds = calc_running_seconds(started_at)
+            msg = '{!s} {!s} {!s}'.format(this, status, timestr(running_seconds))
+            if running_seconds >= args.runtime_ok:
+                ok.append(msg)
+            elif running_seconds >= args.runtime.warn:
+                warning.append(msg)
+            else:
+                critical.append(msg)
+        else:
+            ok.append('{!s} {!s} (unknown start time)'.format(this, status))
+
+    return ' '.join(critical), ' '.join(warning), ' '.join(ok)
+
+
+def main(args, logger):
+
+    expect = []
+    if args.init_d:
+        expect += collect_init_d(args, logger)
+
+    logger.debug('Expecting the following Docker containers to be running: {!r}'.format(expect))
+
+    if not len(expect):
+        print('UNKNOWN: No containers specified')
+        return STATUS['UNKNOWN']
+
+    critical, warning, ok = check_containers(expect, args, logger)
+
+    res = []
+    if critical:
+        res.append('CRITICAL: {!s}'.format(critical))
+    if warning:
+        res.append('WARNING: {!s}'.format(warning))
+    if ok:
+        res.append('OK: {!s}'.format(ok))
+
+    print('{!s}'.format(', '.join(res)))
+
+    if critical:
+        return STATUS['CRITICAL']
+    if warning:
+        return STATUS['WARNING']
+    if ok:
+        return STATUS['OK']
+
+    return STATUS['UNKNOWN']
+
+
+if __name__ == '__main__':
+    try:
+        args = parse_args()
+
+        # This is the root log level
+        level = logging.INFO
+        if args.debug:
+            level = logging.DEBUG
+        logging.basicConfig(level = level, stream = sys.stderr,
+                            format='%(asctime)s: %(threadName)s %(levelname)s %(message)s')
+        logger = logging.getLogger('check_docker_containers')
+
+        sys.exit(main(args, logger))
+    except KeyboardInterrupt:
+        pass
