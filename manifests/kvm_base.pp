@@ -101,9 +101,7 @@ define sunet::kvm_base(
   #
   # Start the virtual machine
   #
-  sunet::kvm_base::start_vm { $name:
-    mac => $mac,
-  }
+  sunet::kvm_base::start_vm { $name: }
 }
 
 # Update the MAC address in the qemu XML file
