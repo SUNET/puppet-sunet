@@ -192,7 +192,7 @@ def check_containers(expect, args, logger):
         else:
             ok.append('{!s} {!s} (unknown start time)'.format(this, status))
 
-    return ' '.join(critical), ' '.join(warning), ' '.join(ok)
+    return ', '.join(critical), ', '.join(warning), ', '.join(ok)
 
 
 def main(args, logger):
