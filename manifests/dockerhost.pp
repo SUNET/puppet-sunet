@@ -24,7 +24,8 @@ class sunet::dockerhost(
      location => 'https://apt.dockerproject.org/repo',
      release  => "ubuntu-${::lsbdistcodename}",
      repos    => 'main',
-     key      => '58118E89F3A912897C070ADBF76221572C52609D',
+     key      => { 'id'     => '58118E89F3A912897C070ADBF76221572C52609D',
+                   'source' => 'keyserver.ubuntu.net' }
      include  => { 'src' => false },
   } ->
 
