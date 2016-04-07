@@ -43,7 +43,7 @@ class sunet::gitlab {
     # in the doc inside the container:
     # http://doc.gitlab.com/ce/raketasks/backup_restore.html#omnibus-installations
     cron { 'gitlab_backup':
-        command => 'docker exec -it gitlab gitlab-rake gitlab:backup:create CRON=1',
+        command => '/usr/bin/docker exec gitlab /opt/gitlab/bin/gitlab-rake gitlab:backup:create CRON=1',
         user    => 'root',
         hour    => 2,
         minute  => 0,
