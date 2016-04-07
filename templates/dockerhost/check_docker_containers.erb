@@ -185,7 +185,7 @@ def check_containers(expect, args, logger):
             msg = '{!s} {!s} {!s}'.format(this, status, timestr(running_seconds))
             if running_seconds >= args.runtime_ok:
                 ok.append(msg)
-            elif running_seconds >= args.runtime.warn:
+            elif running_seconds >= args.runtime_warn:
                 warning.append(msg)
             else:
                 critical.append(msg)
