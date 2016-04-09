@@ -128,7 +128,7 @@ def _collect_files(path, regex, logger):
             res.append(match.group(1))
     return res
 
-def docker_inspect(container):
+def docker_inspect(container, logger):
     cmd = ['/usr/bin/docker', 'inspect', container]
     proc = subprocess.Popen(cmd,
                             cwd='/',
@@ -137,7 +137,12 @@ def docker_inspect(container):
                             close_fds=True,
                             )
     (stdout, _stderr) = proc.communicate()
-    data = json.loads(stdout)
+    try:
+        data = json.loads(stdout)
+    except ValueError as exc:
+        logger.error('Failed parsing output of {!s}: {!s}'.format(' '.join(cmd), exc))
+        logger.debug('Unparsable output was:\n{!r}'.format(stdout))
+        return None
     # data is a list of dicts, return the first dict
     return data[0]
 
@@ -180,7 +185,8 @@ def check_containers(expect, args, logger):
     ok = []
 
     for this in expect:
-        data = docker_inspect(this)
+        logger.debug('Docker inspect {!r}'.format(this))
+        data = docker_inspect(this, logger)
         if not data:
             critical.append('{!s} not found'.format(this))
             continue
