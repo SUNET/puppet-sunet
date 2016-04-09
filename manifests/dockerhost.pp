@@ -45,6 +45,13 @@ class sunet::dockerhost(
     subnet => $docker_network,
   }
 
+  # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    $check_docker_containers_args = '--systemd'
+  } else {
+    $check_docker_containers_args = '--init_d'
+  }
+
   file {
     '/usr/local/etc/docker.d':  # XXX obsolete
       ensure  => 'directory',

@@ -47,6 +47,7 @@ import subprocess
 
 default_debug = False
 default_init_d = False
+default_systemd = False
 default_runtime_ok = 120
 default_runtime_warn = 60
 
@@ -77,6 +78,11 @@ def parse_args():
                         action='store_true', default=default_init_d,
                         help='Collect expected containers from /etc/init.d',
                         )
+    parser.add_argument('--systemd',
+                        dest='systemd',
+                        action='store_true', default=default_systemd,
+                        help='Collect expected containers from /etc/systemd/system',
+                        )
     parser.add_argument('--runtime_ok',
                         dest='runtime_ok',
                         type=int,
@@ -100,12 +106,25 @@ def collect_init_d(args, logger):
     :returns: Docker container names
     :rtype: [str | unicode]
     """
+    return _collect_files('/etc/init.d', '^docker-(.+)$', logger)
+
+def collect_systemd(args, logger):
+    """
+    Deduce the name of all docker containers expected to be running from service files in /etc/systemd/system
+
+    :returns: Docker container names
+    :rtype: [str | unicode]
+    """
+    return _collect_files('/etc/systemd/system', '^docker-(.+)\.service$', logger)
+
+def _collect_files(path, regex, logger):
+    logger.debug('Looking for files in {!r} matching {!r}'.format(path, regex))
     res = []
-    init_d = '/etc/init.d'
-    files = [this for this in os.listdir(init_d) if os.path.isfile(os.path.join(init_d, this))]
+    files = [this for this in os.listdir(path) if os.path.isfile(os.path.join(path, this))]
     for this in files:
-        match = re.match('^docker-(.+)$', this)
+        match = re.match(regex, this)
         if match:
+            logger.debug('File {!s} matched regexp {!s}'.format(this, regex))
             res.append(match.group(1))
     return res
 
@@ -201,6 +220,9 @@ def main(args, logger):
     expect = []
     if args.init_d:
         expect += collect_init_d(args, logger)
+
+    if args.systemd:
+        expect += collect_systemd(args, logger)
 
     logger.debug('Expecting the following Docker containers to be running: {!r}'.format(expect))
 
