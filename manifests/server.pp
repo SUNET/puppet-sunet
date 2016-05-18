@@ -29,6 +29,7 @@ class sunet::server(
     class { 'sunet::security::configure_sshd': }
     include ufw
     ufw::allow { "allow-ssh-from-all":
+        ip   => 'any',
         port => 22,
     }
   }
