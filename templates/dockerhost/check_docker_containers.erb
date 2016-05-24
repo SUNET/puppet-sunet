@@ -132,6 +132,7 @@ def calc_running_seconds(started_at):
     return delta.total_seconds()
 
 def timestr(seconds):
+    seconds = int(seconds)
     days = 0
     hours = 0
     mins = 0
