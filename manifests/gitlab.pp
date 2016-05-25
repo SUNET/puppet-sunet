@@ -9,9 +9,9 @@ class sunet::gitlab {
     # for the VM and sunet::unbound was not stable
     # at the time of testing. It was also discovered 
     # that a unbound user was needed to use docker-unbound.
-    package { 'unbound':
-        ensure => installed
-    } ->
+    #package { 'unbound':
+    #    ensure => installed
+    #} ->
 
     # The following users are used by Gitlab
     user { 'git': ensure => present,
