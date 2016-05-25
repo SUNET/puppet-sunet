@@ -62,7 +62,7 @@ class sunet::flog {
       owner  => 'root',
       group  => 'www-data',
       mode   => '1775',
-   } ->
+   }
    sunet::docker_run {'flog_db':
       image       => 'docker.sunet.se/library/postgres-9.3',
       volumes     => ['/etc/ssl:/etc/ssl', '/var/docker/postgresql_data/:/var/lib/postgresql/','/var/log/flog_db/:/var/log/postgresql/'],
@@ -70,7 +70,7 @@ class sunet::flog {
    sunet::docker_run {'flog_app':
       image       => 'docker.sunet.se/flog/flog_app',
       volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/'],
-      depends     => ['flog-db'],
+      depends     => ['flog-db']
    }
    sunet::docker_run {'memcached':
       image       => 'docker.sunet.se/library/memcached',
