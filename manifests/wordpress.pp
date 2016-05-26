@@ -13,6 +13,7 @@ define sunet::wordpress (
 )
 {
    include augeas
+   $safe_name = regsubst($name, '[^0-9A-Za-z.\-_]', '-', 'G')
    $db_hostname = $db_host ? {
       undef   => "${safe_name}-mysql.docker",
       default => $db_host
@@ -26,7 +27,6 @@ define sunet::wordpress (
       default => $mysql_db_name
    }
    $pwd = hiera("${name}_db_password")
-   $safe_name = regsubst($name, '[^0-9A-Za-z.\-_]', '-', 'G')
    ensure_resource('file',["/data/${name}","/data/${name}/html","/data/${name}/credentials"], {ensure => directory})
    sunet::docker_run { "${name}_wordpress":
       image       => $wordpress_image,
