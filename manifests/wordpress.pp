@@ -13,7 +13,7 @@ define sunet::wordpress (
 )
 {
    include augeas
-   $safe_name = regsubst($name, '[^0-9A-Za-z.\-_]', '-', 'G')
+   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
    $db_hostname = $db_host ? {
       undef   => "${safe_name}-mysql.docker",
       default => $db_host
