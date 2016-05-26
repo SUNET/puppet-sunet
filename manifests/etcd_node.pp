@@ -43,7 +43,6 @@ define sunet::etcd_node(
       volumes          => ["/data/${name}:/data","/etc/ssl:/etc/ssl"],
       command          => join($args," "),
       ports            => ["${etcd_ipaddr}:2380:2380","${etcd_ipaddr}:2379:2379","${::ipaddress_docker0}:4001:2379"],
-      use_unbound      => true,
    }
    if !$proxy {
       sunet::docker_run { "etcd_browser_${name}":
