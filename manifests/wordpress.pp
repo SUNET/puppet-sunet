@@ -26,7 +26,7 @@ define sunet::wordpress (
       default => $mysql_db_name
    }
    $pwd = hiera("${name}_db_password")
-   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
+   $safe_name = regsubst($name, '[^0-9A-Za-z.\-_]', '-', 'G')
    ensure_resource('file',["/data/${name}","/data/${name}/html","/data/${name}/credentials"], {ensure => directory})
    sunet::docker_run { "${name}_wordpress":
       image       => $wordpress_image,
@@ -55,7 +55,6 @@ define sunet::wordpress (
                           "MYSQL_PASSWORD=${pwd}",
                           "MYSQL_ROOT_PASSWORD=${pwd}",
                           "MYSQL_DATABASE=${db_name}"],
-          use_unbound => true
       }
       package {['mysql-client','mysql-client-5.5','automysqlbackup']: ensure => latest } -> 
       augeas { 'automysqlbackup_settings': 
