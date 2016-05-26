@@ -1,6 +1,7 @@
 define sunet::etcd_node(
   $disco_url       = undef,
   $initial_cluster = undef,
+  $discovery_srv   = undef,
   $etcd_version    = 'v2.0.8',
   $proxy           = true,
   $etcd_ipaddr     = $::ipaddress_eth1,
@@ -17,7 +18,10 @@ define sunet::etcd_node(
             "--cert-file /etc/ssl/certs/${::fqdn}_infra.crt"]
    $disco_args = $disco_url ? {
       undef   => $initial_cluster ? {
-         undef   => [],
+         undef   => $discovery_srv ? {
+            undef   => [],
+            default => ["--discovery-srv ${discovery_srv}"]
+         },
          default => ["--initial_cluster ${initial_cluster}"]
       },
       default => ["--discovery ${disco_url}"]
