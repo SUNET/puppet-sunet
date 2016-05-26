@@ -27,15 +27,15 @@ define sunet::etcd_node(
       default => ["--discovery ${disco_url}"]
    }
    if $proxy {
-      $args = concat($common_args,$disco_args,["--proxy on","--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379"])
+      $args = concat($common_args,concat($disco_args,["--proxy on","--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379"]))
    } else {
-      $args = concat($common_args,$disco_args,["--initial-advertise-peer-urls http://${etcd_ipaddr}:2380",
+      $args = concat($common_args,concat($disco_args,["--initial-advertise-peer-urls http://${etcd_ipaddr}:2380",
             "--advertise-client-urls http://${etcd_ipaddr}:2379",
             "--listen-peer-urls http://0.0.0.0:2380",
             "--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379",
             "--peer-key-file /etc/ssl/private/${::fqdn}_infra.key",
             "--peer-ca-file /etc/ssl/certs/infra.crt",
-            "--peer-cert-file /etc/ssl/certs/${::fqdn}_infra.crt"])
+            "--peer-cert-file /etc/ssl/certs/${::fqdn}_infra.crt"]))
    }
    sunet::docker_run { "etcd_${name}":
       image            => $etcd_image,
