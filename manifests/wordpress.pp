@@ -14,7 +14,7 @@ define sunet::wordpress (
 {
    include augeas
    $db_hostname = $db_host ? {
-      undef   => "${name}-mysql.docker",
+      undef   => "${safe_name}-mysql.docker",
       default => $db_host
    }
    $db_user = $mysql_user ? {
@@ -33,7 +33,7 @@ define sunet::wordpress (
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/credentials:/etc/shibboleth/credentials"],
       ports       => ["8080:80"],
-      depends     => ["${safe_name}-mysql"],
+      depends     => ["${db_hostname}"],
       env         => [ "SERVICE_NAME=${name}",
                        "SP_HOSTNAME=${sp_hostname}",
                        "SP_CONTACT=${sp_contact}",
