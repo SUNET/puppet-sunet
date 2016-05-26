@@ -49,6 +49,7 @@ user_data=$(mktemp)
 cat > ${user_data} <<EOF
 #cloud-config
 user: root
+chpasswd: { expire: False }
 ssh_pwauth: False
 <% if @ssh_keys %>
 ssh_authorized_keys:
