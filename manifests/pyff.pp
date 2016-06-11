@@ -3,7 +3,7 @@ define sunet::pyff(
    $image = "docker.sunet.se/pyff",
    $dir = "/opt/metadata",
    $pyffd_args = "",
-   $loglevel = "INFO",
+   $pyffd_loglevel = "INFO",
    $ip = undef) {
    $ip_addr = $ip ? {
       undef   => "",
@@ -28,6 +28,6 @@ define sunet::pyff(
       image       => $image,
       imagetag    => $version,
       volumes     => ["$dir:$dir"],
-      env         => ["DATADIR=$dir","LOGLEVEL=$loglevel"]
+      env         => ["DATADIR=$dir","LOGLEVEL=$pyffd_loglevel"]
    }
 }
