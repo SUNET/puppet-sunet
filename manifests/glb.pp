@@ -1,10 +1,10 @@
 class glb($zone = undef,
-          £geodns_version = 'latest',
-          £dnslb_version  = 'latest',
-          £bind_address = pick($::ipaddress_eth0, $::ipaddress_bond0, 
-                               $::ipaddress_br0, $::ipaddress_em1, 
-                               $::ipaddress_em2, $::ipaddress6_eth0, 
-                               $::ipaddress6_bond0, $::ipaddress6_br0, 
+          $geodns_version = 'latest',
+          $dnslb_version  = 'latest',
+          $bind_address = pick($::ipaddress_eth0, $::ipaddress_bond0,
+                               $::ipaddress_br0, $::ipaddress_em1,
+                               $::ipaddress_em2, $::ipaddress6_eth0,
+                               $::ipaddress6_bond0, $::ipaddress6_br0,
                                $::ipaddress6_em1, $::ipaddress6_em2))
 {
    file { '/etc/geodns':
