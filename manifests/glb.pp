@@ -1,4 +1,5 @@
-class glb($zone = undef,
+class sunet::glb(
+          $zone = undef,
           $geodns_version = 'latest',
           $dnslb_version  = 'latest',
           $bind_address = pick($::ipaddress_eth0, $::ipaddress_bond0,
