@@ -16,6 +16,8 @@ define sunet::docker_run(
   $dns                 = [],
   $before_start        = undef, # command executed before starting
   $before_stop         = undef, # command executed before stopping
+  $after_start         = undef, # command executed before starting
+  $after_stop          = undef, # command executed before stopping
   $use_unbound         = false, # deprecated, kept for compatibility
 ) {
   if $use_unbound {
@@ -60,6 +62,8 @@ define sunet::docker_run(
     require            => flatten([$req]),
     before_start       => $before_start,
     before_stop        => $before_stop,
+    after_start        => $after_start,
+    after_stop         => $after_stop,
     docker_service     => true,  # the service 'docker' is maintainer by puppet, so depend on it
   }
 
