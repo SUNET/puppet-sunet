@@ -11,6 +11,24 @@ class sunet::norduni {
     sunet::system_user {'www-data': username => 'www-data', group => 'www-data' }
 
     # Directories/files that will be volume mounted in containers
+    file { '/var/opt/norduni':
+      ensure  => directory,
+      owner   => 'ni',
+      group   => 'ni',
+      recurse => true,
+    } ->
+    file { '/var/opt/norduni/data':
+      ensure  => directory,
+      owner   => 'ni',
+      group   => 'ni',
+      recurse => true,
+    } ->
+    file { '/var/opt/norduni/noclook':
+      ensure  => directory,
+      owner   => 'ni',
+      group   => 'ni',
+      recurse => true,
+    } ->
     file { '/var/opt/norduni/noclook/etc':
       ensure  => directory,
       owner   => 'ni',
@@ -23,15 +41,19 @@ class sunet::norduni {
         group   => 'ni',
         mode    => '0440',
         content => template('sunet/norduni/norduni_dotenv.erb'),
-    }
-
+    } ->
     file { '/var/opt/norduni/noclook/staticfiles':
       ensure  => directory,
       owner   => 'ni',
       group   => 'www-data',
       recurse => true,
-    }
-
+    } ->
+    file { '/var/opt/norduni/nginx':
+      ensure  => directory,
+      owner   => 'www-data',
+      group   => 'www-data',
+      recurse => true,
+    } ->
     file { '/var/opt/norduni/nginx/etc':
       ensure  => directory,
       owner   => 'www-data',
@@ -44,8 +66,13 @@ class sunet::norduni {
         group   => 'www-data',
         mode    => '0440',
         content => template('sunet/norduni/nginx_conf.erb'),
-    }
-
+    } ->
+    file { '/var/opt/norduni/postgres':
+      ensure  => directory,
+      owner   => 'postgres',
+      group   => 'postgres',
+      recurse => true,
+    } ->
     file { '/var/opt/norduni/postgres/init':
       ensure  => directory,
       owner   => 'postgres',
@@ -58,29 +85,25 @@ class sunet::norduni {
         group   => 'postgres',
         mode    => '0770',
         content => template('sunet/norduni/init-noclook-db.sh.erb'),
-    }
-
+    } ->
     file { '/var/opt/norduni/data/postgresql':
       ensure  => directory,
       owner   => 'postgres',
       group   => 'postgres',
       recurse => true,
-    }
-
+    } ->
     file { '/var/opt/norduni/data/neo4j':
       ensure  => directory,
       owner   => 'neo4j',
       group   => 'neo4j',
       recurse => true,
-    }
-
+    } ->
     file { '/var/log/norduni':
         ensure  => directory,
         owner   => 'ni',
         group   => 'ni',
         mode    => '0755',
-    }
-
+    } ->
     file { '/var/log/nginx':
         ensure  => directory,
         owner   => 'www-data',
@@ -100,6 +123,7 @@ class sunet::norduni {
         image    => 'neo4j',
         imagetag => 'latest',
         volumes  => ['/var/opt/norduni/data/neo4j:/data'],
+        env      => ["NEO4J_AUTH=neo4j/docker"]
     }
 
     sunet::docker_run { 'norduni_noclook':
@@ -109,6 +133,11 @@ class sunet::norduni {
                      '/var/opt/norduni/noclook/staticfiles:/var/opt/norduni/staticfiles',
                      '/var/log/norduni:/var/log/norduni',
                      '/var/opt/norduni/nistore:/var/opt/nistore'],
+        env      => ["NEO4J_AUTH=neo4j/docker",
+                     "DJANGO_SETTINGS_MODULE=niweb.settings.dev",
+                     "CONFIG_FILE=/var/opt/norduni/norduni/src/niweb/.env",
+                     "STATIC_ROOT=/var/opt/norduni/staticfiles",
+                     "LOG_PATH=/var/log/norduni"]
         extra_parameters => ['--restart=on-failure:10'],
         depends  => ['norduni-postgres', 'norduni-neo4j']
     }
