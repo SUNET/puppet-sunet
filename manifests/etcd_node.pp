@@ -1,24 +1,31 @@
 define sunet::etcd_node(
-  $disco_url    = undef,
-  $etcd_version = 'v2.0.8',
-  $proxy        = true,
-  $etcd_ipaddr  = $::ipaddress_eth1,
-  $etcd_image   = 'quay.io/coreos/etcd',
+  $disco_url       = undef,
+  $initial_cluster = undef,
+  $etcd_version    = 'v2.0.8',
+  $proxy           = true,
+  $etcd_ipaddr     = $::ipaddress_eth1,
+  $etcd_image      = 'quay.io/coreos/etcd',
 )
 {
    include stdlib
 
    file { ["/data/${name}","/data/${name}/${::hostname}"]: ensure => 'directory' }
-   $common_args = ["--discovery ${disco_url}",
-            "--name ${::hostname}",
+   $common_args = ["--name ${::hostname}",
             "--data-dir /data",
             "--key-file /etc/ssl/private/${::fqdn}_infra.key",
             "--ca-file /etc/ssl/certs/infra.crt",
             "--cert-file /etc/ssl/certs/${::fqdn}_infra.crt"]
+   $disco_args = $disco_url ? {
+      undef   => $initial_cluster ? {
+         undef   => [],
+         default => ["--initial_cluster ${initial_cluster}"]
+      },
+      default => ["--discovery ${disco_url}"]
+   }
    if $proxy {
-      $args = concat($common_args,["--proxy on","--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379"])
+      $args = concat($common_args,$disco_args,["--proxy on","--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379"])
    } else {
-      $args = concat($common_args,["--initial-advertise-peer-urls http://${etcd_ipaddr}:2380",
+      $args = concat($common_args,$disco_args,["--initial-advertise-peer-urls http://${etcd_ipaddr}:2380",
             "--advertise-client-urls http://${etcd_ipaddr}:2379",
             "--listen-peer-urls http://0.0.0.0:2380",
             "--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379",
