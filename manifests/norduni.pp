@@ -137,7 +137,7 @@ class sunet::norduni {
                      "DJANGO_SETTINGS_MODULE=niweb.settings.dev",
                      "CONFIG_FILE=/var/opt/norduni/norduni/src/niweb/.env",
                      "STATIC_ROOT=/var/opt/norduni/staticfiles",
-                     "LOG_PATH=/var/log/norduni"]
+                     "LOG_PATH=/var/log/norduni"],
         extra_parameters => ['--restart=on-failure:10'],
         depends  => ['norduni-postgres', 'norduni-neo4j']
     }
