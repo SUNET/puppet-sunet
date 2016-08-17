@@ -143,11 +143,11 @@ class sunet::norduni {
     }
 
     sunet::docker_run { 'norduni_nginx':
-        image            => 'nginx',
+        image            => 'docker.sunet.se/eduid/nginx',
         imagetag         => 'latest',
         ports            => ['80:80', '443:443'],
         volumes          => ['/var/log/nginx:/var/log/nginx',
-                             '/var/opt/norduni/nginx/etc/:/etc/nginx/conf.d',
+                             '/var/opt/norduni/nginx/etc/default.conf:/etc/nginx/sites-enabled/default:ro',
                              '/var/opt/norduni/noclook/staticfiles:/usr/share/nginx/html/static'],
         extra_parameters => ['--restart=on-failure:10'],
         depends          => ['norduni-noclook']
