@@ -5,7 +5,12 @@ class sunet::norduni {
     $noclook_secret_key = hiera('noclook_secret_key', 'NOT_SET_IN_HIERA')
 
     # Create local users for mapping to docker containers
-    sunet::system_user {'ni': username => 'ni', group => 'ni' }
+    user { 'ni': ensure => present,
+        group  => 'ni',
+        system => true,
+        home   => '/var/opt/norduni',
+        shell  => '/bin/sh',
+    } ->
     sunet::system_user {'neo4j': username => 'neo4j', group => 'neo4j' }
     sunet::system_user {'postgres': username => 'postgres', group => 'postgres' }
     sunet::system_user {'www-data': username => 'www-data', group => 'www-data' }
