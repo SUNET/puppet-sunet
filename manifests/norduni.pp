@@ -6,7 +6,7 @@ class sunet::norduni {
 
     # Create local users for mapping to docker containers
     user { 'ni': ensure => present,
-        group  => 'ni',
+        gid    => 'ni',
         system => true,
         home   => '/var/opt/norduni',
         shell  => '/bin/sh',
