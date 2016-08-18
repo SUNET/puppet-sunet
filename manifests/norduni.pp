@@ -9,7 +9,7 @@ class sunet::norduni {
         gid    => 'ni',
         system => true,
         home   => '/var/opt/norduni',
-        shell  => '/bin/sh',
+        shell  => '/bin/bash',
     } ->
     sunet::system_user {'neo4j': username => 'neo4j', group => 'neo4j' }
     sunet::system_user {'postgres': username => 'postgres', group => 'postgres' }
@@ -118,11 +118,12 @@ class sunet::norduni {
       owner   => 'ni',
       group   => 'ni',
       recurse => true,
-    }
+    } ->
     sunet::snippets::secret_file { '/var/opt/norduni/.ssh/nigit':
-        hiera_key => 'nigit_key'
+        hiera_key   => 'nigit_key'
+        owner       => 'ni',
+        group       => 'ni',
     }
-
     sunet::docker_run { 'norduni_postgres':
         image    => 'postgres',
         imagetag => 'latest',
