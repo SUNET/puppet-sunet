@@ -113,14 +113,14 @@ class sunet::norduni {
         group   => 'www-data',
         mode    => '0755',
     } ->
-    sunet::snippets::secret_file { '/var/opt/norduni/.ssh/nigit':
-        hiera_key => 'nigit_key'
-    } ->
     file { '/var/opt/norduni/.ssh':
       ensure  => directory,
       owner   => 'ni',
       group   => 'ni',
       recurse => true,
+    }
+    sunet::snippets::secret_file { '/var/opt/norduni/.ssh/nigit':
+        hiera_key => 'nigit_key'
     }
 
     sunet::docker_run { 'norduni_postgres':
