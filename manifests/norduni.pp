@@ -120,10 +120,11 @@ class sunet::norduni {
       recurse => true,
     } ->
     sunet::snippets::secret_file { '/var/opt/norduni/.ssh/nigit':
-        hiera_key   => 'nigit_key'
+        hiera_key   => 'nigit_key',
         owner       => 'ni',
         group       => 'ni',
     }
+
     sunet::docker_run { 'norduni_postgres':
         image    => 'postgres',
         imagetag => 'latest',
