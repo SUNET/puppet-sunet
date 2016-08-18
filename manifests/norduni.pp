@@ -20,13 +20,11 @@ class sunet::norduni {
       ensure  => directory,
       owner   => 'ni',
       group   => 'ni',
-      recurse => true,
     } ->
     file { '/var/opt/norduni/data':
       ensure  => directory,
       owner   => 'ni',
       group   => 'ni',
-      recurse => true,
     } ->
     file { '/var/opt/norduni/noclook':
       ensure  => directory,
@@ -114,6 +112,15 @@ class sunet::norduni {
         owner   => 'www-data',
         group   => 'www-data',
         mode    => '0755',
+    } ->
+    sunet::snippets::secret_file { '/var/opt/norduni/.ssh/nigit':
+        hiera_key => 'nigit_key'
+    } ->
+    file { '/var/opt/norduni/.ssh':
+      ensure  => directory,
+      owner   => 'ni',
+      group   => 'ni',
+      recurse => true,
     }
 
     sunet::docker_run { 'norduni_postgres':
