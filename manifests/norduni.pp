@@ -128,7 +128,7 @@ class sunet::norduni {
     sunet::docker_run { 'norduni_postgres':
         image    => 'postgres',
         imagetag => 'latest',
-        volumes  => ['/var/opt/norduni/data/postgresql:/var/opt/postgresql', '/var/opt/norduni/postgres/init/init-noclook-db.sh:/docker-entrypoint-initdb.d/init-noclook-db.sh'],
+        volumes  => ['/var/opt/norduni/data/postgresql:/var/lib/postgresql/data/', '/var/opt/norduni/postgres/init/init-noclook-db.sh:/docker-entrypoint-initdb.d/init-noclook-db.sh'],
         env      => ["POSTGRES_USER=postgres",
                      "POSTGRES_PASSWORD=${postgres_master_password}"]
     }
@@ -147,8 +147,7 @@ class sunet::norduni {
                      '/var/opt/norduni/noclook/staticfiles:/var/opt/norduni/staticfiles',
                      '/var/log/norduni:/var/log/norduni',
                      '/var/opt/norduni/nistore:/var/opt/nistore'],
-        env      => ["NEO4J_AUTH=neo4j/docker",
-                     "DJANGO_SETTINGS_MODULE=niweb.settings.dev",
+        env      => ["DJANGO_SETTINGS_MODULE=niweb.settings.dev",
                      "CONFIG_FILE=/var/opt/norduni/norduni/src/niweb/.env",
                      "STATIC_ROOT=/var/opt/norduni/staticfiles",
                      "LOG_PATH=/var/log/norduni"],
