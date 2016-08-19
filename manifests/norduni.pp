@@ -3,6 +3,9 @@ class sunet::norduni {
     $postgres_master_password = hiera('postgres_master_password', 'NOT_SET_IN_HIERA')
     $postgres_ni_password = hiera('postgres_ni_password', 'NOT_SET_IN_HIERA')
     $noclook_secret_key = hiera('noclook_secret_key', 'NOT_SET_IN_HIERA')
+    # TODO: Take tls info as arguments
+    $norduni_tls_cert = 'nidev-consumer_nordu_net.crt'
+    $norduni_tls_key = 'nidev-consumer_nordu_net.key'
 
     # Create local users for mapping to docker containers
     user { 'ni': ensure => present,
@@ -119,10 +122,23 @@ class sunet::norduni {
       group   => 'ni',
       recurse => true,
     } ->
+    # The private key ssh used for pulling/pushing nistore
+    # The public part is distributed using Cosmos.
     sunet::snippets::secret_file { '/var/opt/norduni/.ssh/nigit':
         hiera_key   => 'nigit_key',
         owner       => 'ni',
         group       => 'ni',
+    } ->
+    # The private key for the certificate used by Nginx
+    # The public part is distributed using Cosmos.
+    sunet::snippets::secret_file { "/var/opt/norduni/nginx/ssl/${norduni_tls_key}":
+        hiera_key => 'norduni_tls_key'
+        owner     => 'www-data',
+        group     => 'www-data',
+    } ->
+    exec { 'create_dhparam_pem':
+        command => '/usr/bin/openssl dhparam -out /var/opt/norduni/nginx/ssl/dhparam.pem',
+        unless  => '/usr/bin/test -s /var/opt/norduni/nginx/ssl/dhparam.pem',
     }
 
     sunet::docker_run { 'norduni_postgres':
@@ -143,7 +159,7 @@ class sunet::norduni {
     sunet::docker_run { 'norduni_noclook':
         image    => 'docker.sunet.se/norduni/noclook',
         imagetag => 'latest',
-        volumes  => ['/var/opt/norduni/noclook/etc/dotenv:/var/opt/norduni/norduni/src/niweb/.env',
+        volumes  => ['/var/opt/norduni/noclook/etc/dotenv:/var/opt/norduni/norduni/src/niweb/.env:ro',
                      '/var/opt/norduni/noclook/staticfiles:/var/opt/norduni/staticfiles',
                      '/var/log/norduni:/var/log/norduni',
                      '/var/opt/norduni/nistore:/var/opt/nistore'],
@@ -161,6 +177,7 @@ class sunet::norduni {
         ports            => ['80:80', '443:443'],
         volumes          => ['/var/log/nginx:/var/log/nginx',
                              '/var/opt/norduni/nginx/etc/default.conf:/etc/nginx/sites-enabled/default:ro',
+                             '/var/opt/norduni/nginx/ssl/:/etc/nginx/ssl/:ro',
                              '/var/opt/norduni/noclook/staticfiles:/usr/share/nginx/html/static'],
         extra_parameters => ['--restart=on-failure:10'],
         depends          => ['norduni-noclook']
