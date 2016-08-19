@@ -160,6 +160,7 @@ class sunet::norduni {
         image    => 'docker.sunet.se/norduni/noclook',
         imagetag => 'latest',
         volumes  => ['/var/opt/norduni/noclook/etc/dotenv:/var/opt/norduni/norduni/src/niweb/.env:ro',
+                     '/var/opt/norduni/noclook/etc/full-update.conf:/var/opt/norduni/norduni/src/scripts/full-update.conf:ro',
                      '/var/opt/norduni/noclook/staticfiles:/var/opt/norduni/staticfiles',
                      '/var/log/norduni:/var/log/norduni',
                      '/var/opt/norduni/nistore:/var/opt/nistore'],
