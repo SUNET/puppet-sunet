@@ -137,7 +137,7 @@ class sunet::norduni {
         group     => 'www-data',
     } ->
     exec { 'create_dhparam_pem':
-        command => '/usr/bin/openssl dhparam -out /var/opt/norduni/nginx/ssl/dhparam.pem',
+        command => '/usr/bin/openssl dhparam -out /var/opt/norduni/nginx/ssl/dhparam.pem 2048',
         unless  => '/usr/bin/test -s /var/opt/norduni/nginx/ssl/dhparam.pem',
     }
 
