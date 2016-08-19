@@ -132,7 +132,7 @@ class sunet::norduni {
     # The private key for the certificate used by Nginx
     # The public part is distributed using Cosmos.
     sunet::snippets::secret_file { "/var/opt/norduni/nginx/ssl/${norduni_tls_key}":
-        hiera_key => 'norduni_tls_key'
+        hiera_key => 'norduni_tls_key',
         owner     => 'www-data',
         group     => 'www-data',
     } ->
