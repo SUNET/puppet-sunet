@@ -1,6 +1,6 @@
 define sunet::url($url=undef,
                   $filename=undef,
-                  $mode=0644,
+                  $mode='0644',
                   $check_certificate=true) {
    $local = $filename ? {
       undef   => $name,
