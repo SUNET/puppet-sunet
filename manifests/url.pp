@@ -18,6 +18,6 @@ define sunet::url($url=undef,
    }
    file {$local:
       mode    => $mode,
-      require => Exec [$fetch]
+      require => Exec[$fetch]
    }
 }
