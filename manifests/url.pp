@@ -1,7 +1,5 @@
-define sunet::url($url=undef,
-                  $filename=undef,
-                  $mode='0644',
-                  $check_certificate=true) {
+define sunet::metadata($url=undef,
+                       $filename=undef) {
    $local = $filename ? {
       undef   => $name,
       default => $local
@@ -12,12 +10,9 @@ define sunet::url($url=undef,
    }
    $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
    $fetch = "fetch_${safe_name}"
-   exec {$fetch: 
-      command => "/usr/bin/wget ${n_c_s} -q ${url} -N -O ${local}",
-      creates => $local
-   }
-   file {$local:
-      mode    => $mode,
-      require => Exec[$fetch]
+   cron {$fetch:
+      command => "/usr/bin/wget ${n_c_s} -q ${url} -N -O ${local}.tmp && chmod 0644 ${local}.tmp && test -s ${local}.tmp && mv ${local}.tmp ${local}",
+      user    => 'root',
+      minute  => '*/5'
    }
 }
