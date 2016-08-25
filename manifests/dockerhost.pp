@@ -4,6 +4,7 @@ class sunet::dockerhost(
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
   $docker_network            = hiera('dockerhost_docker_network', '172.18.0.0/22'),
+  $docker_network_options    = undef,
   $docker_dns                = pick($::ipaddress_eth0, $::ipaddress_bond0, $::ipaddress_br0, $::ipaddress_em1,
                                     $::ipaddress6_eth0, $::ipaddress6_bond0, $::ipaddress6_br0, $::ipaddress6_em1,
                                     ),
@@ -41,8 +42,9 @@ class sunet::dockerhost(
   } ->
 
   docker_network { 'docker':  # default network for containers
-    ensure => 'present',
-    subnet => $docker_network,
+    ensure  => 'present',
+    subnet  => $docker_network,
+    options => $docker_network_options,
   }
 
   # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb
