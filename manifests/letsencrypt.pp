@@ -20,9 +20,14 @@ class sunet::letsencrypt($domains={},
      ensure  => 'file',
      content => template('sunet/letsencrypt/config.erb')
   }
+  exec { 'letsencrypt-runonce':
+     command     => '/usr/sbin/letsencrypt.sh -c',
+     refreshonly => true
+  }
   file { '/etc/letsencrypt.sh/domains.txt':
      ensure  => 'file',
-     content => template('sunet/letsencrypt/domains.erb')
+     content => template('sunet/letsencrypt/domains.erb'),
+     notify  => Exec['letsencrypt-runonce']
   }
   package {'lighttpd':
      ensure  => latest
