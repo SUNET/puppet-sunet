@@ -39,6 +39,12 @@ class sunet::letsencrypt($domains={},
      ensure  => 'directory',
      owner   => 'www-data',
      group   => 'www-data'
+  } ->
+  file { '/var/www/letsencrypt/index.html':
+     ensure  => file,
+     owner   => 'www-data',
+     group   => 'www-data',
+     content => "meep meep"
   }
   file {'/etc/lighttpd/conf-enabled/acme.conf':
      ensure  => 'file',
