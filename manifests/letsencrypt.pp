@@ -40,4 +40,9 @@ class sunet::letsencrypt($domains={},
      content => template('sunet/letsencrypt/lighttpd.conf'),
      notify  => Service['lighttpd']
   }
+  core {'letsencrypt-cron':
+     command => '/usr/sbin/letsencrypt.sh -c',
+     hour    => 2,
+     minute  => 13
+  }
 }
