@@ -9,7 +9,7 @@ class sunet::letsencrypt($domains={},
   }
   ensure_resource('package','openssl',{ensure=>'latest'})
   sunet::remote_file { "/usr/sbin/letsencrypt.sh":
-     remote_resource => $src_url,
+     remote_location => $src_url,
      mode            => '0755'
   }
   file { '/etc/letsencrypt.sh':
