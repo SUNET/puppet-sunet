@@ -16,9 +16,6 @@ class sunet::letsencrypt($domains={},
      ensure  => 'directory',
      mode    => '0600'
   }
-  file { '/var/www/letsencrypt':
-     ensure  => 'directory'
-  }
   file { '/etc/letsencrypt.sh/config':
      ensure  => 'file',
      content => template('sunet/letsencrypt/config.erb')
@@ -32,6 +29,11 @@ class sunet::letsencrypt($domains={},
   } -> 
   service {'lighttpd':
      ensure  => running
+  } ->
+  file { '/var/www/letsencrypt':
+     ensure  => 'directory',
+     owner   => 'www-data',
+     group   => 'www-data'
   }
   file {'/etc/lighttpd/conf-enabled/acme.conf':
      ensure  => 'file',
