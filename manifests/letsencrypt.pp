@@ -86,6 +86,7 @@ class sunet::letsencrypt::client($domain=undef, $server='acme-c.sunet.se', $user
   cron { "rsync_letsencrypt_${domain}":
     command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/letsencrypt/certs/${domain}",
     user    => $user,
-    day     => '*'
+    hour    => '*',
+    minute  => '13'
   }
 }
