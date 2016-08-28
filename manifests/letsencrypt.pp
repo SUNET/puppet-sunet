@@ -1,8 +1,11 @@
-class sunet::letsencrypt($domains={},
-                         $staging=false,
+class sunet::letsencrypt($staging=false,
                          $src_url='https://raw.githubusercontent.com/lukas2511/letsencrypt.sh/master/letsencrypt.sh') 
 {
-  validate_hash($domains)
+  $domains = hiera('letsencrypt_domains')
+  validate_list($domains)
+  each($domains) |$domain_hash| {
+     validate_hash($domain_hash)
+  }
   $ca = $staging ? {
      false => 'https://acme-v01.api.letsencrypt.org/directory',
      true  => 'https://acme-staging.api.letsencrypt.org/directory'
@@ -55,5 +58,34 @@ class sunet::letsencrypt($domains={},
      command => '/usr/sbin/letsencrypt.sh -c',
      hour    => 2,
      minute  => 13
+  }
+  each($domains) |$domain_hash| {
+    each($domain_hash) |$domain,$info| {
+      if ($info['ssh_key_type'] && $info['ssh_key']) {
+         sunet::rrsync { "/etc/letsencrypt/certs/$domain":
+            ssh_key_type => $info['ssh_key_type'],
+            ssh_key      => $info['ssh_key']
+         }
+      }
+    }
+  }
+}
+
+define sunet::letsencrypt::client($server='acme-c.sunet.se',$user='root') {
+  $home = $user ? {
+    'root'  => '/root',
+    default => "/home/${user}"
+  }
+  ensure_resource { 'file',"$home/.ssh", { ensure => 'directory' }}
+  ensure_resource { 'file','/etc/letsencrypt', { ensure => directory }}
+  ensure_resource { 'file','/etc/letsencrypt/certs', { ensure => directory }}
+
+  sunet::snippets::secret_file { "$home/.ssh/id_${title}":
+    hiera_key => "${title}_ssh_key"
+  } ->
+  cron { "rsync_letsencrypt_${title}":
+    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${title}\" -az root@${server}: /etc/letsencrypt/certs/${title}",
+    user    => $user,
+    day     => '*'
   }
 }
