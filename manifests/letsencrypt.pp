@@ -61,7 +61,7 @@ class sunet::letsencrypt($staging=false,
   }
   each($domains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
-      if ($info['ssh_key_type'] && $info['ssh_key']) {
+      if ($info['ssh_key_type'] and $info['ssh_key']) {
          sunet::rrsync { "/etc/letsencrypt/certs/$domain":
             ssh_key_type => $info['ssh_key_type'],
             ssh_key      => $info['ssh_key']
