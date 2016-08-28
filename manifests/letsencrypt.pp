@@ -76,9 +76,9 @@ define sunet::letsencrypt::client($server='acme-c.sunet.se',$user='root') {
     'root'  => '/root',
     default => "/home/${user}"
   }
-  ensure_resource { 'file',"$home/.ssh", { ensure => 'directory' }}
-  ensure_resource { 'file','/etc/letsencrypt', { ensure => directory }}
-  ensure_resource { 'file','/etc/letsencrypt/certs', { ensure => directory }}
+  ensure_resource('file', "$home/.ssh", { ensure => 'directory' })
+  ensure_resource('file', '/etc/letsencrypt', { ensure => directory })
+  ensure_resource('file', '/etc/letsencrypt/certs', { ensure => directory })
 
   sunet::snippets::secret_file { "$home/.ssh/id_${title}":
     hiera_key => "${title}_ssh_key"
