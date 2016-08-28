@@ -71,7 +71,7 @@ class sunet::letsencrypt($staging=false,
   }
 }
 
-define sunet::letsencrypt::client($server='acme-c.sunet.se',$user='root') {
+class sunet::letsencrypt::client($domain=undef, $server='acme-c.sunet.se', $user='root') {
   $home = $user ? {
     'root'  => '/root',
     default => "/home/${user}"
@@ -80,11 +80,11 @@ define sunet::letsencrypt::client($server='acme-c.sunet.se',$user='root') {
   ensure_resource('file', '/etc/letsencrypt', { ensure => directory })
   ensure_resource('file', '/etc/letsencrypt/certs', { ensure => directory })
 
-  sunet::snippets::secret_file { "$home/.ssh/id_${title}":
-    hiera_key => "${title}_ssh_key"
+  sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
+    hiera_key => "${domain}_ssh_key"
   } ->
-  cron { "rsync_letsencrypt_${title}":
-    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${title}\" -az root@${server}: /etc/letsencrypt/certs/${title}",
+  cron { "rsync_letsencrypt_${domain}":
+    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/letsencrypt/certs/${domain}",
     user    => $user,
     day     => '*'
   }
