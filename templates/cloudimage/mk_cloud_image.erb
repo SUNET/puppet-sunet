@@ -99,10 +99,11 @@ network-interfaces: |
     auto eth0
     iface eth0 inet dhcp
     ${dns}
+
+    source-directory interfaces.d
 EOF
-else
-  if [ "x${ip}" != "x" ]; then
-     cat >> ${meta_data} <<EOF
+elif [ "x${ip}" != "x" ]; then
+    cat >> ${meta_data} <<EOF
 network-interfaces: |
     auto eth0
     iface eth0 inet static
@@ -111,8 +112,8 @@ network-interfaces: |
         gateway ${gateway}
         ${dns}
 
+    source-directory interfaces.d
 EOF
-  fi
 fi
 
 #
@@ -136,6 +137,7 @@ network-interfaces: |
         gateway ${gateway6}
         ${dns}
 
+    source-directory interfaces.d
 EOF
 fi
 

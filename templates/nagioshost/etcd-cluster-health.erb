@@ -1,0 +1,41 @@
+#!/bin/bash
+# This is a simple check that tries to find out whether the etcd
+# cluster that is accessible through the container that is found
+# in the first parameter is in a healthy state or not.
+
+# Default exit status in case we explicitly did not set it.
+exitStatus=3
+output="Unknown etcd cluster status"
+
+etcdClusterHealth()
+{
+    local __etcd_status=""
+    local __etcdClusterProbe="$(sudo get_etcd_cluster-health "$1" 2>&1)"
+
+    # We are only interested in the first line from etcdctl and
+    # therefore create an array of lines and only use the first element.
+    IFS=$'\n' __etcd_status=($__etcdClusterProbe)
+
+    # Remove carriage return from the value to return so
+    # that bash will not give us any problem when
+    # matching against the message.
+    echo -n "${__etcd_status[0]}" | tr -d '\r'
+}
+
+if [[ "$(sudo get_docker_container_id "$1")" == "" ]]; then
+    echo "The docker container "$1" is not running"
+    exit 2
+fi
+
+message=$(etcdClusterHealth "$1")
+
+if [[ "$message" == "cluster is healthy" ]]; then
+    exitStatus=0
+    output="etcd cluster healthy"
+else
+    exitStatus=2
+    output="etcd cluster unhealthy"
+fi
+
+echo "$output"
+exit $exitStatus

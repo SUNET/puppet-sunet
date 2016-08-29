@@ -79,7 +79,7 @@ define sunet::kvm_base(
 
   ensure_resource('package','python-vm-builder',{ensure => latest})
 
-  exec { "create_cosmos_vm_${name}":
+  exec { "create_sunet_vm_${name}":
     path        => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
     timeout     => '3600',
     environment => ["TMPDIR=${tmpdir}",
@@ -92,20 +92,22 @@ define sunet::kvm_base(
                     Exec["check_kvm_enabled_${name}"],
                     File["${cosmos_repo_dir}/${name}"],
                     ],
-  }
+  } ->
+
+  sunet::kvm_base::configure_mac_address { $name:
+    mac => $mac,
+  } ->
 
   #
   # Start the virtual machine
   #
+  sunet::kvm_base::start_vm { $name: }
+}
 
-  # Ensure the firewall is set up to allow traffic to/from the guest(s)
-  cosmos_kvm_iptables { "fix_kvm_iptables_${name}":
-    bridge           => $bridge,
-    iptables_input   => $iptables_input,
-    iptables_output  => $iptables_output,
-    iptables_forward => $iptables_forward,
-  }
-
+# Update the MAC address in the qemu XML file
+define sunet::kvm_base::configure_mac_address(
+  $mac = undef,
+) {
   include augeas
 
   $_augeas_update_mac = $mac ? {
@@ -125,19 +127,6 @@ define sunet::kvm_base(
     context => "/files/etc/libvirt/qemu/${name}.xml",
     changes => $_augeas_changes,
     notify  => Exec["virsh_define_${name}"],  # Poke the refreshonly exec that will call virsh define
-    require => Exec["create_cosmos_vm_${name}"],
-  } ->
-
-  # Actually start the virtual machine
-  exec { "start_cosmos_vm_${name}":
-    path    => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-    timeout => '60',
-    command => "virsh start ${name}",
-    onlyif  => "grep -q \"<mac address='${mac}'/>\" /etc/libvirt/qemu/${name}.xml",
-    unless  => "virsh list | egrep -q \\ ${name}\\ +running",
-    require => [Cosmos_kvm_iptables["fix_kvm_iptables_${name}"],
-                Augeas["configure_domain_${name}"],
-                ],
   }
 
   #
@@ -149,12 +138,35 @@ define sunet::kvm_base(
     command     => "virsh define /etc/libvirt/qemu/${name}.xml",
     refreshonly => true,
     subscribe   => Augeas["configure_domain_${name}"],
-    before      => Exec["start_cosmos_vm_${name}"],
+    before      => Exec["sunet_start_vm_kvm_${name}"],
+  }
+}
+
+# Start a VM
+define sunet::kvm_base::start_vm() {
+
+  # Ensure the firewall is set up to allow traffic to/from the guest(s)
+  sunet_kvm_iptables { "fix_kvm_iptables_${name}":
+    bridge           => $bridge,
+    iptables_input   => $iptables_input,
+    iptables_output  => $iptables_output,
+    iptables_forward => $iptables_forward,
+  } ->
+
+  # Make sure the virtual machine is started
+  exec { "sunet_start_vm_kvm_${name}":
+    path    => '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+    timeout => '60',
+    command => "virsh start ${name}",
+    unless  => "virsh list | egrep -q \\ ${name}\\ +running",
+    require => [Sunet_kvm_iptables["fix_kvm_iptables_${name}"],
+                ],
   }
 
 }
 
-define cosmos_kvm_iptables(
+# Configure iptables to allow forwarding of traffic to/from guests
+define sunet_kvm_iptables(
   $bridge           = 'br0',
   $iptables_input   = 'INPUT',
   $iptables_output  = 'OUTPUT',
@@ -162,7 +174,7 @@ define cosmos_kvm_iptables(
   $ipv6             = true,
   ) {
 
-  cosmos_kvm_iptables2 { "${name}_v4":
+  sunet_kvm_iptables2 { "${name}_v4":
     cmd              => 'iptables',
     bridge           => $bridge,
     iptables_input   => $iptables_input,
@@ -171,7 +183,7 @@ define cosmos_kvm_iptables(
   }
 
   if $ipv6 == true and $::operatingsystemrelease >= '13.10' {
-    cosmos_kvm_iptables2 { "${name}_v6":
+    sunet_kvm_iptables2 { "${name}_v6":
       cmd              => 'ip6tables',
       bridge           => $bridge,
       iptables_input   => $iptables_input,
@@ -181,14 +193,14 @@ define cosmos_kvm_iptables(
   }
 }
 
-define cosmos_kvm_iptables2(
+define sunet_kvm_iptables2(
   $cmd,
   $bridge           = 'br0',
   $iptables_input   = 'INPUT',
   $iptables_output  = 'OUTPUT',
   $iptables_forward = 'FORWARD',
   ) {
-  $chain = 'cosmos-kvm-traffic'
+  $chain = 'sunet-kvm-traffic'
   exec {"${name}_cmd":
     command => "${cmd} --new-chain ${chain} &&
 
@@ -213,7 +225,7 @@ define cosmos_kvm_iptables2(
 
   # The FORWARD chain can't deny LOCAL traffic, lest the VMs won't
   # be able to communicate with the host.
-  $fwd_chain = 'cosmos-kvm-traffic-forward'
+  $fwd_chain = 'sunet-kvm-traffic-forward'
   exec {"${name}_forward_cmd":
     command => "${cmd} --new-chain ${fwd_chain} &&
 

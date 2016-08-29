@@ -1,18 +1,21 @@
 # a basic wp setup using docker
 
 define sunet::wordpress (
-$db_host           = undef,
-$sp_hostname       = undef,
-$sp_contact        = undef,
-$wordpress_image   = "wordpress",
-$wordpress_version = "4.1.1", 
-$myqsl_version     = "5.7",
-$mysql_user        = undef,
-$mysql_db_name     = undef)
+  $db_host           = undef,
+  $sp_hostname       = undef,
+  $sp_contact        = undef,
+  $wordpress_image   = "wordpress",
+  $wordpress_version = "4.1.1",
+  $myqsl_version     = "5.7",
+  $mysql_user        = undef,
+  $mysql_db_name     = undef,
+  $mysql_dump        = false
+)
 {
    include augeas
+   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
    $db_hostname = $db_host ? {
-      undef   => "${name}_mysql.docker",
+      undef   => "${safe_name}-mysql.docker",
       default => $db_host
    }
    $db_user = $mysql_user ? {
@@ -30,8 +33,7 @@ $mysql_db_name     = undef)
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/credentials:/etc/shibboleth/credentials"],
       ports       => ["8080:80"],
-      start_on    => "${name}_mysql",
-      stop_on     => "${name}_mysql",
+      depends     => ["${db_hostname}"],
       env         => [ "SERVICE_NAME=${name}",
                        "SP_HOSTNAME=${sp_hostname}",
                        "SP_CONTACT=${sp_contact}",
@@ -52,7 +54,7 @@ $mysql_db_name     = undef)
           env         => ["MYSQL_USER=${db_user}",
                           "MYSQL_PASSWORD=${pwd}",
                           "MYSQL_ROOT_PASSWORD=${pwd}",
-                          "MYSQL_DATABASE=${db_name}"]
+                          "MYSQL_DATABASE=${db_name}"],
       }
       package {['mysql-client','mysql-client-5.5','automysqlbackup']: ensure => latest } -> 
       augeas { 'automysqlbackup_settings': 
@@ -65,5 +67,24 @@ $mysql_db_name     = undef)
             "set DBNAMES ${db_name}"
          ]
       }
+     if ($mysql_dump) {
+       file { "/data/${name}/dump":
+         ensure => directory
+       } ->
+       cron { "${name}_mysql_dump":
+         command => "mysqldump -h ${name}-mysql.docker -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql.new && test -s /data/${name}/dump/${db_name}.sql.new && mv /data/${name}/dump/${db_name}.sql.new /data/${name}/dump/${db_name}.sql",
+         user    => 'root',
+         minute  => '*/5'
+       }
+     }
+     file { "/data/${name}/scripts":
+       ensure => directory
+     } ->
+     file { "/data/${name}/scripts/load_${name}.sh":
+       owner  => 'root',
+       group  => 'root',
+       mode   => '0700',
+       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h ${name}-mysql.docker -u ${db_user} -p${pwd} ${db_name}")
+     }
    }
 }

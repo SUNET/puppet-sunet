@@ -22,24 +22,43 @@ define sunet::cloudimage (
   $apt_dir     = '/etc/cosmos/apt',
 )
 {
-  ensure_resource('package',['cpu-checker','mtools','kvm','libvirt-bin','virtinst'],{ensure => 'latest'})
-  $image_url_a = split($image_url,"/")
+  ensure_resource('package', ['cpu-checker',
+                              'mtools',
+                              'kvm',
+                              'libvirt-bin',
+                              'virtinst',
+                              ], {ensure => 'installed'})
+
+  $image_url_a = split($image_url, "/")
   $image_name = $image_url_a[-1]
   $image_src = "/var/lib/libvirt/images/${image_name}"
-  file { "${name}_libvirt_images":
-     path   => "/var/lib/libvirt/images/${name}",
-     ensure => directory } ->
+  $script_dir = "/var/lib/libvirt/sunet-files"
+  $init_script = "${script_dir}/${name}/${name}-init.sh"
+
+  ensure_resource('file', $script_dir, {
+    ensure => 'directory',
+    mode   => '0755',
+  })
+
+  file {
+    "${script_dir}/${name}":
+      ensure => 'directory',
+      mode   => '0755',
+      ;
+    $init_script:
+      content => template("sunet/cloudimage/mk_cloud_image.erb"),
+      require => File[$script_dir],
+      mode    => "0755",
+      ;
+  } ->
+
   exec { "${name}_fetch_image":
      command => "wget -O${image_src} ${image_url}",
      onlyif  => "test ! -f ${image_src}"
-  }
-  file { "${name}_init_script":
-     path    => "/var/lib/libvirt/images/${name}/${name}-init.sh",
-     content => template("sunet/cloudimage/mk_cloud_image.erb"),
-     mode    => "0755"
   } ->
+
   exec { "${name}_init":
-     command => "/var/lib/libvirt/images/${name}/${name}-init.sh",
+     command => $init_script,
      onlyif  => "test ! -f /var/lib/libvirt/images/${name}.img"
   }
 }
