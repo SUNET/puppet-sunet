@@ -2,7 +2,7 @@ class sunet::letsencrypt($staging=false,
                          $src_url='https://raw.githubusercontent.com/lukas2511/letsencrypt.sh/master/letsencrypt.sh') 
 {
   $domains = hiera('letsencrypt_domains')
-  validate_list($domains)
+  validate_array($domains)
   each($domains) |$domain_hash| {
      validate_hash($domain_hash)
   }
