@@ -21,6 +21,7 @@ if [ -f ${reinst} ]; then
 fi
 
 (test -f /etc/sunet-reinstall.keep && cat /etc/sunet-reinstall.keep;
+ test -f /etc/sunet-reinstall.keep && echo /etc/sunet-reinstall.keep;
       echo /etc/ssh/*key*;
       test -d /etc/hiera/gpg && echo /etc/hiera/gpg/*
 ) | xargs tar zcvf ${reinst}
