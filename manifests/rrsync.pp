@@ -5,6 +5,7 @@ define sunet::rrsync(
   $ssh_key      = undef,
   $ssh_key_type = undef
 ) {
+  $safe_name = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G')
   $directory = $dir ? {
      undef   => $name,
      default => $dir
