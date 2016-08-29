@@ -67,6 +67,8 @@ write_files:
       # Enable grub on serial console
       GRUB_TERMINAL=serial
 runcmd:
+   - "echo /etc/network/interfaces:"
+   - "cat /etc/network/interfaces"
    - ["mkdir","/tmp/seed"]
    - ["mount","/dev/vdb","/tmp/seed"]
    - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
