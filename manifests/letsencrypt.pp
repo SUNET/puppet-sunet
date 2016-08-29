@@ -66,7 +66,7 @@ class sunet::letsencrypt($staging=false,
   each($domains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
-         sunet::rrsync { "/etc/letsencrypt/certs/$domain":
+         sunet::rrsync { "/etc/letsencrypt.sh/certs/$domain":
             ssh_key_type => $info['ssh_key_type'],
             ssh_key      => $info['ssh_key']
          }
@@ -81,8 +81,8 @@ class sunet::letsencrypt::client($domain=undef, $server='acme-c.sunet.se', $user
     default => "/home/${user}"
   }
   ensure_resource('file', "$home/.ssh", { ensure => 'directory' })
-  ensure_resource('file', '/etc/letsencrypt', { ensure => directory })
-  ensure_resource('file', '/etc/letsencrypt/certs', { ensure => directory })
+  ensure_resource('file', '/etc/letsencrypt.sh', { ensure => directory })
+  ensure_resource('file', '/etc/letsencrypt.sh/certs', { ensure => directory })
 
   sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
     hiera_key => "${domain}_ssh_key"
