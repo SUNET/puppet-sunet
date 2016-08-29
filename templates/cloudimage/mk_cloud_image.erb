@@ -45,6 +45,9 @@ if [ "x${password}" != "x" ]; then
    pass="password: ${password}"
 fi
 
+#
+# Create the cloud-init `user-data' file
+#
 user_data=$(mktemp)
 cat > ${user_data} <<EOF
 #cloud-config
@@ -73,12 +76,19 @@ runcmd:
 disable_root: 0
 EOF
 
+
+#
+# Create the cloud-init `meta-data' file
+#
+# dsmode: local means "don't auto-dhcp eth0"
+#
 meta_data=$(mktemp)
 cat > ${meta_data} <<EOF
 #cloud-config
 instance-id: iid-${id}
 local-hostname: ${hostname}
 disable_root: 0
+dsmode: local
 EOF
 
 dns=""
