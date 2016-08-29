@@ -38,6 +38,10 @@ class sunet::letsencrypt($staging=false,
   service {'lighttpd':
      ensure  => running
   } ->
+  ufw::allow { "allow-lighthttp":
+     proto => 'tcp',
+     port  => '80'
+  } ->
   file { '/var/www/letsencrypt':
      ensure  => 'directory',
      owner   => 'www-data',
