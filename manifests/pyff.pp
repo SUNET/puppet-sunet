@@ -25,7 +25,7 @@ define sunet::pyff(
    }
    sunet::docker_run {"varnish-${sanitised_title}":
       image    => 'docker.sunet.se/varnish',
-      env      => flatten(["BACKEND_PORT=tcp://pyff-${sanitised_title}.docker:8080"],$acme_env),
+      env      => flatten([["BACKEND_PORT=tcp://pyff-${sanitised_title}.docker:8080"],$acme_env]),
       ports    => ["${ip_addr}80:80"],
       depends  => ["pyff-${sanitised_title}"]
    }
