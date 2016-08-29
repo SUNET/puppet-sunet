@@ -48,6 +48,8 @@ fi
 #
 # Create the cloud-init `user-data' file
 #
+# Docs: https://cloudinit.readthedocs.io/en/latest/ (this is Data source 'No Cloud')
+#
 user_data=$(mktemp)
 cat > ${user_data} <<EOF
 #cloud-config
@@ -67,8 +69,10 @@ write_files:
       # Enable grub on serial console
       GRUB_TERMINAL=serial
 runcmd:
-   - "echo /etc/network/interfaces:"
+   - "*** debug: echo /etc/network/interfaces:"
    - "cat /etc/network/interfaces"
+   - "*** debug: find /etc/network/ -ls:"
+   - "find /etc/network -ls"
    - ["mkdir","/tmp/seed"]
    - ["mount","/dev/vdb","/tmp/seed"]
    - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
@@ -81,6 +85,8 @@ EOF
 
 #
 # Create the cloud-init `meta-data' file
+#
+# Docs: https://cloudinit.readthedocs.io/en/latest/
 #
 # dsmode: local means "don't auto-dhcp eth0"
 #
