@@ -168,6 +168,9 @@ if [ "x${description}" != "x" ]; then
    install_options="${install_options} --description '${description}'"
 fi
 
+# undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
+virsh undefine ${hostname} || true
+
 # use eval to expand the $install_options properly
 eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
     --disk path=/var/lib/libvirt/images/${disk},format=qcow2,bus=virtio \
