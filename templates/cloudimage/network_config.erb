@@ -17,7 +17,7 @@ config:
    subnets:
     - control: auto
 <% if @ip6 == 'auto' -%>
-      # ehh, don't know if dhcpv6 == SLAAC
+      # type dhcpv6 == SLAAC
       type: dhcpv6
 <% elsif @ip6 -%>
       type: static
@@ -28,10 +28,15 @@ config:
       type: static
       address: |
         <%= @ip %>
+<% if @netmask -%>      netmask: <%= @netmask %><% end -%>
+<% if @gateway -%>      routes: |
+        <%= @gateway %>
+<% end -%>
 <% elsif @dhcp -%>
       type: dhcp4
 <%end -%>
 <% if @resolver -%>
    dns:
-      nameservers: <%= @resolver %>
+      nameservers: |
+        <%= @resolver %>
 <%end %>
