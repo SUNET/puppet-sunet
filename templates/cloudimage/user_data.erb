@@ -6,7 +6,6 @@ user: root
 <% if @password != '' -%>
 password: <%= @password %>
 <% end -%>
-disable_root: 0
 ssh_pwauth: False
 <% if @ssh_keys -%>
 ssh_authorized_keys:
@@ -22,13 +21,16 @@ write_files:
       # Enable grub on serial console
       GRUB_TERMINAL=serial
 runcmd:
-   - "*** debug: echo /etc/network/interfaces:"
+   - "echo '*** debug: /etc/network/interfaces:'"
    - "cat /etc/network/interfaces"
-   - "*** debug: find /etc/network/ -ls:"
+   - "echo '*** debug: find /etc/network/ -ls:'"
    - "find /etc/network -ls"
+   - "echo '*** debug: cat /etc/network/interfaces.d/50-cloud-init.cfg:'"
+   - "cat /etc/network/interfaces.d/50-cloud-init.cfg:"
    - ["mkdir","/tmp/seed"]
    - ["mount","/dev/vdb","/tmp/seed"]
    - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
    - ["cd","/root"]
    - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
    - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
+disable_root: 0
