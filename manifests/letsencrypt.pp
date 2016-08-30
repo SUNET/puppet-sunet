@@ -97,8 +97,15 @@ class sunet::letsencrypt::client($domain=undef, $server='acme-c.sunet.se', $user
   sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
     hiera_key => "${domain}_ssh_key"
   } ->
+  file { '/usr/bin/le-ssl-compat.sh':
+     ensure  => 'file',
+     owner   => 'root',
+     group   => 'root',
+     mode    => '0755',
+     content => template('sunet/letsencrypt/le-ssl-compat.erb')
+  } ->
   cron { "rsync_letsencrypt_${domain}":
-    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/letsencrypt.sh/certs/${domain}",
+    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/letsencrypt.sh/certs/${domain} && /usr/bin/le-ssl-compat.sh",
     user    => $user,
     hour    => '*',
     minute  => '13'
