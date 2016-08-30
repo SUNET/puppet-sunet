@@ -7,8 +7,8 @@ cd certs
 find . -xtype l -exec rm -f \{\} \;
 for domain in *; do
    if [ -d $domain -a -f $domain/privkey.pem -a -f $domain/cert.pem ]; then
-      ln -s $domain/privkey.pem $domain.key
-      ln -s $domain/cert.pem $domain.crt
-      ln -s $domain/chain.pem ${domain}-chain.crt
+      test -e $domain.key || ln -s $domain/privkey.pem $domain.key
+      test -e $domain.crt || ln -s $domain/cert.pem $domain.crt
+      test -e ${domain}-chain.crt || ln -s $domain/chain.pem ${domain}-chain.crt
    fi
 done
