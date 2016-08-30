@@ -57,7 +57,8 @@ if [ "x${description}" != "x" ]; then
    install_options="${install_options} --description '${description}'"
 fi
 
-# undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
+# destroy and undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
+virsh destroy ${hostname} || true
 virsh undefine ${hostname} || true
 
 # use eval to expand the $install_options properly
