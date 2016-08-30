@@ -38,5 +38,6 @@ config:
 <% if @resolver -%>
    dns:
       address: |
-<% @resolver.each do |addr| %>        <%= addr %><% end %>
+<% @resolver.each do |addr| %>        <%= addr %>
+<% end %>
 <%end %>
