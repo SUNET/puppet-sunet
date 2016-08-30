@@ -1,7 +1,8 @@
 class sunet::letsencrypt($staging=false,
+                         $httpd=false,
                          $src_url='https://raw.githubusercontent.com/lukas2511/letsencrypt.sh/master/letsencrypt.sh') 
 {
-  $domains = hiera('letsencrypt_domains')
+  $domains = hiera('letsencrypt_domains',{$::fqdn=>{'names'=>[$::fqdn]}})
   validate_array($domains)
   each($domains) |$domain_hash| {
      validate_hash($domain_hash)
@@ -32,36 +33,38 @@ class sunet::letsencrypt($staging=false,
      content => template('sunet/letsencrypt/domains.erb'),
      notify  => Exec['letsencrypt-runonce']
   }
-  package {'lighttpd':
-     ensure  => latest
-  } -> 
-  service {'lighttpd':
-     ensure  => running
-  } ->
-  ufw::allow { "allow-lighthttp":
-     proto => 'tcp',
-     port  => '80'
-  } ->
-  file { '/var/www/letsencrypt':
-     ensure  => 'directory',
-     owner   => 'www-data',
-     group   => 'www-data'
-  } ->
-  file { '/var/www/letsencrypt/index.html':
-     ensure  => file,
-     owner   => 'www-data',
-     group   => 'www-data',
-     content => "<!DOCTYPE html><html><head><title>meep</title></head><body>meep<br/>meep</body></html>"
-  }
-  file {'/etc/lighttpd/conf-enabled/acme.conf':
-     ensure  => 'file',
-     content => template('sunet/letsencrypt/lighttpd.conf'),
-     notify  => Service['lighttpd']
-  }
   cron {'letsencrypt-cron':
      command => '/usr/sbin/letsencrypt.sh -c',
      hour    => 2,
      minute  => 13
+  }
+  if ($httpd) {
+     package {'lighttpd':
+        ensure  => latest
+     } -> 
+     service {'lighttpd':
+        ensure  => running
+     } ->
+     ufw::allow { "allow-lighthttp":
+        proto => 'tcp',
+        port  => '80'
+     }
+     file { '/var/www/letsencrypt':
+        ensure  => 'directory',
+        owner   => 'www-data',
+        group   => 'www-data'
+     } ->
+     file { '/var/www/letsencrypt/index.html':
+        ensure  => file,
+        owner   => 'www-data',
+        group   => 'www-data',
+        content => "<!DOCTYPE html><html><head><title>meep</title></head><body>meep<br/>meep</body></html>"
+     }
+     file {'/etc/lighttpd/conf-enabled/acme.conf':
+        ensure  => 'file',
+        content => template('sunet/letsencrypt/lighttpd.conf'),
+        notify  => Service['lighttpd']
+     }
   }
   each($domains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
