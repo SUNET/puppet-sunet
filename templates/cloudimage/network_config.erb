@@ -16,7 +16,7 @@ config:
    name: eth0
    subnets:
     - control: auto
-<% if @ip6 and @ip6 == 'auto' -%>
+<% if @ip6 == 'auto' -%>
       # ehh, don't know if dhcpv6 == SLAAC
       type: dhcpv6
 <% elsif @ip6 -%>
