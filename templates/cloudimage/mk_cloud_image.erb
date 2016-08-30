@@ -14,14 +14,6 @@ cpus="<%= @cpus %>"
 mem="<%= @memory %>"
 repo="<%= @repo %>"
 tag="<%= @tagpattern %>"
-ip="<%= @ip %>"
-gateway="<%= @gateway %>"
-netmask="<%= @netmask %>"
-resolver="<%= @resolver %>"
-ip6="<%= @ip6 %>"
-gateway6="<%= @gateway6 %>"
-netmask6="<%= @netmask6 %>"
-password="<%= @password %>"
 description="<%= @description %>"
 apt_dir="<%= @apt_dir %>"
 
@@ -41,129 +33,11 @@ fi
 
 chmod 600 ${seed}
 
-if [ "x${password}" != "x" ]; then
-   pass="password: ${password}"
-fi
-
-#
-# Create the cloud-init `user-data' file
-#
-# Docs: https://cloudinit.readthedocs.io/en/latest/ (this is Data source 'No Cloud')
-#
-user_data=$(mktemp)
-cat > ${user_data} <<EOF
-#cloud-config
-user: root
-ssh_pwauth: False
-<% if @ssh_keys %>
-ssh_authorized_keys:
-<% @ssh_keys.each do |key| %>
-   - <%= key %>
-<% end %>
-<% end %>
-write_files:
-  - path: "/etc/default/grub.d/99-sunet-cloud-init.cfg"
-    permissions: "0644"
-    owner: "root"
-    content: |
-      # Enable grub on serial console
-      GRUB_TERMINAL=serial
-runcmd:
-   - "*** debug: echo /etc/network/interfaces:"
-   - "cat /etc/network/interfaces"
-   - "*** debug: find /etc/network/ -ls:"
-   - "find /etc/network -ls"
-   - ["mkdir","/tmp/seed"]
-   - ["mount","/dev/vdb","/tmp/seed"]
-   - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
-   - ["cd","/root"]
-   - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
-   - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
-disable_root: 0
-EOF
-
-
-#
-# Create the cloud-init `meta-data' file
-#
-# Docs: https://cloudinit.readthedocs.io/en/latest/
-#
-# dsmode: local means "don't auto-dhcp eth0"
-#
-meta_data=$(mktemp)
-cat > ${meta_data} <<EOF
-#cloud-config
-instance-id: iid-${id}
-local-hostname: ${hostname}
-disable_root: 0
-EOF
-
-dns=""
-if [ "x${resolver}" != "x" ]; then
-   dns="dns-nameservers ${resolver}"
-fi
-
-#
-# IPv4
-#
-if [ "x${ip}" != "x" ]; then
-   dhcp="no"
-fi
-
-if [ "x${dhcp}" = "xyes" ]; then
-cat >> ${meta_data} <<EOF
-network-interfaces: |
-    auto eth0
-    iface eth0 inet dhcp
-    ${dns}
-
-    source-directory interfaces.d
-EOF
-elif [ "x${ip}" != "x" ]; then
-    cat >> ${meta_data} <<EOF
-network-interfaces: |
-    auto eth0
-    iface eth0 inet static
-        address ${ip}
-        netmask ${netmask}
-        gateway ${gateway}
-        ${dns}
-
-    source-directory interfaces.d
-EOF
-fi
-
-#
-# IPv6
-#
-if [ "x${ip6}" = "xauto" ]; then
-    cat >> ${meta_data} <<EOF
-network-interfaces: |
-    auto eth0
-    iface eth0 inet6 auto
-        ${dns}
-
-EOF
-elif [ "x${ip6}" != "x" ]; then
-    cat >> ${meta_data} <<EOF
-network-interfaces: |
-    auto eth0
-    iface eth0 inet6 static
-        address ${ip6}
-        netmask ${netmask6}
-        gateway ${gateway6}
-        ${dns}
-
-    source-directory interfaces.d
-EOF
-fi
-
-mcopy -o -i ${seed} ${user_data} ::user-data 2>/dev/null
-mcopy -o -i ${seed} ${meta_data} ::meta-data 2>/dev/null
+for this in meta-data user-data network-config; do
+    src="`dirname $0`/${hostname}_${this}"
+    mcopy -o -i ${seed} ${src} ::${this} 2>/dev/null
+done
 mcopy -o -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
-
-rm -f ${user_data}
-rm -f ${meta_data}
 
 virsh pool-refresh default
 

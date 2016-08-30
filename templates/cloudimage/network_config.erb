@@ -1,4 +1,8 @@
 ---
+# Docs: None :(
+#
+# https://gist.github.com/Informatic/0b6b24374b54d09c77b9d25595cdbd47
+#
 version: 1
 config:
  - type: physical
@@ -15,4 +19,8 @@ config:
 <%end -%>
 <% elsif @dhcp -%>
       type: dhcp4
+<%end -%>
+<% if @resolver -%>
+   dns:
+      nameservers: <%= @resolver %>
 <%end %>
