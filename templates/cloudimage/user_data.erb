@@ -1,12 +1,13 @@
 #cloud-config
 user: root
+disable_root: 0
 ssh_pwauth: False
-<% if @ssh_keys %>
+<% if @ssh_keys -%>
 ssh_authorized_keys:
 <% @ssh_keys.each do |key| %>
    - <%= key %>
-<% end %>
-<% end %>
+<% end -%>
+<% end -%>
 write_files:
   - path: "/etc/default/grub.d/99-sunet-cloud-init.cfg"
     permissions: "0644"
@@ -25,4 +26,3 @@ runcmd:
    - ["cd","/root"]
    - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
    - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
-disable_root: 0
