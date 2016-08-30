@@ -6,6 +6,7 @@ user: root
 <% if @password != '' -%>
 password: <%= @password %>
 <% end -%>
+disable_root: 0
 ssh_pwauth: False
 <% if @ssh_keys -%>
 ssh_authorized_keys:
