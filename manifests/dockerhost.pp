@@ -123,6 +123,7 @@ class sunet::dockerhost(
         path    => '/etc/unbound/unbound.conf.d/unbound.conf',
         mode    => '0644',
         content => template('sunet/dockerhost/unbound.conf.erb'),
+        require => Package['unbound'],
         notify  => Service['unbound'],
         ;
     }
