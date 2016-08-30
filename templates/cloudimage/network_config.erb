@@ -36,8 +36,8 @@ config:
       type: dhcp4
 <%end -%>
 <% if @resolver -%>
- - type: nameserver:
-      address: |
-<% @resolver.each do |addr| %>        <%= addr %>
+ - type: nameserver
+   address:
+<% @resolver.each do |addr| %>    - <%= addr %>
 <% end %>
 <%end %>
