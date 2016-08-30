@@ -3,6 +3,12 @@
 #
 # https://gist.github.com/Informatic/0b6b24374b54d09c77b9d25595cdbd47
 #
+# The contents of this file are parsed by
+#
+#  /usr/lib/python3/dist-packages/cloudinit/net/sysconfig.py
+#
+# May the source be with you.
+#
 version: 1
 config:
  - type: physical
@@ -10,13 +16,18 @@ config:
    name: eth0
    subnets:
     - control: auto
-<% if @ip or @ip6 -%>
+<% if @ip6 and @ip6 == 'auto' -%>
+      # ehh, don't know if dhcpv6 == SLAAC
+      type: dhcpv6
+<% elsif @ip6 -%>
       type: static
       address: |
-<% if @ip -%>        <%= @ip %>
-<%end -%>
-<% if @ip6 -%>        <%= @ip6 %>
-<%end -%>
+        <%= @ip6 %>
+      ipv6: true
+<% elsif @ip -%>
+      type: static
+      address: |
+        <%= @ip %>
 <% elsif @dhcp -%>
       type: dhcp4
 <%end -%>
