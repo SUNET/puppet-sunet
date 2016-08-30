@@ -17,8 +17,8 @@ config:
    subnets:
     - control: auto
 <% if @ip6 == 'auto' -%>
-      # type dhcpv6 != SLAAC, but it doesn't look like cloudinit/net/network_state.py can do SLAAC
-      type: auto
+      # type dhcp6 != SLAAC, but it doesn't look like cloudinit/net/network_state.py can do SLAAC
+      type: dhcp6
 <% elsif @ip6 -%>
       type: static
       address: |
