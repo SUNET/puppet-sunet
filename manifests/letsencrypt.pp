@@ -16,6 +16,13 @@ class sunet::letsencrypt($staging=false,
      remote_location => $src_url,
      mode            => '0755'
   }
+  file { '/usr/bin/le-ssh-compat.sh':
+     ensure  => 'file',
+     owner   => 'root',
+     group   => 'root',
+     mode    => '0755',
+     content => template('sunet/letsencrypt/le-ssh-compat.erb')
+  }
   file { '/etc/letsencrypt.sh':
      ensure  => 'directory',
      mode    => '0600'
@@ -25,7 +32,7 @@ class sunet::letsencrypt($staging=false,
      content => template('sunet/letsencrypt/config.erb')
   }
   exec { 'letsencrypt-runonce':
-     command     => '/usr/sbin/letsencrypt.sh -c',
+     command     => '/usr/sbin/letsencrypt.sh -c && /usr/bin/le-ssh-compat.sh',
      refreshonly => true
   }
   file { '/etc/letsencrypt.sh/domains.txt':
@@ -34,7 +41,7 @@ class sunet::letsencrypt($staging=false,
      notify  => Exec['letsencrypt-runonce']
   }
   cron {'letsencrypt-cron':
-     command => '/usr/sbin/letsencrypt.sh -c',
+     command => '/usr/sbin/letsencrypt.sh -c && /usr/bin/le-ssh-compat.sh',
      hour    => 2,
      minute  => 13
   }
@@ -90,8 +97,15 @@ class sunet::letsencrypt::client($domain=undef, $server='acme-c.sunet.se', $user
   sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
     hiera_key => "${domain}_ssh_key"
   } ->
+  file { '/usr/bin/le-ssh-compat.sh':
+     ensure  => 'file',
+     owner   => 'root',
+     group   => 'root',
+     mode    => '0755',
+     content => template('sunet/letsencrypt/le-ssh-compat.erb')
+  } ->
   cron { "rsync_letsencrypt_${domain}":
-    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/letsencrypt.sh/certs/${domain}",
+    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/letsencrypt.sh/certs/${domain} && /usr/bin/le-ssh-compat.sh",
     user    => $user,
     hour    => '*',
     minute  => '13'
