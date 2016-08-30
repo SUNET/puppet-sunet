@@ -18,7 +18,7 @@ config:
     - control: auto
 <% if @ip6 == 'auto' -%>
       # type dhcpv6 != SLAAC, but it doesn't look like cloudinit/net/network_state.py can do SLAAC
-      type: dhcpv6
+      type: auto
 <% elsif @ip6 -%>
       type: static
       address: |
@@ -38,7 +38,5 @@ config:
 <% if @resolver -%>
    dns:
       address: |
-<% @resolver.each do |addr| %>
-        <%= addr %>
-<% end -%>
+<% @resolver.each do |addr| %>        <%= addr %><% end %>
 <%end %>
