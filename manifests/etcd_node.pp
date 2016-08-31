@@ -82,8 +82,7 @@ define sunet::etcd_node(
       sunet::docker_run { "etcd_browser_${name}":
          image         => 'docker.sunet.se/etcd-browser',
          ports         => [ "8000:8000" ],  # XXX listening on all interfaces now
-         start_on      => "docker-etcd-${name}",
-         stop_on       => "docker-etcd-${name}"
+         depends       => ["etcd_${name}"],
       }
       ufw::allow { "allow-etcd-client-on-docker0":
          ip   => "${::ipaddress_docker0}",
