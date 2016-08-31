@@ -1,12 +1,12 @@
 #!/bin/bash
+#
+# Script to (re-)create a cloud-image based VM. Created by puppet-sunet - do not edit.
+#
 
 set -e
 
-# do not edit by hand
-
 src_image="<%= @image_src %>"
 size="<%= @size %>"
-dhcp="<%= @dhcp ? 'yes' : 'no' %>"
 mac="<%= @mac %>"
 hostname="<%= @name %>"
 bridge="<%= @bridge %>"
@@ -36,6 +36,12 @@ for this in meta-data user-data network-config; do
     mcopy -o -i ${seed} ${src} ::${this} 2>/dev/null
 done
 mcopy -o -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
+reinst="`dirname $0`/${hostname}_sunet-reinstall.tar.gz"
+if [ -f ${reinst} ]; then
+    # one-time init a cloud-image from a host that presumably wasn't a cloud image VM before
+    mcopy -o -i ${seed} ${reinst} ::
+    shred -u ${reints} || rm -f ${reinst}
+fi
 
 virsh pool-refresh default
 

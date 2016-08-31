@@ -5,9 +5,20 @@ set -e
 reinst="/mnt/seed/sunet-reinstall.tgz"
 
 test -d /mnt/seed || mkdir /mnt/seed
-mount /dev/vdb /mnt/seed
+vdb_fail=0
+mount /dev/vdb /mnt/seed || vdb_fail=1
 
-trap "umount /mnt/seed" EXIT
+if [ $vdb_fail -eq 0 ]; then
+    rmdir /mnt/seed
+    reinst="/root/`hostname -f`_sunet-reinstall.tgz"
+    echo "$0: mounting /dev/vdb failed, output to local file ${reinst} instead?"
+    echo "Note that you will have to take care of the file yourself."
+    echo ""
+    echo "Press Ctrl+C to abort, or enter to continue"
+    read foo
+else
+    trap "umount /mnt/seed && rmdir /mnt/seed" EXIT
+fi
 
 if [ -f ${reinst} ]; then
    echo "$0: File sunet-reinstall.tgz already exist:"
