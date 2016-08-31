@@ -10,6 +10,7 @@ define sunet::etcd_node(
   $etcd_c2s_ip     = '0.0.0.0',
   $etcd_c2s_proto  = 'http',    # XXX default ought to be https
   $etcd_image      = 'quay.io/coreos/etcd',
+  $etcd_extra      = [],        # extra arguments to etcd
   $tls_key_file    = "/etc/ssl/private/${::fqdn}_infra.key",
   $tls_ca_file     = '/etc/ssl/certs/infra.crt',
   $tls_cert_file   = "/etc/ssl/certs/${::fqdn}_infra.crt",
