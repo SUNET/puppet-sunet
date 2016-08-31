@@ -31,10 +31,13 @@ if [ -f ${reinst} ]; then
    read foo
 fi
 
+umask 077
+
 (test -f /etc/sunet-reinstall.keep && cat /etc/sunet-reinstall.keep;
  test -f /etc/sunet-reinstall.keep && echo /etc/sunet-reinstall.keep;
       echo /etc/ssh/*key*;
-      test -d /etc/hiera/gpg && echo /etc/hiera/gpg/*
+      test -d /etc/hiera/gpg && echo /etc/hiera/gpg;
+      test -d /etc/letsencrypt && echo /etc/letsencrypt;
 ) | xargs tar zcvf ${reinst}
 
 echo ""
