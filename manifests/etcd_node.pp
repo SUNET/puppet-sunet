@@ -66,7 +66,7 @@ define sunet::etcd_node(
                        "--initial-advertise-peer-urls ${s2s_url}:2380",
                        "--listen-peer-urls ${s2s_url}:2380",
                        "--peer-key-file ${tls_key_file}",
-                       '--peer-ca-file ${tls_ca_file}',
+                       "--peer-ca-file ${tls_ca_file}",
                        "--peer-cert-file ${tls_cert_file}",
                        ])
    }
