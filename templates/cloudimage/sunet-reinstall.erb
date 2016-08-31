@@ -8,7 +8,7 @@ test -d /mnt/seed || mkdir /mnt/seed
 vdb_fail=0
 mount /dev/vdb /mnt/seed || vdb_fail=1
 
-if [ $vdb_fail -eq 0 ]; then
+if [ $vdb_fail -ne 0 ]; then
     rmdir /mnt/seed
     reinst="/root/`hostname -f`_sunet-reinstall.tgz"
     echo "$0: mounting /dev/vdb failed, output to local file ${reinst} instead?"
