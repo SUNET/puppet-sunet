@@ -61,7 +61,8 @@ define sunet::etcd_node(
                        "--listen-client-urls ${c2s_url}:4001,${c2s_url}:2379",
                        ])
    } else {
-      $args = flatten(["--advertise-client-urls ${c2s_url}:2379",
+      $args = flatten([$common_args,
+                       "--advertise-client-urls ${c2s_url}:2379",
                        "--listen-client-urls ${c2s_url}:2379,${c2s_url}:4001",
                        "--initial-advertise-peer-urls ${s2s_url}:2380",
                        "--listen-peer-urls ${s2s_url}:2380",
