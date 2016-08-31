@@ -9,6 +9,7 @@ define sunet::etcd_node(
   $etcd_s2s_proto  = 'http',    # XXX default ought to be https
   $etcd_c2s_ip     = '0.0.0.0',
   $etcd_c2s_proto  = 'http',    # XXX default ought to be https
+  $etcd_listen_ip  = '0.0.0.0',
   $etcd_image      = 'quay.io/coreos/etcd',
   $etcd_extra      = [],        # extra arguments to etcd
   $tls_key_file    = "/etc/ssl/private/${::fqdn}_infra.key",
@@ -28,6 +29,12 @@ define sunet::etcd_node(
    $c2s_ip = $etcd_c2s_ip ? {
      /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_c2s_ip,  # IPv4
      /^[0-9a-fA-F:]+$/ => "[${etcd_c2s_ip}]",
+   }
+
+   # Add brackets to bare IPv6 IP.
+   $listen_ip = $etcd_listen_ip ? {
+     /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_listen_ip,  # IPv4
+     /^[0-9a-fA-F:]+$/ => "[${etcd_listen_ip}]",
    }
 
    file { ['/data', "/data/${name}", "/data/${name}/${::hostname}"]:
@@ -56,6 +63,8 @@ define sunet::etcd_node(
    # interpolation simplifications
    $c2s_url = "${etcd_c2s_proto}://${c2s_ip}"
    $s2s_url = "${etcd_s2s_proto}://${s2s_ip}"
+   $listen_c_url = "${etcd_c2s_proto}://${listen_ip}"
+   $listen_s_url = "${etcd_s2s_proto}://${listen_ip}"
    if $proxy {
       $args = flatten([$common_args,
                        '--proxy on',
@@ -64,9 +73,9 @@ define sunet::etcd_node(
    } else {
       $args = flatten([$common_args,
                        "--advertise-client-urls ${c2s_url}:2379",
-                       "--listen-client-urls ${c2s_url}:2379,${c2s_url}:4001",
+                       "--listen-client-urls ${listen_c_url}:2379,${listen_c_url}:4001",
                        "--initial-advertise-peer-urls ${s2s_url}:2380",
-                       "--listen-peer-urls ${s2s_url}:2380",
+                       "--listen-peer-urls ${listen_s_url}:2380",
                        "--peer-key-file ${tls_key_file}",
                        "--peer-ca-file ${tls_ca_file}",
                        "--peer-cert-file ${tls_cert_file}",
