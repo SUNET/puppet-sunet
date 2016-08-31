@@ -1,10 +1,14 @@
 class sunet::letsencrypt($staging=false,
+                         $domains=undef,
                          $httpd=false,
                          $src_url='https://raw.githubusercontent.com/lukas2511/letsencrypt.sh/master/letsencrypt.sh') 
 {
-  $domains = hiera('letsencrypt_domains',{$::fqdn=>{'names'=>[$::fqdn]}})
-  validate_array($domains)
-  each($domains) |$domain_hash| {
+  $thedomains = $domains ? {
+     undef   => hiera('letsencrypt_domains',[{$::fqdn=>{'names'=>[$::fqdn]}}]),
+     default => $domains
+  }
+  validate_array($thedomains)
+  each($thedomains) |$domain_hash| {
      validate_hash($domain_hash)
   }
   $ca = $staging ? {
@@ -73,7 +77,7 @@ class sunet::letsencrypt($staging=false,
         notify  => Service['lighttpd']
      }
   }
-  each($domains) |$domain_hash| {
+  each($thedomains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
          sunet::rrsync { "/etc/letsencrypt.sh/certs/$domain":
