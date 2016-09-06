@@ -4,18 +4,44 @@ define sunet::etcd_node(
   $discovery_srv   = undef,
   $etcd_version    = 'v2.0.8',
   $proxy           = true,
-  $etcd_ipaddr     = $::ipaddress_eth1,
+  $docker_net      = 'docker',
+  $etcd_s2s_ip     = $::ipaddress_eth1,
+  $etcd_s2s_proto  = 'http',    # XXX default ought to be https
+  $etcd_c2s_ip     = '0.0.0.0',
+  $etcd_c2s_proto  = 'http',    # XXX default ought to be https
+  $etcd_listen_ip  = '0.0.0.0',
   $etcd_image      = 'quay.io/coreos/etcd',
+  $etcd_extra      = [],        # extra arguments to etcd
+  $tls_key_file    = "/etc/ssl/private/${::fqdn}_infra.key",
+  $tls_ca_file     = '/etc/ssl/certs/infra.crt',
+  $tls_cert_file   = "/etc/ssl/certs/${::fqdn}_infra.crt",
 )
 {
    include stdlib
 
-   file { ["/data/${name}","/data/${name}/${::hostname}"]: ensure => 'directory' }
-   $common_args = ["--name ${::hostname}",
-            "--data-dir /data",
-            "--key-file /etc/ssl/private/${::fqdn}_infra.key",
-            "--ca-file /etc/ssl/certs/infra.crt",
-            "--cert-file /etc/ssl/certs/${::fqdn}_infra.crt"]
+   # Add brackets to bare IPv6 IP.
+   $s2s_ip = $etcd_s2s_ip ? {
+     /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_s2s_ip,  # IPv4
+     /^[0-9a-fA-F:]+$/ => "[${etcd_s2s_ip}]",
+   }
+
+   # Add brackets to bare IPv6 IP.
+   $c2s_ip = $etcd_c2s_ip ? {
+     /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_c2s_ip,  # IPv4
+     /^[0-9a-fA-F:]+$/ => "[${etcd_c2s_ip}]",
+   }
+
+   # Add brackets to bare IPv6 IP.
+   $listen_ip = $etcd_listen_ip ? {
+     /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_listen_ip,  # IPv4
+     /^[0-9a-fA-F:]+$/ => "[${etcd_listen_ip}]",
+   }
+
+   file { ['/data', "/data/${name}", "/data/${name}/${::hostname}"]:
+     ensure => 'directory',
+     mode   => '0700',
+   }
+
    $disco_args = $disco_url ? {
       undef   => $initial_cluster ? {
          undef   => $discovery_srv ? {
@@ -26,42 +52,60 @@ define sunet::etcd_node(
       },
       default => ["--discovery ${disco_url}"]
    }
+   $common_args = [$disco_args,
+                   "--name ${::hostname}",
+                   '--data-dir /data',
+                   "--key-file ${tls_key_file}",
+                   "--ca-file ${tls_ca_file}",
+                   "--cert-file ${tls_cert_file}",
+                   $etcd_extra,
+                   ]
+   # interpolation simplifications
+   $c2s_url = "${etcd_c2s_proto}://${c2s_ip}"
+   $s2s_url = "${etcd_s2s_proto}://${s2s_ip}"
+   $listen_c_url = "${etcd_c2s_proto}://${listen_ip}"
+   $listen_s_url = "${etcd_s2s_proto}://${listen_ip}"
    if $proxy {
-      $args = concat($common_args,concat($disco_args,["--proxy on","--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379"]))
+      $args = flatten([$common_args,
+                       '--proxy on',
+                       "--listen-client-urls ${c2s_url}:4001,${c2s_url}:2379",
+                       ])
    } else {
-      $args = concat($common_args,concat($disco_args,["--initial-advertise-peer-urls http://${etcd_ipaddr}:2380",
-            "--advertise-client-urls http://${etcd_ipaddr}:2379",
-            "--listen-peer-urls http://0.0.0.0:2380",
-            "--listen-client-urls http://0.0.0.0:4001,http://0.0.0.0:2379",
-            "--peer-key-file /etc/ssl/private/${::fqdn}_infra.key",
-            "--peer-ca-file /etc/ssl/certs/infra.crt",
-            "--peer-cert-file /etc/ssl/certs/${::fqdn}_infra.crt"]))
+      $args = flatten([$common_args,
+                       "--advertise-client-urls ${c2s_url}:2379",
+                       "--listen-client-urls ${listen_c_url}:2379,${listen_c_url}:4001",
+                       "--initial-advertise-peer-urls ${s2s_url}:2380",
+                       "--listen-peer-urls ${listen_s_url}:2380",
+                       "--peer-key-file ${tls_key_file}",
+                       "--peer-ca-file ${tls_ca_file}",
+                       "--peer-cert-file ${tls_cert_file}",
+                       ])
    }
    sunet::docker_run { "etcd_${name}":
       image            => $etcd_image,
       imagetag         => $etcd_version,
       volumes          => ["/data/${name}:/data","/etc/ssl:/etc/ssl"],
       command          => join($args," "),
-      ports            => ["${etcd_ipaddr}:2380:2380","${etcd_ipaddr}:2379:2379","${::ipaddress_docker0}:4001:2379"],
+      ports            => ["2380:2380","2379:2379","${::ipaddress_docker0}:4001:2379"],  # XXX listening on all interfaces now
+      net              => $docker_net,
    }
-   if !$proxy {
+   if ! $proxy {
       sunet::docker_run { "etcd_browser_${name}":
          image         => 'docker.sunet.se/etcd-browser',
-         ports         => [ "${etcd_ipaddr}:8000:8000" ],
-         start_on      => "docker-etcd-${name}",
-         stop_on       => "docker-etcd-${name}"
+         ports         => [ "8000:8000" ],  # XXX listening on all interfaces now
+         depends       => ["etcd_${name}"],
       }
       ufw::allow { "allow-etcd-client-on-docker0":
          ip   => "${::ipaddress_docker0}",
-         port => 4001
+         port => '4001',
       }
       ufw::allow { "allow-etcd-peer":
-         ip   => "${etcd_ipaddr}",
-         port => 2380
+         ip   => $etcd_s2s_ip,
+         port => '2380',
       }
       ufw::allow { "allow-etcd-client":
-         ip   => "${etcd_ipaddr}",
-         port => 2379
+         ip   => $etcd_c2s_ip,
+         port => '2379',
       }
    }
 }

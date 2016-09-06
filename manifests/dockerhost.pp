@@ -7,6 +7,7 @@ class sunet::dockerhost(
   $docker_network_options    = undef,
   $docker_dns                = pick($::ipaddress_eth0, $::ipaddress_bond0, $::ipaddress_br0, $::ipaddress_em1, $::ipaddress_em2,
                                     $::ipaddress6_eth0, $::ipaddress6_bond0, $::ipaddress6_br0, $::ipaddress6_em1, $::ipaddress6_em2,
+                                    $::ipaddress, $::ipaddress6,
                                     ),
   $ufw_allow_docker_dns      = true,
   $manage_dockerhost_unbound = false,
@@ -111,14 +112,18 @@ class sunet::dockerhost(
   }
 
   if $ufw_allow_docker_dns {
-    # Allow Docker containers resolving using caching resolver running on docker host
-    each(['tcp', 'udp']) |$proto| {
-      ufw::allow { "dockerhost_ufw_allow_dns_53_${proto}":
-        from  => '172.16.0.0/12',
-        ip    => $docker_dns,
-        port  => '53',
-        proto => $proto,
+    if $docker_dns == /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
+      # Allow Docker containers resolving using caching resolver running on docker host
+      each(['tcp', 'udp']) |$proto| {
+        ufw::allow { "dockerhost_ufw_allow_dns_53_${proto}":
+          from  => '172.16.0.0/12',
+          ip    => $docker_dns,
+          port  => '53',
+          proto => $proto,
+        }
       }
+    } else {
+      notice("Can't set up firewall rules to allow v4-docker DNS to a v6 nameserver")
     }
   }
 
@@ -131,8 +136,10 @@ class sunet::dockerhost(
         path    => '/etc/unbound/unbound.conf.d/unbound.conf',
         mode    => '0644',
         content => template('sunet/dockerhost/unbound.conf.erb'),
+        require => Package['unbound'],
         notify  => Service['unbound'],
         ;
     }
   }
+
 }

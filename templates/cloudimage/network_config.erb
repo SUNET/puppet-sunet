@@ -1,0 +1,43 @@
+---
+# Docs: None :(
+#
+# https://gist.github.com/Informatic/0b6b24374b54d09c77b9d25595cdbd47
+#
+# The contents of this file are parsed by
+#
+#  /usr/lib/python3/dist-packages/cloudinit/net/sysconfig.py
+#
+# May the source be with you.
+#
+version: 1
+config:
+ - type: physical
+   mac_address: <%= @mac %>
+   name: eth0
+   subnets:
+    - control: auto
+<% if @ip6 == 'auto' -%>
+      # type dhcp6 != SLAAC, but it doesn't look like cloudinit/net/network_state.py can do SLAAC
+      type: dhcp6
+<% elsif @ip6 -%>
+      type: static
+      address: |
+        <%= @ip6 %>
+      ipv6: True
+<% elsif @ip -%>
+      type: static
+      address: |
+        <%= @ip %>
+<% if @netmask -%>      netmask: <%= @netmask %><% end -%>
+<% if @gateway -%>      routes: |
+        <%= @gateway %>
+<% end -%>
+<% elsif @dhcp -%>
+      type: dhcp4
+<%end -%>
+<% if @resolver -%>
+ - type: nameserver
+   address:
+<% @resolver.each do |addr| %>    - <%= addr %>
+<% end %>
+<%end %>

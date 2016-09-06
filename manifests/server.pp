@@ -30,7 +30,7 @@ class sunet::server(
     include ufw
     ufw::allow { "allow-ssh-from-all":
         ip   => 'any',
-        port => 22,
+        port => '22',
     }
   }
 
