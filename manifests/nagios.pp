@@ -94,7 +94,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
          from  => "${client}",
          ip    => 'any',
          proto => 'tcp',
-         port  => 5666
+         port  => '5666',
       }
    }
 }

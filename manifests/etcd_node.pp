@@ -97,15 +97,15 @@ define sunet::etcd_node(
       }
       ufw::allow { "allow-etcd-client-on-docker0":
          ip   => "${::ipaddress_docker0}",
-         port => 4001
+         port => '4001',
       }
       ufw::allow { "allow-etcd-peer":
          ip   => $etcd_s2s_ip,
-         port => 2380
+         port => '2380',
       }
       ufw::allow { "allow-etcd-client":
          ip   => $etcd_c2s_ip,
-         port => 2379
+         port => '2379',
       }
    }
 }
