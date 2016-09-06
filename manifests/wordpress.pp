@@ -13,8 +13,9 @@ define sunet::wordpress (
 )
 {
    include augeas
+   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
    $db_hostname = $db_host ? {
-      undef   => "${name}_mysql.docker",
+      undef   => "${safe_name}-mysql.docker",
       default => $db_host
    }
    $db_user = $mysql_user ? {
@@ -26,15 +27,13 @@ define sunet::wordpress (
       default => $mysql_db_name
    }
    $pwd = hiera("${name}_db_password")
-   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
    ensure_resource('file',["/data/${name}","/data/${name}/html","/data/${name}/credentials"], {ensure => directory})
    sunet::docker_run { "${name}_wordpress":
       image       => $wordpress_image,
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/credentials:/etc/shibboleth/credentials"],
       ports       => ["8080:80"],
-      start_on    => "docker-${safe_name}-mysql",
-      stop_on     => "docker-${safe_name}-mysql",
+      depends     => ["${db_hostname}"],
       env         => [ "SERVICE_NAME=${name}",
                        "SP_HOSTNAME=${sp_hostname}",
                        "SP_CONTACT=${sp_contact}",
@@ -56,7 +55,6 @@ define sunet::wordpress (
                           "MYSQL_PASSWORD=${pwd}",
                           "MYSQL_ROOT_PASSWORD=${pwd}",
                           "MYSQL_DATABASE=${db_name}"],
-          use_unbound => true
       }
       package {['mysql-client','mysql-client-5.5','automysqlbackup']: ensure => latest } -> 
       augeas { 'automysqlbackup_settings': 
@@ -74,7 +72,7 @@ define sunet::wordpress (
          ensure => directory
        } ->
        cron { "${name}_mysql_dump":
-         command => "mysqldump -h ${name}_mysql.docker -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql.new && test -s /data/${name}/dump/${db_name}.sql.new && mv /data/${name}/dump/${db_name}.sql.new /data/${name}/dump/${db_name}.sql",
+         command => "mysqldump -h ${name}-mysql.docker -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql.new && test -s /data/${name}/dump/${db_name}.sql.new && mv /data/${name}/dump/${db_name}.sql.new /data/${name}/dump/${db_name}.sql",
          user    => 'root',
          minute  => '*/5'
        }
@@ -86,7 +84,7 @@ define sunet::wordpress (
        owner  => 'root',
        group  => 'root',
        mode   => '0700',
-       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h ${name}_mysql.docker -u ${db_user} -p${pwd} ${db_name}")
+       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h ${name}-mysql.docker -u ${db_user} -p${pwd} ${db_name}")
      }
    }
 }
