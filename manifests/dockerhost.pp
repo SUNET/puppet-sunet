@@ -114,7 +114,7 @@ class sunet::dockerhost(
         }
       }
     } else {
-      notice("Can't set up firewall rules to allow v4-docker DNS to a v6 nameserver")
+      notice("Can't set up firewall rules to allow v4-docker DNS to a v6 nameserver ($docker_dns)")
     }
   }
 
