@@ -4,6 +4,7 @@ define sunet::etcd_node(
   $discovery_srv   = undef,
   $etcd_version    = 'v2.0.8',
   $proxy           = true,
+  $proxy_readonly  = false,
   $docker_net      = 'docker',
   $etcd_s2s_ip     = $::ipaddress_eth1,
   $etcd_s2s_proto  = 'http',    # XXX default ought to be https
@@ -66,8 +67,12 @@ define sunet::etcd_node(
    $listen_c_url = "${etcd_c2s_proto}://${listen_ip}"
    $listen_s_url = "${etcd_s2s_proto}://${listen_ip}"
    if $proxy {
+      $proxy_type = $proxy_readonly ? {
+        true  => 'readonly',
+        false => 'on',
+      }
       $args = flatten([$common_args,
-                       '--proxy on',
+                       "--proxy $proxy_type",
                        "--listen-client-urls ${c2s_url}:4001,${c2s_url}:2379",
                        ])
    } else {
