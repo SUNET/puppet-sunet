@@ -84,9 +84,16 @@ define sunet::etcd_node(
    sunet::docker_run { "etcd_${name}":
       image            => $etcd_image,
       imagetag         => $etcd_version,
-      volumes          => ["/data/${name}:/data","/etc/ssl:/etc/ssl"],
+      volumes          => ["/data/${name}:/data",
+                           "${tls_key_file}:${tls_key_file}:ro",
+                           "${tls_ca_file}:${tls_ca_file}:ro",
+                           "${tls_cert_file}:${tls_cert_file}:ro",
+                           ],
       command          => join($args," "),
-      ports            => ["2380:2380","2379:2379","${::ipaddress_docker0}:4001:2379"],  # XXX listening on all interfaces now
+      ports            => ["2380:2380",    # XXX listening on all interfaces now
+                           "2379:2379",    # XXX listening on all interfaces now
+                           "${::ipaddress_docker0}:4001:2379",
+                           ],
       net              => $docker_net,
    }
    if ! $proxy {
