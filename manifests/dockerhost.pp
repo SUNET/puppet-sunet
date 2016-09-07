@@ -103,7 +103,7 @@ class sunet::dockerhost(
   }
 
   if $ufw_allow_docker_dns {
-    if $docker_dns == /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
+    if $docker_dns =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
       # Allow Docker containers resolving using caching resolver running on docker host
       each(['tcp', 'udp']) |$proto| {
         ufw::allow { "dockerhost_ufw_allow_dns_53_${proto}":
