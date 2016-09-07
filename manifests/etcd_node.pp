@@ -21,14 +21,14 @@ define sunet::etcd_node(
 
    # Add brackets to bare IPv6 IP.
    $s2s_ip = $etcd_s2s_ip ? {
-     /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_s2s_ip,  # IPv4
-     /^[0-9a-fA-F:]+$/ => "[${etcd_s2s_ip}]",
+     /^[0-9a-fA-F:]+$/ => "[${etcd_s2s_ip}]",  # bare IPv6 address
+     default           => $etcd_s2s_ip,        # IPv4 or hostname probably
    }
 
    # Add brackets to bare IPv6 IP.
    $c2s_ip = $etcd_c2s_ip ? {
-     /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_c2s_ip,  # IPv4
-     /^[0-9a-fA-F:]+$/ => "[${etcd_c2s_ip}]",
+     /^[0-9a-fA-F:]+$/ => "[${etcd_c2s_ip}]",  # bare IPv6 address
+     default           => $etcd_c2s_ip,        # IPv4 or hostname probably
    }
 
    # Add brackets to bare IPv6 IP.
