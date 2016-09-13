@@ -46,6 +46,8 @@ class sunet::dockerhost(
     subnet => $docker_network,
   }
 
+  ensure_resource('file', ['/etc/scriptherder', '/etc/scriptherder/checks'], { ensure => directory })
+
   file {
     '/usr/local/etc/docker.d':  # XXX obsolete
       ensure  => 'directory',
@@ -65,6 +67,7 @@ class sunet::dockerhost(
       ensure  => file,
       mode    => '0644',
       content => template('sunet/dockerhost/scriptherder_docker-cleanup.ini.erb'),
+      require => File['/etc/scriptherder/checks'],
       ;
     '/etc/sudoers.d/nrpe_dockerhost_checks':
       ensure  => file,
