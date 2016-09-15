@@ -24,7 +24,7 @@ define sunet::ucrandom(
            group   => root,
            mode    => '0660',
            content => template("sunet/ucrandom/ucrandom.conf.erb")
-      },
+      }
       'systemd': file {'/lib/systemd/system/ucrandom.conf':
            ensure  => file,
            owner   => root,
