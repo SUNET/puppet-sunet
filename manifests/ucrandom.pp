@@ -18,19 +18,23 @@ define sunet::ucrandom(
       content => template("sunet/ucrandom/default.erb")
    }
    case $::init_type {
-      'init': file {'/etc/init/ucrandom.conf': 
+      'init': {
+         file {'/etc/init/ucrandom.conf': 
            ensure  => file,
            owner   => root,
            group   => root,
            mode    => '0660',
            content => template("sunet/ucrandom/ucrandom.conf.erb")
+         }
       }
-      'systemd': file {'/lib/systemd/system/ucrandom.conf':
+      'systemd': {
+         file {'/lib/systemd/system/ucrandom.conf':
            ensure  => file,
            owner   => root,
            group   => root,
            mode    => '0600',
            content => template("sunet/ucrandom/ucrandom.unit.erb")
+         }
       }
    }
    service {'ucrandom': ensure => running }
