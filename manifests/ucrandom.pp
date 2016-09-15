@@ -28,7 +28,7 @@ define sunet::ucrandom(
          }
       }
       'systemd': {
-         file {'/lib/systemd/system/ucrandom.conf':
+         file {'/lib/systemd/system/ucrandom.service':
            ensure  => file,
            owner   => root,
            group   => root,
