@@ -22,6 +22,7 @@ server:
        <% if @ipaddress_bond0 -%>interface: <%= @ipaddress_bond0 %><% end %>
        <% if @ipaddress_em1 -%>interface: <%= @ipaddress_em1 %><% end %>
        <% if @ipaddress_em2 -%>interface: <%= @ipaddress_em2 %><% end %>
+       interface: ::1
        access-control: 172.16.0.0/12 allow
        <% if @ipaddress_eth0 -%>access-control: <%= @ipaddress_eth0 %>/32 allow<% end %>
        <% if @ipaddress_docker0 -%>access-control: <%= @ipaddress_docker0 %>/32 allow<% end %>
