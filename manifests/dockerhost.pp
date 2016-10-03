@@ -46,7 +46,12 @@ class sunet::dockerhost(
     subnet => $docker_network,
   }
 
-  ensure_resource('file', ['/etc/scriptherder', '/etc/scriptherder/check'], { ensure => directory })
+  # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    $check_docker_containers_args = '--systemd'
+  } else {
+    $check_docker_containers_args = '--init_d'
+  }
 
   file {
     '/usr/local/etc/docker.d':  # XXX obsolete
@@ -73,6 +78,10 @@ class sunet::dockerhost(
       ensure  => file,
       mode    => '0440',
       content => template('sunet/dockerhost/etc_sudoers.d_nrpe_dockerhost_checks.erb'),
+      ;
+    '/etc/nagios/nrpe.d/sunet_dockerhost_checks.cfg':
+      ensure  => 'file',
+      content => template('sunet/dockerhost/nagios_nrpe_checks.erb'),
       ;
     '/usr/local/bin/check_docker_containers':
       ensure  => file,
