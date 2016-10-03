@@ -13,13 +13,15 @@
 # #
 # ###################################################
 server:
-       interface: 0.0.0.0
-       interface: ::1
-       # Make responses come from the IP address to which the query was sent. This is
-       # needed on dockerhosts where the query is sent to the eth0 IP address to not
-       # have the responses come from the docker network bridge IP address, which will
-       # result in the responses being ignored by the container.
-       interface-automatic: yes
+       # Explicitly listen to interfaces. Otherwise, docker containers will get responses to
+       # DNS queries with a source IP address different than the one they sent the request
+       # to, which will get dropped.
+       <% if @ipaddress_eth0 -%>interface: <%= @ipaddress_eth0 %><% end %>
+       <% if @ipaddress_docker0 -%>interface: <%= @ipaddress_docker0 %><% end %>
+       <% if @ipaddress_br0 -%>interface: <%= @ipaddress_br0 %><% end %>
+       <% if @ipaddress_bond0 -%>interface: <%= @ipaddress_bond0 %><% end %>
+       <% if @ipaddress_em1 -%>interface: <%= @ipaddress_em1 %><% end %>
+       <% if @ipaddress_em2 -%>interface: <%= @ipaddress_em2 %><% end %>
        access-control: 172.16.0.0/12 allow
        <% if @ipaddress_eth0 -%>access-control: <%= @ipaddress_eth0 %>/32 allow<% end %>
        <% if @ipaddress_docker0 -%>access-control: <%= @ipaddress_docker0 %>/32 allow<% end %>
