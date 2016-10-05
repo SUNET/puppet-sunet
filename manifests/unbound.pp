@@ -43,4 +43,19 @@ class sunet::unbound(
       require => Package['unbound'],
     }
   }
+
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 and $::fqdn =~ /-1\.eduid\.se$/ {
+    # replace init.d script with systemd service file
+    file {
+      '/etc/init.d/unbound':
+        ensure => 'absent',
+        ;
+      '/etc/systemd/system/unbound.service':
+        content => template('sunet/unbound/sunet_unbound.service.erb'),
+        notify  => [Class['sunet::systemd_reload'],
+                    Service['unbound'],
+                    ],
+        ;
+    }
+  }
 }
