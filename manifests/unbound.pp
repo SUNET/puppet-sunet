@@ -54,6 +54,9 @@ class sunet::unbound(
       '/etc/init.d/unbound':
         ensure => 'absent',
         ;
+      '/etc/insserv.conf.d/unbound':
+        ensure => 'absent',
+        ;
       '/etc/systemd/system/unbound.service':
         content => template('sunet/unbound/sunet_unbound.service.erb'),
         notify  => [Class['sunet::systemd_reload'],
