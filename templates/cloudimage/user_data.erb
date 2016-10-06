@@ -37,4 +37,4 @@ runcmd:
    - "cp /tmp/seed/bootstrap-cosmos.sh /tmp/seed/cosmos_1.2-2_all.deb /root"
    - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
    - "cd /root && /root/bootstrap-cosmos.sh <%= @name %> <%= @repo %> <%= @tagpattern %>"
-   - "bash -lc /usr/local/bin/run-cosmos -v"
+   - "bash -lc 'cosmos -v update && cosmos -v apply'"
