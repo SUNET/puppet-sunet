@@ -24,11 +24,13 @@ class sunet::unbound(
 
     service { 'unbound':
       ensure  => 'running',
+      enable  => true,
       require => Package['unbound'],
     }
   } else {
     service { 'unbound':
       ensure  => 'running',
+      enable  => true,
       require => Package['unbound'],
     }
   }
