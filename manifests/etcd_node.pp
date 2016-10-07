@@ -17,6 +17,7 @@ define sunet::etcd_node(
   $tls_ca_file     = '/etc/ssl/certs/infra.crt',
   $tls_cert_file   = "/etc/ssl/certs/${::fqdn}_infra.crt",
   $expose_ports    = true,
+  $expose_port_pre = '',
 )
 {
    include stdlib
@@ -89,9 +90,8 @@ define sunet::etcd_node(
    }
 
    $ports = $expose_ports ? {
-     # XXX no way to listen to specific IP for now
-     true => ['2380:2380',
-              '2379:2379',
+     true => ["${expose_port_pre}2380:2380",
+              "${expose_port_pre}2379:2379",
               "${::ipaddress_docker0}:4001:2379",
               ],
      false => []
