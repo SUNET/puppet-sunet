@@ -49,6 +49,9 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    sunet::nagios::nrpe_command {'check_boot':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
    }
+   sunet::nagios::nrpe_command {'check_var':
+      command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /var'
+   }
    sunet::nagios::nrpe_command {'check_zombie_procs':
       command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
    }
@@ -94,7 +97,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
          from  => "${client}",
          ip    => 'any',
          proto => 'tcp',
-         port  => 5666
+         port  => '5666',
       }
    }
 }

@@ -6,8 +6,12 @@ class sunet::unbound(
   package { 'unbound': ensure => 'installed' }
 
   if $use_apparmor {
-    ensure_resource('file', '/etc/apparmor-cosmos', {ensure => 'directory'})
+    include apparmor
+
     file {
+      '/etc/apparmor-cosmos':
+        ensure => 'directory',
+        ;
       '/etc/apparmor-cosmos/usr.sbin.unbound':
         content => template('sunet/unbound/etc_apparmor_cosmos_usr.sbin.unbound.erb'),
         require => File['/etc/apparmor-cosmos'],
@@ -20,11 +24,13 @@ class sunet::unbound(
 
     service { 'unbound':
       ensure  => 'running',
+      enable  => true,
       require => Package['unbound'],
     }
   } else {
     service { 'unbound':
       ensure  => 'running',
+      enable  => true,
       require => Package['unbound'],
     }
   }
@@ -37,6 +43,26 @@ class sunet::unbound(
       content => template('sunet/unbound/unbound-sunet-resolvers.conf.erb'),
       notify  => Service['unbound'],
       require => Package['unbound'],
+    }
+  }
+
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 and $::fqdn =~ /-1\.eduid\.se$/ {
+    include sunet::systemd_reload
+
+    # replace init.d script with systemd service file
+    file {
+      '/etc/init.d/unbound':
+        ensure => 'absent',
+        ;
+      '/etc/insserv.conf.d/unbound':
+        ensure => 'absent',
+        ;
+      '/etc/systemd/system/unbound.service':
+        content => template('sunet/unbound/sunet_unbound.service.erb'),
+        notify  => [Class['sunet::systemd_reload'],
+                    Service['unbound'],
+                    ],
+        ;
     }
   }
 }

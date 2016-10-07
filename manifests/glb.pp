@@ -26,12 +26,12 @@ class sunet::glb(
    }
    ufw::allow { "allow-dns-udp":
       ip   => "${bind_address}",
-      port => 53,
+      port => '53',
       proto => "udp",
    }
    ufw::allow { "allow-dns-tcp":
       ip   => "${bind_address}",
-      port => 53,
+      port => '53',
       proto => "tcp",
    }
    sunet::nagios::nrpe_check_process { 'geodns': }

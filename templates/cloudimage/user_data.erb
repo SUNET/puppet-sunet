@@ -1,0 +1,41 @@
+#cloud-config
+#
+# Docs: https://cloudinit.readthedocs.io/en/latest/ (this is Data source 'No Cloud')
+#
+user: root
+<% if @password -%>
+password: <%= @password %>
+<% end -%>
+disable_root: 0
+chpasswd:
+  expire: False
+ssh_pwauth: False
+<% if @ssh_keys -%>
+ssh_authorized_keys:
+<% @ssh_keys.each do |key| %>
+   - <%= key %>
+<% end -%>
+<% end -%>
+write_files:
+  - path: "/etc/default/grub.d/99-sunet-cloud-init.cfg"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      # Enable grub on serial console
+      GRUB_TERMINAL=serial
+package_upgrade: true
+runcmd:
+   - "echo '*** debug: /etc/network/interfaces:'"
+   - "cat /etc/network/interfaces"
+   - "echo '*** debug: find /etc/network/ -ls:'"
+   - "find /etc/network -ls"
+   - "echo '*** debug: cat /etc/network/interfaces.d/50-cloud-init.cfg:'"
+   - "cat /etc/network/interfaces.d/50-cloud-init.cfg"
+   - "echo '*** debug: cat /etc/resolv.conf:'"
+   - "cat /etc/resolv.conf"
+   - "mkdir /tmp/seed"
+   - "mount /dev/vdb /tmp/seed"
+   - "cp /tmp/seed/bootstrap-cosmos.sh /tmp/seed/cosmos_1.2-2_all.deb /root"
+   - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
+   - "cd /root && /root/bootstrap-cosmos.sh <%= @name %> <%= @repo %> <%= @tagpattern %>"
+   - "bash -lc 'cosmos -v update && cosmos -v apply'"
