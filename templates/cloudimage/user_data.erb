@@ -23,6 +23,7 @@ write_files:
     content: |
       # Enable grub on serial console
       GRUB_TERMINAL=serial
+package_upgrade: true
 runcmd:
    - "echo '*** debug: /etc/network/interfaces:'"
    - "cat /etc/network/interfaces"
