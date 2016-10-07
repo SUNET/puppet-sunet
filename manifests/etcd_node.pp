@@ -16,6 +16,7 @@ define sunet::etcd_node(
   $tls_key_file    = "/etc/ssl/private/${::fqdn}_infra.key",
   $tls_ca_file     = '/etc/ssl/certs/infra.crt',
   $tls_cert_file   = "/etc/ssl/certs/${::fqdn}_infra.crt",
+  $expose_ports    = true,
 )
 {
    include stdlib
@@ -86,6 +87,16 @@ define sunet::etcd_node(
                        "--peer-cert-file ${tls_cert_file}",
                        ])
    }
+
+   $ports = $expose_ports ? {
+     # XXX no way to listen to specific IP for now
+     true => ['2380:2380',
+              '2379:2379',
+              "${::ipaddress_docker0}:4001:2379",
+              ],
+     false => []
+   }
+
    sunet::docker_run { "etcd_${name}":
       image            => $etcd_image,
       imagetag         => $etcd_version,
@@ -95,10 +106,7 @@ define sunet::etcd_node(
                            "${tls_cert_file}:${tls_cert_file}:ro",
                            ],
       command          => join($args," "),
-      ports            => ["2380:2380",    # XXX listening on all interfaces now
-                           "2379:2379",    # XXX listening on all interfaces now
-                           "${::ipaddress_docker0}:4001:2379",
-                           ],
+      ports            => $ports,
       net              => $docker_net,
    }
    if ! $proxy {
