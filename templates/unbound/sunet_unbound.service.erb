@@ -1,7 +1,8 @@
 [Unit]
 Description=Start unbound on SUNET host
 After=network.target
-Wants=docker.target
+Wants=docker.service
+BindsTo=docker.service
 
 [Service]
 Restart=on-failure
