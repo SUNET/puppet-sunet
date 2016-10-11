@@ -48,13 +48,6 @@ class sunet::dockerhost(
     options => $docker_network_options,
   }
 
-  # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
-    $check_docker_containers_args = '--systemd'
-  } else {
-    $check_docker_containers_args = '--init_d'
-  }
-
   # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
     $check_docker_containers_args = '--systemd'
