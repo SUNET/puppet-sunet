@@ -4,6 +4,7 @@ define sunet::pyff(
    $dir = "/opt/metadata",
    $pyffd_args = "",
    $pyffd_loglevel = "INFO",
+   $acme_tool_uri = undef,
    $ip = undef) {
    $ip_addr = $ip ? {
       undef   => "",
@@ -18,9 +19,13 @@ define sunet::pyff(
       ports    => ["${ip_addr}443:443"],
       depends  => ["varnish-${sanitised_title}"]
    }
+   $acme_env = $acme_tool_uri ? {
+      undef    => [],
+      default  => ["ACME_PORT=$acme_tool_uri"]
+   }
    sunet::docker_run {"varnish-${sanitised_title}":
       image    => 'docker.sunet.se/varnish',
-      env      => ["BACKEND_PORT=tcp://pyff-${sanitised_title}.docker:8080"],
+      env      => flatten([["BACKEND_PORT=tcp://pyff-${sanitised_title}.docker:8080"],$acme_env]),
       ports    => ["${ip_addr}80:80"],
       depends  => ["pyff-${sanitised_title}"]
    }

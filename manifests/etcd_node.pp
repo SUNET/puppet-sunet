@@ -4,6 +4,7 @@ define sunet::etcd_node(
   $discovery_srv   = undef,
   $etcd_version    = 'v2.0.8',
   $proxy           = true,
+  $proxy_readonly  = false,
   $docker_net      = 'docker',
   $etcd_s2s_ip     = $::ipaddress_eth1,
   $etcd_s2s_proto  = 'http',    # XXX default ought to be https
@@ -15,20 +16,22 @@ define sunet::etcd_node(
   $tls_key_file    = "/etc/ssl/private/${::fqdn}_infra.key",
   $tls_ca_file     = '/etc/ssl/certs/infra.crt',
   $tls_cert_file   = "/etc/ssl/certs/${::fqdn}_infra.crt",
+  $expose_ports    = true,
+  $expose_port_pre = '',
 )
 {
    include stdlib
 
    # Add brackets to bare IPv6 IP.
    $s2s_ip = $etcd_s2s_ip ? {
-     /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_s2s_ip,  # IPv4
-     /^[0-9a-fA-F:]+$/ => "[${etcd_s2s_ip}]",
+     /^[0-9a-fA-F:]+$/ => "[${etcd_s2s_ip}]",  # bare IPv6 address
+     default           => $etcd_s2s_ip,        # IPv4 or hostname probably
    }
 
    # Add brackets to bare IPv6 IP.
    $c2s_ip = $etcd_c2s_ip ? {
-     /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ => $etcd_c2s_ip,  # IPv4
-     /^[0-9a-fA-F:]+$/ => "[${etcd_c2s_ip}]",
+     /^[0-9a-fA-F:]+$/ => "[${etcd_c2s_ip}]",  # bare IPv6 address
+     default           => $etcd_c2s_ip,        # IPv4 or hostname probably
    }
 
    # Add brackets to bare IPv6 IP.
@@ -66,8 +69,12 @@ define sunet::etcd_node(
    $listen_c_url = "${etcd_c2s_proto}://${listen_ip}"
    $listen_s_url = "${etcd_s2s_proto}://${listen_ip}"
    if $proxy {
+      $proxy_type = $proxy_readonly ? {
+        true  => 'readonly',
+        false => 'on',
+      }
       $args = flatten([$common_args,
-                       '--proxy on',
+                       "--proxy $proxy_type",
                        "--listen-client-urls ${c2s_url}:4001,${c2s_url}:2379",
                        ])
    } else {
@@ -81,12 +88,25 @@ define sunet::etcd_node(
                        "--peer-cert-file ${tls_cert_file}",
                        ])
    }
+
+   $ports = $expose_ports ? {
+     true => ["${expose_port_pre}2380:2380",
+              "${expose_port_pre}2379:2379",
+              "${::ipaddress_docker0}:4001:2379",
+              ],
+     false => []
+   }
+
    sunet::docker_run { "etcd_${name}":
       image            => $etcd_image,
       imagetag         => $etcd_version,
-      volumes          => ["/data/${name}:/data","/etc/ssl:/etc/ssl"],
+      volumes          => ["/data/${name}:/data",
+                           "${tls_key_file}:${tls_key_file}:ro",
+                           "${tls_ca_file}:${tls_ca_file}:ro",
+                           "${tls_cert_file}:${tls_cert_file}:ro",
+                           ],
       command          => join($args," "),
-      ports            => ["2380:2380","2379:2379","${::ipaddress_docker0}:4001:2379"],  # XXX listening on all interfaces now
+      ports            => $ports,
       net              => $docker_net,
    }
    if ! $proxy {

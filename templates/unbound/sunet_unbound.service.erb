@@ -1,0 +1,16 @@
+[Unit]
+Description=Start unbound on SUNET host
+After=network.target
+Wants=docker.service
+BindsTo=docker.service
+
+[Service]
+Restart=on-failure
+StartLimitInterval=20
+StartLimitBurst=5
+TimeoutStartSec=0
+ExecStart=/usr/sbin/unbound -d
+
+[Install]
+WantedBy=multi-user.target
+Alias=unbound.service

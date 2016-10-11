@@ -55,6 +55,13 @@ class sunet::dockerhost(
     $check_docker_containers_args = '--init_d'
   }
 
+  # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    $check_docker_containers_args = '--systemd'
+  } else {
+    $check_docker_containers_args = '--init_d'
+  }
+
   file {
     '/usr/local/etc/docker.d':  # XXX obsolete
       ensure  => 'directory',
@@ -74,11 +81,16 @@ class sunet::dockerhost(
       ensure  => file,
       mode    => '0644',
       content => template('sunet/dockerhost/scriptherder_docker-cleanup.ini.erb'),
+      require => File['/etc/scriptherder/check'],
       ;
     '/etc/sudoers.d/nrpe_dockerhost_checks':
       ensure  => file,
       mode    => '0440',
       content => template('sunet/dockerhost/etc_sudoers.d_nrpe_dockerhost_checks.erb'),
+      ;
+    '/etc/nagios/nrpe.d/sunet_dockerhost_checks.cfg':
+      ensure  => 'file',
+      content => template('sunet/dockerhost/nagios_nrpe_checks.erb'),
       ;
     '/usr/local/bin/check_docker_containers':
       ensure  => file,
@@ -112,7 +124,7 @@ class sunet::dockerhost(
   }
 
   if $ufw_allow_docker_dns {
-    if $docker_dns == /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
+    if $docker_dns =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
       # Allow Docker containers resolving using caching resolver running on docker host
       each(['tcp', 'udp']) |$proto| {
         ufw::allow { "dockerhost_ufw_allow_dns_53_${proto}":
@@ -123,7 +135,7 @@ class sunet::dockerhost(
         }
       }
     } else {
-      notice("Can't set up firewall rules to allow v4-docker DNS to a v6 nameserver")
+      notice("Can't set up firewall rules to allow v4-docker DNS to a v6 nameserver ($docker_dns)")
     }
   }
 

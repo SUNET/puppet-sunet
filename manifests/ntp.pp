@@ -17,5 +17,11 @@ class sunet::ntp($disable_pool_ntp_org = false) {
        line        => '^server .*\.pool\.ntp\.org',
        notify      => Service['ntp'],
      }
+     sunet::snippets::file_line { 'no_pool_ntp_org_servers2':
+       ensure      => 'comment',
+       filename    => '/etc/ntp.conf',
+       line        => '^pool .*\.pool\.ntp\.org',
+       notify      => Service['ntp'],
+     }
    }
 }

@@ -1,13 +1,17 @@
-define sunet::nagios::nrpe_check_etcd_cluster_health ($etcd_container = $title) {
+define sunet::nagios::nrpe_check_etcd_cluster_health ($etcd_container = undef) {
+   $check_container = $etcd_container ? {
+       undef        => $title,
+       default      => $etcd_container
+   }
    sunet::sudoer {'nagios_get_etcd_cluster-health':
        user_name    => 'nagios',
        collection   => 'nagios',
-       command_line => '/usr/local/bin/get_etcd_cluster-health $etcd_container'
+       command_line => "/usr/local/bin/get_etcd_cluster-health $check_container"
    }
    sunet::sudoer {'nagios_get_docker_container_id':
        user_name    => 'nagios',
        collection   => 'nagios',
-       command_line => '/usr/local/bin/get_docker_container_id $etcd_container'
+       command_line => "/usr/local/bin/get_docker_container_id $check_container"
    }
    file { '/usr/lib/nagios/plugins/etcd-cluster-health':
        ensure  => 'file',
@@ -31,6 +35,6 @@ define sunet::nagios::nrpe_check_etcd_cluster_health ($etcd_container = $title) 
        content => template('sunet/nagioshost/get_etcd_cluster-health.erb'),
    }
    sunet::nagios::nrpe_command {'etcd_cluster_health':
-       command_line => '/usr/lib/nagios/plugins/etcd-cluster-health $etcd_container'
+       command_line => "/usr/lib/nagios/plugins/etcd-cluster-health $check_container"
    }
 }

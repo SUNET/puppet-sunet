@@ -1,9 +1,14 @@
 class sunet::letsencrypt($staging=false,
+                         $domains=undef,
+                         $httpd=false,
                          $src_url='https://raw.githubusercontent.com/lukas2511/letsencrypt.sh/master/letsencrypt.sh') 
 {
-  $domains = hiera('letsencrypt_domains')
-  validate_array($domains)
-  each($domains) |$domain_hash| {
+  $thedomains = $domains ? {
+     undef   => hiera('letsencrypt_domains',[{$::fqdn=>{'names'=>[$::fqdn]}}]),
+     default => $domains
+  }
+  validate_array($thedomains)
+  each($thedomains) |$domain_hash| {
      validate_hash($domain_hash)
   }
   $ca = $staging ? {
@@ -15,6 +20,13 @@ class sunet::letsencrypt($staging=false,
      remote_location => $src_url,
      mode            => '0755'
   }
+  file { '/usr/bin/le-ssl-compat.sh':
+     ensure  => 'file',
+     owner   => 'root',
+     group   => 'root',
+     mode    => '0755',
+     content => template('sunet/letsencrypt/le-ssl-compat.erb')
+  }
   file { '/etc/letsencrypt.sh':
      ensure  => 'directory',
      mode    => '0600'
@@ -24,7 +36,7 @@ class sunet::letsencrypt($staging=false,
      content => template('sunet/letsencrypt/config.erb')
   }
   exec { 'letsencrypt-runonce':
-     command     => '/usr/sbin/letsencrypt.sh -c',
+     command     => '/usr/sbin/letsencrypt.sh -c && /usr/bin/le-ssl-compat.sh',
      refreshonly => true
   }
   file { '/etc/letsencrypt.sh/domains.txt':
@@ -32,38 +44,40 @@ class sunet::letsencrypt($staging=false,
      content => template('sunet/letsencrypt/domains.erb'),
      notify  => Exec['letsencrypt-runonce']
   }
-  package {'lighttpd':
-     ensure  => latest
-  } -> 
-  service {'lighttpd':
-     ensure  => running
-  } ->
-  ufw::allow { "allow-lighthttp":
-     proto => 'tcp',
-     port  => '80'
-  } ->
-  file { '/var/www/letsencrypt':
-     ensure  => 'directory',
-     owner   => 'www-data',
-     group   => 'www-data'
-  } ->
-  file { '/var/www/letsencrypt/index.html':
-     ensure  => file,
-     owner   => 'www-data',
-     group   => 'www-data',
-     content => "<!DOCTYPE html><html><head><title>meep</title></head><body>meep<br/>meep</body></html>"
-  }
-  file {'/etc/lighttpd/conf-enabled/acme.conf':
-     ensure  => 'file',
-     content => template('sunet/letsencrypt/lighttpd.conf'),
-     notify  => Service['lighttpd']
-  }
   cron {'letsencrypt-cron':
-     command => '/usr/sbin/letsencrypt.sh -c',
+     command => '/usr/sbin/letsencrypt.sh -c && /usr/bin/le-ssl-compat.sh',
      hour    => 2,
      minute  => 13
   }
-  each($domains) |$domain_hash| {
+  if ($httpd) {
+     package {'lighttpd':
+        ensure  => latest
+     } -> 
+     service {'lighttpd':
+        ensure  => running
+     } ->
+     ufw::allow { "allow-lighthttp":
+        proto => 'tcp',
+        port  => '80'
+     }
+     file { '/var/www/letsencrypt':
+        ensure  => 'directory',
+        owner   => 'www-data',
+        group   => 'www-data'
+     } ->
+     file { '/var/www/letsencrypt/index.html':
+        ensure  => file,
+        owner   => 'www-data',
+        group   => 'www-data',
+        content => "<!DOCTYPE html><html><head><title>meep</title></head><body>meep<br/>meep</body></html>"
+     }
+     file {'/etc/lighttpd/conf-enabled/acme.conf':
+        ensure  => 'file',
+        content => template('sunet/letsencrypt/lighttpd.conf'),
+        notify  => Service['lighttpd']
+     }
+  }
+  each($thedomains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
          sunet::rrsync { "/etc/letsencrypt.sh/certs/$domain":
@@ -87,8 +101,15 @@ class sunet::letsencrypt::client($domain=undef, $server='acme-c.sunet.se', $user
   sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
     hiera_key => "${domain}_ssh_key"
   } ->
+  file { '/usr/bin/le-ssl-compat.sh':
+     ensure  => 'file',
+     owner   => 'root',
+     group   => 'root',
+     mode    => '0755',
+     content => template('sunet/letsencrypt/le-ssl-compat.erb')
+  } ->
   cron { "rsync_letsencrypt_${domain}":
-    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/letsencrypt.sh/certs/${domain}",
+    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/letsencrypt.sh/certs/${domain} && /usr/bin/le-ssl-compat.sh",
     user    => $user,
     hour    => '*',
     minute  => '13'
