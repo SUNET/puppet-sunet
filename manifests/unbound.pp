@@ -46,7 +46,7 @@ class sunet::unbound(
     }
   }
 
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 and $::fqdn =~ /-1\.eduid\.se$/ {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
     include sunet::systemd_reload
 
     # replace init.d script with systemd service file
