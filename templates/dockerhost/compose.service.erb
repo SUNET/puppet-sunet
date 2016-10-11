@@ -14,8 +14,8 @@ WorkingDirectory=/
 
 ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> down
 ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> kill
-ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> rm
-ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> rm -f
+ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> rm --all
+ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> rm -f --all
 
 ExecStart=/usr/local/bin/docker-compose -f <%= @compose_file %> up --force-recreate --no-deps
 
