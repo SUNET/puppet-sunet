@@ -19,7 +19,7 @@ etcdClusterHealth()
     # Remove carriage return from the value to return so
     # that bash will not give us any problem when
     # matching against the message.
-    echo -n "${__etcd_status[0]}" | tr -d '\r'
+    echo -n "${__etcd_status[-1]}" | tr -d '\r'
 }
 
 if [[ "$(sudo get_docker_container_id "$1")" == "" ]]; then
