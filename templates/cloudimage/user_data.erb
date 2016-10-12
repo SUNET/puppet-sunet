@@ -35,7 +35,7 @@ runcmd:
    - "cat /etc/resolv.conf"
    - "mkdir /tmp/seed"
    - "mount /dev/vdb /tmp/seed"
-   - "cp /tmp/seed/bootstrap-cosmos.sh /tmp/seed/cosmos_1.2-2_all.deb /root"
+   - "cp /tmp/seed/bootstrap-cosmos.sh /tmp/seed/cosmos_1.2-2_all.deb /tmp/seed/cosmos_1.5-1_all.deb /root"
    - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
    - "cd /root && /root/bootstrap-cosmos.sh <%= @name %> <%= @repo %> <%= @tagpattern %>"
    - "bash -lc 'cosmos -v update && cosmos -v apply'"
