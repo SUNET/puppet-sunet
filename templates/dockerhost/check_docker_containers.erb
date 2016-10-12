@@ -144,28 +144,24 @@ def collect_compose_services(args, logger):
     if not files:
         return []
     re_compose_file = re.compile('^#\s*COMPOSE_FILE=(.+?)\s*$')
-    re_service_name = re.compile('^#\s*SERVICE_NAME=(.+?)\s*$')
     for this in files:
-        compose_file, service_name = _get_compose_metadata(this, re_compose_file, re_service_name, logger)
-        if compose_file and service_name:
+        compose_file = _get_compose_metadata(this, re_compose_file, logger)
+        if compose_file:
+            # docker-compose uses directory of file as service-name
+            # e.g. for file /path/to/something/docker-compose.yml the service-name is 'something'
+            service_name = os.path.basename(os.path.dirname(compose_file))
             res += _collect_compose_service(compose_file, service_name, logger)
     return res
 
-def _get_compose_metadata(filename, re_compose_file, re_service_name, logger):
-    compose_file = None
-    service_name = None
+def _get_compose_metadata(filename, re_compose_file, logger):
     logger.debug('Inspecting systemd service file {!s}'.format(filename))
     with open(filename) as fd:
         for line in fd.readlines():
             if not line.startswith('#'):
-                break
+                return None
             m = re_compose_file.match(line)
             if m:
-                compose_file = m.group(1)
-            m = re_service_name.match(line)
-            if m:
-                service_name = m.group(1)
-    return compose_file, service_name
+                return m.group(1)
 
 def _collect_compose_service(compose_file, service_name, logger):
     """
