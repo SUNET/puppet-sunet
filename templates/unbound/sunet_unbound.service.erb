@@ -2,7 +2,9 @@
 Description=Start unbound on SUNET host
 After=network.target
 Wants=docker.service
-BindsTo=docker.service
+# We ought to add BindsTo if Docker is installed, but it
+# makes unbound not start if Docker is NOT installed
+#BindsTo=docker.service
 
 [Service]
 Restart=on-failure
