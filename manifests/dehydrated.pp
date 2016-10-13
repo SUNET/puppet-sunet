@@ -56,6 +56,7 @@ class sunet::dehydrated($staging=false,
      hour    => 2,
      minute  => 13
   }
+  cron {'letsencrypt-cron': ensure => absent }
   if ($httpd) {
      package {'lighttpd':
         ensure  => latest
