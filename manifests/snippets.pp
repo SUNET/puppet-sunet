@@ -68,11 +68,13 @@ define sunet::snippets::file_line($filename, $line, $ensure = 'present') {
 }
 
 sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096) {
-   exec { "openssl genrsa $size > $key_file":
+   exec { "${title}_key":
+      command => "openssl genrsa $size > $key_file",
       onlyif  => "test ! -f $key_file",
       creates => $key_file
    } ->
-   exec { "openssl req -x509 -sha256 -new -subj "/CN=${title}" -key $key_file -out $cert_file":
+   exec { "${title}_cert":
+      command     => "openssl req -x509 -sha256 -new -subj \"/CN=${title}" -key $key_file -out $cert_file",
       refreshonly => true
    }
 }
