@@ -31,9 +31,7 @@ define sunet::private_github_repo(
       owner     => "${username}",
       group     => "${group}"
    } ->
-   exec { 'update-github-ssh-keys':
-      command   => 'ssh-keyscan -H github.com > /etc/ssh/ssh_known_hosts'
-   } -> 
+   sunet::ssh_keyscan::host {'github.com': } ->
    vcsrepo { "${name}":
       ensure    => latest,
       provider  => git,
