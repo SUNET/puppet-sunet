@@ -13,10 +13,10 @@ define sunet::misc::ufw_allow(
     each($_ports) |$_port| {
       each($_protocols) |$_proto| {
         ufw::allow { "_ufw_allow_client_${_src}_to_${to}_${_port}_${_proto}":
-          from => $_src,
-          ip   => $to,
-          port => $_port,
-          prot => $_proto,
+          from  => $_src,
+          ip    => $to,
+          port  => $_port,
+          proto => $_proto,
         }
       }
     }
