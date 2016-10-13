@@ -13,8 +13,8 @@ class sunet::dehydrated($staging=false,
      validate_hash($domain_hash)
   }
   $ca = $staging ? {
-     false => 'https://acme-v01.api.dehydrated.org/directory',
-     true  => 'https://acme-staging.api.dehydrated.org/directory'
+     false => 'https://acme-v01.api.letsencrypt.org/directory',
+     true  => 'https://acme-staging.api.letsencrypt.org/directory'
   }
   ensure_resource('package','openssl',{ensure=>'latest'})
   sunet::remote_file { "/usr/sbin/dehydrated":
