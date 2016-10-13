@@ -2,6 +2,7 @@ define sunet::pyff(
    $version = "latest",
    $image = "docker.sunet.se/pyff",
    $dir = "/opt/metadata",
+   $ssl_dir = "/etc/ssl",
    $pyffd_args = "",
    $pyffd_loglevel = "INFO",
    $acme_tool_uri = undef,
@@ -14,7 +15,7 @@ define sunet::pyff(
    sunet::docker_run{"pound-${sanitised_title}":
       image    => "docker.sunet.se/pound",
       imagetag => "latest",
-      volumes  => ["/etc/ssl:/etc/ssl"],
+      volumes  => ["${ssl_dir}:/etc/ssl"],
       env      => ["BACKEND_PORT=tcp://varnish-${sanitised_title}.docker:80"],
       ports    => ["${ip_addr}443:443"],
       depends  => ["varnish-${sanitised_title}"]
