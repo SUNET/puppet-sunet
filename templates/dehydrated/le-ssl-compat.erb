@@ -10,5 +10,6 @@ for domain in *; do
       test -e $domain.key || ln -s $domain/privkey.pem $domain.key
       test -e $domain.crt || ln -s $domain/cert.pem $domain.crt
       test -e ${domain}-chain.crt || ln -s $domain/chain.pem ${domain}-chain.crt
+      cat $domain/privkey.pem $domain/fullchain.pem > private/$domain.pem
    fi
 done
