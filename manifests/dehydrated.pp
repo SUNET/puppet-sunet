@@ -120,6 +120,7 @@ class sunet::dehydrated::client($domain=undef, $server='acme-c.sunet.se', $user=
      mode    => '0755',
      content => template('sunet/dehydrated/le-ssl-compat.erb')
   } ->
+  sunet::ssh_keyscan::host { $server: }
   cron { "rsync_dehydrated_${domain}":
     command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
     user    => $user,
