@@ -10,7 +10,7 @@ class sunet::ssh_keyscan {
       owner  => root,
       group  => root,
       mode   => '0644',
-   } ->
+   }
    concat::fragment {"/etc/ssh/sunet_keyscan_hosts.txt_header":
       target  => "/etc/ssh/sunet_keyscan_hosts.txt",
       content => "# do not edit by hand - maintained by sunet::ssh_keyscan",
