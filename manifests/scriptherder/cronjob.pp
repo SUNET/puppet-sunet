@@ -1,14 +1,16 @@
-# Scriptherder jobs
-
 # Run a cronjob and create a scriptherder monitoring file
 define sunet::scriptherder::cronjob(
   # cron parameters
-  $cron_cmd,
-  $cron_user                = 'root',
-  $cron_special             = undef,    # 'daily'
+  $cmd,
+  $user          = 'root',
+  $hour          = undef,
+  $minute        = undef,
+  $monthday      = undef,
+  $weekday       = undef,
+  $special       = undef,    # e.g. 'daily'
   # scriptherder parameters
-  $ok_criteria              = ['exit_status=0'],
-  $warn_criteria            = [],
+  $ok_criteria   = ['exit_status=0'],
+  $warn_criteria = [],
 ) {
   # used in template scriptherder_check.ini.erb
   $scriptherder_ok = join($ok_criteria, ', ')
@@ -22,8 +24,12 @@ define sunet::scriptherder::cronjob(
   } ->
 
   cron { $name:
-    command  => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${name} -- ${cron_cmd}",
-    user     => $cron_user,
-    special  => $cron_special,
+    command  => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${name} -- ${cmd}",
+    user     => $user,
+    hour     => $hour,
+    minute   => $minute,
+    monthday => $monthday,
+    weekday  => $weekday,
+    special  => $special,
   }
 }

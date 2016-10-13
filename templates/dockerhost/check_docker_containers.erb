@@ -40,6 +40,7 @@ import os
 import re
 import sys
 import json
+import yaml
 import logging
 import argparse
 import datetime
@@ -126,6 +127,57 @@ def _collect_files(path, regex, logger):
         if match:
             logger.debug('File {!s} matched regexp {!s}'.format(this, regex))
             res.append(match.group(1))
+    return res
+
+def collect_compose_services(args, logger):
+    """
+    Look for systemd services that start containers using Docker compose.
+    The services should be created using sunet::docker_compose_service in order to have
+    COMPOSE_FILE and SERVICE_NAME metadata in the top comment.
+
+    :returns: Docker container names
+    :rtype: [str | unicode]
+    """
+    res = []
+    path = '/etc/systemd/system'
+    files = [os.path.join(path, this) for this in os.listdir(path) if this.endswith('.service') and os.path.isfile(os.path.join(path, this))]
+    if not files:
+        return []
+    re_compose_file = re.compile('^#\s*COMPOSE_FILE=(.+?)\s*$')
+    for this in files:
+        compose_file = _get_compose_metadata(this, re_compose_file, logger)
+        if compose_file:
+            # docker-compose uses directory of file as service-name
+            # e.g. for file /path/to/something/docker-compose.yml the service-name is 'something'
+            service_name = os.path.basename(os.path.dirname(compose_file))
+            res += _collect_compose_service(compose_file, service_name, logger)
+    return res
+
+def _get_compose_metadata(filename, re_compose_file, logger):
+    logger.debug('Inspecting systemd service file {!s}'.format(filename))
+    with open(filename) as fd:
+        for line in fd.readlines():
+            if not line.startswith('#'):
+                return None
+            m = re_compose_file.match(line)
+            if m:
+                return m.group(1)
+
+def _collect_compose_service(compose_file, service_name, logger):
+    """
+    Load a docker-compose file and return a list of containers one could expect to be running.
+
+    :returns: Docker container names
+    :rtype: [str | unicode]
+    """
+    res = []
+    with open(compose_file) as fd:
+        data = yaml.load(fd)
+        if data.get('version') != '2':
+            logger.debug('Skipping {!s}, unknown version')
+            return []
+        for service in data.get('services', []):
+            res.append('{!s}_{!s}_1'.format(service_name, service))
     return res
 
 def docker_inspect(container, logger):
@@ -229,6 +281,7 @@ def main(args, logger):
 
     if args.systemd:
         expect += collect_systemd(args, logger)
+        expect += collect_compose_services(args, logger)
 
     logger.debug('Expecting the following Docker containers to be running: {!r}'.format(expect))
 
