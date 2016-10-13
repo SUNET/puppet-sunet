@@ -1,6 +1,7 @@
 class sunet::dehydrated($staging=false,
                          $domains=undef,
                          $httpd=false,
+                         $apache=false,
                          $src_url='https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated') 
 {
   $thedomains = $domains ? {
@@ -87,6 +88,19 @@ class sunet::dehydrated($staging=false,
         ensure  => 'file',
         content => template('sunet/dehydrated/lighttpd.conf'),
         notify  => Service['lighttpd']
+     }
+  }
+  if ($apache) {
+     ensure_resource('service','apache2',{})
+     exec { 'enable-dehydrated-conf': 
+        refreshonly  => true,
+        command      => 'a2enconf dehydrated',
+        notify       => Service['apache2']
+     }
+     file { '/etc/apache2/conf-available/dehydrated.conf': 
+        ensure  => 'file',
+        content => template('sunet/dehydrated/apache.conf'),
+        notify  => Exec['enable-apache2-conf'],
      }
   }
   each($thedomains) |$domain_hash| {
