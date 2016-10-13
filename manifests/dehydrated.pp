@@ -97,6 +97,11 @@ class sunet::dehydrated($staging=false,
         command      => 'a2enconf dehydrated',
         notify       => Service['apache2']
      }
+     file { '/var/www/dehydrated':
+        ensure => directory,
+        owner  => 'www-data',
+        group  => 'www-data'
+     }
      file { '/etc/apache2/conf-available/dehydrated.conf': 
         ensure  => 'file',
         content => template('sunet/dehydrated/apache.conf'),
