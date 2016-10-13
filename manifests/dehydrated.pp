@@ -101,7 +101,13 @@ class sunet::dehydrated($staging=false,
         ensure => directory,
         owner  => 'www-data',
         group  => 'www-data'
-     }
+     } ->
+     file { '/var/www/dehydrated/index.html':
+        ensure  => file,
+        owner   => 'www-data',
+        group   => 'www-data',
+        content => "<!DOCTYPE html><html><head><title>meep</title></head><body>meep<br/>meep</body></html>"
+     } ->
      file { '/etc/apache2/conf-available/dehydrated.conf': 
         ensure  => 'file',
         content => template('sunet/dehydrated/apache.conf'),
