@@ -10,9 +10,9 @@ define sunet::misc::ufw_allow(
   $_protocols = flatten([ $proto ])
 
   each($_from) |$_src| {
-    each($_port) |$_ports| {
-      each($_proto) |$_protocols| {
-        ufw::allow { "_ufw_allow_client_${from}_to_${to}_${port}_${proto}":
+    each($_ports) |$_port| {
+      each($_protocols) |$_proto| {
+        ufw::allow { "_ufw_allow_client_${_src}_to_${to}_${_port}_${_proto}":
           from => $_src,
           ip   => $to,
           port => $_port,
