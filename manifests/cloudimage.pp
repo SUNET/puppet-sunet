@@ -20,6 +20,7 @@ define sunet::cloudimage (
   $ssh_keys    = undef,
   $description = '',
   $apt_dir     = '/etc/cosmos/apt',
+  $local_size  = '0',
 )
 {
   ensure_resource('package', ['cpu-checker',
