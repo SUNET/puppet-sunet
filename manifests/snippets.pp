@@ -67,6 +67,16 @@ define sunet::snippets::file_line($filename, $line, $ensure = 'present') {
   }
 }
 
+sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096) {
+   exec { "openssl genrsa $size > $key_file":
+      onlyif  => "test ! -f $key_file",
+      creates => $key_file
+   } ->
+   exec { "openssl req -x509 -sha256 -new -subj "/CN=${title}" -key $key_file -out $cert_file":
+      refreshonly => true
+   }
+}
+
 # Disable IPv6 privacy extensions on servers. Complicates troubleshooting.
 define sunet::snippets::disable_ipv6_privacy() {
   augeas { 'server_ipv6_privacy_config':
