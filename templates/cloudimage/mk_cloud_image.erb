@@ -59,6 +59,7 @@ if [ "x${local_size}" != 'x0' ]; then
     test -f ${local_disk} || mkfs.ext4 -L 'local' -M '/local' "${local_disk}" "${local_size}"
 
     local_disk_arg="--disk path=/var/lib/libvirt/images/${local},bus=virtio"
+    chmod 600 ${local_disk}
 fi
 
 network="--network bridge=${bridge}"
