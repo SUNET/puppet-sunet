@@ -14,13 +14,13 @@ cpus="<%= @cpus %>"
 mem="<%= @memory %>"
 description="<%= @description %>"
 apt_dir="<%= @apt_dir %>"
+local_size="<%= @local_size %>"
 
 cd "/var/lib/libvirt/images/"
 
-id=$(uuidgen)
-
 seed=${hostname}_seed.img
 disk=${hostname}.img
+local_disk=${hostname}_local.img
 
 if [ ! -f ${seed} ]; then
     # If the seed file exists, just update it with new user-data and meta-data below
@@ -42,7 +42,7 @@ reinst="`dirname $0`/${hostname}_sunet-reinstall.tgz"
 if [ -f ${reinst} ]; then
     # one-time init a cloud-image from a host that presumably wasn't a cloud image VM before
     mcopy -o -i ${seed} ${reinst} ::sunet-reinstall.tgz
-    shred -u ${reints} || rm -f ${reinst}
+    shred -u ${reinst} || rm -f ${reinst}
 fi
 
 virsh pool-refresh default
@@ -53,6 +53,13 @@ if [ ! -f /var/lib/libvirt/images/${disk} ]; then
 fi
 
 chmod 600 ${disk}
+
+local_disk_arg=''
+if [ "x${local_size}" != 'x0' ]; then
+    test -f ${local_disk} || mkfs.ext4 -L 'local' -M '/local' "${local_disk}" "${local_size}"
+
+    local_disk_arg="--disk path=/var/lib/libvirt/images/${local},bus=virtio"
+fi
 
 network="--network bridge=${bridge}"
 install_options=""
@@ -73,5 +80,6 @@ virsh undefine ${hostname} || true
 eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
     --disk path=/var/lib/libvirt/images/${disk},format=qcow2,bus=virtio \
     --disk path=/var/lib/libvirt/images/${seed},bus=virtio \
+    ${local_disk_arg} \
     ${network} \
     ${install_options}
