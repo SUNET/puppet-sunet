@@ -98,9 +98,19 @@ define sunet::snippets::disable_ipv6_privacy() {
 define sunet::snippets::scriptherder() {
   $scriptherder_dir = '/var/cache/scriptherder'
 
-  file { $scriptherder_dir:
-    ensure  => 'directory',
-    mode    => '1777',    # like /tmp, so user-cronjobs can also use scriptherder
+  file {
+    '/etc/scriptherder':
+      ensure  => 'directory',
+      mode    => '0755',
+      ;
+    '/etc/scriptherder/check':
+      ensure  => 'directory',
+      mode    => '0755',
+      ;
+    $scriptherder_dir:
+      ensure  => 'directory',
+      mode    => '1777',    # like /tmp, so user-cronjobs can also use scriptherder
+      ;
   }
 
   # Remove scriptherder data older than 7 days.

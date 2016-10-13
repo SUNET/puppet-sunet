@@ -1,27 +1,17 @@
 #!/bin/bash
+#
+# Script to (re-)create a cloud-image based VM. Created by puppet-sunet - do not edit.
+#
 
 set -e
 
-# do not edit by hand
-
 src_image="<%= @image_src %>"
 size="<%= @size %>"
-dhcp="<%= @dhcp ? 'yes' : 'no' %>"
 mac="<%= @mac %>"
 hostname="<%= @name %>"
 bridge="<%= @bridge %>"
 cpus="<%= @cpus %>"
 mem="<%= @memory %>"
-repo="<%= @repo %>"
-tag="<%= @tagpattern %>"
-ip="<%= @ip %>"
-gateway="<%= @gateway %>"
-netmask="<%= @netmask %>"
-resolver="<%= @resolver %>"
-ip6="<%= @ip6 %>"
-gateway6="<%= @gateway6 %>"
-netmask6="<%= @netmask6 %>"
-password="<%= @password %>"
 description="<%= @description %>"
 apt_dir="<%= @apt_dir %>"
 
@@ -41,113 +31,19 @@ fi
 
 chmod 600 ${seed}
 
-if [ "x${password}" != "x" ]; then
-   pass="password: ${password}"
+for this in meta-data user-data network-config; do
+    src="`dirname $0`/${hostname}_${this}"
+    mcopy -o -i ${seed} ${src} ::${this} 2>/dev/null
+done
+cosmos_deb=${apt_dir}/cosmos_1.2-2_all.deb
+test -f ${apt_dir}/cosmos_1.5-1_all.deb && cosmos_deb=${apt_dir}/cosmos_1.5-1_all.deb
+mcopy -o -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${cosmos_deb} ::
+reinst="`dirname $0`/${hostname}_sunet-reinstall.tgz"
+if [ -f ${reinst} ]; then
+    # one-time init a cloud-image from a host that presumably wasn't a cloud image VM before
+    mcopy -o -i ${seed} ${reinst} ::sunet-reinstall.tgz
+    shred -u ${reints} || rm -f ${reinst}
 fi
-
-user_data=$(mktemp)
-cat > ${user_data} <<EOF
-#cloud-config
-user: root
-chpasswd: { expire: False }
-ssh_pwauth: False
-<% if @ssh_keys %>
-ssh_authorized_keys:
-<% @ssh_keys.each do |key| %>
-   - <%= key %>
-<% end %>
-<% end %>
-write_files:
-  - path: "/etc/default/grub.d/99-sunet-cloud-init.cfg"
-    permissions: "0644"
-    owner: "root"
-    content: |
-      # Enable grub on serial console
-      GRUB_TERMINAL=serial
-runcmd:
-   - ["mkdir","/tmp/seed"]
-   - ["mount","/dev/vdb","/tmp/seed"]
-   - ["cp","/tmp/seed/bootstrap-cosmos.sh","/tmp/seed/cosmos_1.2-2_all.deb","/root"]
-   - ["cd","/root"]
-   - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
-   - "cd /root && /root/bootstrap-cosmos.sh ${hostname} ${repo} ${tag}"
-disable_root: 0
-EOF
-
-meta_data=$(mktemp)
-cat > ${meta_data} <<EOF
-#cloud-config
-instance-id: iid-${id}
-local-hostname: ${hostname}
-disable_root: 0
-EOF
-
-dns=""
-if [ "x${resolver}" != "x" ]; then
-   dns="dns-nameservers ${resolver}"
-fi
-
-#
-# IPv4
-#
-if [ "x${ip}" != "x" ]; then
-   dhcp="no"
-fi
-
-if [ "x${dhcp}" = "xyes" ]; then
-cat >> ${meta_data} <<EOF
-network-interfaces: |
-    auto eth0
-    iface eth0 inet dhcp
-    ${dns}
-
-    source-directory interfaces.d
-EOF
-elif [ "x${ip}" != "x" ]; then
-    cat >> ${meta_data} <<EOF
-network-interfaces: |
-    auto eth0
-    iface eth0 inet static
-        address ${ip}
-        netmask ${netmask}
-        gateway ${gateway}
-        ${dns}
-
-    source-directory interfaces.d
-EOF
-fi
-
-#
-# IPv6
-#
-if [ "x${ip6}" = "xauto" ]; then
-    cat >> ${meta_data} <<EOF
-network-interfaces: |
-    auto eth0
-    iface eth0 inet6 auto
-        ${dns}
-
-EOF
-elif [ "x${ip6}" != "x" ]; then
-    cat >> ${meta_data} <<EOF
-network-interfaces: |
-    auto eth0
-    iface eth0 inet6 static
-        address ${ip6}
-        netmask ${netmask6}
-        gateway ${gateway6}
-        ${dns}
-
-    source-directory interfaces.d
-EOF
-fi
-
-mcopy -o -i ${seed} ${user_data} ::user-data 2>/dev/null
-mcopy -o -i ${seed} ${meta_data} ::meta-data 2>/dev/null
-mcopy -o -i ${seed} ${apt_dir}/bootstrap-cosmos.sh ${apt_dir}/cosmos_1.2-2_all.deb ::
-
-rm -f ${user_data}
-rm -f ${meta_data}
 
 virsh pool-refresh default
 
@@ -168,6 +64,10 @@ fi
 if [ "x${description}" != "x" ]; then
    install_options="${install_options} --description '${description}'"
 fi
+
+# destroy and undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
+virsh destroy ${hostname} || true
+virsh undefine ${hostname} || true
 
 # use eval to expand the $install_options properly
 eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \

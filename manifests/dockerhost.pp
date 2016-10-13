@@ -6,6 +6,7 @@ class sunet::dockerhost(
   $docker_network            = hiera('dockerhost_docker_network', '172.18.0.0/22'),
   $docker_dns                = pick($::ipaddress_eth0, $::ipaddress_bond0, $::ipaddress_br0, $::ipaddress_em1, $::ipaddress_em2,
                                     $::ipaddress6_eth0, $::ipaddress6_bond0, $::ipaddress6_br0, $::ipaddress6_em1, $::ipaddress6_em2,
+                                    $::ipaddress, $::ipaddress6,
                                     ),
   $ufw_allow_docker_dns      = true,
   $manage_dockerhost_unbound = false,
@@ -45,6 +46,13 @@ class sunet::dockerhost(
     subnet => $docker_network,
   }
 
+  # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    $check_docker_containers_args = '--systemd'
+  } else {
+    $check_docker_containers_args = '--init_d'
+  }
+
   file {
     '/usr/local/etc/docker.d':  # XXX obsolete
       ensure  => 'directory',
@@ -64,11 +72,16 @@ class sunet::dockerhost(
       ensure  => file,
       mode    => '0644',
       content => template('sunet/dockerhost/scriptherder_docker-cleanup.ini.erb'),
+      require => File['/etc/scriptherder/check'],
       ;
     '/etc/sudoers.d/nrpe_dockerhost_checks':
       ensure  => file,
       mode    => '0440',
       content => template('sunet/dockerhost/etc_sudoers.d_nrpe_dockerhost_checks.erb'),
+      ;
+    '/etc/nagios/nrpe.d/sunet_dockerhost_checks.cfg':
+      ensure  => 'file',
+      content => template('sunet/dockerhost/nagios_nrpe_checks.erb'),
       ;
     '/usr/local/bin/check_docker_containers':
       ensure  => file,
@@ -102,14 +115,18 @@ class sunet::dockerhost(
   }
 
   if $ufw_allow_docker_dns {
-    # Allow Docker containers resolving using caching resolver running on docker host
-    each(['tcp', 'udp']) |$proto| {
-      ufw::allow { "dockerhost_ufw_allow_dns_53_${proto}":
-        from  => '172.16.0.0/12',
-        ip    => $docker_dns,
-        port  => '53',
-        proto => $proto,
+    if $docker_dns =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
+      # Allow Docker containers resolving using caching resolver running on docker host
+      each(['tcp', 'udp']) |$proto| {
+        ufw::allow { "dockerhost_ufw_allow_dns_53_${proto}":
+          from  => '172.16.0.0/12',
+          ip    => $docker_dns,
+          port  => '53',
+          proto => $proto,
+        }
       }
+    } else {
+      notice("Can't set up firewall rules to allow v4-docker DNS to a v6 nameserver ($docker_dns)")
     }
   }
 
@@ -122,8 +139,10 @@ class sunet::dockerhost(
         path    => '/etc/unbound/unbound.conf.d/unbound.conf',
         mode    => '0644',
         content => template('sunet/dockerhost/unbound.conf.erb'),
+        require => Package['unbound'],
         notify  => Service['unbound'],
         ;
     }
   }
+
 }
