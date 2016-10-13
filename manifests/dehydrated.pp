@@ -105,7 +105,7 @@ class sunet::dehydrated($staging=false,
      file { '/etc/apache2/conf-available/dehydrated.conf': 
         ensure  => 'file',
         content => template('sunet/dehydrated/apache.conf'),
-        notify  => Exec['enable-apache2-conf'],
+        notify  => Exec['enable-dehydrated-conf'],
      }
   }
   each($thedomains) |$domain_hash| {
