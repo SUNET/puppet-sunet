@@ -67,7 +67,7 @@ define sunet::snippets::file_line($filename, $line, $ensure = 'present') {
   }
 }
 
-sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096) {
+define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096) {
    exec { "${title}_key":
       command => "openssl genrsa $size > $key_file",
       onlyif  => "test ! -f $key_file",
