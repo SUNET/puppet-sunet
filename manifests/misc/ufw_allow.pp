@@ -1,22 +1,30 @@
-# A simpler and more competent interface to ufw::allow
+# Open host firewall to allow clients to access a service.
 define sunet::misc::ufw_allow(
-  $from,
-  $port,
-  $to    = 'any',  # both IPv4 and IPv6
-  $proto = ['tcp'],
-) {
-  $_from = flatten([ $from ])
-  $_ports = flatten([ $port ])
-  $_protocols = flatten([ $proto ])
+  $from,           # Allow traffic 'from' this IP (or list of IP:s).
+  $port,           # Allow traffic to this port (or list of ports).
+  $to    = 'any',  # Allow traffic to this IP (or list of IP:s). 'any' means both IPv4 and IPv6.
+  $proto = 'tcp',  # Allow traffic using this protocol (or list of protocols).
+  ) {
 
-  each($_from) |$_src| {
-    each($_ports) |$_port| {
-      each($_protocols) |$_proto| {
-        ufw::allow { "_ufw_allow_client_${_src}_to_${to}_${_port}_${_proto}":
-          from  => $_src,
-          ip    => $to,
-          port  => $_port,
-          proto => $_proto,
+  $_clients = flatten([ $clients_list ])
+
+  # if $to is '', turn it into 'any'.
+  # ufw module behaviour of changing '' to $ipaddress_eth0 or $ipaddress does not make much sense.
+  $_to = $to ? {
+    ''      => 'any',
+    default => $to,
+  }
+
+  each(flatten([$from])) |$_from| {
+    each(flatten([$to])) |$_to| {
+      each(flatten([$port])) |$_port| {
+        each(flatten([$proto])) |$_proto| {
+          ensure_resource('ufw::allow', "_ufw_allow__from_${_from}__to_${_to}__${_port}/${_proto}", {
+            from  => $_from,
+            ip    => $_to,
+            proto => $_proto,
+            port  => sprintf("%s", $_port),
+            })
         }
       }
     }
