@@ -10,7 +10,7 @@ define sunet::misc::ufw_allow(
 
   # if $to is '', turn it into 'any'.
   # ufw module behaviour of changing '' to $ipaddress_eth0 or $ipaddress does not make much sense.
-  $_to = $to ? {
+  $to1 = $to ? {
     ''      => 'any',
     default => $to,
   }
@@ -19,7 +19,7 @@ define sunet::misc::ufw_allow(
     if $_from != 'any' and ! is_ip_address($_from) {
       fail("'from' is not an IP address: ${_from}")
     }
-    each(flatten([$to])) |$_to| {
+    each(flatten([$to1])) |$_to| {
       if $_to != 'any' and ! is_ip_address($_to) {
         fail("'to' is not an IP address: ${_from}")
       }
