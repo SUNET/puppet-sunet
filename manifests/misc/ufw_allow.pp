@@ -16,7 +16,13 @@ define sunet::misc::ufw_allow(
   }
 
   each(flatten([$from])) |$_from| {
+    if ! $_from.is_ipaddress {
+      fail("'from' is not an IP address: ${_from}");
+    }
     each(flatten([$to])) |$_to| {
+      if $_to != 'any' and ! $_to.is_ipaddress {
+        fail("'to' is not an IP address: ${_from}");
+      }
       each(flatten([$port])) |$_port| {
         each(flatten([$proto])) |$_proto| {
           ensure_resource('ufw::allow', "_ufw_allow__from_${_from}__to_${_to}__${_port}/${_proto}", {
