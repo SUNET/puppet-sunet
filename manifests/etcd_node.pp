@@ -118,6 +118,7 @@ define sunet::etcd_node(
          depends => ["etcd_${name}"],
       }
       sunet::misc::ufw_allow { "allow-etcd-client-on-docker0":
+         from => '172.16.0.0/12',
          to   => $::ipaddress_docker0,
          port => '4001',
       }
