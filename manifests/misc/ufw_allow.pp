@@ -16,11 +16,11 @@ define sunet::misc::ufw_allow(
   }
 
   each(flatten([$from])) |$_from| {
-    if ! $_from.is_ipaddress {
+    if ! is_ip_address($_from) {
       fail("'from' is not an IP address: ${_from}")
     }
     each(flatten([$to])) |$_to| {
-      if $_to != 'any' and ! $_to.is_ipaddress {
+      if $_to != 'any' and ! is_ip_address($_to) {
         fail("'to' is not an IP address: ${_from}")
       }
       each(flatten([$port])) |$_port| {
