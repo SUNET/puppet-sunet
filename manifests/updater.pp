@@ -13,14 +13,12 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
       file {'/etc/cosmos-automatic-reboot': ensure => absent }
    }
    if ($cron) {
-      file {'/etc/scriptherder/check/upgrader.ini':
-         content => "[check]\nok      = max_age=25h\nwarning = max_age=49h\n"
-      }
-      cron {'silent-update-and-upgrade':
-         command => "scriptherder --mode wrap --syslog --name upgrader -- /usr/local/sbin/silent-update-and-upgrade",
-         hour    => '4',
-         minute  => '2',
-         require => File['/usr/local/sbin/silent-update-and-upgrade']
+      sunet::scriptherder::cronjob { 'update_and_upgrade':
+         cmd           => '/usr/local/sbin/silent-update-and-upgrade',
+         minute        => '2',
+         hour          => '4',
+         ok_criteria   => ['max_age=25h'],
+         warn_criteria => ['max_age=49h'],
       }
    }
 }
