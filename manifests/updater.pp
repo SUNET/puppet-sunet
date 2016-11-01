@@ -13,7 +13,7 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
       file {'/etc/cosmos-automatic-reboot': ensure => absent }
    }
    if ($cron) {
-      file {'/etc/scriptherder/check/upgrader.ini': 
+      file {'/etc/scriptherder/check/upgrader.ini':
          content => "[check]\n ok      = max_age=25h\n warning = max_age=49h\n"
       }
       cron {'silent-update-and-upgrade':
