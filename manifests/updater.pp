@@ -1,6 +1,6 @@
 class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
    file {'/usr/local/sbin/silent-update-and-upgrade':
-      content => "#!/bin/bash\napt-get -qy update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade\n"
+      content => "#!/bin/bash\napt-get -qy update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade\n",
       mode    => '0755',
       owner   => 'root',
       group   => 'root'
