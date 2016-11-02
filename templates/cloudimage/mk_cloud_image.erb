@@ -15,8 +15,10 @@ mem="<%= @memory %>"
 description="<%= @description %>"
 apt_dir="<%= @apt_dir %>"
 local_size="<%= @local_size %>"
+images_dir="<%= @images_dir %>"
+pool_name="<%= @pool_name %>"
 
-cd "/var/lib/libvirt/images/"
+cd "${images_dir}"
 
 seed=${hostname}_seed.img
 disk=${hostname}.img
@@ -45,11 +47,11 @@ if [ -f ${reinst} ]; then
     shred -u ${reinst} || rm -f ${reinst}
 fi
 
-virsh pool-refresh default
+virsh pool-refresh ${pool_name}
 
-if [ ! -f /var/lib/libvirt/images/${disk} ]; then
-    test -f /var/lib/libvirt/images/${disk} || virsh vol-clone --pool default ${src_image} ${disk}
-    virsh vol-resize --pool default ${disk} ${size}
+if [ ! -f ${images_dir}/${disk} ]; then
+    test -f ${images_dir}/${disk} || virsh vol-clone --pool ${pool_name} ${src_image} ${disk}
+    virsh vol-resize --pool ${pool_name} ${disk} ${size}
 fi
 
 chmod 600 ${disk}
@@ -58,7 +60,8 @@ local_disk_arg=''
 if [ "x${local_size}" != 'x0' ]; then
     test -f ${local_disk} || mkfs.ext4 -L 'local' -M '/local' "${local_disk}" "${local_size}"
 
-    local_disk_arg="--disk path=/var/lib/libvirt/images/${local},bus=virtio"
+    local_disk_arg="--disk path=${images_dir}/${local_disk},bus=virtio"
+    chmod 600 ${local_disk}
 fi
 
 network="--network bridge=${bridge}"
@@ -78,8 +81,8 @@ virsh undefine ${hostname} || true
 
 # use eval to expand the $install_options properly
 eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
-    --disk path=/var/lib/libvirt/images/${disk},format=qcow2,bus=virtio \
-    --disk path=/var/lib/libvirt/images/${seed},bus=virtio \
+    --disk path=${images_dir}/${disk},format=qcow2,bus=virtio \
+    --disk path=${images_dir}/${seed},bus=virtio \
     ${local_disk_arg} \
     ${network} \
     ${install_options}
