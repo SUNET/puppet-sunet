@@ -81,6 +81,7 @@ virsh undefine ${hostname} || true
 
 # use eval to expand the $install_options properly
 eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memballoon virtio --boot hd \
+    --graphics none \
     --disk path=${images_dir}/${disk},format=qcow2,bus=virtio \
     --disk path=${images_dir}/${seed},bus=virtio \
     ${local_disk_arg} \
