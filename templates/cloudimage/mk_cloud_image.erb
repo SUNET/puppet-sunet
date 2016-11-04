@@ -51,8 +51,8 @@ fi
 if [ ! virsh pool-list | grep -qe "^\s*${pool_name}.*active" ]; then
     virsh pool-create-as --name ${pool_name} --target ${images_dir} --type dir --build
     virsh pool-autostart ${pool_name}
+    virsh pool-start ${pool_name}
 fi
-virsh pool-start ${pool_name}
 virsh pool-refresh ${pool_name}
 
 if [ ! -f ${images_dir}/${disk} ]; then
