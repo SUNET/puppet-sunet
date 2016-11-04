@@ -47,6 +47,7 @@ if [ -f ${reinst} ]; then
     shred -u ${reinst} || rm -f ${reinst}
 fi
 
+virsh pool-define-as --name ${pool_name} --target ${images_dir} --type dir
 virsh pool-refresh ${pool_name}
 
 if [ ! -f ${images_dir}/${disk} ]; then
