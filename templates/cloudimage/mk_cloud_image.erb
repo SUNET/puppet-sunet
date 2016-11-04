@@ -48,7 +48,7 @@ if [ -f ${reinst} ]; then
 fi
 
 # solve bootstrapping of new kvm hosts where no vms exist already
-virsh pool-create-as --name ${pool_name} --target ${images_dir} --type dir --build
+virsh pool-create-as --name ${pool_name} --target ${images_dir} --type dir --build --overwrite
 virsh pool-refresh ${pool_name}
 
 if [ ! -f ${images_dir}/${disk} ]; then
