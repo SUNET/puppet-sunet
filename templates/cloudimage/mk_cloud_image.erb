@@ -48,8 +48,10 @@ if [ -f ${reinst} ]; then
 fi
 
 # solve bootstrapping of new kvm hosts where no vms exist already
-virsh pool-create-as --name ${pool_name} --target ${images_dir} --type dir --build --overwrite
-virsh pool-autostart ${pool_name}
+if [ ! virsh pool-list | grep -qe "^\s*${pool_name}.*active" ]; then
+    virsh pool-create-as --name ${pool_name} --target ${images_dir} --type dir --build
+    virsh pool-autostart ${pool_name}
+fi
 virsh pool-start ${pool_name}
 virsh pool-refresh ${pool_name}
 
