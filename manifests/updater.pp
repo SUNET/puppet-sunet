@@ -12,6 +12,8 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
    } else {
       file {'/etc/cosmos-automatic-reboot': ensure => absent }
    }
+   cron { 'silent-update-and-upgrade': ensure => absent }
+   file { '/etc/scriptherder/check/upgrader.ini': ensure => absent }
    if ($cron) {
       sunet::scriptherder::cronjob { 'update_and_upgrade':
          cmd           => '/usr/local/sbin/silent-update-and-upgrade',
