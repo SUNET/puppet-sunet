@@ -15,8 +15,15 @@ etcdClusterHealth()
     # member fa56bd820fb76a59 is healthy: got healthy result from http://10.0.0.30:2379
     # cluster is healthy
     #
+    # or
+    #
+    # cluster is healthy
+    # member 8fe6fa3c80cf8d96 is healthy
+    # member bb6d101cc160bd95 is healthy
+    # member fa56bd820fb76a59 is healthy
+    #
     # Return last line
-    echo -n $(get_etcd_cluster-health "$1" | tail -n1 | tr -d '\r')
+    echo -n $(get_etcd_cluster-health $1 | grep -q "cluster is healthy" && echo "cluster is healthy")
 }
 
 if [[ "$(sudo get_docker_container_id "$1")" == "" ]]; then
