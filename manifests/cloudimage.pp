@@ -20,6 +20,8 @@ define sunet::cloudimage (
   $ssh_keys    = undef,
   $description = '',
   $apt_dir     = '/etc/cosmos/apt',
+  $images_dir  = '/var/lib/libvirt/images',
+  $pool_name   = 'default',
   $local_size  = '0',
 )
 {
@@ -32,7 +34,7 @@ define sunet::cloudimage (
 
   $image_url_a = split($image_url, "/")
   $image_name = $image_url_a[-1]
-  $image_src = "/var/lib/libvirt/images/${image_name}"
+  $image_src = "${images_dir}/${image_name}"
   $script_dir = "/var/lib/libvirt/sunet-files"
   $init_script = "${script_dir}/${name}/${name}-init.sh"
   $meta_data = "${script_dir}/${name}/${name}_meta-data"
@@ -78,6 +80,6 @@ define sunet::cloudimage (
 
   exec { "${name}_init":
      command => $init_script,
-     onlyif  => "test ! -f /var/lib/libvirt/images/${name}.img"
+     onlyif  => "test ! -f ${images_dir}/${name}.img"
   }
 }

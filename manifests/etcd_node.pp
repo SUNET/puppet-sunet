@@ -18,6 +18,8 @@ define sunet::etcd_node(
   $tls_cert_file   = "/etc/ssl/certs/${::fqdn}_infra.crt",
   $expose_ports    = true,
   $expose_port_pre = '',
+  $allow_clients   = ['any'],
+  $allow_peers     = [],
 )
 {
    include stdlib
@@ -98,33 +100,34 @@ define sunet::etcd_node(
    }
 
    sunet::docker_run { "etcd_${name}":
-      image            => $etcd_image,
-      imagetag         => $etcd_version,
-      volumes          => ["/data/${name}:/data",
-                           "${tls_key_file}:${tls_key_file}:ro",
-                           "${tls_ca_file}:${tls_ca_file}:ro",
-                           "${tls_cert_file}:${tls_cert_file}:ro",
-                           ],
-      command          => join($args," "),
-      ports            => $ports,
-      net              => $docker_net,
+      image    => $etcd_image,
+      imagetag => $etcd_version,
+      volumes  => ["/data/${name}:/data",
+                   "${tls_key_file}:${tls_key_file}:ro",
+                   "${tls_ca_file}:${tls_ca_file}:ro",
+                   "${tls_cert_file}:${tls_cert_file}:ro",
+                  ],
+      command  => join($args," "),
+      ports    => $ports,
+      net      => $docker_net,
    }
    if ! $proxy {
       sunet::docker_run { "etcd_browser_${name}":
-         image         => 'docker.sunet.se/etcd-browser',
-         ports         => [ "8000:8000" ],  # XXX listening on all interfaces now
-         depends       => ["etcd_${name}"],
+         image   => 'docker.sunet.se/etcd-browser',
+         ports   => [ "8000:8000" ],  # XXX listening on all interfaces now
+         depends => ["etcd_${name}"],
       }
-      ufw::allow { "allow-etcd-client-on-docker0":
-         ip   => "${::ipaddress_docker0}",
+      sunet::misc::ufw_allow { "allow-etcd-client-on-docker0":
+         from => '172.16.0.0/12',
+         to   => $::ipaddress_docker0,
          port => '4001',
       }
-      ufw::allow { "allow-etcd-peer":
-         ip   => $etcd_s2s_ip,
+      sunet::misc::ufw_allow { "allow-etcd-peer":
+         from => $allow_peers,
          port => '2380',
       }
-      ufw::allow { "allow-etcd-client":
-         ip   => $etcd_c2s_ip,
+      sunet::misc::ufw_allow { "allow-etcd-client":
+         from => $allow_clients,
          port => '2379',
       }
    }

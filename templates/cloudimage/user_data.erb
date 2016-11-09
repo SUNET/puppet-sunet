@@ -23,6 +23,8 @@ write_files:
     content: |
       # Enable grub on serial console
       GRUB_TERMINAL=serial
+mounts:
+  - [ "LABEL=local", "/local", "auto", "defaults,nofail" ]
 package_upgrade: true
 runcmd:
    - "echo '*** debug: /etc/network/interfaces:'"
