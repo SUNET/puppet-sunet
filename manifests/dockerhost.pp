@@ -54,11 +54,7 @@ class sunet::dockerhost(
   }
 
   file {
-    '/usr/local/etc/docker.d':  # XXX obsolete
-      ensure  => 'directory',
-      mode    => '0755',
-      ;
-    '/etc/logrotate.d':
+     '/etc/logrotate.d':
       ensure  => 'directory',
       mode    => '0755',
       ;
@@ -68,12 +64,6 @@ class sunet::dockerhost(
       mode    => '0644',
       content => template('sunet/dockerhost/logrotate_docker-containers.erb'),
       ;
-    '/etc/scriptherder/check/docker-cleanup.ini':
-      ensure  => file,
-      mode    => '0644',
-      content => template('sunet/dockerhost/scriptherder_docker-cleanup.ini.erb'),
-      require => File['/etc/scriptherder/check'],
-      ;
     '/etc/sudoers.d/nrpe_dockerhost_checks':
       ensure  => file,
       mode    => '0440',
@@ -82,6 +72,7 @@ class sunet::dockerhost(
     '/etc/nagios/nrpe.d/sunet_dockerhost_checks.cfg':
       ensure  => 'file',
       content => template('sunet/dockerhost/nagios_nrpe_checks.erb'),
+      notify  => Service['nagios-nrpe-server'],
       ;
     '/usr/local/bin/check_docker_containers':
       ensure  => file,
@@ -90,27 +81,22 @@ class sunet::dockerhost(
       ;
     }
 
-  # Remove obsolete files installed earlier
-  file { ['/usr/local/bin/verify_docker_image',
-          '/usr/local/bin/sunet_docker_pre-post',  # replaced by run-parts scripts above
-          '/usr/local/bin/tarmangel',
-          '/etc/unbound/unbound.conf.d/docker.conf',  # moved to unbound docker container
-          '/usr/local/etc/docker.d/docker_pre-start',
-          '/usr/local/etc/docker.d/docker_post-start',
-          '/usr/local/etc/docker.d/docker_pre-stop',
-          '/usr/local/etc/docker.d/docker_post-stop',
-          '/usr/local/bin/get_docker_bridge',
-          '/usr/local/bin/get_docker_networkmode'
-          ]:
-    ensure => 'absent',
-  }
-
   if $run_docker_cleanup {
     # Cron job to remove old unused docker images
-    cron { "dockerhost_cleanup":
-      command  => "test -x /usr/local/bin/scriptherder && test -x /usr/local/bin/docker-cleanup && /usr/local/bin/scriptherder --mode wrap --syslog --name docker-cleanup -- /usr/local/bin/docker-cleanup",
-      user     => 'root',
-      special  => 'daily',
+    file {
+      '/usr/local/bin/docker-cleanup':
+        ensure  => 'file',
+        mode    => '0755',
+        owner   => 'root',
+        group   => 'root',
+        content => template('sunet/dockerhost/docker-cleanup.erb'),
+        ;
+    } ->
+    sunet::scriptherder::cronjob { 'dockerhost_cleanup':
+      cmd           => '/usr/local/bin/docker-cleanup',
+      special       => 'daily',
+      ok_criteria   => ['exit_status=0', 'max_age=25h'],
+      warn_criteria => ['exit_status=0', 'max_age=49h'],
     }
   }
 
