@@ -91,6 +91,15 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        require => Package['nagios-nrpe-server'],
        content => template('sunet/nagioshost/check_process.erb'),
    }
+   if ($::operatingsystem == 'Ubuntu' and $::operatingsystemmajrelease == '16.04') {
+      file { "/usr/lib/nagios/plugins/check_memory":
+          ensure  => 'file',
+          mode    => '0751',
+          group   => 'nagios',
+          require => Package['nagios-nrpe-server'],
+          content => template('sunet/nagioshost/check_memory_patched_806598.erb'),
+      }
+   }
    $nrpe_clients.each |$client| {
       $client_name = regsubst($client,'([.:]+)','_','G')
       ufw::allow { "allow-nrpe-${client_name}":
