@@ -28,9 +28,7 @@ config:
       type: static
       address: |
         <%= @ip %>
-<% if @netmask -%>      netmask: |
-        <%= @netmask %>
-<% end -%>
+<% if @netmask -%>      netmask: <%= @netmask %><% end %>
 <% if @gateway -%>      routes: |
         <%= @gateway %>
 <% end -%>
