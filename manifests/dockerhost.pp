@@ -29,6 +29,7 @@ class sunet::dockerhost(
      key      => { 'id'     => '58118E89F3A912897C070ADBF76221572C52609D',
                    'server' => 'keyserver.ubuntu.net' },
      include  => { 'src' => false },
+     notify   => Exec['apt_update'],
   } ->
 
   package { 'docker-engine' :
