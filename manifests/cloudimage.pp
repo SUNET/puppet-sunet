@@ -23,6 +23,7 @@ define sunet::cloudimage (
   $images_dir  = '/var/lib/libvirt/images',
   $pool_name   = 'default',
   $local_size  = '0',
+  $rng         = '/dev/random',
 )
 {
   ensure_resource('package', ['cpu-checker',

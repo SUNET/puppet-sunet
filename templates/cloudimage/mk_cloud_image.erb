@@ -17,6 +17,7 @@ apt_dir="<%= @apt_dir %>"
 local_size="<%= @local_size %>"
 images_dir="<%= @images_dir %>"
 pool_name="<%= @pool_name %>"
+rng="<%= @rng %>"
 
 cd "${images_dir}"
 
@@ -79,6 +80,9 @@ if [ "x${mac}" != "x" ]; then
 fi
 if [ "x${description}" != "x" ]; then
    install_options="${install_options} --description '${description}'"
+fi
+if [ "x${rng}" != "x" ]; then
+   install_options="${install_options} --rng='${rng}'"
 fi
 
 # destroy and undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
