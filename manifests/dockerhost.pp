@@ -22,6 +22,10 @@ class sunet::dockerhost(
      ensure => 'absent',
   }
 
+
+  # Add the dockerproject repository, then force an apt-get update before
+  # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
+  #
   apt::source {'docker_official':
      location => 'https://apt.dockerproject.org/repo',
      release  => "ubuntu-${::lsbdistcodename}",
@@ -29,11 +33,19 @@ class sunet::dockerhost(
      key      => { 'id'     => '58118E89F3A912897C070ADBF76221572C52609D',
                    'server' => 'keyserver.ubuntu.net' },
      include  => { 'src' => false },
-     notify   => Exec['apt_update'],
-  } ->
+  }
+
+  exec { 'dockerhost_apt_get_update':
+     command     => '/usr/bin/apt-get update',
+     cwd         => '/tmp',
+     require     => Apt::Source['docker_official'],
+     subscribe   => Apt::Source['docker_official'],
+     refreshonly => true,
+  }
 
   package { 'docker-engine' :
      ensure => $docker_version,
+     require => Exec['dockerhost_apt_get_update'],
   }
 
   class {'docker':
