@@ -59,13 +59,6 @@ class sunet::dockerhost(
     subnet => $docker_network,
   }
 
-  # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
-    $check_docker_containers_args = '--systemd'
-  } else {
-    $check_docker_containers_args = '--init_d'
-  }
-
   file {
      '/etc/logrotate.d':
       ensure  => 'directory',
@@ -77,22 +70,34 @@ class sunet::dockerhost(
       mode    => '0644',
       content => template('sunet/dockerhost/logrotate_docker-containers.erb'),
       ;
-    '/etc/sudoers.d/nrpe_dockerhost_checks':
-      ensure  => file,
-      mode    => '0440',
-      content => template('sunet/dockerhost/etc_sudoers.d_nrpe_dockerhost_checks.erb'),
-      ;
-    '/etc/nagios/nrpe.d/sunet_dockerhost_checks.cfg':
-      ensure  => 'file',
-      content => template('sunet/dockerhost/nagios_nrpe_checks.erb'),
-      notify  => Service['nagios-nrpe-server'],
-      ;
-    '/usr/local/bin/check_docker_containers':
-      ensure  => file,
-      mode    => '0755',
-      content => template('sunet/dockerhost/check_docker_containers.erb'),
-      ;
     }
+
+  if $::sunet_has_nrpe_d == true {
+    # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
+    if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+      $check_docker_containers_args = '--systemd'
+    } else {
+      $check_docker_containers_args = '--init_d'
+    }
+
+    file {
+      '/etc/sudoers.d/nrpe_dockerhost_checks':
+        ensure  => file,
+        mode    => '0440',
+        content => template('sunet/dockerhost/etc_sudoers.d_nrpe_dockerhost_checks.erb'),
+        ;
+      '/etc/nagios/nrpe.d/sunet_dockerhost_checks.cfg':
+        ensure  => 'file',
+        content => template('sunet/dockerhost/nagios_nrpe_checks.erb'),
+        notify  => Service['nagios-nrpe-server'],
+        ;
+      '/usr/local/bin/check_docker_containers':
+        ensure  => file,
+        mode    => '0755',
+        content => template('sunet/dockerhost/check_docker_containers.erb'),
+        ;
+    }
+  }
 
   if $run_docker_cleanup {
     # Cron job to remove old unused docker images
