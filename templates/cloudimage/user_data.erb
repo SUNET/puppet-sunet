@@ -27,6 +27,8 @@ mounts:
   - [ "LABEL=local", "/local", "auto", "defaults,nofail" ]
 package_upgrade: true
 runcmd:
+   - "echo '*** debug: interfaces:'"
+   - "ifconfig -a"
    - "echo '*** debug: /etc/network/interfaces:'"
    - "cat /etc/network/interfaces"
    - "echo '*** debug: find /etc/network/ -ls:'"
