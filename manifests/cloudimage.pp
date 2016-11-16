@@ -35,7 +35,7 @@ define sunet::cloudimage (
   $image_url_a = split($image_url, "/")
   $image_name = $image_url_a[-1]
   $image_src = "${images_dir}/${image_name}"
-  $script_dir = "/var/lib/libvirt/sunet-files"
+  $script_dir = "${images_dir}/../sunet-files"
   $init_script = "${script_dir}/${name}/${name}-init.sh"
   $meta_data = "${script_dir}/${name}/${name}_meta-data"
   $user_data = "${script_dir}/${name}/${name}_user-data"
