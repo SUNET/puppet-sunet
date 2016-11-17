@@ -42,7 +42,7 @@ define sunet::scriptherder::cronjob(
   }
 
   if $ensure == 'absent' and $purge_results {
-    exec { 'scriptherder_purge_results':
+    exec { "scriptherder_purge_results_${name}":
       command     => '/bin/rm -f "/var/cache/scriptherder/${name}_"*',
     }
   }
