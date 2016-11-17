@@ -22,6 +22,7 @@ define sunet::docker_compose_service(
 
     service { $_service_name :
       ensure  => 'running',
+      enable  => true,
       require => File["/etc/systemd/system/${_service_name}.service"],
     }
   } else {
