@@ -5,6 +5,13 @@ class sunet::unbound(
 ) {
   package { 'unbound': ensure => 'installed' }
 
+  # Help Puppet understand to use systemd for Ubuntu 16.04 hosts
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    Service {
+      provider => 'systemd',
+    }
+  }
+
   if $use_apparmor {
     include apparmor
 
