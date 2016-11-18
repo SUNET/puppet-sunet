@@ -72,7 +72,7 @@ class sunet::dockerhost(
       ;
     }
 
-  if $::sunet_has_nrpe_d == true {
+  if $::sunet_has_nrpe_d == "yes" {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
     if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
       $check_docker_containers_args = '--systemd'
