@@ -43,9 +43,16 @@ if [ -n "$1" ]; then
 	exit 1
 fi
 
-# Remove containers with untagged images.
-echo "Removing containers:" >&2
-untagged_containers 1 | xargs --no-run-if-empty docker rm --volumes=true $force
+# Remove stopped containers with untagged images.
+echo "Removing stopped containers with untagged images:" >&2
+
+untagged_container_list="$(untagged_containers 1)"
+for untagged_container in $untagged_container_list
+do
+    if [ $(docker inspect --format '{{.State.Running}}' ${untagged_container}) = "false" ]; then
+        echo "${untagged_container}" | xargs --no-run-if-empty docker rm --volumes=true $force
+    fi
+done
 
 # Remove untagged images
 echo "Removing images:" >&2
