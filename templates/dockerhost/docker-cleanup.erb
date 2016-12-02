@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Cleanup docker files: untagged containers and images.
 #
 # Use `docker-cleanup -n` for a dry run to see what would be deleted.
@@ -21,11 +21,11 @@ untagged_images() {
 
 # force?
 force=""
-if [ "$1" = "-f" ]; then
+if [[ "$1" == "-f" ]]; then
         force="-f"
         shift
 # Dry-run.
-elif [ "$1" = "-n" ]; then
+elif [[ "$1" == "-n" ]]; then
 	echo "=== Containers with uncommitted images: ==="
 	untagged_containers 0
 	echo
@@ -35,7 +35,7 @@ elif [ "$1" = "-n" ]; then
 
 	exit
 fi
-if [ -n "$1" ]; then
+if [[ -n "$1" ]]; then
 	echo "Cleanup docker files: remove untagged containers and images."
 	echo "Usage: ${0##*/} [-f|-n]"
 	echo "   -n: dry run: display what would get removed."
@@ -43,17 +43,22 @@ if [ -n "$1" ]; then
 	exit 1
 fi
 
-# Remove stopped containers with untagged images.
 echo "Removing stopped containers with untagged images:" >&2
-
 untagged_container_list="$(untagged_containers 1)"
 for untagged_container in $untagged_container_list
 do
-    if [ $(docker inspect --format '{{.State.Running}}' ${untagged_container}) = "false" ]; then
+    if [[ $(docker inspect --format '{{.State.Running}}' ${untagged_container}) == "false" ]]; then
         echo "${untagged_container}" | xargs --no-run-if-empty docker rm --volumes=true $force
     fi
 done
 
-# Remove untagged images
-echo "Removing images:" >&2
-untagged_images 3 | xargs --no-run-if-empty docker rmi $force
+echo "Removing untagged images that are not in use by running containers:" >&2
+untagged_images_list="$(untagged_images 3)"
+for untagged_image in $untagged_images_list
+do
+    if [[ "$(docker ps --format "{{.Image}}")" =~ ${untagged_image} ]]; then
+        echo "Not removing ${untagged_image} that is in use by a running container"
+    else
+        echo "${untagged_image}" | xargs --no-run-if-empty docker rmi $force
+    fi
+done
