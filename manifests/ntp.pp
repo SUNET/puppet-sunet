@@ -1,5 +1,8 @@
 # Install and configure NTP service
-class sunet::ntp($disable_pool_ntp_org = false) {
+class sunet::ntp(
+  $disable_pool_ntp_org = false,
+  $add_servers = [],
+) {
    package { 'ntp': ensure => 'latest' }
    service { 'ntp':
       name       => 'ntp',
@@ -27,6 +30,14 @@ class sunet::ntp($disable_pool_ntp_org = false) {
        ensure      => 'comment',
        filename    => '/etc/ntp.conf',
        line        => '^pool ntp\.ubuntu\.',
+       notify      => Service['ntp'],
+     }
+   }
+
+   each($add_servers) |$server| {
+     sunet::snippets::file_line { "ntp_add_server_${server}":
+       filename    => '/etc/ntp.conf',
+       line        => "server ${server} iburst",
        notify      => Service['ntp'],
      }
    }
