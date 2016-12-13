@@ -54,6 +54,12 @@ class sunet::norduni {
       group   => 'www-data',
       recurse => true,
     } ->
+    file { '/var/opt/norduni/noclook/media':
+      ensure  => directory,
+      owner   => 'ni',
+      group   => 'www-data',
+      recurse => true,
+    } ->
     file { '/var/opt/norduni/nginx':
       ensure  => directory,
       owner   => 'www-data',
@@ -162,6 +168,7 @@ class sunet::norduni {
         volumes  => ['/var/opt/norduni/noclook/etc/dotenv:/var/opt/norduni/norduni/src/niweb/.env:ro',
                      '/var/opt/norduni/noclook/etc/full-update.conf:/var/opt/norduni/norduni/src/scripts/full-update.conf:ro',
                      '/var/opt/norduni/noclook/staticfiles:/var/opt/norduni/staticfiles',
+                     '/var/opt/norduni/noclook/media:/var/opt/norduni/media',
                      '/var/log/norduni:/var/log/norduni',
                      '/var/opt/norduni/nistore:/var/opt/nistore'],
         env      => ["DJANGO_SETTINGS_MODULE=niweb.settings.dev",

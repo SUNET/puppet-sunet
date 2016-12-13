@@ -21,8 +21,10 @@ define sunet::docker_compose_service(
     }
 
     service { $_service_name :
-      ensure  => 'running',
-      require => File["/etc/systemd/system/${_service_name}.service"],
+      ensure   => 'running',
+      enable   => true,
+      require  => File["/etc/systemd/system/${_service_name}.service"],
+      provider => 'systemd',  # puppet is really bad at figuring this out
     }
   } else {
     err('sunet::docker_compose_service only available on Ubuntu >= 15.04 for now (only systemd is implemented)')
