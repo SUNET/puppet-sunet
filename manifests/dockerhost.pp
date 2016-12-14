@@ -10,6 +10,8 @@ class sunet::dockerhost(
                                     ),
   $ufw_allow_docker_dns      = true,
   $manage_dockerhost_unbound = false,
+  $compose_image             = 'docker.sunet.se/library/docker-compose',
+  $compose_version           = '1.7.0',
 ) {
 
   # Remove old versions, if installed
@@ -70,7 +72,16 @@ class sunet::dockerhost(
       mode    => '0644',
       content => template('sunet/dockerhost/logrotate_docker-containers.erb'),
       ;
-    }
+    '/usr/local/bin/docker-compose':
+      mode    => '755',
+      content => template('sunet/dockerhost/docker-compose.erb'),
+      ;
+    '/usr/bin/docker-compose':
+      # workaround: docker_compose won't find the binary in /usr/local/bin :(
+      ensure  => 'link',
+      target  => '/usr/local/bin/docker-compose',
+      ;
+  }
 
   if $::sunet_has_nrpe_d == "yes" {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
