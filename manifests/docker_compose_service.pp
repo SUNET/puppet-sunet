@@ -18,6 +18,15 @@ define sunet::docker_compose_service(
         notify  => [Class['sunet::systemd_reload'],
                     ],
         ;
+      '/usr/local/bin/docker-compose':
+        mode    => '755',
+        content => template('sunet/dockerhost/docker-compose.erb'),
+        ;
+      '/usr/bin/docker-compose':
+        # workaround: docker_compose won't find the binary in /usr/local/bin :(
+        ensure  => 'link',
+        target  => '/usr/local/bin/docker-compose',
+        ;
     }
 
     service { $_service_name :
