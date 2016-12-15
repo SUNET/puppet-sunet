@@ -21,13 +21,13 @@ class sunet::ntp(
   # in cases where DHCP does not provide servers, or the machinery doesn't
   # work well (Ubuntu 16.04, looking at you), add some servers manually
   $_set_servers = map($set_servers) |$index, $server| {
-    sprintf('set servers[%s] %s', $index + 1, $server)
+    sprintf('set server[%s] %s', $index + 1, $server)
   }
   $changes = flatten([$_disable_pool,
                       $_set_servers ? {
                         [] => [],
                         default => ['rm server[.]',
-                                    $set_servers],
+                                    $_set_servers],
                       },])
 
   if $changes != [] {
