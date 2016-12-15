@@ -81,7 +81,7 @@ class sunet::dockerhost(
       ensure  => 'link',
       target  => '/usr/local/bin/docker-compose',
       ;
-  }
+    }
 
   if $::sunet_has_nrpe_d == "yes" {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
@@ -92,21 +92,21 @@ class sunet::dockerhost(
     }
 
     file {
-    '/etc/sudoers.d/nrpe_dockerhost_checks':
-      ensure  => file,
-      mode    => '0440',
-      content => template('sunet/dockerhost/etc_sudoers.d_nrpe_dockerhost_checks.erb'),
-      ;
-    '/etc/nagios/nrpe.d/sunet_dockerhost_checks.cfg':
-      ensure  => 'file',
-      content => template('sunet/dockerhost/nagios_nrpe_checks.erb'),
-      notify  => Service['nagios-nrpe-server'],
-      ;
-    '/usr/local/bin/check_docker_containers':
-      ensure  => file,
-      mode    => '0755',
-      content => template('sunet/dockerhost/check_docker_containers.erb'),
-      ;
+      '/etc/sudoers.d/nrpe_dockerhost_checks':
+        ensure  => file,
+        mode    => '0440',
+        content => template('sunet/dockerhost/etc_sudoers.d_nrpe_dockerhost_checks.erb'),
+        ;
+      '/etc/nagios/nrpe.d/sunet_dockerhost_checks.cfg':
+        ensure  => 'file',
+        content => template('sunet/dockerhost/nagios_nrpe_checks.erb'),
+        notify  => Service['nagios-nrpe-server'],
+        ;
+      '/usr/local/bin/check_docker_containers':
+        ensure  => file,
+        mode    => '0755',
+        content => template('sunet/dockerhost/check_docker_containers.erb'),
+        ;
     }
   }
 
