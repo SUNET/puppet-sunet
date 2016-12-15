@@ -11,8 +11,8 @@ class sunet::dockerhost(
   $ufw_allow_docker_dns      = true,
   $manage_dockerhost_unbound = false,
   $compose_image             = 'docker.sunet.se/library/docker-compose',
-  $compose_version           = '1.7.0',)
- {
+  $compose_version           = '1.7.0',
+) {
 
   # Remove old versions, if installed
   package { ['lxc-docker-1.6.2', 'lxc-docker'] :
