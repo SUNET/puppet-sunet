@@ -3,42 +3,36 @@ class sunet::ntp(
   $disable_pool_ntp_org = false,
   $add_servers = [],
 ) {
-   package { 'ntp': ensure => 'latest' }
-   service { 'ntp':
-      name       => 'ntp',
-      ensure     => running,
-      enable     => true,
-      hasrestart => true,
+  package { 'ntp': ensure => 'installed' }
+  service { 'ntp':
+    name       => 'ntp',
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    require => Package['ntp'],
+  }
+
+  # Don't use pool.ntp.org servers, but rather DHCP provided NTP servers
+  $_disable_pool = $disable_pool_ntp_org ? {
+    true => ['rm pool[.]'],
+    false => [],
+  }
+
+  # in cases where DHCP does not provide servers, or the machinery doesn't
+  # work well (Ubuntu 16.04, looking at you), add some servers manually
+  $_add_servers = each($add_servers) |$index, $server| {
+    sprintf('set servers[%s] %s', $index + 1, $server)
+  }
+  $changes = flatten([$_disable_pool, $_add_servers])
+
+  if $changes != [] {
+    include augeas
+
+    augeas { 'ntp.conf':
+      context => '/files/etc/ntp.conf',
+      changes => $changes,
       require => Package['ntp'],
-   }
-
-   if $disable_pool_ntp_org {
-     # Don't use pool.ntp.org servers, but rather DHCP provided NTP servers
-     sunet::snippets::file_line { 'no_pool_ntp_org_servers':
-       ensure      => 'comment',
-       filename    => '/etc/ntp.conf',
-       line        => '^server .*\.pool\.ntp\.org',
-       notify      => Service['ntp'],
-     }
-     sunet::snippets::file_line { 'no_pool_ntp_org_servers2':
-       ensure      => 'comment',
-       filename    => '/etc/ntp.conf',
-       line        => '^pool .*\.pool\.ntp\.org',
-       notify      => Service['ntp'],
-     }
-     sunet::snippets::file_line { 'no_pool_ntp_org_servers3':
-       ensure      => 'comment',
-       filename    => '/etc/ntp.conf',
-       line        => '^pool ntp\.ubuntu\.',
-       notify      => Service['ntp'],
-     }
-   }
-
-   each($add_servers) |$server| {
-     sunet::snippets::file_line { "ntp_add_server_${server}":
-       filename    => '/etc/ntp.conf',
-       line        => "server ${server} iburst",
-       notify      => Service['ntp'],
-     }
-   }
+      notify  => Service['ntp'],
+    }
+  }
 }
