@@ -1,7 +1,7 @@
 # Install and configure NTP service
 class sunet::ntp(
   $disable_pool_ntp_org = false,
-  $add_servers = [],
+  $set_servers = [],
 ) {
   package { 'ntp': ensure => 'installed' }
   service { 'ntp':
@@ -20,10 +20,15 @@ class sunet::ntp(
 
   # in cases where DHCP does not provide servers, or the machinery doesn't
   # work well (Ubuntu 16.04, looking at you), add some servers manually
-  $_add_servers = map($add_servers) |$index, $server| {
+  $_set_servers = map($set_servers) |$index, $server| {
     sprintf('set servers[%s] %s', $index + 1, $server)
   }
-  $changes = flatten([$_disable_pool, $_add_servers])
+  $changes = flatten([$_disable_pool,
+                      $_set_servers ? {
+                        [] => [],
+                        default => ['rm server[.]',
+                                    $set_servers],
+                      },])
 
   if $changes != [] {
     include augeas
