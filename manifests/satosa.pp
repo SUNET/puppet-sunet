@@ -32,4 +32,11 @@ class sunet::satosa {
          content => inline_template("<%= @conf.to_yaml %>\n")
       }
    }
+   sunet::docker_run {'satosa':
+      image    => 'docker.sunet.se/satosa',
+      imagetag => '3.0-stable',
+      volumes  => ['/etc/satosa:/etc/satosa'],
+      ports    => ['443:8000'],
+      env      => ['METADATA_DIR=/etc/satosa/metadata']
+   }
 }
