@@ -3,10 +3,10 @@ require stdlib
 class sunet::satosa {
    $proxy_conf = hiera("satosa_proxy_conf")
    $default_conf = { 
-      STATE_ENCRYPTION_KEY       => hiera("satosa_state_encryption_key"),
-      USER_ID_HASH_SALT          => hiera("satosa_user_id_hash_salt"),
-      CUSTOM_PLUGIN_MODULE_PATHS => ["plugins"],
-      COOKIE_STATE_NAME          => "SATOSA_STATE"
+      "STATE_ENCRYPTION_KEY"       => hiera("satosa_state_encryption_key"),
+      "USER_ID_HASH_SALT"          => hiera("satosa_user_id_hash_salt"),
+      "CUSTOM_PLUGIN_MODULE_PATHS" => ["plugins"],
+      "COOKIE_STATE_NAME"          => "SATOSA_STATE"
    }
    $merged_conf = merge($proxy_conf,$default_conf)
    ensure_resource('file','/etc', { ensure => directory } )
