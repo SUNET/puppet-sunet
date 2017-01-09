@@ -27,7 +27,8 @@ class sunet::satosa {
    $plugins = hiera("satosa_config")
    sort(keys($plugins)).each |$n| {
       $conf = hiera($n)
-      file { "$plugins[$n]":
+      $fn = $plugins[$n]
+      file { "$fn":
          content => inline_template("<%= @conf.to_yaml %>\n")
       }
    }
