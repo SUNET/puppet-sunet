@@ -16,9 +16,9 @@ class sunet::satosa {
    ensure_resource('file',"/etc/satosa/plugins", { ensure => directory } )
    ensure_resource('file',"/etc/satosa/metadata", { ensure => directory } )
    ["backend","frontend","https","metadata"].each |$id| {
-      sunet::snippets::keygen {"$name_$id_keygen":
-         key_file  => "/etc/satosa/$id.key",
-         cert_file => "/etc/satosa/$id.crt"
+      sunet::snippets::keygen {"satosa_${id}":
+         key_file  => "/etc/satosa/${id}.key",
+         cert_file => "/etc/satosa/${id}.crt"
       }
    }
    file {"/etc/satosa/proxy_conf.yaml":
