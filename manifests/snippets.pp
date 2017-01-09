@@ -74,8 +74,9 @@ define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096) {
       creates => $key_file
    } ->
    exec { "${title}_cert":
-      command     => "openssl req -x509 -sha256 -new -subj \"/CN=${title}\" -key $key_file -out $cert_file",
-      refreshonly => true
+      command => "openssl req -x509 -sha256 -new -subj \"/CN=${title}\" -key $key_file -out $cert_file",
+      onlyif  => "test ! -f $cert_file -a -f $key_file",
+      creates => $cert_file
    }
 }
 
