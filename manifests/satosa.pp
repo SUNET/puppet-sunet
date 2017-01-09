@@ -1,6 +1,6 @@
 require stdlib
 
-class sunet::satosa() {
+class sunet::satosa {
    $proxy_conf = hiera("satosa_proxy_conf")
    $default_conf = { 
       STATE_ENCRYPTION_KEY       => hiera("satosa_state_encryption_key"),
