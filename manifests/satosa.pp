@@ -24,7 +24,7 @@ class sunet::satosa {
    file {"/etc/satosa/proxy_conf.yaml":
       content => inline_template("<%= @merged_conf.to_yaml %>\n")
    }
-   $plugins = hiera("satosa-config")
+   $plugins = hiera("satosa_config")
    sort(keys($plugins)).each |$n| {
       $conf = hiera($n)
       file { "$plugins[$n]":
