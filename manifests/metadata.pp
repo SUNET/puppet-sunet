@@ -21,10 +21,10 @@ define sunet::metadata($url=undef,
 }
 
 define sunet::metadata::swamid {
-   ensure_resource('file',"/var/run/md-signer2.crt", { 
+   ensure_resource('file',"/var/run/md-signer2.crt", {
       content  => file("sunet/md-signer2.crt")
    })
-   sunet::metadata { "swamid": 
+   sunet::metadata { "swamid":
       url      => "http://mds.swamid.se/md/swamid-2.0.xml",
       cert     => "/var/run/md-signer2.crt",
       filename => $name
@@ -35,7 +35,7 @@ define sunet::metadata::swamid_idp {
    ensure_resource('file',"/var/run/md-signer2.crt", {
       content  => file("sunet/md-signer2.crt")
    })
-   sunet::metadata { "swamid_idp": 
+   sunet::metadata { "swamid_idp":
       url      => "http://mds.swamid.se/md/swamid_idp.xml",
       cert     => "/var/run/md-signer2.crt",
       filename => $name
