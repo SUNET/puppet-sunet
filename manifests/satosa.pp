@@ -1,9 +1,9 @@
 require stdlib
 
 class satosa() {
-   $state_encryption_key = hiera("satosa-state-encryption-key")
-   $user_id_hash_salt = hiera("satosa-user-id-hash-salt")
-   $proxy_conf = hiera("satosa-proxy-conf")
+   $state_encryption_key = hiera("satosa_state_encryption_key")
+   $user_id_hash_salt = hiera("satosa_user_id_hash_salt")
+   $proxy_conf = hiera("satosa_proxy_conf")
    $proxy_conf['STATE_ENCRYPTION_KEY'] = $state_encryption_key
    $proxy_conf['USER_ID_HASH_SALT'] = $user_id_hash_salt
    $proxy_conf['CUSTOM_PLUGIN_MODULE_PATHS'] = ['plugins']
@@ -28,16 +28,11 @@ class satosa() {
    file {"/etc/satosa/proxy_conf.yaml":
       content => inline_template("<%= @proxy_conf.to_yaml %>\n")
    }
-}
-
-define satosa::plugin($file_name = undef) {
-   require satosa
-   $fn = $file_name ? {
-      undef   => "/etc/satosa/plugins/${title}.yaml",
-      default => $file_name
-   }
-   $conf = hiera("${title}")
-   file {"$fn":
-      content => inline_template("<%= @conf.to_yaml %>\n")
+   $plugins = hiera("satosa-config")
+   sort(keys($plugins)).each |$n| {
+      $conf = hiera($n)
+      file { "$plugins[$n]":
+         content => inline_template("<%= @conf.to_yaml %>\n")
+      }
    }
 }
