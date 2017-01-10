@@ -39,4 +39,8 @@ class sunet::satosa {
       ports    => ['443:8000'],
       env      => ['METADATA_DIR=/etc/satosa/metadata']
    }
+   ufw::allow { "satosa-allow-http":
+      ip   => 'any',
+      port => '443'
+   }
 }
