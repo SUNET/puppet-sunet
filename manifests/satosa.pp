@@ -1,6 +1,6 @@
 require stdlib
 
-class sunet::satosa {
+class sunet::satosa($dehydrated_name=undef) {
    $proxy_conf = hiera("satosa_proxy_conf")
    $default_conf = { 
       "STATE_ENCRYPTION_KEY"       => hiera("satosa_state_encryption_key"),
@@ -51,5 +51,9 @@ class sunet::satosa {
    ufw::allow { "satosa-allow-http":
       ip   => 'any',
       port => '80'
+   }
+   if ($dehydrated_name) {
+      file { '/etc/satosa/https.key': ensure => link, target => "/etc/dehydrated/certs/$dehydrated_name.key" }
+      file { '/etc/satosa/https.crt': ensure => link, target => "/etc/dehydrated/certs/$dehydrated_name.crt" }
    }
 }
