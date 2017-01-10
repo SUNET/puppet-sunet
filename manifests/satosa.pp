@@ -35,7 +35,7 @@ class sunet::satosa($dehydrated_name=undef) {
    sunet::docker_run {'satosa':
       image    => 'docker.sunet.se/satosa',
       imagetag => '3.0-stable',
-      volumes  => ['/etc/satosa:/etc/satosa'],
+      volumes  => ['/etc/satosa:/etc/satosa','/etc/dehydrated:/etc/dehydrated'],
       ports    => ['443:8000'],
       env      => ['METADATA_DIR=/etc/satosa/metadata']
    }
