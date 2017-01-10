@@ -153,7 +153,8 @@ define sunet::snippets::secret_file(
     undef    => $name,
     default  => $path
   }
-  $data = hiera($hiera_key)
+  $safe_key = regsubst($hiera_key, '[^0-9A-Za-z_]', '_', 'G')
+  $data = hiera($hiera_key, hiera($safe_key))
   file { "${thefile}":
     owner    => $owner,
     group    => $group,
