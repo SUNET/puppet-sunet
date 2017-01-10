@@ -39,8 +39,17 @@ class sunet::satosa {
       ports    => ['443:8000'],
       env      => ['METADATA_DIR=/etc/satosa/metadata']
    }
-   ufw::allow { "satosa-allow-http":
+   ufw::allow { "satosa-allow-https":
       ip   => 'any',
       port => '443'
+   }
+   sunet::docker_run {'alwayshttps':
+      image    => 'docker.sunet.se/always-https',
+      ports    => ['80:80'],
+      env      => ['ACME_URL=http://acme-c.sunet.se']
+   }
+   ufw::allow { "satosa-allow-http":
+      ip   => 'any',
+      port => '80'
    }
 }
