@@ -126,7 +126,7 @@ class sunet::dehydrated($staging=false,
   }
 }
 
-class sunet::dehydrated::client($domain=undef, $server="acme-c.sunet.se", $user="root") {
+class sunet::dehydrated::client($domain=undef, $server="acme-c.sunet.se", $user="root", $ssl_links=false) {
   $home = $user ? {
     "root"  => "/root",
     default => "/home/${user}"
@@ -152,10 +152,9 @@ class sunet::dehydrated::client($domain=undef, $server="acme-c.sunet.se", $user=
     hour    => "*",
     minute  => "13"
   }
-}
-
-class sunet::dehydrated:ssl_links($domain=undef) {
-   file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }
-   file { "/etc/ssl/certs/${domain}.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}.crt" }
-   file { "/etc/ssl/certs/${domain}-chain.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}-chain.crt" }
+  if ($ssl_links) {
+     file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }
+     file { "/etc/ssl/certs/${domain}.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}.crt" }
+     file { "/etc/ssl/certs/${domain}-chain.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}-chain.crt" }
+  }
 }
