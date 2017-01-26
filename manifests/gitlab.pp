@@ -175,7 +175,7 @@ class sunet::gitlab {
 
     sunet::docker_run { 'gitlab':
         image    => 'gitlab/gitlab-ce',
-        imagetag => '8.10.5-ce.0',
+        imagetag => '8.16.1-ce.0',
         ports    => ['22:22'],
         volumes  => ['/etc/gitlab:/etc/gitlab',
                      '/var/log/gitlab:/var/log/gitlab',
