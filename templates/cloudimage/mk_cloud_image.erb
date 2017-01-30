@@ -71,7 +71,7 @@ if [ "x${local_size}" != 'x0' ]; then
     chmod 600 ${local_disk}
 fi
 
-network="--network bridge=${bridge}"
+network="--network bridge=${bridge},model=virtio"
 install_options=""
 
 # Optional settings
