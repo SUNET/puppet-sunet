@@ -18,7 +18,7 @@ define sunet::ucrandom(
       content => template("sunet/ucrandom/default.erb")
    }
    case $::init_type {
-      'init': {
+      'upstart': {
          file {'/etc/init/ucrandom.conf': 
            ensure  => file,
            owner   => root,
@@ -27,7 +27,7 @@ define sunet::ucrandom(
            content => template("sunet/ucrandom/ucrandom.conf.erb")
          }
       }
-      'systemd': {
+      'systemd-sysv': {
          file {'/lib/systemd/system/ucrandom.service':
            ensure  => file,
            owner   => root,

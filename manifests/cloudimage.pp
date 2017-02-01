@@ -26,9 +26,14 @@ define sunet::cloudimage (
   $rng         = '/dev/random',
 )
 {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
+    $kvm_package = 'qemu-kvm'
+  } else {
+    $kvm_package = 'kvm'  # old name
+  }
   ensure_resource('package', ['cpu-checker',
                               'mtools',
-                              'kvm',
+                              $kvm_package,
                               'libvirt-bin',
                               'virtinst',
                               ], {ensure => 'installed'})

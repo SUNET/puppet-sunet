@@ -3,6 +3,7 @@ define sunet::docker_compose_service(
   $compose_file,
   $description,
   $service_name = undef,
+  $pull_on_start = false,
 ) {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
     include sunet::systemd_reload
