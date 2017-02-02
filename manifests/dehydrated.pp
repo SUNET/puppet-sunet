@@ -2,7 +2,7 @@ class sunet::dehydrated($staging=false,
                          $domains=undef,
                          $httpd=false,
                          $apache=false,
-                         $src_url="https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated") 
+                         $src_url="https://raw.githubusercontent.com/einar/dehydrated/master/dehydrated")
 {
   $thedomains = $domains ? {
      undef   => hiera("letsencrypt_domains",hiera("dehydrated_domains",[{$::fqdn=>{"names"=>[$::fqdn]}}])),

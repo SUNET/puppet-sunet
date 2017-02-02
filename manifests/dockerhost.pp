@@ -81,7 +81,7 @@ class sunet::dockerhost(
       ensure  => 'link',
       target  => '/usr/local/bin/docker-compose',
       ;
-  }
+    }
 
   if $::sunet_has_nrpe_d == "yes" {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
@@ -130,7 +130,7 @@ class sunet::dockerhost(
   }
 
   if $ufw_allow_docker_dns {
-    if is_ipv4_address($docker_dns) {
+    if $docker_dns =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
       # Allow Docker containers resolving using caching resolver running on docker host
       sunet::misc::ufw_allow { 'dockerhost_dns':
           from  => '172.16.0.0/12',
