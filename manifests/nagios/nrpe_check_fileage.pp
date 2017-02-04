@@ -8,7 +8,7 @@ define sunet::nagios::nrpe_check_fileage (
       undef   => $name,
       default => $filename
    }
-   
+
    sunet::nagios::nrpe_command {"check_fileage_${title}":
      command_line => "/usr/lib/nagios/plugins/check_fileage -f $_filename -w $warning_age -c $critical_age"
    }
