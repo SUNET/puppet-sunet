@@ -37,5 +37,10 @@ define sunet::ucrandom(
          }
       }
    }
-   service {'ucrandom': ensure => running }
+   $_provider = $::init_type ? {
+      'upstart'      => 'upstart',
+      'systemd-sysv' => 'systemd',
+      default        => 'debian'
+   }
+   service {'ucrandom': ensure => running, provider => $_provider }
 }

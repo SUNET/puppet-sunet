@@ -59,4 +59,5 @@ class sunet::bird(
   }
   service {$bird: ensure => running }
   service {$bird6: ensure => running }
+  ufw::allow {"allow-bird-bgp-tcp": ip => "any", port => "179", proto => "tcp" }
 }
