@@ -37,12 +37,10 @@ define sunet::ici_ca::autosign($ca=undef,
    }
 }
 
-define sunet::ici_ca::rp($ca='infra',$hostname=undef)
+define sunet::ici_ca::rp()
 {
-   $host = $hostname ? {
-      undef   => $::fqdn,
-      default => $hostname
-   }
+   $host = $::fqdn
+   $ca = $name
    file {"/usr/bin/dl_ici_cert":
       content => template("sunet/ici_ca/dl_ici_cert.erb"),
       mode    => '0755'
