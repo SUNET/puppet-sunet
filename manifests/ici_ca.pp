@@ -50,4 +50,3 @@ define sunet::ici_ca::rp()
       onlyif  => "/usr/bin/test -f /etc/ssl/private/${host}_${ca}.key -a ! -f /etc/ssl/certs/${host}_${ca}.crt"
    }
 }
-
