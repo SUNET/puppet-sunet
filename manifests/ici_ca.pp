@@ -36,3 +36,19 @@ define sunet::ici_ca::autosign($ca=undef,
          minute  => "*/5"
    }
 }
+
+define sunet::ici_ca::rp($ca='infra',$hostname=undef)
+{
+   $host = $hostname ? {
+      undef   => $::fqdn,
+      default => $hostname
+   }
+   file {"/usr/bin/dl_ici_cert":
+      content => template("sunet/ici_ca/dl_ici_cert.erb"),
+      mode    => '0755'
+   } ->
+   exec {"dl_infra_host_cert":
+      command => "/usr/bin/dl_ici_cert $ca $host"
+      onlyif  => "/usr/bin/test -f /etc/ssl/private/${host}_${ca}.key -a ! -f /etc/ssl/certs/${host}_${ca}.crt"
+   }
+}

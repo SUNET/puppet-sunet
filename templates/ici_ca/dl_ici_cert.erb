@@ -1,0 +1,30 @@
+#!/bin/bash
+
+ca=$1
+fqdn=$2
+
+url="http://ca.sunet.se/${ca}/"
+key="/etc/ssl/private/${fqdn}_${ca}.key"
+cert="/etc/ssl/certs/${fqdn}_${ca}.crt"
+ca="/etc/ssl/certs/${ca}.crt"
+
+if [ ! -z "$RANDOM_SLEEP" ]; then
+   seconds=`expr $RANDOM % $RANDOM_SLEEP`s
+   sleep $seconds
+fi
+
+if [ -f $key ]; then
+   serial=`wget -qO- "${url}/index.csv" | grep "CN=${fqdn}" | sort -t\; -k2 | tail -1 | awk -F\; '{print $3}'`
+   if [ ! -z $serial ]; then
+      tmp=`mktemp`
+      wget -qO$tmp "${url}/${serial}.pem"
+      if [ -s $tmp ]; then
+         m1=`openssl x509 -noout -modulus -in $tmp | awk -F= '{print $2}'`
+         m2=`openssl rsa -noout -modulus -in $key | awk -F= '{print $2}'`
+         if [ "$m1" == "$m2" ]; then
+            mv $tmp $cert
+         fi
+      fi
+   fi
+   rm -f $tmp
+fi
