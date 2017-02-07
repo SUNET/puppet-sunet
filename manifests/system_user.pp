@@ -1,3 +1,4 @@
+# Deprecated, use sunet::misc::system_user.
 define sunet::system_user(
   $username,
   $group,
