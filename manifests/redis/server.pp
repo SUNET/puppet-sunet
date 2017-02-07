@@ -74,7 +74,7 @@ define sunet::redis::server(
       ;
   } ->
 
-  eduid::docker_run { $name:
+  sunet::docker_run { $name:
     image        => $docker_image,
     imagetag     => 'latest',
     net          => 'host',  # Required for Redis clustering/HA
