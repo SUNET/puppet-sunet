@@ -25,6 +25,7 @@ define sunet::redis::server(
   $slave_node = $master_ip ? {
     $::ipaddress_eth0  => 'no',
     $::ipaddress_bond0 => 'no',
+    $::ipaddress_default => 'no',
     default            => 'yes',
   }
 
