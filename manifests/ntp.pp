@@ -2,6 +2,7 @@
 class sunet::ntp(
   $disable_pool_ntp_org = false,
   $set_servers = [],
+  $add_servers = [],  # backwards compatibility
 ) {
   package { 'ntp': ensure => 'installed' }
   service { 'ntp':
@@ -20,7 +21,7 @@ class sunet::ntp(
 
   # in cases where DHCP does not provide servers, or the machinery doesn't
   # work well (Ubuntu 16.04, looking at you), add some servers manually
-  $_set_servers = map($set_servers) |$index, $server| {
+  $_set_servers = map(flatten([$set_servers, $add_servers])) |$index, $server| {
     sprintf('set server[%s] %s', $index + 1, $server)
   }
   $changes = flatten([$_disable_pool,
