@@ -31,6 +31,7 @@ if [ -f $key ]; then
 fi
 
 if [ -f $key -a -f $cert -a ! -f $full ]; then
+   rm -rf $full
    tmp=`mktemp`
    wget -qO$tmp "${url}/ca.crt"
    cat $key $cert $tmp > $full
