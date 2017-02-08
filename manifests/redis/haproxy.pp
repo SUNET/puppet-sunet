@@ -1,4 +1,4 @@
-define redis::haproxy(
+define sunet::redis::haproxy(
   $username        = 'redis',
   $group           = 'redis',
   $cluster_nodes   = [],
