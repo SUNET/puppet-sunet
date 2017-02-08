@@ -6,7 +6,7 @@ fqdn=$2
 url="http://ca.sunet.se/${ca}/"
 key="/etc/ssl/private/${fqdn}_${ca}.key"
 cert="/etc/ssl/certs/${fqdn}_${ca}.crt"
-ca="/etc/ssl/certs/${ca}.crt"
+ca_cert="/etc/ssl/certs/${ca}.crt"
 full="/etc/ssl/private/${fqdn}_${ca}.pem"
 
 if [ ! -z "$RANDOM_SLEEP" ]; then
