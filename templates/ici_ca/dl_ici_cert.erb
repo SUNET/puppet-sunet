@@ -7,6 +7,7 @@ url="http://ca.sunet.se/${ca}/"
 key="/etc/ssl/private/${fqdn}_${ca}.key"
 cert="/etc/ssl/certs/${fqdn}_${ca}.crt"
 ca="/etc/ssl/certs/${ca}.crt"
+full="/etc/ssl/private/${fqdn}_${ca}.pem"
 
 if [ ! -z "$RANDOM_SLEEP" ]; then
    seconds=`expr $RANDOM % $RANDOM_SLEEP`s
@@ -26,5 +27,12 @@ if [ -f $key ]; then
          fi
       fi
    fi
+   rm -f $tmp
+fi
+
+if [ -f $key -a -f $cert -a ! -f $full ]; then
+   tmp=`mktemp`
+   wget -qO$tmp "${url}/ca.crt"
+   cat $key $cert $tmp > $full
    rm -f $tmp
 fi
