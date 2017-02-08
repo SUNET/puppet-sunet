@@ -30,7 +30,7 @@ backend bk_redis
   tcp-check send QUIT\r\n
   tcp-check expect string +OK
   <% i = 0 %>
-  <% sort(@cluster_nodes).each do |ip| %>
+  <% @cluster_nodes.sort.each do |ip| %>
   <% i = i + 1 %>
   server redis<%= i %> <%= ip %>:<%= @cluster_port %>
   <% end %>
