@@ -3,6 +3,7 @@ define redis::haproxy(
   $group           = 'redis',
   $cluster_nodes   = [],
   $certificate     = undef,
+  $client_ca       = undef,
   $port            = '6380',
   $cluster_port    = '6379',
   $basedir         = "/opt/redis"
@@ -32,10 +33,11 @@ define redis::haproxy(
       imagetag => 'stable',
       ports    => ["$port:$cluster_port"],
       volumes  => ["$basedir/${name}/etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro",
-                   "$certificate:/etc/ssl/certificate.pem:ro"]
+                   "$certificate:/etc/ssl/certificate.pem:ro",
+                   "$client_ca:/etc/ssl/client_ca.pem:ro"]
    }
 
-   sunet::misc::ufw_allow { "${name}_allow_redis":
+   sunet::misc::ufw_allow { "${name}_allow_redis_ha":
       from => 'any',
       port => $port
    }
