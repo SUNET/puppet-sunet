@@ -32,7 +32,7 @@ define sunet::redis::haproxy(
       image    => 'docker.sunet.se/library/haproxy',
       imagetag => 'stable',
       ports    => ["$port:$cluster_port"],
-      volumes  => ["$basedir/${name}/etc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro",
+      volumes  => ["$basedir/${name}/etc/haproxy.cfg:/etc/haproxy/haproxy.cfg:ro",
                    "$certificate:/etc/ssl/certificate.pem:ro",
                    "$client_ca:/etc/ssl/client_ca.pem:ro"]
    }
