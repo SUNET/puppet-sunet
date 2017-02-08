@@ -23,7 +23,7 @@ if [ -f $key ]; then
          m1=`openssl x509 -noout -modulus -in $tmp | awk -F= '{print $2}'`
          m2=`openssl rsa -noout -modulus -in $key | awk -F= '{print $2}'`
          if [ "$m1" == "$m2" ]; then
-            mv $tmp $cert
+            cmp $tmp $cert || { rm -rf $cert && mv $tmp $cert && rm -rf $full }
          fi
       fi
    fi
