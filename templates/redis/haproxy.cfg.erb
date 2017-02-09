@@ -40,7 +40,7 @@ backend bk_redis
 frontend ft_stats
     mode http
     bind 127.0.0.1:9000
-    default_backend stats
+    default_backend bk_stats
 
 backend bk_stats
     stats admin if TRUE
