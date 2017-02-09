@@ -27,7 +27,7 @@ define sunet::redis::haproxy(
       require => Sunet::System_user[$username],
       force   => true,
       content => template("sunet/redis/haproxy.cfg.erb")
-   }
+   } ->
    sunet::docker_run { $name:
       image    => 'docker.sunet.se/library/haproxy',
       imagetag => 'stable',
