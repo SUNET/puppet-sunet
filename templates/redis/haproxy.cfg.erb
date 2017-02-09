@@ -43,5 +43,6 @@ frontend ft_stats
     default_backend bk_stats
 
 backend bk_stats
+    mode http
     stats admin if TRUE
     stats enable
