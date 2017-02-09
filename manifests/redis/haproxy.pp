@@ -41,5 +41,4 @@ define sunet::redis::haproxy(
       from => 'any',
       port => $port
    }
-
 }
