@@ -37,22 +37,11 @@ backend bk_redis
   <% i = 0 %><% @cluster_nodes.sort.each do |ip| %><% i = i + 1 %>server redis<%= i %> <%= ip %>:<%= @cluster_port %>
   <% end %>
 
-listen stats 127.0.0.1:9000
+frontend ft_stats
     mode http
-    balance
-    timeout client 5000
-    timeout connect 4000
-    timeout server 30000
+    bind 127.0.0.1:9000
+    default_backend stats
 
-    #This is the virtual URL to access the stats page
-    stats uri /haproxy_stats        
-
-    #Authentication realm. This can be set to anything. Escape space characters with a backslash.
-    stats realm HAProxy\ Statistics 
-
-    #The user/pass you want to use. Change this password!
-    stats auth admin:NauzLerIgzec
-
-    #This allows you to take down and bring up back end servers.
-    #This will produce an error on older versions of HAProxy.
+backend bk_stats
     stats admin if TRUE
+    stats enable
