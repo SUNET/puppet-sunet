@@ -7,10 +7,11 @@ Wants=docker.service
 #BindsTo=docker.service
 
 [Service]
-Restart=on-failure
+Restart=always
 StartLimitInterval=20
 StartLimitBurst=5
 TimeoutStartSec=0
+RestartSec=5
 ExecStart=/usr/sbin/unbound -d
 
 [Install]
