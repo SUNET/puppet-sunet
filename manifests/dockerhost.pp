@@ -3,7 +3,7 @@ class sunet::dockerhost(
   $docker_version            = "1.10.3-0~${::lsbdistcodename}",
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
-  $docker_network            = hiera('dockerhost_docker_network', '172.18.0.0/22'),
+  Variant[String, Boolean] $docker_network = hiera('dockerhost_docker_network', '172.18.0.0/22'),
   $docker_dns                = pick($::ipaddress_eth0, $::ipaddress_bond0, $::ipaddress_br0, $::ipaddress_em1, $::ipaddress_em2,
                                     $::ipaddress6_eth0, $::ipaddress6_bond0, $::ipaddress6_br0, $::ipaddress6_em1, $::ipaddress6_em2,
                                     $::ipaddress, $::ipaddress6,
@@ -56,9 +56,23 @@ class sunet::dockerhost(
      extra_parameters            => $docker_extra_parameters,
   } ->
 
-  docker_network { 'docker':  # default network for containers
-    ensure => 'present',
-    subnet => $docker_network,
+  if $docker_network =~ String {
+    # Create a useful default network bridge for containers.
+    #
+    # Docker DNS isn't available on the default 'bridge' interface, so another
+    # bridge interface is needed for containers benefiting from the DNS resolution
+    # but not running using docker-compose.
+    docker_network { 'docker':
+      ensure  => 'present',
+      subnet  => $docker_network,
+      require => Class['docker'],
+    }
+  } elsif $docker_network == true {
+    # Create a docker network, but don't specify the subnet.
+    docker_network { 'docker':
+      ensure  => 'present',
+      require => Class['docker'],
+    }
   }
 
   file {
@@ -130,7 +144,7 @@ class sunet::dockerhost(
   }
 
   if $ufw_allow_docker_dns {
-    if is_ipv4_address($docker_dns) {
+    if $docker_dns =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
       # Allow Docker containers resolving using caching resolver running on docker host
       sunet::misc::ufw_allow { 'dockerhost_dns':
           from  => '172.16.0.0/12',

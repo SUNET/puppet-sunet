@@ -2,7 +2,15 @@
 class sunet::ntp(
   $disable_pool_ntp_org = false,
   $set_servers = [],
+  $add_servers = [],  # backwards compatibility
 ) {
+  # Help Puppet understand to use systemd for Ubuntu 16.04 hosts
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    Service {
+      provider => 'systemd',
+    }
+  }
+
   package { 'ntp': ensure => 'installed' }
   service { 'ntp':
     name       => 'ntp',
@@ -20,7 +28,7 @@ class sunet::ntp(
 
   # in cases where DHCP does not provide servers, or the machinery doesn't
   # work well (Ubuntu 16.04, looking at you), add some servers manually
-  $_set_servers = map($set_servers) |$index, $server| {
+  $_set_servers = map(flatten([$set_servers, $add_servers])) |$index, $server| {
     sprintf('set server[%s] %s', $index + 1, $server)
   }
   $changes = flatten([$_disable_pool,
@@ -38,6 +46,20 @@ class sunet::ntp(
       changes => $changes,
       require => Package['ntp'],
       notify  => Service['ntp'],
+    }
+  }
+
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    include sunet::systemd_reload
+
+    # replace init.d script with systemd service file to get Restart=always
+    file {
+      '/etc/systemd/system/ntp.service':
+        content => template('sunet/ntp/ntp.service.erb'),
+        notify  => [Class['sunet::systemd_reload'],
+                    Service['ntp'],
+                    ],
+        ;
     }
   }
 }

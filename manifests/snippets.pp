@@ -69,13 +69,14 @@ define sunet::snippets::file_line($filename, $line, $ensure = 'present') {
 
 define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096) {
    exec { "${title}_key":
-      command => "openssl genrsa $size > $key_file",
+      command => "openssl genrsa -out $key_file $size",
       onlyif  => "test ! -f $key_file",
       creates => $key_file
    } ->
    exec { "${title}_cert":
-      command     => "openssl req -x509 -sha256 -new -subj \"/CN=${title}\" -key $key_file -out $cert_file",
-      refreshonly => true
+      command => "openssl req -x509 -sha256 -new -subj \"/CN=${title}\" -key $key_file -out $cert_file",
+      onlyif  => "test ! -f $cert_file -a -f $key_file",
+      creates => $cert_file
    }
 }
 
@@ -152,7 +153,8 @@ define sunet::snippets::secret_file(
     undef    => $name,
     default  => $path
   }
-  $data = hiera($hiera_key)
+  $safe_key = regsubst($hiera_key, '[^0-9A-Za-z_]', '_', 'G')
+  $data = hiera($hiera_key, hiera($safe_key))
   file { "${thefile}":
     owner    => $owner,
     group    => $group,
