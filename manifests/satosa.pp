@@ -54,6 +54,6 @@ class sunet::satosa($dehydrated_name=undef) {
    }
    if ($dehydrated_name) {
       file { '/etc/satosa/https.key': ensure => link, target => "/etc/dehydrated/certs/$dehydrated_name.key" }
-      file { '/etc/satosa/https.crt': ensure => link, target => "/etc/dehydrated/certs/$dehydrated_name.crt" }
+      file { '/etc/satosa/https.crt': ensure => link, target => "/etc/dehydrated/certs/${dehydrated_name}/fullchain.pem" }
    }
 }
