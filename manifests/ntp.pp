@@ -4,6 +4,13 @@ class sunet::ntp(
   $set_servers = [],
   $add_servers = [],  # backwards compatibility
 ) {
+  # Help Puppet understand to use systemd for Ubuntu 16.04 hosts
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    Service {
+      provider => 'systemd',
+    }
+  }
+
   package { 'ntp': ensure => 'installed' }
   service { 'ntp':
     name       => 'ntp',
@@ -39,6 +46,20 @@ class sunet::ntp(
       changes => $changes,
       require => Package['ntp'],
       notify  => Service['ntp'],
+    }
+  }
+
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    include sunet::systemd_reload
+
+    # replace init.d script with systemd service file to get Restart=always
+    file {
+      '/etc/systemd/system/ntp.service':
+        content => template('sunet/ntp/ntp.service.erb'),
+        notify  => [Class['sunet::systemd_reload'],
+                    Service['ntp'],
+                    ],
+        ;
     }
   }
 }
