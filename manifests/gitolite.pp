@@ -10,16 +10,16 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
       'root'    => '/root',
       default   => "/home/${username}"
    }
-   file { ["$home/.gitolite","$home/.gitolite/logs"]: 
-      ensure => directory,
-      owner  => $username,
-      group  => $group
-   } ->
    $_ssh_key = $ssh_key ? {
       undef   => safe_hiera("gitolite-admin-ssh-key",undef),
       ""      => safe_hiera("gitolite-admin-ssh-key",undef),
       default => $ssh_key
    }
+   file { ["$home/.gitolite","$home/.gitolite/logs"]: 
+      ensure => directory,
+      owner  => $username,
+      group  => $group
+   } ->
    case $ssh_key {
       undef: {
          sunet::snippets::ssh_keygen { "$home/admin": }
