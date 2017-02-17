@@ -22,7 +22,7 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
    }
    package {'gitolite3': ensure => latest }
    exec {'gitolite-setup':
-      command => "gitolite setup -pk $gitolitehome/admin.pub"
+      command => "gitolite setup -pk $gitolitehome/admin.pub",
       user    => $username
    }
 }
