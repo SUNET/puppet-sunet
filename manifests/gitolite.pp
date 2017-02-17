@@ -12,12 +12,12 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
    }
    case $ssh_key {
       undef: {
+         sunet::snippets::ssh_keygen { "$home/admin": }
+      }
+      default: {
          file { "$home/admin.pub":
             content => inline_template('<%= @ssh_key %>')
          }
-      }
-      default: {
-         sunet::snippets::ssh_keygen { "$home/admin": }
       }
    } ->
    package {'gitolite3': ensure => latest } ->
