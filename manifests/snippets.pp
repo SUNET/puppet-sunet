@@ -76,7 +76,7 @@ define sunet::snippets::ssh_keygen($key_file=undef) {
    }
    exec { "${name}-ssh-key":
       command => "ssh-keygen -N '' -f ${_key_file}",
-      onlyif  => "test ! -s ${_keyfile}.pub -o ! -s ${_keyfile}"
+      onlyif  => "test ! -s ${_key_file}.pub -o ! -s ${_key_file}"
    }
 }
 
