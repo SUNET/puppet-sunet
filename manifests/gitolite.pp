@@ -6,28 +6,24 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
       managehome => true,
       shell      => '/bin/bash' 
    })
-   $gitolitehome = $username ? {
-      'root'    => '/root/.gitolite',
-      default   => "/home/${username}/.gitolite"
+   $home = $username ? {
+      'root'    => '/root',
+      default   => "/home/${username}"
    }
-   file {$gitolitehome:
-      ensure    => directory,
-      owner     => $username,
-      group     => $group
-   } ->
    case $ssh_key {
       undef: {
-         file { "$gitolitehome/admin.pub":
+         file { "$home/admin.pub":
             content => inline_template('<%= @ssh_key %>')
          }
       }
       default: {
-         sunet::snippets::ssh_keygen { "$gitolitehome/admin": }
+         sunet::snippets::ssh_keygen { "$home/admin": }
       }
    } ->
    package {'gitolite3': ensure => latest } ->
    exec {'gitolite-setup':
-      command => "gitolite setup -pk $gitolitehome/admin.pub",
-      user    => $username
+      command     => "gitolite setup -pk $home/admin.pub",
+      user        => $username,
+      environment => ["HOME=$home"]
    }
 }
