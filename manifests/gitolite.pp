@@ -15,13 +15,18 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
       owner  => $username,
       group  => $group
    } ->
+   $_ssh_key = $ssh_key ? {
+      undef   => safe_hiera("gitolite-admin-ssh-key",undef),
+      ""      => safe_hiera("gitolite-admin-ssh-key",undef),
+      default => $ssh_key
+   }
    case $ssh_key {
-      undef,"": {
+      undef: {
          sunet::snippets::ssh_keygen { "$home/admin": }
       }
       default: {
          file { "$home/admin.pub":
-            content => inline_template('<%= @ssh_key %>')
+            content => inline_template('<%= @_ssh_key %>')
          }
       }
    } ->
