@@ -10,6 +10,11 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
       'root'    => '/root/.gitolite',
       default   => "/home/${username}/.gitolite"
    }
+   file {$gitolitehome: 
+      ensure    => directory,
+      owner     => $username,
+      group     => $group
+   } ->
    case $ssh_key {
       undef: {
          file { "$gitolitehome/admin.pub":
