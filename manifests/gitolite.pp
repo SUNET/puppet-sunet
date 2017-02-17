@@ -19,8 +19,8 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
       default: {
          sunet::snippets::ssh_keygen { "$gitolitehome/admin": }
       }
-   }
-   package {'gitolite3': ensure => latest }
+   } ->
+   package {'gitolite3': ensure => latest } ->
    exec {'gitolite-setup':
       command => "gitolite setup -pk $gitolitehome/admin.pub",
       user    => $username
