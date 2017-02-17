@@ -11,7 +11,7 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
       default   => "/home/${username}"
    }
    case $ssh_key {
-      undef: {
+      undef,"": {
          sunet::snippets::ssh_keygen { "$home/admin": }
       }
       default: {
