@@ -3,7 +3,8 @@ define sunet::system_user(
   $username,
   $group,
   $system = true,
-  $shell = '/bin/false'
+  $shell = '/bin/false',
+  $managehome = false
   ) {
 
   user { $username :
@@ -13,6 +14,7 @@ define sunet::system_user(
     system => $system,
     require => Group[ $group ],
     shell => $shell,
+    managehome => $managehome
   }
 
   group { $group :
