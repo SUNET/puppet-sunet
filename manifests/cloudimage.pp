@@ -85,7 +85,7 @@ define sunet::cloudimage (
   } ->
 
   exec { "${name}_init":
-     command => $init_script,
+     command => "bash $init_script",
      onlyif  => "test ! -f ${images_dir}/${name}.img"
   }
 }
