@@ -32,6 +32,11 @@ module Puppet::Parser::Functions
 
     addr.each do |this|
       this_addr = IPAddr.new(this) rescue false
+      if ! this_addr
+        debug("${this} is not an IP address")
+        return false
+      end
+
       if ipver == 4 and ! this_addr.ipv4?
         debug("#{this} is not an IPv4 address")
         return false
