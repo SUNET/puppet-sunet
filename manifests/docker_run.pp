@@ -59,7 +59,7 @@ define sunet::docker_run(
     dns                => $dns,
     depends            => $_depends,
     require            => flatten([$req,
-                                   Docker::Image["${name}_${image_tag}"],
+                                   Docker::Image[$image_tag],
                                    ]),
     before_start       => $before_start,
     before_stop        => $before_stop,
