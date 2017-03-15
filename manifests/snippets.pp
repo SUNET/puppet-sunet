@@ -113,6 +113,7 @@ define sunet::snippets::disable_ipv6_privacy() {
 # Set up scriptherder. XXX scriptherder is not *installed* here. Figure out how to.
 define sunet::snippets::scriptherder() {
   $scriptherder_dir = '/var/cache/scriptherder'
+  $delete_older_than = hiera('delete_older_than', 6)
 
   file {
     '/etc/scriptherder':
@@ -131,12 +132,12 @@ define sunet::snippets::scriptherder() {
 
   # Remove scriptherder data older than 7 days.
   cron { 'scriptherder_cleanup':
-    command  => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +7 -print0 | xargs -0 rm -f)",
+    command  => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${delete_older_than} -print0 | xargs -0 rm -f)",
     user     => 'root',
     special  => 'daily',
   }
 
-  # remove old cronjob maintained outside of puppet
+  # FIXME: This should be removed as soon as all hosts have run Cosmos and removed the old cronjob in global overlay!!!
   file { '/etc/cron.daily/scriptherder_cleanup':
     ensure   => 'absent',
   }
