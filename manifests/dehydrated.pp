@@ -2,7 +2,7 @@ class sunet::dehydrated($staging=false,
                          $domains=undef,
                          $httpd=false,
                          $apache=false,
-                         $src_url="https://raw.githubusercontent.com/einar/dehydrated/master/dehydrated")
+                         $src_url="https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated")
 {
   $thedomains = $domains ? {
      undef   => hiera("letsencrypt_domains",hiera("dehydrated_domains",[{$::fqdn=>{"names"=>[$::fqdn]}}])),
@@ -53,7 +53,7 @@ class sunet::dehydrated($staging=false,
      notify  => Exec["dehydrated-runonce"]
   }
   cron {"dehydrated-cron":
-     command => "/usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh",
+     command => "/usr/sbin/dehydrated --keep-going -c && /usr/bin/le-ssl-compat.sh",
      hour    => 2,
      minute  => 13
   }
