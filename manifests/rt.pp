@@ -1,6 +1,6 @@
 class sunet::rt {
 
-    # Password for RT's root user 
+    # Password for RT's root user
     $rt_root_password = hiera('rt_root_password', 'NOT_SET_IN_HIERA')
 
     # Password for postgres database
@@ -25,7 +25,7 @@ class sunet::rt {
         system => true,
         home   => '/opt/rt4',
         shell  => '/usr/sbin/nologin',
-    } 
+    }
 
     sunet::docker_run { 'postgres':
         image    => 'postgres',
@@ -34,7 +34,7 @@ class sunet::rt {
         env      => ["POSTGRES_DB=postgres",
                      "POSTGRES_USER=postgres",
                      "POSTGRES_PASSWORD=${postgres_password}"],
-    }  
+    }
     sunet::docker_run { 'rt-swamid':
         image    => 'rt-swamid',
         imagetag => 'latest',
