@@ -41,7 +41,7 @@ class sunet::rt {
         ports    => ['25:25', '80:80', '443:443'],
         volumes  => ['/etc/dehydrated:/etc/ssl',
                      '/dev/log:/dev/log:rw',
-                     '/opt/rt4/etc/RT_SiteConfig.pm:/opt/rt4/etc/RT_SiteConfig.pm',
+                     '/opt/rt4/etc/RT_SiteConfig.pm:/opt/rt4/etc/RT_SiteConfig.pm:ro',
                      '/var/spool/postfix:/var/spool/postfix'],
         env      => ["SP_HOSTNAME=rt.sunet.se",
                      "RT_HOSTNAME=rt.sunet.se",
