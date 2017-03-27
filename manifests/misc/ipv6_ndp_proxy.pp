@@ -7,6 +7,7 @@ define sunet::misc::ipv6_ndp_proxy(
     context => '/files/etc/sysctl.d/99-ipv6-ndp-proxy.conf',
     changes => [
                 'set net.ipv6.conf.eth0.proxy_ndp 1',
+                'set net.ipv6.conf.eth0.accept_ra 2',
                 ],
     notify => Exec['reload_sysctl_99-ipv6-ndp-proxy.conf'],
   }
