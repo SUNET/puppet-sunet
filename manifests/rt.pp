@@ -61,6 +61,22 @@ class sunet::rt {
         content => template('sunet/rt/rt_siteconfig.erb'),
     }
 
+    file { '/var/lib/postgresql/data/postgres_backup.sh':
+        ensure  => file,
+        owner   => 'postgres',
+        group   => 'postgres',
+        path    => '/var/lib/postgresql/data/postgres_backup.sh',
+        mode    => '0770',
+        content => template('sunet/rt/postgres_backup.erb'),
+    }
+    sunet::scriptherder::cronjob { 'postgres_backup':
+         cmd           => 'docker exec -it postgres /var/lib/postgresql/data/postgres_backup.sh',
+         minute        => '4',
+         hour          => '3',
+         ok_criteria   => ['max_age=25h'],
+         warn_criteria => ['max_age=49h'],
+    }
+
     # Run SQL or Perl here to set RT's root user pwd ???
 
 }
