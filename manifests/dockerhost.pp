@@ -1,6 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
   $docker_version            = "1.10.3-0~${::lsbdistcodename}",
+  $storage_driver            = undef,
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
   Variant[String, Boolean] $docker_network = hiera('dockerhost_docker_network', '172.18.0.0/22'),
@@ -50,6 +51,7 @@ class sunet::dockerhost(
   }
 
   class {'docker':
+     storage_driver              => $storage_driver,
      manage_package              => false,
      use_upstream_package_source => false,
      dns                         => $docker_dns,
