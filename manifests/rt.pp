@@ -49,7 +49,8 @@ class sunet::rt {
                      "RT_OWNER=el@sunet.se",
                      "RT_DEFAULTEMAIL=operations",
                      "RT_Q1=swamid",
-                     "RT_Q2=eduroam"],
+                     "RT_Q2=eduroam",
+                     "RT_Q3=swamid-bot"],
     } ->
     file { '/opt/rt4/etc/RT_SiteConfig.pm':
         ensure  => file,
