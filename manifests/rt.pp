@@ -70,7 +70,7 @@ class sunet::rt {
         content => template('sunet/rt/postgres_backup.erb'),
     }
     sunet::scriptherder::cronjob { 'postgres_backup':
-         cmd           => 'docker exec -it postgres /var/lib/postgresql/data/postgres_backup.sh',
+         cmd           => 'docker exec postgres /var/lib/postgresql/data/postgres_backup.sh',
          minute        => '4',
          hour          => '3',
          ok_criteria   => ['max_age=25h'],
