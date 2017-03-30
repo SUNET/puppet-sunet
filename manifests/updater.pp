@@ -1,6 +1,6 @@
 class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
    file {'/usr/local/sbin/silent-update-and-upgrade':
-      content => "#!/bin/bash\napt-get -qq -y update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade\n",
+      content => "#!/bin/bash\nexport PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'\napt-get -qq -y update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade\n",
       mode    => '0755',
       owner   => 'root',
       group   => 'root'
@@ -19,8 +19,8 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
          cmd           => '/usr/local/sbin/silent-update-and-upgrade',
          minute        => '2',
          hour          => '4',
-         ok_criteria   => ['max_age=25h'],
-         warn_criteria => ['max_age=49h'],
+         ok_criteria   => ['exit_status=0', 'max_age=25h'],
+         warn_criteria => ['exit_status=0', 'max_age=49h'],
       }
    }
 }
