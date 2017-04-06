@@ -12,7 +12,7 @@ define sunet::exabgp::config(
     port => '179',
   }
 
-  $router_id_config = pick([$router_id, $local_address])
+  $router_id_config = pick($router_id, $local_address)
 
   file { "${config}":
     ensure  => file,
