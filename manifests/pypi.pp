@@ -18,6 +18,18 @@ class sunet::pypi (
       group   => $user,
       recurse => true,
     } ->
+    file { "${home}/pypiserver":
+      ensure  => directory,
+      owner   => $user,
+      group   => $user,
+      recurse => true,
+    } ->
+    file { "${home}/pypiserver/etc":
+      ensure  => directory,
+      owner   => $user,
+      group   => $user,
+      recurse => true,
+    } ->
     ssh_authorized_key { "pypi_package_key":
       ensure  => present,
       user    => $user,
@@ -31,7 +43,7 @@ class sunet::pypi (
       group   => $user,
       recurse => true,
     } ->
-    file { "${chroot}/packages":
+    file { "${chroot}/incoming":
       ensure  => directory,
       owner   => $user,
       group   => $user,
@@ -76,8 +88,8 @@ class sunet::pypi (
     } ->
     file { '/opt/pypi/pypiserver/etc/start.sh':
         ensure  => file,
-        owner   => 'pypi',
-        group   => 'pypi',
+        owner   => $user,
+        group   => $user,
         mode    => '0775',
         content => template('sunet/pypi/start_pypiserver.sh.erb'),
     } ->

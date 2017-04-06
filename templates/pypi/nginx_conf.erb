@@ -1,5 +1,5 @@
 upstream pypi {
-    server pypi:8080;
+    server pypiserver:8080;
 }
 
 server {
@@ -48,5 +48,5 @@ server {
 #        proxy_redirect     off;
 #        proxy_pass         http://pypi;
 #    }
-}
+#}
 

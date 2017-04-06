@@ -2,12 +2,12 @@
 version: '2'
 services:
   pypiserver:
-    image: docker.sunet.se/eduid/pypiserver:latest
+    image: docker.sunet.se/eduid/pypiserver:stable
     expose:
       - 8080
     volumes:
       - /opt/pypi/pypiserver/etc/start.sh:/start.sh
-      - /opt/pypi/chroot/packages:/opt/eduid/pypiserver/packages
+      - /opt/pypi/chroot/incoming:/opt/eduid/pypiserver/packages
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
 
@@ -17,7 +17,7 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - /opt/pypi/nginx/sites-enabled/:/etc/nginx/sites-enabled:ro
+      - /opt/pypi/nginx/etc/default.conf:/etc/nginx/sites-enabled/default.conf:ro
       #- [sslcert]:/etc/nginx/ssl/<%= @fqdn %>.crt
       #- [sslkey]:/etc/nginx/ssl/<%= @fqdn %>.key
       - /var/log/nginx:/var/log/nginx
