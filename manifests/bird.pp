@@ -5,7 +5,7 @@ class sunet::bird(
   String $username  = 'bird',
   Integer $uid      = 501,
   Integer $gid      = 501,
-  String            = $::ipaddress_default,
+  String $router_id = $::ipaddress_default,
 ) {
   $my_router_id = $router_id ? {
      undef   => "${::ipaddress_eth0}",
