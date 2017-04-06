@@ -6,7 +6,8 @@ services:
     expose:
       - 8080
     volumes:
-      - /opt/pypi/packages:/opt/eduid/pypiserver/packages
+      - /opt/pypi/pypiserver/etc/start.sh:/start.sh
+      - /opt/pypi/chroot/packages:/opt/eduid/pypiserver/packages
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
 

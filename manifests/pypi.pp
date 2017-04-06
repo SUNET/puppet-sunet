@@ -1,9 +1,11 @@
-class sunet::pypi {
-
+class sunet::pypi (
     $user   = 'pypi',
-    $home   = '/opt/pypi'
-    $chroot = '/opt/pypi/packages',
-
+    $home   = '/opt/pypi',
+    $chroot = '/opt/pypi/chroot'
+) {
+    package { ['rush']:
+      ensure     => installed,
+    } ->
     user {'pypi_user':
       name       => $user,
       shell      => '/usr/sbin/rush',
@@ -29,9 +31,12 @@ class sunet::pypi {
       group   => $user,
       recurse => true,
     } ->
-    package { ['rush']:
-      ensure     => installed,
-    }
+    file { "${chroot}/packages":
+      ensure  => directory,
+      owner   => $user,
+      group   => $user,
+      recurse => true,
+    } ->
     exec { 'mkchroot_rush':
       command     => "zcat /usr/share/doc/rush/scripts/mkchroot-rush.pl.gz | perl -- - --user ${user} --chroot ${chroot} --tasks etc,dev,bin,lib --binaries /usr/bin/scp --force",
       path        => ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
@@ -39,7 +44,7 @@ class sunet::pypi {
       require     => [File[$chroot],
                     Package['rush'],
                     ],
-      environment => "USER=root",  # this is how mkchroot-rush.pl checks if it is root or not. /dev/null needs this.
+      environment => "USER=pypi",  # this is how mkchroot-rush.pl checks if it is pypi or not. /dev/null needs this.
     } ->
     exec { 'mkchroot_rush_libnss':
       # Add missing libnss_files to chroot - otherwise scp won't work
@@ -69,15 +74,23 @@ class sunet::pypi {
         mode    => '0440',
         content => template('sunet/pypi/nginx_conf.erb'),
     } ->
+    file { '/opt/pypi/pypiserver/etc/start.sh':
+        ensure  => file,
+        owner   => 'pypi',
+        group   => 'pypi',
+        mode    => '0775',
+        content => template('sunet/pypi/start_pypiserver.sh.erb'),
+    } ->
     exec { 'create_dhparam_pem':
-        command => '/usr/bin/openssl dhparam -out /var/opt/pypi/nginx/dhparam.pem 2048',
-        unless  => '/usr/bin/test -s /var/opt/pypi/nginx/dhparam.pem',
+        command => '/usr/bin/openssl dhparam -out /opt/pypi/nginx/dhparam.pem 2048',
+        unless  => '/usr/bin/test -s /opt/pypi/nginx/dhparam.pem',
     }
 
+    $content = template('sunet/pypi/docker-compose_pypi.yml.erb')
     sunet::docker_compose {'pypi_docker_compose':
         service_name => 'pypi',
         description  => 'pypi service',
         compose_dir  => '/opt/pypi/compose',
-        content_from => 'sunet/pypi/docker-compose_pypi.yml.erb',
+        content => $content,
     }
 }
