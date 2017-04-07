@@ -44,7 +44,7 @@ define load_balancer_peer(
 define configure_websites($websites)
 {
   if is_hash($websites) {
-    create_resources('load_balancer_websites', $websites)
+    create_resources('load_balancer_website', $websites)
   } else {
     warning('No load balancer websites found in hiera')
   }
