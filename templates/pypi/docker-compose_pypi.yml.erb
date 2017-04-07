@@ -7,19 +7,26 @@ services:
       - 8080
     volumes:
       - /opt/pypi/pypiserver/etc/start.sh:/start.sh
-      - /opt/pypi/chroot/incoming:/opt/eduid/pypiserver/packages
+      - /opt/pypi/chroot/packages:/opt/eduid/pypiserver/packages
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
 
   nginx: 
     image: docker.sunet.se/eduid/nginx:latest
     ports:
-      - 80:80
       - 443:443
     volumes:
       - /opt/pypi/nginx/etc/default.conf:/etc/nginx/sites-enabled/default.conf:ro
-      #- [sslcert]:/etc/nginx/ssl/<%= @fqdn %>.crt
-      #- [sslkey]:/etc/nginx/ssl/<%= @fqdn %>.key
+      - /etc/dehydrated/certs/pypi.sunet.se-bundle.crt:/etc/nginx/ssl/<%= @fqdn %>.crt:ro
+      - /etc/dehydrated/certs/pypi.sunet.se.key:/etc/nginx/ssl/<%= @fqdn %>.key:ro
       - /var/log/nginx:/var/log/nginx
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
+
+  # Redirect http traffic to https or acme-c
+  alwayshttps:
+    image: docker.sunet.se/always-https
+    ports:
+      - 80:80
+    environment:
+      - "ACME_URL=http://acme-c.sunet.se"
