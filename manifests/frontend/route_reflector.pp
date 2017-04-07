@@ -1,7 +1,7 @@
 # SUNET frontend BGP Route Reflector config
 class sunet::frontend::route_reflector(
-  String $router_id         => $ipaddress_default,
-  String $hiera_peer_config => 'frontend_route_reflector_peers',
+  String $router_id         = $ipaddress_default,
+  String $hiera_peer_config = 'frontend_route_reflector_peers',
 ) {
   class {'sunet::bird': router_id => $router_id }
 

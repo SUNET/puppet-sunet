@@ -1,8 +1,8 @@
 # Interface, ExaBGP and haproxy config for a load balancer
 class sunet::frontend::load_balancer(
-  String $router_id            => $ipaddress_default,
-  String $hiera_peer_config    => 'frontend_load_balancer_peers',
-  String $hiera_website_config => 'frontend_load_balancer_websites',
+  String $router_id            = $ipaddress_default,
+  String $hiera_peer_config    = 'frontend_load_balancer_peers',
+  String $hiera_website_config = 'frontend_load_balancer_websites',
 ) {
   file {
     '/etc/bgp':
