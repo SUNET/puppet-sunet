@@ -1,24 +1,21 @@
 define sunet::exabgp::config(
-    $peer_address  = undef,
-    $peer_as       = undef,
-    $local_address = undef,
-    $local_as      = undef,
-    $router_id     = undef,
-    $monitor       = "/etc/bgp/monitor",
-    $config        = "/etc/bgp/exabgp.conf"
+  String           $peer_address,
+  String           $peer_as,
+  String           $local_address,
+  String           $local_as,
+  Optional[String] $router_id     = undef,
+  String           $monitor       = '/etc/bgp/monitor',
+  String           $config        = '/etc/bgp/exabgp.conf',
 ) {
-    require stdlib
-    validate_string($peer_address);
-    validate_string($peer_as);
-    validate_string($local_address);
-    validate_string($local_as);
-    validate_string($monitor);
-    $router_id_config = $router_id ? {
-       undef       => $local_address,
-       default     => $router_id
-    }
-    file { "${config}": 
-       ensure      => file,
-       content     => template("sunet/exabgp/exabgp.conf.erb")
-    }
+  sunet::misc::ufw_allow { "allow_bgp_peer_${peer_address}":
+    from => $peer_address,
+    port => '179',
+  }
+
+  $router_id_config = pick($router_id, $local_address)
+
+  file { "${config}":
+    ensure  => file,
+    content => template("sunet/exabgp/exabgp.conf.erb")
+  }
 }

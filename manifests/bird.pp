@@ -1,26 +1,22 @@
 class sunet::bird(
-  $bird      = 'bird',
-  $bird6     = 'bird6',
-  $package   = 'bird-bgp',
-  $username  = 'bird',
-  $uid       = 501,
-  $gid       = 501,
-  $router_id = undef
+  String $bird      = 'bird',
+  String $bird6     = 'bird6',
+  String $package   = 'bird-bgp',
+  String $username  = 'bird',
+  Integer $uid      = 501,
+  Integer $gid      = 501,
+  String $router_id = $::ipaddress_default,
 ) {
-  require stdlib
   $my_router_id = $router_id ? {
      undef   => "${::ipaddress_eth0}",
      default => $router_id
   }
-
-  validate_string($my_router_id)
-
   group {$username:
     ensure   => present,
-    gid      => 501
+    gid      => $gid,
   } ->
   user  {$username:
-    ensure   => present, 
+    ensure   => present,
     password => '!!',
     uid      => $uid,
     gid      => $gid
