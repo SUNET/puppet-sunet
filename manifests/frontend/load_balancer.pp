@@ -10,8 +10,8 @@ class sunet::frontend::load_balancer(
       ;
   }
 
-  configure_peers { 'peers': router_id => $router_id, hiera_hash($hiera_peer_config) } ->
-  configure_websites { 'websites': hiera_hash($hiera_website_config) } ->
+  configure_peers { 'peers': router_id => $router_id, peers => hiera_hash($hiera_peer_config) } ->
+  configure_websites { 'websites': websites => hiera_hash($hiera_website_config) } ->
 
   sunet::exabgp { 'load_balancer': }
 }
