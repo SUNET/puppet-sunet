@@ -20,7 +20,7 @@ define configure_peers($router_id, $peers)
 {
   if is_hash($peers) {
     $defaults = {
-      local_address => $::ipaddress_default,
+      local_ip => $::ipaddress_default,
     }
     create_resources('load_balancer_peer', $peers, $defaults)
   } else {
@@ -30,14 +30,14 @@ define configure_peers($router_id, $peers)
 
 define load_balancer_peer(
   $as,
-  $local_address,
-  $remote_address,
+  $local_ip,
+  $remote_ip,
 ) {
   sunet::exabgp::config { "peer_${name}":
     local_as       => $as,
-    local_address  => $local_address,
+    local_address  => $local_ip,
     peer_as        => $as,
-    peer_address   => $remote_address,
+    peer_address   => $remote_ip,
   }
 }
 
