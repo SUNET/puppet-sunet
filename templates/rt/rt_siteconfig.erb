@@ -37,7 +37,7 @@ Set($WebBaseURL , "https://rt.sunet.se:443");
 Set($WebURL , $WebBaseURL . $WebPath . "/");
 Set($OwnerEmail, 'el@sunet.se');
 Set($LoopsToRTOwner, 1);
-Set($RTAddressRegexp, '^(eduroam|swamid|swamid-bot|operations)(-comment)?\@(swamid.se|rt.sunet.se)$');
+Set($RTAddressRegexp, '^(eduroam|swamid|swamid-bot|operations)(-comment)?\@rt.sunet.se$');
 # Users should still be autocreated by RT as internal users if they
 # fail to exist in an external service; this is so requestors (who
 # are not in LDAP) can still be created when they email in.
