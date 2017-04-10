@@ -52,6 +52,13 @@ class sunet::pypi (
         mode    => '0644',
         content => template('sunet/pypi/sshd_config.erb'),
     } ->
+    class { 'sunet::security::configure_sshd':
+      configure_sftp = false,
+    }
+    sunet::misc::ufw_allow { "allow-ssh-from-all":
+      from => 'any',
+      port => '22',
+    }
 
     file { "${home}/packages":
       ensure  => directory,
