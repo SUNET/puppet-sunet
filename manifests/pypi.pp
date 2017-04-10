@@ -53,7 +53,7 @@ class sunet::pypi (
         content => template('sunet/pypi/sshd_config.erb'),
     } ->
     class { 'sunet::security::configure_sshd':
-      configure_sftp = false,
+      configure_sftp => false,
     }
     sunet::misc::ufw_allow { "allow-ssh-from-all":
       from => 'any',

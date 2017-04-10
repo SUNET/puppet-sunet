@@ -20,7 +20,7 @@ class sunet::security::configure_sshd(
                 ],
     notify  => Service['ssh'],
     require => Package['openssh-server'],
-  } ->
+  }
   if $configure_sftp {
     sunet::snippets::file_line { 'no_sftp_subsystem':
       ensure   => 'comment',
