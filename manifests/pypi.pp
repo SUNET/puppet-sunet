@@ -51,6 +51,7 @@ class sunet::pypi (
         group   => 'root',
         mode    => '0644',
         content => template('sunet/pypi/sshd_config.erb'),
+        notify  => Service['ssh'],
     } ->
     class { 'sunet::security::configure_sshd':
       configure_sftp => false,
