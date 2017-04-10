@@ -45,7 +45,6 @@ class sunet::rt {
                      '/var/spool/postfix:/var/spool/postfix'],
         env      => ["SP_HOSTNAME=rt.sunet.se",
                      "RT_HOSTNAME=rt.sunet.se",
-                     "RT_MAILDOMAIN=swamid.se",
                      "RT_OWNER=el@sunet.se",
                      "RT_DEFAULTEMAIL=operations",
                      "RT_Q1=swamid",
@@ -73,8 +72,8 @@ class sunet::rt {
          cmd           => 'docker exec postgres /var/lib/postgresql/data/postgres_backup.sh',
          minute        => '4',
          hour          => '3',
-         ok_criteria   => ['exit_status=0','max_age=25h'],
-         warn_criteria => ['exit_status=0','max_age=49h'],
+         ok_criteria   => ['exit_status=0', 'max_age=25h'],
+         warn_criteria => ['exit_status=0', 'max_age=49h'],
     }
 
     # Run SQL or Perl here to set RT's root user pwd ???
