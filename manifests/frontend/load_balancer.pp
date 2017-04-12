@@ -1,31 +1,30 @@
 # Interface, ExaBGP and haproxy config for a load balancer
 class sunet::frontend::load_balancer(
-  String $router_id            = $ipaddress_default,
-  String $hiera_peer_config    = 'frontend_load_balancer_peers',
-  String $hiera_website_config = 'frontend_load_balancer_websites',
+  String $router_id = $ipaddress_default,
 ) {
-  file {
-    '/etc/bgp':
-      ensure => 'directory',
-      ;
+  $config = hiera_hash('sunet_frontend')
+  if is_hash($config) {
+    file {
+      '/etc/bgp':
+        ensure => 'directory',
+        ;
+    }
+
+    configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] } ->
+    configure_websites { 'websites': websites => $config['load_balancer']['websites'] } ->
+
+    sunet::exabgp { 'load_balancer': }
+  } else {
+    fail('No SUNET frontend load balancer config found in hiera')
   }
-
-  configure_peers { 'peers': router_id => $router_id, peers => hiera_hash($hiera_peer_config) } ->
-  configure_websites { 'websites': websites => hiera_hash($hiera_website_config) } ->
-
-  sunet::exabgp { 'load_balancer': }
 }
 
 define configure_peers($router_id, $peers)
 {
-  if is_hash($peers) {
-    $defaults = {
-      local_ip => $::ipaddress_default,
-    }
-    create_resources('load_balancer_peer', $peers, $defaults)
-  } else {
-    fail('No load balancer peers found in hiera')
+  $defaults = {
+    local_ip => $::ipaddress_default,
   }
+  create_resources('load_balancer_peer', $peers, $defaults)
 }
 
 define load_balancer_peer(
@@ -43,11 +42,7 @@ define load_balancer_peer(
 
 define configure_websites($websites)
 {
-  if is_hash($websites) {
-    create_resources('load_balancer_website', $websites)
-  } else {
-    warning('No load balancer websites found in hiera')
-  }
+  create_resources('load_balancer_website', $websites)
 }
 
 define load_balancer_website(

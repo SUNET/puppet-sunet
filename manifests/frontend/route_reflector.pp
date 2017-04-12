@@ -1,14 +1,13 @@
 # SUNET frontend BGP Route Reflector config
 class sunet::frontend::route_reflector(
-  String $router_id         = $ipaddress_default,
-  String $hiera_peer_config = 'frontend_route_reflector_peers',
+  String $router_id = $ipaddress_default,
 ) {
-  class {'sunet::bird': router_id => $router_id }
+  $config = hiera_hash('sunet_frontend')
+  if is_hash($config) {
+    class {'sunet::bird': router_id => $router_id }
 
-  $peers = hiera_hash($hiera_peer_config)
-  if is_hash($peers) {
-    create_resources('sunet::bird::peer', $peers)
+    create_resources('sunet::bird::peer', $config['route_reflector']['peers'])
   } else {
-    fail('No route reflector peers found in hiera')
+    fail('No SUNET frontend route reflector configuration found in hiera')
   }
 }
