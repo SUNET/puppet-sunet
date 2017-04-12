@@ -12,14 +12,14 @@ define sunet::exabgp::config(
 
   concat::fragment { 'exabgp_header':
     target  => $config,
-    order   => '10',
+    order   => '10000',
     content => template("sunet/exabgp/exabgp.conf_header.erb"),
     #notify  => Service['exabgp'],
   }
 
   concat::fragment { 'exabgp_footer':
     target  => $config,
-    order   => '10000',
+    order   => '10',
     content => template("sunet/exabgp/exabgp.conf_footer.erb"),
     #notify  => Service['exabgp'],
   }
