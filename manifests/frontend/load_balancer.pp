@@ -10,10 +10,11 @@ class sunet::frontend::load_balancer(
         ;
     }
 
+    sunet::exabgp::config { 'exabgp_config': } ->
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] } ->
     configure_websites { 'websites': websites => $config['load_balancer']['websites'] } ->
-
     sunet::exabgp { 'load_balancer': }
+
   } else {
     fail('No SUNET frontend load balancer config found in hiera')
   }
@@ -32,7 +33,7 @@ define load_balancer_peer(
   $local_ip,
   $remote_ip,
 ) {
-  sunet::exabgp::config { "peer_${name}":
+  sunet::exabgp::neighbor { "peer_${name}":
     local_as       => $as,
     local_address  => $local_ip,
     peer_as        => $as,
