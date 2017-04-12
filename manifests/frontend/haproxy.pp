@@ -56,6 +56,7 @@ define sunet::frontend::haproxy(
     volumes  => ["${basedir}/etc:/etc/haproxy:ro",
                  "${basedir}/run:/var/run/haproxy",
                  '/etc/ssl:/etc/ssl:ro',
+                 '/dev/log:/dev/log',
                  ],
     command  => 'haproxy-systemd-wrapper -p /run/haproxy.pid -f /etc/haproxy/haproxy.cfg -f /etc/haproxy/haproxy-frontends.cfg -f /etc/haproxy/haproxy-backends.cfg',
     require  => [File["$basedir/etc/haproxy.cfg"]],
