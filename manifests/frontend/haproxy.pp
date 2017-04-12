@@ -38,13 +38,15 @@ define sunet::frontend::haproxy(
 
   $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
   $be_cfg = "${basedir}/etc/haproxy-backends.cfg"
-  exec { 'create_haproxy-frontends.cfg':
+  exec { "create_${fe_cfg}":
     command => "/bin/touch ${fe_cfg} && chown root:${group} ${fe_cfg} && chmod 640 ${fe_cfg}",
     unless  => "/usr/bin/test -f ${fe_cfg}",
+    require => File["${basedir}/etc"],
   } ->
-  exec { 'create_haproxy-backends.cfg':
+  exec { "create_${be_cfg}":
     command => "/bin/touch ${be_cfg} && chown root:${group} ${be_cfg} && chmod 640 ${be_cfg}",
     unless  => "/usr/bin/test -f ${be_cfg}",
+    require => File["${basedir}/etc"],
   } ->
 
   sunet::docker_run { $name:
