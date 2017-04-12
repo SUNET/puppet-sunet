@@ -17,6 +17,6 @@ define sunet::exabgp::neighbor(
     target  => $config,
     order   => '100',
     content => template("sunet/exabgp/exabgp.conf_neighbor.erb"),
-    notify  => Service['exabgp'],
+    #notify  => Service['exabgp'],
   }
 }
