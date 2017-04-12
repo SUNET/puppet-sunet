@@ -49,7 +49,7 @@ define sunet::frontend::haproxy(
     require => File["${basedir}/etc"],
   } ->
 
-  sunet::docker_run { $name:
+  sunet::docker_run { "${name}_haproxy":
     image    => 'docker.sunet.se/library/haproxy',
     imagetag => 'stable',
     net      => 'host',
