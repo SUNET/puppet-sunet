@@ -15,13 +15,13 @@ define sunet::frontend::haproxy(
   } ->
   file {
     "$basedir/etc":
-      ensure  => directory
+      ensure  => 'directory',
       mode    => '0750',
       group   => $group,
       require => Sunet::System_user[$username],
       ;
     "$basedir/run":
-      ensure  => directory
+      ensure  => 'directory',
       mode    => '0770',
       group   => $group,
       require => Sunet::System_user[$username],
