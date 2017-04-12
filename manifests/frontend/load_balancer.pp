@@ -14,7 +14,7 @@ class sunet::frontend::load_balancer(
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
     configure_websites { 'websites': websites => $config['load_balancer']['websites'] }
     sunet::exabgp { 'load_balancer': }
-
+    sunet::frontend::haproxy { 'load_balancer': }
   } else {
     fail('No SUNET frontend load balancer config found in hiera')
   }
