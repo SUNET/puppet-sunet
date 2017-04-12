@@ -1,21 +1,26 @@
 define sunet::exabgp::config(
-  String           $peer_address,
-  String           $peer_as,
-  String           $local_address,
-  String           $local_as,
-  Optional[String] $router_id     = undef,
-  String           $monitor       = '/etc/bgp/monitor',
-  String           $config        = '/etc/bgp/exabgp.conf',
+  String               $monitor = '/etc/bgp/monitor',
+  Enum['text', 'json'] $encoder = 'text',
+  String               $config  = '/etc/bgp/exabgp.conf',
 ) {
-  sunet::misc::ufw_allow { "allow_bgp_peer_${peer_address}":
-    from => $peer_address,
-    port => '179',
+  concat { $config:
+    owner    => 'root',
+    group    => 'root',
+    mode     => '0644',
+    notify   => Service['exabgp'],
   }
 
-  $router_id_config = pick($router_id, $local_address)
+  concat::fragment { 'exabgp_header':
+    target  => $config,
+    order   => '10',
+    content => template("sunet/exabgp/exabgp.conf_header.erb")
+    notify  => Service['exabgp'],
+  }
 
-  file { "${config}":
-    ensure  => file,
-    content => template("sunet/exabgp/exabgp.conf.erb")
+  concat::fragment { 'exabgp_footer':
+    target  => $config,
+    order   => '10000',
+    content => template("sunet/exabgp/exabgp.conf_footer.erb")
+    notify  => Service['exabgp'],
   }
 }
