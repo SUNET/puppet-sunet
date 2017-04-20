@@ -1,5 +1,7 @@
 # Install OpenSSH and configure it to a secure baseline.
-class sunet::security::configure_sshd() {
+class sunet::security::configure_sshd(
+    $configure_sftp = true,
+) {
   package { 'openssh-server':
     ensure => 'installed'
   } ->
@@ -18,13 +20,14 @@ class sunet::security::configure_sshd() {
                 ],
     notify  => Service['ssh'],
     require => Package['openssh-server'],
-  } ->
-
-  sunet::snippets::file_line { 'no_sftp_subsystem':
-    ensure   => 'comment',
-    filename => '/etc/ssh/sshd_config',
-    line     => 'Subsystem sftp',
-    notify   => Service['ssh'],
+  }
+  if $configure_sftp {
+    sunet::snippets::file_line { 'no_sftp_subsystem':
+      ensure   => 'comment',
+      filename => '/etc/ssh/sshd_config',
+      line     => 'Subsystem sftp',
+      notify   => Service['ssh'],
+    }
   }
 }
 

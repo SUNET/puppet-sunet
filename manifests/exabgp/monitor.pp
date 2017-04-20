@@ -1,6 +1,6 @@
 class sunet::exabgp::monitor (
-   $path       = "/etc/bgp/monitor.d",
-   $sleep_time = 2
+  String  $path       = '/etc/bgp/monitor.d',
+  Integer $sleep_time = 2
 ) {
    file { '/etc/bgp/monitor.d': ensure => directory } ->
    file { '/etc/bgp/monitor':
@@ -11,22 +11,22 @@ class sunet::exabgp::monitor (
 }
 
 define sunet::exabgp::monitor::url(
-   $match = undef,
-   $route = undef,
-   $url   = undef,
-   $prio  = 10,
-   $path  = "/etc/bgp/monitor.d"
+  String           $url,
+  String           $route,
+  Optional[String] $match = undef,   # string to look for on the URL
+  Integer          $prio  = 10,
+  String           $path  = '/etc/bgp/monitor.d',
 ) {
    require stdlib
    $check_url = $url ? {
       undef   => $name,
       default => $url
    }
-   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path });
+   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, });
    $safe_title = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G');
-   file {"${path}/${prio}_${safe_title}": 
+   file {"${path}/${prio}_${safe_title}":
       ensure   => file,
-      content  => template("sunet/exabgp/monitor/url.erb"),
+      content  => template('sunet/exabgp/monitor/url.erb'),
       mode     => '0755'
    }
 }

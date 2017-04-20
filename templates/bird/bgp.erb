@@ -1,4 +1,5 @@
 
-protocol bgp ${title} from ${template} {
-  neighbor ${remote_ip} as ${remote_as};
+protocol bgp <%= @title %> from <%= @template %> {
+  neighbor <%= @remote_ip %> as <%= @remote_as %>;
+  debug { states, routes, filters, interfaces };
 }

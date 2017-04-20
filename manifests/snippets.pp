@@ -113,7 +113,7 @@ define sunet::snippets::disable_ipv6_privacy() {
 # Set up scriptherder. XXX scriptherder is not *installed* here. Figure out how to.
 define sunet::snippets::scriptherder() {
   $scriptherder_dir = '/var/cache/scriptherder'
-  $delete_older_than = hiera('delete_older_than', 6)
+  $scriptherder_delete_older_than = hiera('scriptherder_delete_older_than', 6)
 
   file {
     '/etc/scriptherder':
@@ -132,7 +132,7 @@ define sunet::snippets::scriptherder() {
 
   # Remove scriptherder data older than 7 days.
   cron { 'scriptherder_cleanup':
-    command  => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${delete_older_than} -print0 | xargs -0 rm -f)",
+    command  => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${scriptherder_delete_older_than} -print0 | xargs -0 rm -f)",
     user     => 'root',
     special  => 'daily',
   }
