@@ -59,6 +59,16 @@ define load_balancer_website(
     route => "${ip}/32 next-hop self",
   }
 
+  # Create backend directory for this website so that the API will
+  # accept register requests from the servers
+  file {
+    "/opt/frontend/api/backends/${name}":
+      ensure => 'directory',
+      group  => 'sunetfrontend',
+      mode   => '0770',
+      ;
+  }
+
   # Allow the backend servers for this website to access the sunetfronted-api
   # to register themselves.
   sunet::misc::ufw_allow { "allow_servers_${name}":
