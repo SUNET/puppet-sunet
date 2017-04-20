@@ -54,7 +54,7 @@ define sunet::frontend::haproxy(
       content => template("sunet/frontend/haproxy-status.erb")
       ;
     '/etc/systemd/system/haproxy-config-update.service':
-      content => template('sunet/frontend/haproxy-config-update.erb'),
+      content => template('sunet/frontend/haproxy-config-update.service.erb'),
       notify  => [Class['sunet::systemd_reload'],
                   Service['haproxy-config-update'],
                   ],
