@@ -1,13 +1,7 @@
 #!/bin/bash
 
 while true; do
-   run-parts --exit-on-error -- <%= @path %>
-
-   if [[ $? -eq 0 ]]; then
-      echo announce route <%= @route %>
-   else
-      echo withdraw route <%= @route %>
-   fi
+   run-parts -- <%= @path %>
    sleep <%= @sleep_time %>
 done
 

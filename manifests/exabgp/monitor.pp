@@ -1,5 +1,4 @@
 class sunet::exabgp::monitor (
-  String  $route,
   String  $path       = '/etc/bgp/monitor.d',
   Integer $sleep_time = 2
 ) {
@@ -23,7 +22,7 @@ define sunet::exabgp::monitor::url(
       undef   => $name,
       default => $url
    }
-   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, route => $route, });
+   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, });
    $safe_title = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G');
    file {"${path}/${prio}_${safe_title}":
       ensure   => file,
