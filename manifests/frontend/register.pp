@@ -15,7 +15,7 @@ class sunet::frontend::register(
 
   cron { "sunetfronted_register_${site}":
     ensure   => present,
-    command  => "/usr/local/bin/sunetfrontend-register ${site} ${port} $fe_str",
+    command  => "/usr/local/bin/sunetfrontend-register ${site} ${port} $fe_str > /dev/null 2>&1",
     minute   => '*/3',
   }
 }
