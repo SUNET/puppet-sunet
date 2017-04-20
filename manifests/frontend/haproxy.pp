@@ -61,6 +61,11 @@ define sunet::frontend::haproxy(
       ;
   }
 
+  service { 'haproxy-config-update':
+    ensure  => 'running',
+    enable  => true,
+  }
+
   $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
   $be_cfg = "${basedir}/etc/haproxy-backends.cfg"
   exec { "create_${fe_cfg}":
