@@ -1,4 +1,5 @@
-define sunet::frontend::haproxy(
+# Setup and run the API
+define sunet::frontend::api(
   $username = 'sunetfrontend',
   $group    = 'sunetfrontend',
   $basedir  = '/opt/frontend/api',
