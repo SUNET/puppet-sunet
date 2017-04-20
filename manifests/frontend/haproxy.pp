@@ -1,9 +1,14 @@
 define sunet::frontend::haproxy(
-  $username = 'haproxy',
-  $group    = 'haproxy',
-  $basedir  = '/opt/frontend/haproxy',
+  String  $username = 'haproxy',
+  String  $group    = 'haproxy',
+  String  $basedir  = '/opt/frontend/haproxy',
+  # Variables used in haproxy-config-update.erb
+  Integer $registration_age_limit = 600,
+  String  $haproxy_service_name   = 'docker-load-balancer-haproxy',
 )
 {
+  include sunet::systemd_reload
+
   ensure_resource('sunet::system_user', $username, {
     username => $username,
     group    => $group,
@@ -20,12 +25,6 @@ define sunet::frontend::haproxy(
       group   => $group,
       require => Sunet::System_user[$username],
       ;
-    "$basedir/run":
-      ensure  => 'directory',
-      mode    => '0770',
-      group   => $group,
-      require => Sunet::System_user[$username],
-      ;
     "$basedir/etc/haproxy.cfg":
       ensure  => 'file',
       mode    => '0640',
@@ -33,6 +32,32 @@ define sunet::frontend::haproxy(
       require => Sunet::System_user[$username],
       force   => true,
       content => template("sunet/frontend/haproxy.cfg.erb")
+      ;
+    "$basedir/run":
+      ensure  => 'directory',
+      mode    => '0770',
+      group   => $group,
+      require => Sunet::System_user[$username],
+      ;
+    "$basedir/scripts":
+      ensure  => 'directory',
+      mode    => '0755',
+      ;
+    "$basedir/scripts/haproxy-config-update":
+      ensure  => 'file',
+      mode    => '0755',
+      content => template("sunet/frontend/haproxy-config-update.erb")
+      ;
+    "$basedir/scripts/haproxy-status":
+      ensure  => 'file',
+      mode    => '0755',
+      content => template("sunet/frontend/haproxy-status.erb")
+      ;
+    '/etc/systemd/system/haproxy-config-update.service':
+      content => template('sunet/frontend/haproxy-config-update.erb'),
+      notify  => [Class['sunet::systemd_reload'],
+                  Service['haproxy-config-update'],
+                  ],
       ;
   }
 
