@@ -10,7 +10,7 @@ define sunet::frontend::api(
     group    => $group,
   })
 
-  exec { 'haproxy_mkdir':
+  exec { 'api_mkdir':
     command => "/bin/mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}",
   } ->
