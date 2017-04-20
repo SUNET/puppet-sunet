@@ -28,6 +28,7 @@ define sunet::frontend::api(
     net      => 'host',
     volumes  => ["${basedir}/backends:/backends",
                  '/dev/log:/dev/log',
+                 '/var/log/sunetfrontend-api:/var/log/sunetfrontend-api',
                  ],
     require  => [File["$basedir/backends"]],
   }
