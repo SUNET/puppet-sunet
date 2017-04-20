@@ -51,10 +51,18 @@ define load_balancer_website(
   $ip,
   $check_url,
   $check_match,
+  $allowed_servers = [],
 ) {
   sunet::exabgp::monitor::url { "website_${name}":
     url   => $check_url,
     match => $check_match,
     route => "${ip}/32 next-hop self",
+  }
+
+  # Allow the backend servers for this website to access the sunetfronted-api
+  # to register themselves.
+  sunet::misc::ufw_allow { "allow_servers_${name}":
+    from => $allowed_servers,
+    port => '8080',  # port of the sunetfronted-api
   }
 }
