@@ -20,7 +20,12 @@ def parse_args(defaults):
                                      add_help = True,
                                      formatter_class = argparse.ArgumentDefaultsHelpFormatter,
     )
-    
+
+    parser.add_argument('site',
+                        nargs='+',
+                        metavar='STR',
+                        help='Site check string. XXX format to be documented here later.',
+    )
     parser.add_argument('--debug',
                         dest = 'debug',
                         action = 'store_true', default = defaults['debug'],
@@ -30,7 +35,7 @@ def parse_args(defaults):
                         dest = 'syslog',
                         action = 'store_true', default = defaults['syslog'],
                         help = 'Enable syslog output',
-    )    
+    )
     parser.add_argument('--socket_fn',
                         dest = 'socket_fn',
                         default = defaults['socket_fn'],
@@ -39,7 +44,7 @@ def parse_args(defaults):
     )
     args = parser.parse_args()
     return args
-    
+
 
 def haproxy_execute(cmd, args):
     logger.debug('opening AF_UNIX socket {} for command "{}"'.format(args.socket_fn, cmd))
@@ -85,10 +90,60 @@ def get_status(args):
         status[site][host] = {}
         for i in range(len(fields)):
             status[site][host][fields[i]] = values[i]
-            
+
     if args.debug:
         logger.debug('haproxy status:\n{}'.format(pprint.pformat(status)))
     return status
+
+
+def check_site(params, data):
+    logger.debug('Processing site {}, params {}, backends {}'.format(params['site'], params, data.keys()))
+    site = params['site']
+    backends_up = _count_backends_up(data)
+    logger.debug('Backends UP: {}'.format(backends_up))
+    sorted_ips = _local_pref_sort_ips(params['index'], params['ips'])
+    logger.debug('Re-sorted IPs {} -> {} based on index {}'.format(params['ips'], sorted_ips, params['index']))
+    base_pref = 0
+    res = []
+    count = 1
+    # Reverse IP list since higher local-preference wins
+    sorted_ips.reverse()
+    for ip in sorted_ips:
+        if not backends_up:
+            # Even when there are NO backends up, we want to announce the routes in order
+            # to be able to serve a fail-whale page. Local preference should be very low
+            # though, so that if another load balancer see any backends available it will
+            # attract all traffic.
+            base_pref += 10
+            local_pref = base_pref
+        else:
+            base_pref += 1000
+            local_pref = base_pref + (backends_up * 10)
+        logger.debug('Site {}, address {}/{}, backends up {} -> announce {} with local pref {}'.format(
+            site, count, len(sorted_ips), backends_up, ip, local_pref))
+        # XXX handle IPv6 addresses
+        res.append('announce route {}/32 next-hop self local-preference {}'.format(ip, local_pref))
+        count += 1
+    # for the humans
+    res.reverse()
+    return res
+
+
+def _local_pref_sort_ips(index, ips):
+    """
+    Three load balancers named A, B and C should all announce
+    service IP 1, 2 and 3 with different local prefs.
+
+    A should announce 1 with the highest preference, and B should announce
+    2 with the highest local preference.
+
+    Re-sort the input list of IPs to start with the one specified by the index.
+    """
+    return ips[index - 1:] + ips[:index - 1]
+
+def _count_backends_up(data):
+    backends = [x for x in data.keys() if x != 'BACKEND' and data[x]['status'] == 'UP']
+    return len(backends)
 
 
 def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _defaults):
@@ -116,7 +171,33 @@ def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _d
 
     status = get_status(args)
 
-    
+    output = []
+    for this in args.site:
+        #import json
+        #params = json.loads(this)
+        params = {}
+        # Parse strings such as 'site=www.dev.eduid.se; index=1; ips=1,2,3'
+        for kv in this.split(';'):
+            k, v = kv.split('=')
+            k = k.strip()
+            v = v.strip()
+            if k == 'ips':
+                v = v.split(',')
+            if k == 'index':
+                v = int(v)
+            params[k] = v
+        logger.debug('Parsed params {}'.format(params))
+        site = params['site']
+        if site not in status:
+            logger.debug('Site {} not found in haproxy status'.format(site))
+            continue
+        res = check_site(params, status[site])
+        if res:
+            output += res
+
+    print('\n'.join(output))
+
+
 if __name__ == '__main__':
     try:
         progname = os.path.basename(sys.argv[0])

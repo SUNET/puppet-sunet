@@ -22,8 +22,27 @@ define sunet::exabgp::monitor::url(
       undef   => $name,
       default => $url
    }
-   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, });
-   $safe_title = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G');
+   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, })
+   $safe_title = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
+   file {"${path}/${prio}_${safe_title}":
+      ensure   => file,
+      content  => template('sunet/exabgp/monitor/url.erb'),
+      mode     => '0755'
+   }
+}
+
+define sunet::exabgp::monitor::haproxy(
+  Array   $ips,
+  Integer $index,
+  Integer $prio        = 10,
+  String  $path        = '/etc/bgp/monitor.d',
+  String  $script_path = '/opt/frontend/haproxy/scripts/haproxy-status',
+) {
+   require stdlib
+   $site = $name
+   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, })
+   $safe_title = regsubst($site, '[^0-9A-Za-z.\-]', '-', 'G')
+   $ipstr = join($ips, ',')
    file {"${path}/${prio}_${safe_title}":
       ensure   => file,
       content  => template('sunet/exabgp/monitor/url.erb'),

@@ -48,15 +48,20 @@ define configure_websites($websites)
 }
 
 define load_balancer_website(
-  $ip,
-  $check_url,
-  $check_match,
+  $ips,
+  $frontends,
   $allowed_servers = [],
 ) {
-  sunet::exabgp::monitor::url { "website_${name}":
-    url   => $check_url,
-    match => $check_match,
-    route => "${ip}/32 next-hop self",
+  # There doesn't seem to be a function to just get the index of an
+  # element in an array in Puppet, so we iterate over all the elements in
+  # $frontends until we find our fqdn
+  each($frontends) |$index, $fe_name| {
+    if $fe_name == $::fqdn {
+      sunet::exabgp::monitor::haproxy { $name:
+        ips   => $ips,
+        index => $index,
+      }
+    }
   }
 
   # Create backend directory for this website so that the API will
