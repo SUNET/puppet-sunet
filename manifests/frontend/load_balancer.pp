@@ -66,6 +66,16 @@ define load_balancer_website(
     }
   }
 
+  # Add the service IP address(es) to the loopback interface so that
+  # haproxy can actually receive the requests.
+  each($ips) |$ip| {
+    exec { "frontend_service_ip_${ip}":
+      path => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
+      command => 'ip addr add ${ip} dev lo',
+      unless  => 'ip addr show lo | grep -q "inet.*${ip}"',
+    }
+  }
+
   # Create backend directory for this website so that the API will
   # accept register requests from the servers
   file {
