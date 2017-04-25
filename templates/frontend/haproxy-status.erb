@@ -196,16 +196,13 @@ def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _d
             output += res
 
     print('\n'.join(output))
+    return output != []
 
 
 if __name__ == '__main__':
     try:
         progname = os.path.basename(sys.argv[0])
         res = main(progname)
-        if isinstance(res, int):
-            sys.exit(res)
-        if res:
-            sys.exit(0)
-        sys.exit(1)
+        sys.exit(int(res))
     except KeyboardInterrupt:
         sys.exit(0)
