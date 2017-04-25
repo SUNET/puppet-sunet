@@ -45,7 +45,7 @@ define sunet::exabgp::monitor::haproxy(
    $ipstr = join($ips, ',')
    file {"${path}/${prio}_${safe_title}":
       ensure   => file,
-      content  => template('sunet/exabgp/monitor/url.erb'),
+      content  => template('sunet/exabgp/monitor/haproxy.erb'),
       mode     => '0755'
    }
 }

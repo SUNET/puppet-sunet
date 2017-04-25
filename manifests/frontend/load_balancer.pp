@@ -59,8 +59,10 @@ define load_balancer_website(
     if $fe_name == $::fqdn {
       sunet::exabgp::monitor::haproxy { $name:
         ips   => $ips,
-        index => $index,
+        index => $index + 1,
       }
+    } else {
+      debug("No match on frontend name $fe_name (my fqdn $::fqdn)")
     }
   }
 
