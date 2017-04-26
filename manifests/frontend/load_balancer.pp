@@ -13,7 +13,11 @@ class sunet::frontend::load_balancer(
     sunet::exabgp::config { 'exabgp_config': }
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
     configure_websites { 'websites': websites => $config['load_balancer']['websites'] }
-    sunet::exabgp { 'load_balancer': }
+    sunet::exabgp { 'load_balancer':
+      docker_volumes => ['/opt/frontend/haproxy/run:/opt/frontend/haproxy/run',  # XXX access stats over TCP socket instead?
+                         '/opt/frontend/haproxy/scripts:/opt/frontend/haproxy/scripts:ro',
+                         ],
+    }
     sunet::frontend::haproxy { 'load_balancer': }
     sunet::frontend::api { 'sunetfrontend': }
   } else {
