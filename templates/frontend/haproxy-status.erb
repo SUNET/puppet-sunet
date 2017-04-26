@@ -2,7 +2,6 @@
 
 import os
 import sys
-import pprint
 import socket
 import logging
 import argparse
@@ -98,8 +97,9 @@ def get_status(args):
         for i in range(len(fields)):
             status[site][host][fields[i]] = values[i]
 
-    if args.debug:
-        logger.debug('haproxy status:\n{}'.format(pprint.pformat(status)))
+    for site in status.keys():
+        for backend in status[site].keys():
+            logger.debug('Site {} backend {}, status {}'.format(site, backend, status[site][backend].get('status')))
     return status
 
 
@@ -122,6 +122,7 @@ def check_site(params, data, my_ips):
             ip_slash = ip + '/32'
 
         if ip not in my_ips:
+            logger.debug('Withdrawing service IP {} not in my list: []'.format(ip, my_ips))
             res.append('withdraw route {} next-hop self'.format(ip_slash))
             continue
 
@@ -166,11 +167,13 @@ def _get_interface_ips(interface):
     # Need a list of all the service addresses which _actually_ have a chance of
     # working at this frontend. Not one of my proudest hacks.
     res = []
-    for this in os.popen('ip addr list {}'.format(interface)).read():
+    for this in os.popen('ip addr list {}'.format(interface)).readlines():
         this = this.strip()
         if this.startswith('inet') or this.startswith('inet6'):
             addr = this.split(' ')[1]
-            res.append(addr.split('/')[0])
+            ip = addr.split('/')[0]
+            if ip not in ['127.0.0.1', '::1']:
+                res.append(ip)
     return res
 
 
