@@ -5,10 +5,11 @@ import sys
 import socket
 import logging
 import argparse
+import requests
 
 logger = None
 
-_defaults = {'socket_fn': '/opt/frontend/haproxy/run/stats',
+_defaults = {'stats_url': 'http://127.0.0.1:9000/haproxy_stats;csv',
              'syslog': False,
              'debug': False,
              'interface': 'lo',
@@ -36,11 +37,11 @@ def parse_args(defaults):
                         action = 'store_true', default = defaults['syslog'],
                         help = 'Enable syslog output',
     )
-    parser.add_argument('--socket_fn',
-                        dest = 'socket_fn',
-                        default = defaults['socket_fn'],
-                        help = 'haproxy socket',
-                        metavar = 'PATH',
+    parser.add_argument('--stats_url',
+                        dest = 'stats_url',
+                        default = defaults['stats_url'],
+                        help = 'haproxy stats URL (CSV format)',
+                        metavar = 'URL',
     )
     parser.add_argument('--interface',
                         dest = 'interface',
@@ -53,17 +54,24 @@ def parse_args(defaults):
 
 
 def haproxy_execute(cmd, args):
-    logger.debug('opening AF_UNIX socket {} for command "{}"'.format(args.socket_fn, cmd))
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect(args.socket_fn)
-    client.send(cmd + '\n')
+    if args.stats_url.startswith('http'):
+        logger.debug('Fetching haproxy stats from {}'.format(args.stats_url))
+        data = requests.get(args.stats_url).text
+    else:
+        socket_fn = args.socket_fn
+        if socket_fn.startswith('file://'):
+            socket_fn = socket_fn[len('file://'):]
+        logger.debug('opening AF_UNIX socket {} for command "{}"'.format(socket_fn, cmd))
+        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        client.connect(socket_fn)
+        client.send(cmd + '\n')
 
-    data = ''
-    while True:
-        this = client.recv(1)
-        if not this:
-            break
-        data += this
+        data = ''
+        while True:
+            this = client.recv(1)
+            if not this:
+                break
+            data += this
 
     logger.debug('haproxy result: {}'.format(data))
     return data
