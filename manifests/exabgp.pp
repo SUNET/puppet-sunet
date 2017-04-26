@@ -10,7 +10,7 @@ define sunet::exabgp(
 ) {
    $safe_title = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G');
    sunet::docker_run {"${safe_title}_exabgp":
-      image       => 'docker.sunet.se/exabgp',
+      image       => 'docker.sunet.se/sunet/docker-sunet-exabgp',
       imagetag    => $version,
       volumes     => flatten(["${volume}:${volume}:ro", $docker_volumes]),
       ports       => ["${port}:${port}"],
