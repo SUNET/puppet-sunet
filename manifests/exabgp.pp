@@ -12,7 +12,7 @@ define sunet::exabgp(
    sunet::docker_run {"${safe_title}_exabgp":
       image       => 'docker.sunet.se/exabgp',
       imagetag    => $version,
-      volumes     => flatten(["${volume}:${volume}:ro"], $docker_volumes),
+      volumes     => flatten(["${volume}:${volume}:ro", $docker_volumes]),
       ports       => ["${port}:${port}"],
       net         => 'host',
       command     => join(flatten([$config,$extra_arguments])," ")
