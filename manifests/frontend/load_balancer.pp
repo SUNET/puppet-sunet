@@ -71,8 +71,8 @@ define load_balancer_website(
   each($ips) |$ip| {
     exec { "frontend_service_ip_${ip}":
       path => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
-      command => 'ip addr add ${ip} dev lo',
-      unless  => 'ip addr show lo | grep -q "inet.*${ip}"',
+      command => "ip addr add ${ip} dev lo",
+      unless  => "ip addr show lo | grep -q 'inet.*${ip}'",
     }
   }
 
