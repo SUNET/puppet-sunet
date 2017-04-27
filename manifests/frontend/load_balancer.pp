@@ -76,6 +76,7 @@ define load_balancer_website(
   Array            $frontends,
   Array            $allowed_servers = [],
   Optional[String] $frontend_template = undef,
+  Array            Sallow_ports = [],
 ) {
   # There doesn't seem to be a function to just get the index of an
   # element in an array in Puppet, so we iterate over all the elements in
@@ -123,6 +124,14 @@ define load_balancer_website(
       target   => '/opt/frontend/haproxy/etc/haproxy-frontends.cfg',  # XXX not nice with hard coded path here
       order    => '20',
       content  => template($frontend_template),
+    }
+  }
+
+  if $allow_ports != [] {
+    sunet::misc::ufw_allow { "load_balancer_${name}_allow_ports":
+      from => 'any',
+      to   => $ips,
+      port => $allow_ports,
     }
   }
 }
