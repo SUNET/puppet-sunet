@@ -147,7 +147,7 @@ define load_balancer_website(
   }
 
   if $letsencrypt_server != undef {
-    sunet::dehydrated::client { "load_balancer_letsencrypt_${name}":
+    class { 'sunet::dehydrated::client': # XXX if this is a class it needs to take a list of domains
       domain => $name,
       server => $letsencrypt_server,
     }
