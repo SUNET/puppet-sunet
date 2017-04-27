@@ -77,6 +77,7 @@ define load_balancer_website(
   Array            $allowed_servers = [],
   Optional[String] $frontend_template = undef,
   Array            $allow_ports = [],
+  Optional[String] $letsencrypt_server = undef,
 ) {
   # There doesn't seem to be a function to just get the index of an
   # element in an array in Puppet, so we iterate over all the elements in
@@ -132,6 +133,13 @@ define load_balancer_website(
       from => 'any',
       to   => $ips,
       port => $allow_ports,
+    }
+  }
+
+  if $letsencrypt_server != undef {
+    sunet::dehydrated::client { "load_balancer_letsencrypt_${name}":
+      domain => $name,
+      server => $letsencrypt_server,
     }
   }
 }
