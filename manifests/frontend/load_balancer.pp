@@ -20,7 +20,17 @@ class sunet::frontend::load_balancer(
     sunet::frontend::haproxy { 'load_balancer': }
     sunet::frontend::api { 'sunetfrontend': }
     sysctl_ip_nonlocal_bind { 'load_balancer': }
-  } else {
+
+    sunet::docker_run {'alwayshttps':
+      image    => 'docker.sunet.se/always-https',
+      ports    => ['80:80'],
+      env      => ['ACME_URL=http://acme-c.sunet.se']
+    }
+    sunet::misc::ufw_allow { "always-https-allow-http":
+      from => 'any',
+      port => '80'
+    }
+} else {
     fail('No SUNET frontend load balancer config found in hiera')
   }
 }
