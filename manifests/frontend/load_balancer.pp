@@ -76,7 +76,7 @@ define load_balancer_website(
   Array            $frontends,
   Array            $allowed_servers = [],
   Optional[String] $frontend_template = undef,
-  Array            Sallow_ports = [],
+  Array            $allow_ports = [],
 ) {
   # There doesn't seem to be a function to just get the index of an
   # element in an array in Puppet, so we iterate over all the elements in
