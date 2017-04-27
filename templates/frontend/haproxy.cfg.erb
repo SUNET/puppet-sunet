@@ -36,6 +36,7 @@ defaults
 frontend LB-http
     # expose stats info over HTTP to exabgp
     bind 127.0.0.1:9000
+    http-request set-log-level silent
     default_backend LB
 
 backend LB
