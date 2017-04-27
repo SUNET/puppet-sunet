@@ -68,10 +68,11 @@ define sunet::frontend::haproxy(
 
   $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
   $be_cfg = "${basedir}/etc/haproxy-backends.cfg"
-  exec { "create_${fe_cfg}":
-    command => "/bin/touch ${fe_cfg} && chown root:${group} ${fe_cfg} && chmod 640 ${fe_cfg}",
-    unless  => "/usr/bin/test -f ${fe_cfg}",
-    require => File["${basedir}/etc"],
+  concat { $fe_cfg:
+    owner    => 'root',
+    group    => $group,
+    mode     => '0640',
+    notify   => Sunet::Docker_run["${name}_haproxy"],
   } ->
   exec { "create_${be_cfg}":
     command => "/bin/touch ${be_cfg} && chown root:${group} ${be_cfg} && chmod 640 ${be_cfg}",

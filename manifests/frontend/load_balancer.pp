@@ -72,9 +72,10 @@ define configure_websites($websites)
 }
 
 define load_balancer_website(
-  $ips,
-  $frontends,
-  $allowed_servers = [],
+  Array            $ips,
+  Array            $frontends,
+  Array            $allowed_servers = [],
+  Optional[String] $frontend_template = undef,
 ) {
   # There doesn't seem to be a function to just get the index of an
   # element in an array in Puppet, so we iterate over all the elements in
@@ -115,5 +116,13 @@ define load_balancer_website(
   sunet::misc::ufw_allow { "allow_servers_${name}":
     from => $allowed_servers,
     port => '8080',  # port of the sunetfronted-api
+  }
+
+  if $frontend_template != undef {
+    concat::fragment { "${name}_haproxy_frontend":
+      target   => '/opt/frontend/haproxy/etc/haproxy-frontends.cfg',  # XXX not nice with hard coded path here
+      order    => '20',
+      content  => template($frontend_template),
+    }
   }
 }
