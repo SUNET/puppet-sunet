@@ -155,18 +155,18 @@ define sunet::dehydrated::client_define(
   ensure_resource("file", "$home/.ssh", { ensure => "directory" })
   ensure_resource("file", "/etc/dehydrated", { ensure => directory })
   ensure_resource("file", "/etc/dehydrated/certs", { ensure => directory })
+  ensure_resource("file", "/usr/bin/le-ssl-compat.sh", {
+    ensure  => 'file',
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    content => template('sunet/dehydrated/le-ssl-compat.erb'),
+    })
+  ensure_resource('sunet::ssh_keyscan::host', $server)
 
   sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
     hiera_key => "${domain}_ssh_key"
   } ->
-  file { "/usr/bin/le-ssl-compat.sh":
-     ensure  => "file",
-     owner   => "root",
-     group   => "root",
-     mode    => "0755",
-     content => template("sunet/dehydrated/le-ssl-compat.erb")
-  } ->
-  sunet::ssh_keyscan::host { $server: }
   cron { "rsync_dehydrated_${domain}":
     command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
     user    => $user,
