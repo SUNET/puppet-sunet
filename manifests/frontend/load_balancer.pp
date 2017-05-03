@@ -21,6 +21,7 @@ class sunet::frontend::load_balancer(
     sunet::frontend::api { 'sunetfrontend': }
     sysctl_ip_nonlocal_bind { 'load_balancer': }
 
+    # XXX accomplish this with some haproxy config instead
     sunet::docker_run {'alwayshttps':
       image    => 'docker.sunet.se/always-https',
       ports    => ['80:80'],
@@ -147,7 +148,7 @@ define load_balancer_website(
   }
 
   if $letsencrypt_server != undef {
-    class { 'sunet::dehydrated::client': # XXX if this is a class it needs to take a list of domains
+    sunet::dehydrated::client_define { $name :
       domain => $name,
       server => $letsencrypt_server,
     }
