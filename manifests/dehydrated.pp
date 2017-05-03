@@ -126,7 +126,28 @@ class sunet::dehydrated($staging=false,
   }
 }
 
-class sunet::dehydrated::client($domain=undef, $server="acme-c.sunet.se", $user="root", $ssl_links=false) {
+# If this class is used, only a single domain can be set up
+class sunet::dehydrated::client(
+  String  $domain,
+  String  $server="acme-c.sunet.se",
+  String  $user="root",
+  Boolean $ssl_links=false,
+) {
+  sunet::dehydrated::client_define { "domain_${domain}":
+    domain    => $domain,
+    server    => $server,
+    user      => $user,
+    ssl_links => $ssl_links,
+  }
+}
+
+# Use this define directly if more than one domain is required
+define sunet::dehydrated::client_define(
+  String  $domain,
+  String  $server="acme-c.sunet.se",
+  String  $user="root",
+  Boolean $ssl_links=false,
+) {
   $home = $user ? {
     "root"  => "/root",
     default => "/home/${user}"
