@@ -153,6 +153,7 @@ define load_balancer_website(
   if $frontend_template != undef {
     $server_name = $name
     $params = $frontend_template_params
+    $ips = $ipv4 + enclose_ipv6($ipv6)
     concat::fragment { "${name}_haproxy_frontend":
       target   => '/opt/frontend/haproxy/etc/haproxy-frontends.cfg',  # XXX not nice with hard coded path here
       order    => '20',
