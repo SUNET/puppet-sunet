@@ -94,24 +94,25 @@ define load_balancer_website(
   Optional[String] $letsencrypt_server = undef,
 ) {
   $ipv4 = map($frontends) |$fe| {
-    $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 4) }
+    $frontend[$fe]['primary_ips'].filter |$ip| { is_ipaddr($ip, 4) }
   }
   $ipv6 = map($frontends) |$fe| {
-    $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 6) }
+    $frontend[$fe]['primary_ips'].filter |$ip| { is_ipaddr($ip, 6) }
   }
 
   # There doesn't seem to be a function to just get the index of an
   # element in an array in Puppet, so we iterate over all the elements in
   # $frontends until we find our fqdn
-  each($frontends) |$index, $fe_name| {
-    if $fe_name == $::fqdn {
+  each($frontends) |$index, $fe| {
+    if $fe['fqdn'] == $::fqdn {
       sunet::exabgp::monitor::haproxy { $name:
         ipv4  => $ipv4,
         ipv6  => $ipv6,
         index => $index + 1,
       }
     } else {
-      notice("No match on frontend name $fe_name (my fqdn $::fqdn)")
+      $fe_fqdn = $fe['fqdn']
+      notice("No match on frontend name $fe_fqdn (my fqdn $::fqdn)")
     }
   }
 
