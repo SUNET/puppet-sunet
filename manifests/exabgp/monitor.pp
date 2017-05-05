@@ -49,9 +49,6 @@ define sunet::exabgp::monitor::haproxy(
       content  => template('sunet/exabgp/monitor/haproxy.erb'),
       mode     => '0755'
       ;
-    $hookdir:
-      ensure   => 'directory',
-      ;
   }
 
   $ipv4str = join($ipv4, ',')

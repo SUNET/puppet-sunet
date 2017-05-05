@@ -43,6 +43,10 @@ define sunet::frontend::haproxy(
       ensure  => 'directory',
       mode    => '0755',
       ;
+    "$basedir/hooks":
+      ensure  => 'directory',
+      mode    => '0755',
+      ;
     "$basedir/scripts/haproxy-config-update":
       ensure  => 'file',
       mode    => '0755',
