@@ -86,7 +86,6 @@ define configure_websites($websites)
 }
 
 define load_balancer_website(
-  Array            $ips,
   Array            $frontends,
   Array            $backends,
   Optional[String] $frontend_template = undef,
@@ -94,27 +93,25 @@ define load_balancer_website(
   Array            $allow_ports = [],
   Optional[String] $letsencrypt_server = undef,
 ) {
+  $ipv4 = map($frontends) |$fe| {
+    $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 4) }
+  }
+  $ipv6 = map($frontends) |$fe| {
+    $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 6) }
+  }
+
   # There doesn't seem to be a function to just get the index of an
   # element in an array in Puppet, so we iterate over all the elements in
   # $frontends until we find our fqdn
   each($frontends) |$index, $fe_name| {
     if $fe_name == $::fqdn {
       sunet::exabgp::monitor::haproxy { $name:
-        ips   => $ips,
+        ipv4  => $ipv4,
+        ipv6  => $ipv6,
         index => $index + 1,
       }
     } else {
-      debug("No match on frontend name $fe_name (my fqdn $::fqdn)")
-    }
-  }
-
-  # Add the service IP address(es) to the loopback interface so that
-  # haproxy can actually receive the requests.
-  each($ips) |$ip| {
-    exec { "frontend_service_ip_${ip}":
-      path => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
-      command => "ip addr add ${ip} dev lo",
-      unless  => "ip addr show lo | grep -q 'inet.*${ip}'",
+      notice("No match on frontend name $fe_name (my fqdn $::fqdn)")
     }
   }
 
@@ -128,9 +125,9 @@ define load_balancer_website(
       ;
   }
 
-  # Make template files with the haproxy per backend, so that the haproxy-config-update
-  # script can make a haproxy-backends.cfg file containing all backends that have
-  # registered with the sunetfrontend-api
+  # Make template files with the haproxy config per backend, so that the
+  # haproxy-config-update script can make a haproxy-backends.cfg file
+  # containing all backends that have registered with the sunetfrontend-api
   file {
     "/opt/frontend/haproxy/templates/${name}":
       ensure => 'directory',
@@ -145,7 +142,7 @@ define load_balancer_website(
     }
   }
 
-  # Allow the backend servers for this website to access the sunetfronted-api
+  # Allow the backend servers for this website to access the sunetfrontend-api
   # to register themselves.
   sunet::misc::ufw_allow { "allow_servers_${name}":
     from => $allowed_servers,

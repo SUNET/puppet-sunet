@@ -48,6 +48,11 @@ define sunet::frontend::haproxy(
       mode    => '0755',
       content => template("sunet/frontend/haproxy-config-update.erb")
       ;
+    "$basedir/scripts/haproxy-hook-maker":
+      ensure  => 'file',
+      mode    => '0755',
+      content => template("sunet/frontend/haproxy-hook-maker.py.erb")
+      ;
     "$basedir/scripts/haproxy-status":
       ensure  => 'file',
       mode    => '0755',
