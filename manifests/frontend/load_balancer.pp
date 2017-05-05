@@ -134,14 +134,14 @@ define load_balancer_website(
       ensure => 'directory',
       ;
   }
-  each($backends) |$backend_ip| {
-    file {
-      "/opt/frontend/haproxy/templates/${name}/${backend_ip}.cfg":
-        ensure  => 'file',
-        content => $backends.to_yaml,
-        ;
-    }
-  }
+#  each($backends) |$backend_ip| {
+#    file {
+#      "/opt/frontend/haproxy/templates/${name}/${backend_ip}.cfg":
+#        ensure  => 'file',
+#        content => $backends.to_yaml,
+#        ;
+#    }
+#  }
 
   # Allow the backend servers for this website to access the sunetfrontend-api
   # to register themselves.
