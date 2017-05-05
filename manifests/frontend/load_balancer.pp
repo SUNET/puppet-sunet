@@ -86,7 +86,7 @@ define configure_websites($websites)
 }
 
 define load_balancer_website(
-  Hash             $frontends,
+  Array            $frontends,
   Hash             $backends,
   Optional[String] $frontend_template = undef,
   Hash             $frontend_template_params = {},
