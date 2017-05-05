@@ -112,7 +112,7 @@ define load_balancer_website(
       }
     } else {
       $fe_fqdn = $fe['fqdn']
-      notice("No match on frontend name $fe_fqdn (my fqdn $::fqdn)")
+      debug("No match on frontend name $fe_fqdn (my fqdn $::fqdn)")
     }
   }
 
@@ -145,8 +145,9 @@ define load_balancer_website(
 
   # Allow the backend servers for this website to access the sunetfrontend-api
   # to register themselves.
+  $backend_ips = keys($backends)
   sunet::misc::ufw_allow { "allow_servers_${name}":
-    from => $allowed_servers,
+    from => $backend_ips,
     port => '8080',  # port of the sunetfronted-api
   }
 
