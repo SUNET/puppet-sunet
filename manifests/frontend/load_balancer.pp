@@ -94,10 +94,10 @@ define load_balancer_website(
   Optional[String] $letsencrypt_server = undef,
 ) {
   $ipv4 = map($frontends) |$fe| {
-    $frontend[$fe]['primary_ips'].filter |$ip| { is_ipaddr($ip, 4) }
+    $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 4) }
   }
   $ipv6 = map($frontends) |$fe| {
-    $frontend[$fe]['primary_ips'].filter |$ip| { is_ipaddr($ip, 6) }
+    $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 6) }
   }
 
   # There doesn't seem to be a function to just get the index of an
