@@ -8,6 +8,9 @@ class sunet::frontend::load_balancer(
       '/etc/bgp':
         ensure => 'directory',
         ;
+      '/opt/frontend/haproxy/templates':
+        ensure => 'directory',
+        ;
     }
 
     sunet::exabgp::config { 'exabgp_config': }
@@ -85,7 +88,7 @@ define configure_websites($websites)
 define load_balancer_website(
   Array            $ips,
   Array            $frontends,
-  Array            $allowed_servers = [],
+  Array            $backends,
   Optional[String] $frontend_template = undef,
   Hash             $frontend_template_params = {},
   Array            $allow_ports = [],
@@ -115,7 +118,7 @@ define load_balancer_website(
     }
   }
 
-  # Create backend directory for this website so that the API will
+  # Create backend directory for this website so that the sunetfrontend-api will
   # accept register requests from the servers
   file {
     "/opt/frontend/api/backends/${name}":
@@ -123,6 +126,23 @@ define load_balancer_website(
       group  => 'sunetfrontend',
       mode   => '0770',
       ;
+  }
+
+  # Make template files with the haproxy per backend, so that the haproxy-config-update
+  # script can make a haproxy-backends.cfg file containing all backends that have
+  # registered with the sunetfrontend-api
+  file {
+    "/opt/frontend/haproxy/templates/${name}":
+      ensure => 'directory',
+      ;
+  }
+  each($backends) |$backend_ip| {
+    file {
+      "/opt/frontend/haproxy/templates/${name}/${backend_ip}.cfg":
+        ensure  => 'file',
+        content => $backends.to_yaml,
+        ;
+    }
   }
 
   # Allow the backend servers for this website to access the sunetfronted-api
