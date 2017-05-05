@@ -165,7 +165,7 @@ define load_balancer_website(
   if $allow_ports != [] {
     sunet::misc::ufw_allow { "load_balancer_${name}_allow_ports":
       from => 'any',
-      to   => $ips,
+      to   => [$ipv4, $ipv6],  # not $ips, ufw does not like brackets around v6 addresses
       port => $allow_ports,
     }
   }
