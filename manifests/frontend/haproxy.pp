@@ -43,14 +43,14 @@ define sunet::frontend::haproxy(
       ensure  => 'directory',
       mode    => '0755',
       ;
-    "$basedir/hooks":
-      ensure  => 'directory',
-      mode    => '0755',
-      ;
     "$basedir/scripts/haproxy-config-update":
       ensure  => 'file',
       mode    => '0755',
       content => template("sunet/frontend/haproxy-config-update.erb")
+      ;
+    "/etc/bgp/hooks":  # XXX move this to sunet::exabgp?
+      ensure  => 'directory',
+      mode    => '0755',
       ;
     "$basedir/scripts/exabgp-hook-maker":  # XXX move this to sunet::exabgp?
       ensure  => 'file',
