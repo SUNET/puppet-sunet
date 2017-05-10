@@ -37,7 +37,7 @@ define sunet::exabgp::monitor::haproxy(
   Array   $ipv6,
   String  $path      = '/etc/bgp/monitor.d',
   String  $scriptdir = '/opt/frontend/haproxy/scripts',
-  String  $hookdir   = '/opt/frontend/haproxy/hooks',
+  String  $hookdir   = '/etc/bgp/hooks',
 ) {
   require stdlib
   $site = $name
@@ -51,17 +51,19 @@ define sunet::exabgp::monitor::haproxy(
       ;
   }
 
+  # Maybe this hook generation should be common to all kinds of monitored resources,
+  # and moved to sunet::exabgp::monitor above?
   $ipv4str = join($ipv4, ',')
   $ipv6str = join($ipv6, ',')
-  exec { "haproxy_hook_${site}_UP":
+  exec { "exabgp_hook_${site}_UP":
     path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
-    command => "$scriptdir/haproxy-hook-maker --up 'site=${site}; index=${index}; ipv4=$ipv4str; ipv6=$ipv6str' > $hookdir/${site}_UP.sh",
+    command => "$scriptdir/exabgp-hook-maker --up 'site=${site}; index=${index}; ipv4=$ipv4str; ipv6=$ipv6str' > $hookdir/${site}_UP.sh",
     creates => "$hookdir/${site}_UP.sh",
   }
 
-  exec { "haproxy_hook_${site}_DOWN":
+  exec { "exabgp_hook_${site}_DOWN":
     path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
-    command => "$scriptdir/haproxy-hook-maker --down 'site=${site}; index=${index}; ipv4=$ipv4str; ipv6=$ipv6str' > $hookdir/${site}_DOWN.sh",
+    command => "$scriptdir/exabgp-hook-maker --down 'site=${site}; index=${index}; ipv4=$ipv4str; ipv6=$ipv6str' > $hookdir/${site}_DOWN.sh",
     creates => "$hookdir/${site}_DOWN.sh",
   }
 

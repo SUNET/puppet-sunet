@@ -52,10 +52,10 @@ define sunet::frontend::haproxy(
       mode    => '0755',
       content => template("sunet/frontend/haproxy-config-update.erb")
       ;
-    "$basedir/scripts/haproxy-hook-maker":
+    "$basedir/scripts/exabgp-hook-maker":  # XXX move this to sunet::exabgp?
       ensure  => 'file',
       mode    => '0755',
-      content => template("sunet/frontend/haproxy-hook-maker.py.erb")
+      content => template("sunet/exabgp/exabgp-hook-maker.py.erb")
       ;
     "$basedir/scripts/haproxy-status":
       ensure  => 'file',
