@@ -149,11 +149,12 @@ define load_balancer_website(
   }
 
   # 'export' config to a file usable to create backend configuration
+  $export_data = {'backends': $backends}
   file { "${basedir}/config-templates/${name}_backends.yml":
     ensure  => 'file',
     group   => 'sunetfrontend',
     mode    => '0640',
-    content => inline_template('<%= @backends.to_yaml %>'),
+    content => inline_template("<%= @export_data.to_yaml %>\n"),
   }
 
   if $frontend_template != undef {
