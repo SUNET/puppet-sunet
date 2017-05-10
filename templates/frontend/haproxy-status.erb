@@ -25,7 +25,7 @@ def parse_args(defaults):
     parser.add_argument('site',
                         nargs='+',
                         metavar='STR',
-                        help='Site check string. XXX format to be documented here later.',
+                        help='Site to check, in key-value format (e.g. "site=www.dev.eduid.se; min_up=2")',
     )
     parser.add_argument('--debug',
                         dest = 'debug',
@@ -42,12 +42,6 @@ def parse_args(defaults):
                         default = defaults['stats_url'],
                         help = 'haproxy stats URL (CSV format)',
                         metavar = 'URL',
-    )
-    parser.add_argument('--interface',
-                        dest = 'interface',
-                        default = defaults['interface'],
-                        help = 'Interface with service IPs',
-                        metavar = 'STR',
     )
     args = parser.parse_args()
     return args
@@ -116,73 +110,16 @@ def check_site(params, data, my_ips):
     site = params['site']
     backends_up = _count_backends_up(data)
     logger.debug('Backends UP: {}'.format(backends_up))
-    sorted_ips = _local_pref_sort_ips(params['index'], params['ips'])
-    logger.debug('Re-sorted IPs {} -> {} based on index {}'.format(params['ips'], sorted_ips, params['index']))
-    base_pref = 0
-    res = []
-    count = 1
-    # Reverse IP list since higher local-preference wins
-    sorted_ips.reverse()
-    for ip in sorted_ips:
-        if ':' in ip:
-            ip_slash = ip + '/128'
-        else:
-            ip_slash = ip + '/32'
+    if 'min_up' in params:
+        if backends_up < int(params['min_up']):
+            logger.debug('Fewer than {} backends up ({})'.format(params['min_up'], backends_up))
+            return ['DOWN backends_up={}'.format(backends_up)]
+    return ['UP backends_up={}'.format(backends_up)]
 
-        if ip not in my_ips:
-            logger.debug('Withdrawing service IP {} not in my list: []'.format(ip, my_ips))
-            res.append('withdraw route {} next-hop self'.format(ip_slash))
-            continue
-
-        if not backends_up:
-            # Even when there are NO backends up, we want to announce the routes in order
-            # to be able to serve a fail-whale page. Local preference should be very low
-            # though, so that if another load balancer see any backends available it will
-            # attract all traffic.
-            base_pref += 10
-            local_pref = base_pref
-        else:
-            base_pref += 1000
-            local_pref = base_pref + (backends_up * 10)
-
-        logger.debug('Site {}, address {}/{}, backends up {} -> announce {} with local pref {}'.format(
-            site, count, len(sorted_ips), backends_up, ip, local_pref))
-        res.append('announce route {} next-hop self local-preference {}'.format(ip_slash, local_pref))
-        count += 1
-    # for the humans
-    res.reverse()
-    return res
-
-
-def _local_pref_sort_ips(index, ips):
-    """
-    Three load balancers named A, B and C should all announce
-    service IP 1, 2 and 3 with different local prefs.
-
-    A should announce 1 with the highest preference, and B should announce
-    2 with the highest local preference.
-
-    Re-sort the input list of IPs to start with the one specified by the index.
-    """
-    return ips[index - 1:] + ips[:index - 1]
 
 def _count_backends_up(data):
     backends = [x for x in data.keys() if x != 'BACKEND' and data[x]['status'] == 'UP']
     return len(backends)
-
-
-def _get_interface_ips(interface):
-    # Need a list of all the service addresses which _actually_ have a chance of
-    # working at this frontend. Not one of my proudest hacks.
-    res = []
-    for this in os.popen('ip addr list {}'.format(interface)).readlines():
-        this = this.strip()
-        if this.startswith('inet') or this.startswith('inet6'):
-            addr = this.split(' ')[1]
-            ip = addr.split('/')[0]
-            if ip not in ['127.0.0.1', '::1']:
-                res.append(ip)
-    return res
 
 
 def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _defaults, my_ips=None):
@@ -209,10 +146,6 @@ def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _d
         logger.addHandler(syslog_h)
 
 
-    if my_ips is None:
-        my_ips = _get_interface_ips(args.interface)
-        logger.debug('Found addresses {} on interface {}'.format(my_ips, args.interface))
-
     status = get_status(args)
 
     output = []
@@ -225,10 +158,6 @@ def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _d
             k, v = kv.split('=')
             k = k.strip()
             v = v.strip()
-            if k == 'ips':
-                v = v.split(',')
-            if k == 'index':
-                v = int(v)
             params[k] = v
         logger.debug('Parsed params {}'.format(params))
         site = params['site']

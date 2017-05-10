@@ -56,10 +56,16 @@ define sunet::exabgp::monitor::haproxy(
   exec { "haproxy_hook_${site}_UP":
     path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
     command => "$scriptdir/haproxy-hook-maker --up 'site=${site}; index=${index}; ipv4=$ipv4str; ipv6=$ipv6str' > $hookdir/${site}_UP.sh",
+    creates => "$hookdir/${site}_UP.sh",
   }
 
   exec { "haproxy_hook_${site}_DOWN":
     path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
     command => "$scriptdir/haproxy-hook-maker --down 'site=${site}; index=${index}; ipv4=$ipv4str; ipv6=$ipv6str' > $hookdir/${site}_DOWN.sh",
+    creates => "$hookdir/${site}_DOWN.sh",
+  }
+
+  file { ["$hookdir/${site}_UP.sh", "$hookdir/${site}_DOWN.sh"]:
+      mode => '0755',
   }
 }
