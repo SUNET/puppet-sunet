@@ -38,6 +38,7 @@ define sunet::exabgp::monitor::haproxy(
   String  $path      = '/etc/bgp/monitor.d',
   String  $scriptdir = '/opt/frontend/haproxy/scripts',
   String  $hookdir   = '/etc/bgp/hooks',
+  Integer $prio      = 10,
 ) {
   require stdlib
   $site = $name
