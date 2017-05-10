@@ -165,7 +165,6 @@ define load_balancer_website(
     target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
     order    => '20',
     content  => $ip_addr_add.join("\n"),
-    notify   => Sunet::Docker_run["${name}_haproxy"]
   }
 
   if $allow_ports != [] {
