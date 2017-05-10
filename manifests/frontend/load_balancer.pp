@@ -13,6 +13,18 @@ class sunet::frontend::load_balancer(
         ;
     }
 
+    # XXX not nice with hard coded path here
+    concat { '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh':
+      owner    => 'root',
+      group    => 'root',
+      mode     => '0755',
+    }
+    concat::fragment { "${name}_haproxy-pre-start_header":
+      target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
+      order    => '10',
+      content  => template('sunet/frontend/haproxy-pre-start.erb'),
+    }
+
     sunet::exabgp::config { 'exabgp_config': }
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
     configure_websites { 'websites': websites => $config['load_balancer']['websites'] }
@@ -42,13 +54,11 @@ class sunet::frontend::load_balancer(
 define sysctl_ip_nonlocal_bind() {
   # Allow haproxy to bind() to a service IP address even if it haven't actually
   # been set up on an interface yet
-  #
-  # XXX This setting _might_ actually mean that we don't have to add the
-  # IP addresses to any interface at all. Should test that.
   augeas { 'frontend_ip_nonlocal_bind_config':
     context => '/files/etc/sysctl.d/10-sunet-frontend-ip-non-local-bind.conf',
     changes => [
                 'set net.ipv4.ip_nonlocal_bind 1',
+                'set net.ipv6.ip_nonlocal_bind 1',
                 ],
     notify => Exec['reload_sysctl_10-sunet-frontend-ip-non-local-bind.conf'],
   }
@@ -93,12 +103,15 @@ define load_balancer_website(
   Array            $allow_ports = [],
   Optional[String] $letsencrypt_server = undef,
 ) {
-  $ipv4 = map($frontends) |$fe| {
+  $_ipv4 = map($frontends) |$fe| {
     $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 4) }
   }
-  $ipv6 = map($frontends) |$fe| {
+  $_ipv6 = map($frontends) |$fe| {
     $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 6) }
   }
+  # avoid lists in list
+  $ipv4 = flatten($_ipv4)
+  $ipv6 = flatten($_ipv6)
 
   # There doesn't seem to be a function to just get the index of an
   # element in an array in Puppet, so we iterate over all the elements in
@@ -155,12 +168,22 @@ define load_balancer_website(
     $server_name = $name
     $params = $frontend_template_params
     # Note that haproxy actually does _not_ want IPv6 addresses to be enclosed by brackets.
-    $ips = flatten($ipv4 + $ipv6)
+    $ips = $ipv4 + $ipv6
     concat::fragment { "${name}_haproxy_frontend":
       target   => '/opt/frontend/haproxy/etc/haproxy-frontends.cfg',  # XXX not nice with hard coded path here
       order    => '20',
       content  => template($frontend_template),
     }
+  }
+
+  $ip_addr_add = ["# website ${name}",
+                  each($ipv4 + $ipv6) | $ip | { "ip addr add ${ip} dev lo" },
+                  '',
+                  ]
+  concat::fragment { "${name}_haproxy-pre-start_${name}":
+    target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
+    order    => '20',
+    content  => $ip_addr_add.join('\n')
   }
 
   if $allow_ports != [] {
