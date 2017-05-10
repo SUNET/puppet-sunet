@@ -1,24 +1,39 @@
 # Interface, ExaBGP and haproxy config for a load balancer
 class sunet::frontend::load_balancer(
   String $router_id = $ipaddress_default,
+  String $basedir = '/opt/frontend',
 ) {
   $config = hiera_hash('sunet_frontend')
   if is_hash($config) {
+    exec { 'load_balancer_mkdir':
+      command => "/bin/mkdir -p ${basedir}",
+      unless  => "/usr/bin/test -d ${basedir}",
+    } ->
     file {
       '/etc/bgp':
+        ensure => 'directory',
+        ;
+      "${basedir}/config-templates":
         ensure => 'directory',
         ;
     }
 
     sunet::exabgp::config { 'exabgp_config': }
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
-    configure_websites { 'websites': websites => $config['load_balancer']['websites'] }
+    configure_websites { 'websites':
+      websites => $config['load_balancer']['websites'],
+      basedir  => $basedir,
+    }
     sunet::exabgp { 'load_balancer':
-      docker_volumes => ['/opt/frontend/haproxy/scripts:/opt/frontend/haproxy/scripts:ro',
+      docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
                          ],
     }
-    sunet::frontend::haproxy { 'load_balancer': }
-    sunet::frontend::api { 'sunetfrontend': }
+    sunet::frontend::haproxy { 'load_balancer':
+      basedir => "${basedir}/haproxy",
+    }
+    sunet::frontend::api { 'sunetfrontend':
+      basedir => "${basedir}/api",
+    }
     sysctl_ip_nonlocal_bind { 'load_balancer': }
 
     # XXX accomplish this with some haproxy config instead
@@ -75,14 +90,15 @@ define load_balancer_peer(
   }
 }
 
-define configure_websites($websites)
+define configure_websites($websites, $basedir)
 {
-  create_resources('load_balancer_website', $websites)
+  create_resources('load_balancer_website', $websites, {'basedir' => $basedir})
 }
 
 define load_balancer_website(
   Array            $frontends,
   Hash             $backends,
+  String           $basedir,
   Optional[String] $frontend_template = undef,
   Hash             $frontend_template_params = {},
   Array            $allow_ports = [],
@@ -117,7 +133,7 @@ define load_balancer_website(
   # Create backend directory for this website so that the sunetfrontend-api will
   # accept register requests from the servers
   file {
-    "/opt/frontend/api/backends/${name}":
+    "${basedir}/api/backends/${name}":
       ensure => 'directory',
       group  => 'sunetfrontend',
       mode   => '0770',
@@ -138,7 +154,7 @@ define load_balancer_website(
     # Note that haproxy actually does _not_ want IPv6 addresses to be enclosed by brackets.
     $ips = $ipv4 + $ipv6
     concat::fragment { "${name}_haproxy_frontend":
-      target   => '/opt/frontend/haproxy/etc/haproxy-frontends.cfg',  # XXX not nice with hard coded path here
+      target   => "${basedir}/haproxy/etc/haproxy-frontends.cfg",
       order    => '20',
       content  => template($frontend_template),
     }
@@ -148,9 +164,8 @@ define load_balancer_website(
                   map($ipv4 + $ipv6) | $ip | { "ip addr add ${ip} dev lo" },
                   "\n",
                   ]
-  # XXX not nice with hard coded path here
   concat::fragment { "${name}_haproxy-pre-start_${name}":
-    target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
+    target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
     order    => '20',
     content  => $ip_addr_add.join("\n"),
   }
