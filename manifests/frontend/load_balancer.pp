@@ -149,7 +149,7 @@ define load_balancer_website(
   }
 
   # 'export' config to a file usable to create backend configuration
-  $export_data = {'backends': $backends}
+  $export_data = {'backends' => $backends}
   file { "${basedir}/config-templates/${name}_backends.yml":
     ensure  => 'file',
     group   => 'sunetfrontend',
