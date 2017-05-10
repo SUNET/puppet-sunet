@@ -70,9 +70,15 @@ define sunet::frontend::haproxy(
       ;
   }
 
-  service { 'haproxy-config-update':
-    ensure  => 'running',
-    enable  => true,
+  concat { '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh':
+    owner    => 'root',
+    group    => 'root',
+    mode     => '0755',
+  }
+  concat::fragment { "${name}_haproxy-pre-start_header":
+    target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
+    order    => '10',
+    content  => template('sunet/frontend/haproxy-pre-start.erb'),
   }
 
   $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
@@ -90,16 +96,22 @@ define sunet::frontend::haproxy(
   } ->
 
   sunet::docker_run { "${name}_haproxy":
-    image    => 'docker.sunet.se/library/haproxy',
-    imagetag => 'stable',
-    net      => 'host',
-    volumes  => ["${basedir}/etc:/etc/haproxy:ro",
-                 "${basedir}/run:/var/run/haproxy",
-                 '/etc/ssl:/etc/ssl:ro',
-                 '/etc/dehydrated:/etc/dehydrated:ro',
-                 '/dev/log:/dev/log',
-                 ],
-    command  => 'haproxy-systemd-wrapper -p /run/haproxy.pid -f /etc/haproxy/haproxy.cfg -f /etc/haproxy/haproxy-frontends.cfg -f /etc/haproxy/haproxy-backends.cfg',
-    require  => [File["$basedir/etc/haproxy.cfg"]],
+    image        => 'docker.sunet.se/library/haproxy',
+    imagetag     => 'stable',
+    net          => 'host',
+    volumes      => ["${basedir}/etc:/etc/haproxy:ro",
+                     "${basedir}/run:/var/run/haproxy",
+                     '/etc/ssl:/etc/ssl:ro',
+                     '/etc/dehydrated:/etc/dehydrated:ro',
+                     '/dev/log:/dev/log',
+                     ],
+    command      => 'haproxy-systemd-wrapper -p /run/haproxy.pid -f /etc/haproxy/haproxy.cfg -f /etc/haproxy/haproxy-frontends.cfg -f /etc/haproxy/haproxy-backends.cfg',
+    before_start => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
+    require      => [File["$basedir/etc/haproxy.cfg"]],
+  }
+
+  service { 'haproxy-config-update':
+    ensure  => 'running',
+    enable  => true,
   }
 }

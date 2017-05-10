@@ -13,18 +13,6 @@ class sunet::frontend::load_balancer(
         ;
     }
 
-    # XXX not nice with hard coded path here
-    concat { '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh':
-      owner    => 'root',
-      group    => 'root',
-      mode     => '0755',
-    }
-    concat::fragment { "${name}_haproxy-pre-start_header":
-      target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
-      order    => '10',
-      content  => template('sunet/frontend/haproxy-pre-start.erb'),
-    }
-
     sunet::exabgp::config { 'exabgp_config': }
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
     configure_websites { 'websites': websites => $config['load_balancer']['websites'] }
@@ -147,14 +135,6 @@ define load_balancer_website(
       ensure => 'directory',
       ;
   }
-#  each($backends) |$backend_ip| {
-#    file {
-#      "/opt/frontend/haproxy/templates/${name}/${backend_ip}.cfg":
-#        ensure  => 'file',
-#        content => $backends.to_yaml,
-#        ;
-#    }
-#  }
 
   # Allow the backend servers for this website to access the sunetfrontend-api
   # to register themselves.
@@ -180,10 +160,12 @@ define load_balancer_website(
                   map($ipv4 + $ipv6) | $ip | { "ip addr add ${ip} dev lo" },
                   "\n",
                   ]
+  # XXX not nice with hard coded path here
   concat::fragment { "${name}_haproxy-pre-start_${name}":
     target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
     order    => '20',
-    content  => $ip_addr_add.join("\n")
+    content  => $ip_addr_add.join("\n"),
+    notify   => Sunet::Docker_run["${name}_haproxy"]
   }
 
   if $allow_ports != [] {
