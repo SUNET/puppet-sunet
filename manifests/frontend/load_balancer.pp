@@ -148,6 +148,14 @@ define load_balancer_website(
     port => '8080',  # port of the sunetfronted-api
   }
 
+  # 'export' config to a file usable to create backend configuration
+  file { "${basedir}/config-templates/${name}_backends.yml":
+    ensure  => 'file',
+    group   => 'sunetfrontend',
+    mode    => '0640',
+    content => $backends.to_yaml,
+  }
+
   if $frontend_template != undef {
     $server_name = $name
     $params = $frontend_template_params
