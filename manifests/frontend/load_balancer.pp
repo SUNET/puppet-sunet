@@ -177,8 +177,8 @@ define load_balancer_website(
   }
 
   $ip_addr_add = ["# website ${name}",
-                  each($ipv4 + $ipv6) | $ip | { "ip addr add ${ip} dev lo" },
-                  '',
+                  map($ipv4 + $ipv6) | $ip | { "ip addr add ${ip} dev lo" },
+                  "\n",
                   ]
   concat::fragment { "${name}_haproxy-pre-start_${name}":
     target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
