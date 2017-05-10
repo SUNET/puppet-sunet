@@ -183,7 +183,7 @@ define load_balancer_website(
   concat::fragment { "${name}_haproxy-pre-start_${name}":
     target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
     order    => '20',
-    content  => $ip_addr_add.join('\n')
+    content  => $ip_addr_add.join("\n")
   }
 
   if $allow_ports != [] {
