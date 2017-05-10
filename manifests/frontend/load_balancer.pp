@@ -153,7 +153,7 @@ define load_balancer_website(
     ensure  => 'file',
     group   => 'sunetfrontend',
     mode    => '0640',
-    content => $backends.to_yaml,
+    content => inline_template('<%= @backends.to_yaml %>'),
   }
 
   if $frontend_template != undef {
