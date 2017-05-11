@@ -82,13 +82,13 @@ def backend_config(args):
     with open(args.backend_conf) as fd:
         config = yaml.safe_load(fd)
     files = []
-    for direntry in os.listdir(args.backend_dir):
+    for direntry in sorted(os.listdir(args.backend_dir)):
         path = os.path.join(args.backend_dir, direntry)
         if not os.path.isfile(path):
             continue
         files.append(path)
 
-    for be in config.get('backends', []):
+    for be in sorted(config.get('backends', [])):
         logger.info('Processing backend {}: {}'.format(be, config['backends'][be]))
         haproxy_config_in = config['backends'][be]['haproxy_config']
         for this in files:
