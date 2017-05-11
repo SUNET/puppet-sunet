@@ -14,7 +14,12 @@ backend_cfgfile="${basedir}/etc/haproxy-backends.cfg"
 backends_dir="${apidir}/backends/"
 
 
-rm -f "${backend_cfgfile}.new"
+cat > "${backend_cfgfile}.new" <<EOF
+# haproxy backend configuration created by $0
+# based on the backends currently registered with the sunet-frontend-api -
+#
+# DO NOT EDIT MANUALLY - CHANGES WILL BE OVERWRITTEN
+EOF
 
 # Generate an updated haproxy-backends.cfg file
 ls -1 ${backends_dir} | while read site; do

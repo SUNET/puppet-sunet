@@ -113,7 +113,7 @@ def backend_config(args):
                 else:
                     logger.debug('Ignoring backend with ACTION={}'.format(params.get('ACTION')))
     if res:
-        return ['backend {}'.format(args.site_name)] + res
+        return ['backend {}'.format(args.site_name)] + res + ['']
 
     return []
 
