@@ -78,8 +78,8 @@ define sysctl_ip_nonlocal_bind() {
 define configure_peers($router_id, $peers)
 {
   $defaults = {
-    router_id => $::ipaddress_default,
-    local_ip => $::ipaddress_default,
+    router_id => $router_id,
+    local_ip  => $::ipaddress_default,
   }
   create_resources('load_balancer_peer', $peers, $defaults)
 }
@@ -95,6 +95,7 @@ define load_balancer_peer(
     local_address  => $local_ip,
     peer_as        => $as,
     peer_address   => $remote_ip,
+    router_id      => $router_id,
   }
 }
 
