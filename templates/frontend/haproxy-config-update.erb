@@ -16,9 +16,11 @@ backends_dir="${apidir}/backends/"
 
 cat > "${backend_cfgfile}.new" <<EOF
 # haproxy backend configuration created by $0
-# based on the backends currently registered with the sunet-frontend-api -
+#
+# Based on the backends currently registered with the sunet-frontend-api.
 #
 # DO NOT EDIT MANUALLY - CHANGES WILL BE OVERWRITTEN
+#
 EOF
 
 # Generate an updated haproxy-backends.cfg file
