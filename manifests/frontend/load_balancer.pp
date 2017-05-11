@@ -5,6 +5,9 @@ class sunet::frontend::load_balancer(
 ) {
   $config = hiera_hash('sunet_frontend')
   if is_hash($config) {
+    $confdir = "${basedir}/config"
+    $apidir = "${basedir}/api"
+
     exec { 'load_balancer_mkdir':
       command => "/bin/mkdir -p ${basedir}",
       unless  => "/usr/bin/test -d ${basedir}",
@@ -13,7 +16,7 @@ class sunet::frontend::load_balancer(
       '/etc/bgp':
         ensure => 'directory',
         ;
-      "${basedir}/config-templates":
+      $confdir:
         ensure => 'directory',
         ;
     }
@@ -23,6 +26,7 @@ class sunet::frontend::load_balancer(
     configure_websites { 'websites':
       websites => $config['load_balancer']['websites'],
       basedir  => $basedir,
+      confdir  => $confdir,
     }
     sunet::exabgp { 'load_balancer':
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
@@ -30,9 +34,11 @@ class sunet::frontend::load_balancer(
     }
     sunet::frontend::haproxy { 'load_balancer':
       basedir => "${basedir}/haproxy",
+      confdir => $confdir,
+      apidir  => $apidir,
     }
     sunet::frontend::api { 'sunetfrontend':
-      basedir => "${basedir}/api",
+      basedir => $apidir,
     }
     sysctl_ip_nonlocal_bind { 'load_balancer': }
 
@@ -90,15 +96,19 @@ define load_balancer_peer(
   }
 }
 
-define configure_websites($websites, $basedir)
+define configure_websites($websites, $basedir, $confdir)
 {
-  create_resources('load_balancer_website', $websites, {'basedir' => $basedir})
+  create_resources('load_balancer_website', $websites, {
+    'basedir' => $basedir,
+    'confdir' => $confdir,
+    })
 }
 
 define load_balancer_website(
   Array            $frontends,
   Hash             $backends,
   String           $basedir,
+  String           $confdir,
   Optional[String] $frontend_template = undef,
   Hash             $frontend_template_params = {},
   Array            $allow_ports = [],
@@ -148,9 +158,10 @@ define load_balancer_website(
     port => '8080',  # port of the sunetfronted-api
   }
 
-  # 'export' config to a file usable to create backend configuration
+  # 'export' config to a file usable by haproxy-config-update+haproxy-backend-config
+  # to create backend configuration
   $export_data = {'backends' => $backends}
-  file { "${basedir}/config-templates/${name}_backends.yml":
+  file { "${confdir}/${name}_backends.yml":
     ensure  => 'file',
     group   => 'sunetfrontend',
     mode    => '0640',
@@ -169,6 +180,8 @@ define load_balancer_website(
     }
   }
 
+  # Add the IP addresses to the list of addresses that will get added to the loopback
+  # interface before haproxy starts
   $ip_addr_add = ["# website ${name}",
                   map($ipv4 + $ipv6) | $ip | { "ip addr add ${ip} dev lo" },
                   "\n",
@@ -182,7 +195,7 @@ define load_balancer_website(
   if $allow_ports != [] {
     sunet::misc::ufw_allow { "load_balancer_${name}_allow_ports":
       from => 'any',
-      to   => [$ipv4, $ipv6],  # not $ips, ufw does not like brackets around v6 addresses
+      to   => [$ipv4, $ipv6],
       port => $allow_ports,
     }
   }

@@ -5,6 +5,8 @@ define sunet::frontend::haproxy(
   # Variables used in haproxy-config-update.erb
   Integer $registration_age_limit = 600,
   String  $haproxy_service_name   = 'docker-load-balancer-haproxy',
+  String  $confdir                = '/opt/frontend/config',
+  String  $apidir                 = '/opt/frontend/api',
 )
 {
   include sunet::systemd_reload
@@ -62,6 +64,11 @@ define sunet::frontend::haproxy(
       mode    => '0755',
       content => template("sunet/frontend/haproxy-status.erb")
       ;
+    "$basedir/scripts/haproxy-backend-config":
+      ensure  => 'file',
+      mode    => '0755',
+      content => template("sunet/frontend/haproxy-backend-config.erb")
+      ;
     '/etc/systemd/system/haproxy-config-update.service':
       content => template('sunet/frontend/haproxy-config-update.service.erb'),
       notify  => [Class['sunet::systemd_reload'],
@@ -70,13 +77,13 @@ define sunet::frontend::haproxy(
       ;
   }
 
-  concat { '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh':
+  concat { "${basedir}/scripts/haproxy-pre-start.sh":
     owner    => 'root',
     group    => 'root',
     mode     => '0755',
   }
   concat::fragment { "${name}_haproxy-pre-start_header":
-    target   => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
+    target   => "${basedir}/scripts/haproxy-pre-start.sh",
     order    => '10',
     content  => template('sunet/frontend/haproxy-pre-start.erb'),
   }
@@ -91,7 +98,7 @@ define sunet::frontend::haproxy(
   } ->
   exec { "create_${be_cfg}":
     command => "/bin/touch ${be_cfg} && chown root:${group} ${be_cfg} && chmod 640 ${be_cfg}",
-    unless  => "/usr/bin/test -f ${be_cfg}",
+    creates => $be_cfg,
     require => File["${basedir}/etc"],
   } ->
 
@@ -106,7 +113,7 @@ define sunet::frontend::haproxy(
                      '/dev/log:/dev/log',
                      ],
     command      => 'haproxy-systemd-wrapper -p /run/haproxy.pid -f /etc/haproxy/haproxy.cfg -f /etc/haproxy/haproxy-frontends.cfg -f /etc/haproxy/haproxy-backends.cfg',
-    before_start => '/opt/frontend/haproxy/scripts/haproxy-pre-start.sh',
+    before_start => "${basedir}/scripts/haproxy-pre-start.sh",
     require      => [File["$basedir/etc/haproxy.cfg"]],
   }
 
