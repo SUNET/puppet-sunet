@@ -78,15 +78,17 @@ define sysctl_ip_nonlocal_bind() {
 define configure_peers($router_id, $peers)
 {
   $defaults = {
+    router_id => $::ipaddress_default,
     local_ip => $::ipaddress_default,
   }
   create_resources('load_balancer_peer', $peers, $defaults)
 }
 
 define load_balancer_peer(
-  $as,
-  $local_ip,
-  $remote_ip,
+  String           $as,
+  Optional[String] $local_ip,
+  String           $remote_ip,
+  Optional[String] $router_id,
 ) {
   sunet::exabgp::neighbor { "peer_${name}":
     local_as       => $as,
