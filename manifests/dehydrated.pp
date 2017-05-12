@@ -184,7 +184,7 @@ define sunet::dehydrated::client_define(
          cmd           => '/usr/bin/check_cert.sh ${domain}',
          minute        => '30',
          hour          => '9',
-         weekday       => 'monday',
+         weekday       => '1',
          ok_criteria   => ['exit_status=0'],
          warn_criteria => ['exit_status=1'],
   }
