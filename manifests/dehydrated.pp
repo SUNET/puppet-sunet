@@ -181,7 +181,7 @@ define sunet::dehydrated::client_define(
     minute  => "13"
   }
   sunet::scriptherder::cronjob { 'check_cert':
-         cmd           => '/usr/bin/check_cert.sh ${domain}',
+         cmd           => "/usr/bin/check_cert.sh ${domain}",
          minute        => '30',
          hour          => '9',
          weekday       => '1',
