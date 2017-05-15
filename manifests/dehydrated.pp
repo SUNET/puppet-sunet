@@ -181,7 +181,14 @@ define sunet::dehydrated::client_define(
      file { "/etc/ssl/certs/${domain}.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}.crt" }
      file { "/etc/ssl/certs/${domain}-chain.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}-chain.crt" }
   }
-  sunet::scriptherder::cronjob { 'check_cert': ensure => 'absent' }
+  ensure_resource ('sunet::scriptherder::cronjob', 'check_cert', {ensure => 'absent', cmd => "/usr/bin/check_cert.sh ${domain}",
+       minute        => '30',
+       hour          => '9',
+       weekday       => '1',
+       ok_criteria   => ['exit_status=0'],
+       warn_criteria => ['exit_status=1'],
+     })
+
   if ($check_cert) {
      ensure_resource("file", "/usr/bin/check_cert.sh", {
        ensure  => 'file',
