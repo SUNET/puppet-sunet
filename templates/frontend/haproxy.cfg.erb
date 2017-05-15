@@ -43,3 +43,14 @@ backend LB
     stats enable
     #stats hide-version
     stats uri /haproxy_stats
+
+#
+# Redirect _everything_ to HTTPS
+frontend http-frontend
+    bind 0.0.0.0:80
+    bind :::80
+
+    redirect scheme https if !{ ssl_fc }
+
+backend letsencrypt_acme-c.sunet.se
+    server acme-c.sunet.se:80
