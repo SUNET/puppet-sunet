@@ -181,6 +181,7 @@ define sunet::dehydrated::client_define(
      file { "/etc/ssl/certs/${domain}.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}.crt" }
      file { "/etc/ssl/certs/${domain}-chain.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}-chain.crt" }
   }
+  sunet::scriptherder::cronjob { 'check_cert': ensure => 'absent' }
   if ($check_cert) {
      ensure_resource("file", "/usr/bin/check_cert.sh", {
        ensure  => 'file',
@@ -194,8 +195,8 @@ define sunet::dehydrated::client_define(
        minute        => '30',
        hour          => '9',
        weekday       => '1',
-       ok_criteria   => [exit_status=0'],
-       warn_criteria => ['exit_status=1'],
+       ok_criteria   => ['exit_status=0','max_age=8d'],
+       warn_criteria => ['exit_status=1','max_age=15d'],
      }
   }
 }
