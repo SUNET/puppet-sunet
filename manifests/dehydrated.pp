@@ -132,12 +132,14 @@ class sunet::dehydrated::client(
   String  $server="acme-c.sunet.se",
   String  $user="root",
   Boolean $ssl_links=false,
+  Boolean $check_cert=false,
 ) {
   sunet::dehydrated::client_define { "domain_${domain}":
-    domain    => $domain,
-    server    => $server,
-    user      => $user,
-    ssl_links => $ssl_links,
+    domain     => $domain,
+    server     => $server,
+    user       => $user,
+    ssl_links  => $ssl_links,
+    check_cert => $check_cert,
   }
 }
 
@@ -147,6 +149,7 @@ define sunet::dehydrated::client_define(
   String  $server="acme-c.sunet.se",
   String  $user="root",
   Boolean $ssl_links=false,
+  Boolean $check_cert=false,
 ) {
   $home = $user ? {
     "root"  => "/root",
@@ -163,13 +166,6 @@ define sunet::dehydrated::client_define(
     content => template('sunet/dehydrated/le-ssl-compat.erb'),
     })
   ensure_resource('sunet::ssh_keyscan::host', $server)
-  ensure_resource("file", "/usr/bin/check_cert.sh", {
-    ensure  => 'file',
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    content => template('sunet/dehydrated/check_cert.erb'),
-    })
 
   sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
     hiera_key => "${domain}_ssh_key"
@@ -180,17 +176,26 @@ define sunet::dehydrated::client_define(
     hour    => "*",
     minute  => "13"
   }
-  sunet::scriptherder::cronjob { 'check_cert':
-         cmd           => "/usr/bin/check_cert.sh ${domain}",
-         minute        => '30',
-         hour          => '9',
-         weekday       => '1',
-         ok_criteria   => ['exit_status=0'],
-         warn_criteria => ['exit_status=1'],
-  }
   if ($ssl_links) {
      file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }
      file { "/etc/ssl/certs/${domain}.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}.crt" }
      file { "/etc/ssl/certs/${domain}-chain.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}-chain.crt" }
+  }
+  if ($check_cert) {
+     ensure_resource("file", "/usr/bin/check_cert.sh", {
+       ensure  => 'file',
+       owner   => 'root',
+       group   => 'root',
+       mode    => '0755',
+       content => template('sunet/dehydrated/check_cert.erb'),
+       })
+     sunet::scriptherder::cronjob { "check_cert_${domain}":
+       cmd           => "/usr/bin/check_cert.sh ${domain}",
+       minute        => '30',
+       hour          => '9',
+       weekday       => '1',
+       ok_criteria   => [exit_status=0'],
+       warn_criteria => ['exit_status=1'],
+     }
   }
 }
