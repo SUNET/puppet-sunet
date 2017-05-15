@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# Re-generate haproxy backend configuration and restart haproxy if it changed
+#
+
+set -e
+
+basedir='<%= @basedir %>'
+apidir='<%= @apidir %>'
+confdir='<%= @confdir %>'
+registration_age_limit='<%= @registration_age_limit %>'
+haproxy_service_name='<%= @haproxy_service_name %>'
+backend_cfgfile="${basedir}/etc/haproxy-backends.cfg"
+backends_dir="${apidir}/backends/"
+
+
+cat > "${backend_cfgfile}.new" <<EOF
+# haproxy backend configuration created by $0
+#
+# Based on the backends currently registered with the sunet-frontend-api.
+#
+# DO NOT EDIT MANUALLY - CHANGES WILL BE OVERWRITTEN
+#
+EOF
+
+# Generate an updated haproxy-backends.cfg file
+ls -1 ${backends_dir} | while read site; do
+    if [ -d "${backends_dir}/${site}" -a -f "${confdir}/${site}_backends.yml" ]; then
+	#site_config ${backends_dir} ${site} >> "${backend_cfgfile}.new"
+	${basedir}/scripts/haproxy-backend-config --max_age "${registration_age_limit}" \
+		  "${site}" "${backends_dir}/${site}" "${confdir}/${site}_backends.yml" \
+		  >> "${backend_cfgfile}.new"
+    fi
+done
+
+# Check if haproxy config has changed and reload
+reload=0
+changed=0
+cmp --quiet "${backend_cfgfile}.new" "${backend_cfgfile}" || changed=1
+if [ $changed -ne 0 ]; then
+    (echo "haproxy backend config changed:";
+     diff -u "${backend_cfgfile}" "${backend_cfgfile}.new"
+    ) | logger -i -t haproxy-config-update -s -f /dev/stdin
+    cp "${backend_cfgfile}.new" "${backend_cfgfile}"
+    reload=1
+fi
+
+if [ $reload -ne 0 ]; then
+    # XXX do fancy hitless reload later
+    logger -i -t haproxy-config-update -s "Restarting haproxy service ${haproxy_service_name}"
+    service "${haproxy_service_name}" restart
+fi
+
+rm -f "${backend_cfgfile}.new"
