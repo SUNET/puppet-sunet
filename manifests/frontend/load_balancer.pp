@@ -33,9 +33,11 @@ class sunet::frontend::load_balancer(
                          ],
     }
     sunet::frontend::haproxy { 'load_balancer':
-      basedir => "${basedir}/haproxy",
-      confdir => $confdir,
-      apidir  => $apidir,
+      basedir          => "${basedir}/haproxy",
+      confdir          => $confdir,
+      apidir           => $apidir,
+      haproxy_image    => $config['load_balancer']['haproxy_image'],
+      haproxy_imagetag => $config['load_balancer']['haproxy_imagetag'],
     }
     sunet::frontend::api { 'sunetfrontend':
       basedir => $apidir,
