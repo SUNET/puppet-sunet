@@ -106,7 +106,7 @@ define sunet::frontend::haproxy(
 
   sunet::docker_run { "${name}_haproxy":
     image        => $haproxy_image,
-    imagetag     => $haproxy_tag,
+    imagetag     => $haproxy_imagetag,
     net          => 'host',
     volumes      => ["${basedir}/etc:/etc/haproxy:ro",
                      "${basedir}/run:/var/run/haproxy",
