@@ -78,7 +78,7 @@ def backend_config(args):
     :returns: List of strings with haproxy backend config
     :rtype: [str | unicode]
     """
-    res = []
+    res = ['backend {}'.format(args.site_name)]
     with open(args.backend_conf) as fd:
         config = yaml.safe_load(fd)
     files = []
@@ -112,10 +112,7 @@ def backend_config(args):
                     res.append(haproxy_config)
                 else:
                     logger.debug('Ignoring backend with ACTION={}'.format(params.get('ACTION')))
-    if res:
-        return ['backend {}'.format(args.site_name)] + res + ['']
-
-    return []
+    return res + ['']
 
 def get_fileage(filename):
     st = os.stat(filename)

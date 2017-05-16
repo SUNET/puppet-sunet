@@ -1,7 +1,9 @@
 define sunet::frontend::haproxy(
-  String  $username = 'haproxy',
-  String  $group    = 'haproxy',
-  String  $basedir  = '/opt/frontend/haproxy',
+  String  $username         = 'haproxy',
+  String  $group            = 'haproxy',
+  String  $basedir          = '/opt/frontend/haproxy',
+  String  $haproxy_image    = 'docker.sunet.se/library/haproxy',
+  String  $haproxy_imagetag = 'stable',
   # Variables used in haproxy-config-update.erb
   Integer $registration_age_limit = 600,
   String  $haproxy_service_name   = 'docker-load-balancer-haproxy',
@@ -103,8 +105,8 @@ define sunet::frontend::haproxy(
   } ->
 
   sunet::docker_run { "${name}_haproxy":
-    image        => 'docker.sunet.se/library/haproxy',
-    imagetag     => 'stable',
+    image        => $haproxy_image,
+    imagetag     => $haproxy_imagetag,
     net          => 'host',
     volumes      => ["${basedir}/etc:/etc/haproxy:ro",
                      "${basedir}/run:/var/run/haproxy",

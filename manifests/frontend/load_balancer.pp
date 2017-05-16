@@ -33,9 +33,11 @@ class sunet::frontend::load_balancer(
                          ],
     }
     sunet::frontend::haproxy { 'load_balancer':
-      basedir => "${basedir}/haproxy",
-      confdir => $confdir,
-      apidir  => $apidir,
+      basedir          => "${basedir}/haproxy",
+      confdir          => $confdir,
+      apidir           => $apidir,
+      haproxy_image    => $config['load_balancer']['haproxy_image'],
+      haproxy_imagetag => $config['load_balancer']['haproxy_imagetag'],
     }
     sunet::frontend::api { 'sunetfrontend':
       basedir => $apidir,
@@ -43,16 +45,16 @@ class sunet::frontend::load_balancer(
     sysctl_ip_nonlocal_bind { 'load_balancer': }
 
     # XXX accomplish this with some haproxy config instead
-    sunet::docker_run {'alwayshttps':
-      image    => 'docker.sunet.se/always-https',
-      ports    => ['80:80'],
-      env      => ['ACME_URL=http://acme-c.sunet.se']
-    }
+    #sunet::docker_run {'alwayshttps':
+    #  image    => 'docker.sunet.se/always-https',
+    #  ports    => ['80:80'],
+    #  env      => ['ACME_URL=http://acme-c.sunet.se']
+    #}
     sunet::misc::ufw_allow { "always-https-allow-http":
       from => 'any',
       port => '80'
     }
-} else {
+  } else {
     fail('No SUNET frontend load balancer config found in hiera')
   }
 }
