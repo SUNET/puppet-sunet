@@ -6,6 +6,8 @@ define sunet::wordpress (
   $sp_contact        = undef,
   $wordpress_image   = "wordpress",
   $wordpress_version = "4.1.1",
+  # Here one can specify e.g. ${::ipaddress_eth1}:8080:80
+  $wordpress_ports   = "8080:80",
   $myqsl_version     = "5.7",
   $mysql_user        = undef,
   $mysql_db_name     = undef,
@@ -32,7 +34,7 @@ define sunet::wordpress (
       image       => $wordpress_image,
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/credentials:/etc/shibboleth/credentials"],
-      ports       => ["8080:80"],
+      ports       => ["${wordpress_ports}"],
       depends     => ["${db_hostname}"],
       env         => [ "SERVICE_NAME=${name}",
                        "SP_HOSTNAME=${sp_hostname}",

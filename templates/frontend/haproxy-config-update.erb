@@ -5,42 +5,31 @@
 
 set -e
 
-backend_cfgfile='/opt/frontend/haproxy/etc/haproxy-backends.cfg'
-backends_dir='/opt/frontend/api/backends/'
-registration_age_limit=<%= @registration_age_limit %>
+basedir='<%= @basedir %>'
+apidir='<%= @apidir %>'
+confdir='<%= @confdir %>'
+registration_age_limit='<%= @registration_age_limit %>'
 haproxy_service_name='<%= @haproxy_service_name %>'
+backend_cfgfile="${basedir}/etc/haproxy-backends.cfg"
+backends_dir="${apidir}/backends/"
 
-site_config() {
-    dir="$1/$2"
-    site=$2
 
-    # XXX not sure if we should output this line if there are no servers found below?
-    echo "backend ${site}"
-
-    ls -1 $dir | while read server; do
-	if [ -f "${dir}/${server}" ]; then
-	    # pretty sure this won't fly anywhere near something not GNU date ;)
-	    age=$(date -d "now - $( stat -c "%Y" ${dir}/${server} ) seconds" +%s)
-	    if [ $age -gt $registration_age_limit ]; then
-		logger -i -t haproxy-config-update "Removing ${site}/${server}, $age seconds old (> $registration_time_limit)"
-		rm -f "${dir}/${server}"
-	    else
-		# paranoia
-		grep -e '^\s*server ' "${dir}/${server}"
-	    fi
-	fi
-    done
-
-    echo ""
-}
+cat > "${backend_cfgfile}.new" <<EOF
+# haproxy backend configuration created by $0
+#
+# Based on the backends currently registered with the sunet-frontend-api.
+#
+# DO NOT EDIT MANUALLY - CHANGES WILL BE OVERWRITTEN
+#
+EOF
 
 # Generate an updated haproxy-backends.cfg file
-
-rm -f "${backend_cfgfile}.new"
-
 ls -1 ${backends_dir} | while read site; do
-    if [ -d "${backends_dir}/${site}" ]; then
-	site_config ${backends_dir} ${site} >> "${backend_cfgfile}.new"
+    if [ -d "${backends_dir}/${site}" -a -f "${confdir}/${site}_backends.yml" ]; then
+	#site_config ${backends_dir} ${site} >> "${backend_cfgfile}.new"
+	${basedir}/scripts/haproxy-backend-config --max_age "${registration_age_limit}" \
+		  "${site}" "${backends_dir}/${site}" "${confdir}/${site}_backends.yml" \
+		  >> "${backend_cfgfile}.new"
     fi
 done
 

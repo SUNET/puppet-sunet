@@ -126,7 +126,31 @@ class sunet::dehydrated($staging=false,
   }
 }
 
-class sunet::dehydrated::client($domain=undef, $server="acme-c.sunet.se", $user="root", $ssl_links=false) {
+# If this class is used, only a single domain can be set up
+class sunet::dehydrated::client(
+  String  $domain,
+  String  $server="acme-c.sunet.se",
+  String  $user="root",
+  Boolean $ssl_links=false,
+  Boolean $check_cert=false,
+) {
+  sunet::dehydrated::client_define { "domain_${domain}":
+    domain     => $domain,
+    server     => $server,
+    user       => $user,
+    ssl_links  => $ssl_links,
+    check_cert => $check_cert,
+  }
+}
+
+# Use this define directly if more than one domain is required
+define sunet::dehydrated::client_define(
+  String  $domain,
+  String  $server="acme-c.sunet.se",
+  String  $user="root",
+  Boolean $ssl_links=false,
+  Boolean $check_cert=false,
+) {
   $home = $user ? {
     "root"  => "/root",
     default => "/home/${user}"
@@ -134,18 +158,18 @@ class sunet::dehydrated::client($domain=undef, $server="acme-c.sunet.se", $user=
   ensure_resource("file", "$home/.ssh", { ensure => "directory" })
   ensure_resource("file", "/etc/dehydrated", { ensure => directory })
   ensure_resource("file", "/etc/dehydrated/certs", { ensure => directory })
+  ensure_resource("file", "/usr/bin/le-ssl-compat.sh", {
+    ensure  => 'file',
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    content => template('sunet/dehydrated/le-ssl-compat.erb'),
+    })
+  ensure_resource('sunet::ssh_keyscan::host', $server)
 
   sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
     hiera_key => "${domain}_ssh_key"
   } ->
-  file { "/usr/bin/le-ssl-compat.sh":
-     ensure  => "file",
-     owner   => "root",
-     group   => "root",
-     mode    => "0755",
-     content => template("sunet/dehydrated/le-ssl-compat.erb")
-  } ->
-  sunet::ssh_keyscan::host { $server: }
   cron { "rsync_dehydrated_${domain}":
     command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
     user    => $user,
@@ -156,5 +180,30 @@ class sunet::dehydrated::client($domain=undef, $server="acme-c.sunet.se", $user=
      file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }
      file { "/etc/ssl/certs/${domain}.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}.crt" }
      file { "/etc/ssl/certs/${domain}-chain.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}-chain.crt" }
+  }
+  # old name check_cert, should be removed on all systems by now
+  #ensure_resource ('sunet::scriptherder::cronjob', 'check_cert', {ensure => 'absent', cmd => "/usr/bin/check_cert.sh ${domain}",
+  #     minute        => '30',
+  #     hour          => '9',
+  #     weekday       => '1',
+  #     ok_criteria   => ['exit_status=0'],
+  #     warn_criteria => ['exit_status=1'],
+  #   })
+  if ($check_cert) {
+     ensure_resource("file", "/usr/bin/check_cert.sh", {
+       ensure  => 'file',
+       owner   => 'root',
+       group   => 'root',
+       mode    => '0755',
+       content => template('sunet/dehydrated/check_cert.erb'),
+       })
+     sunet::scriptherder::cronjob { "check_cert_${domain}":
+       cmd           => "/usr/bin/check_cert.sh ${domain}",
+       minute        => '30',
+       hour          => '9',
+       weekday       => '1',
+       ok_criteria   => ['exit_status=0','max_age=8d'],
+       warn_criteria => ['exit_status=1','max_age=15d'],
+     }
   }
 }

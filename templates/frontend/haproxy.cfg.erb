@@ -36,9 +36,21 @@ defaults
 frontend LB-http
     # expose stats info over HTTP to exabgp
     bind 127.0.0.1:9000
+    http-request set-log-level silent
     default_backend LB
 
 backend LB
     stats enable
     #stats hide-version
     stats uri /haproxy_stats
+
+#
+# Redirect _everything_ to HTTPS
+frontend http-frontend
+    bind 0.0.0.0:80
+    bind :::80
+
+    redirect scheme https if !{ ssl_fc }
+
+backend letsencrypt_acme-c.sunet.se
+    server acme-c.sunet.se_v4 89.45.232.90:80
