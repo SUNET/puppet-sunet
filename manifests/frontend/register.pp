@@ -1,4 +1,5 @@
-class sunet::frontend::register(
+# Register a site with one or more sunet-frontends
+define sunet::frontend::register(
   String  $site,
   Array   $frontends,
   Integer $port = 443,
