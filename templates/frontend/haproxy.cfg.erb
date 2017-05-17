@@ -50,7 +50,7 @@ frontend http-frontend
     bind 0.0.0.0:80
     bind :::80
 
-    redirect scheme https if !{ ssl_fc }
+    redirect scheme https code 301 if !{ ssl_fc }
 
 backend letsencrypt_acme-c.sunet.se
     server acme-c.sunet.se_v4 89.45.232.90:80
