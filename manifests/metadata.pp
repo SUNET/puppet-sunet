@@ -5,7 +5,7 @@ define sunet::metadata($url=undef,
    ensure_resource('package',['opensaml2-tools','wget','xmlsec1'],{ensure => present})
    $local = $filename ? {
       undef   => $title,
-      default => $local
+      default => $filename
    }
    $verify = $cert ? {
       undef   => "test -s ${local}.tmp",
