@@ -110,10 +110,10 @@ def check_site(params, data, my_ips):
     site = params['site']
     backends_up = _count_backends_up(data)
     logger.debug('Backends UP: {}'.format(backends_up))
-    if 'min_up' in params:
-        if backends_up < int(params['min_up']):
-            logger.debug('Fewer than {} backends up ({})'.format(params['min_up'], backends_up))
-            return ['DOWN backends_up={}'.format(backends_up)]
+    min_up = params.get('min_up', 1)
+    if backends_up < int(min_up):
+        logger.debug('Fewer than {} backends up ({})'.format(params['min_up'], backends_up))
+        return ['DOWN backends_up={}'.format(backends_up)]
     return ['UP backends_up={}'.format(backends_up)]
 
 
