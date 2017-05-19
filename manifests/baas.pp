@@ -12,35 +12,48 @@ class sunet::baas(
   $baas_password = hiera('baas_password', 'NOT_SET_IN_HIERA')
 
   if $baas_password != 'NOT_SET_IN_HIERA' and $nodename {
-
-    sunet::remote_file { "/tmp/baas.tar":
+    sunet::remote_file { "/tmp/baas/baas.tar":
        remote_location => $src_url,
        mode            => "0600"
     } ->
     exec {"unpack BaaS source code":
-       command => "tar xvf /tmp/baas.tar",
+       command => "tar xvf /tmp/baas/baas.tar -C /tmp/baas",
     } ->
-    exec {"Install the debs from BaaS":
-       command => "dpkg -i /tmp/gskcrypt64*deb /tmp/gskssl64*deb",
+    exec {"Install the debs from BaaS 1":
+       command => "dpkg -i /tmp/baas/gskcrypt64*deb /tmp/baas/gskssl64*deb",
     } ->
-    exec {"Install the debs from BaaS":
-       command => "dpkg -i /tmp/tivsm-api64*deb",
+    exec {"Install the debs from BaaS 2":
+       command => "dpkg -i /tmp/baas/tivsm-api64*deb",
     } ->
-    exec {"Install the debs from BaaS":
-       command => "dpkg -i /tmp/tivsm-ba.*deb",
+    exec {"Install the debs from BaaS 3":
+       command => "dpkg -i /tmp/baas/tivsm-ba.*deb",
     } ->
-    exec {"Install the debs from BaaS":
-       command => "dpkg -i /tmp/tivsm-bacit*deb",
+    exec {"Install the debs from BaaS 4":
+       command => "dpkg -i /tmp/baas/tivsm-bacit*deb",
     }
  
     file { "/opt/tivoli/tsm/client/ba/bin/dsm.sys":
        ensure  => "file",
        content => template("sunet/baas/dsm_sys.erb")
     }
-    file { "/opt/tivoli/tsm/client/ba/bin/dsm.sys":
+    file { "/opt/tivoli/tsm/client/ba/bin/dsm.opt":
        ensure  => "file",
        content => template("sunet/baas/dsm_opt.erb")
     }
   }
-}
 
+
+    # IBM...... so this keystore contains a password protected public CA certificate
+    sunet::remote_file { "/tmp/baas/IPnett-Cloud-Root-CA.sh":
+       remote_location => "https://raw.githubusercontent.com/safespring/cloud-BaaS/master/pki/IPnett-Cloud-Root-CA.sh",
+       mode            => "755",
+    }
+    sunet::remote_file { "/tmp/baas/IPnett-Cloud-Root-CA.pem":
+       remote_location => "https://raw.githubusercontent.com/safespring/cloud-BaaS/master/pki/IPnett-Cloud-Root-CA.pem",
+       mode            => "440"
+    }
+    exec {"install CA cert to keystore":
+       command => "/bin/sh /tmp/baas/IPnett-Cloud-Root-CA.sh",
+       unless  => "test -f /opt/tivoli/tsm/client/ba/bin/dsmcert.kdb",
+    }
+}
