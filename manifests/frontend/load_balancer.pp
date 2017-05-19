@@ -66,7 +66,7 @@ class sunet::frontend::load_balancer(
     }
     file {
       $snakeoil_bundle:
-        user  => 'root',
+        owner => 'root',
         group => 'haproxy',
         mode  => '0640',
         ;
