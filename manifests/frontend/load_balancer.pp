@@ -54,6 +54,23 @@ class sunet::frontend::load_balancer(
       from => 'any',
       port => '80'
     }
+
+    # Create snakeoil bundle as fallback certificate for haproxy
+    $snakeoil_key = '/etc/ssl/private/ssl-cert-snakeoil.key'
+    $snakeoil_cert = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
+    $snakeoil_bundle = '/etc/ssl/snakeoil_bundle.crt'
+    exec {"snakeoil_bundle_${name}":
+      command => "test -f ${snakeoil_key} && test -f ${snakeoil_cert} && cat ${snakeoil_cert} ${snakeoil_key} > ${snakeoil_bundle}",
+      path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
+      unless  => "test -s ${snakeoil_bundle}",
+    }
+    file {
+      $snakeoil_bundle:
+        user  => 'root',
+        group => 'haproxy',
+        mode  => '0640',
+        ;
+    }
   } else {
     fail('No SUNET frontend load balancer config found in hiera')
   }
