@@ -66,26 +66,27 @@ def output_hook(params, args, ipver):
     site = params['site']
     sorted_ips = _local_pref_sort_ips(params['index'], params[ipver])
     logger.debug('Re-sorted IPs {} -> {} based on index {}'.format(params[ipver], sorted_ips, params['index']))
-    bgp_med = 0
+    bgp_pref = 1000
+    if args.down:
+        # fallback route preference
+        bgp_pref = 100
     bgp = []
     count=1
+    sorted_ips.reverse()
     for ip in sorted_ips:
         if ':' in ip:
             ip_slash = ip + '/128'
         else:
             ip_slash = ip + '/32'
 
-        if args.down:
-            bgp.append('echo "withdraw route {} next-hop self"'.format(ip_slash))
-            continue
-
-        bgp_med += 100
-
-        logger.debug('Site {}, address {}/{} -> announce {} with BGP MED {}'.format(
-            site, count, len(sorted_ips), ip, bgp_med))
-        bgp.append('echo "announce route {} next-hop self med {}"'.format(ip_slash, bgp_med))
+        logger.debug('Site {}, address {}/{} -> announce {} with BGP preference {}'.format(
+            site, count, len(sorted_ips), ip, bgp_pref))
+        bgp.append('echo "announce route {} next-hop self local-preference {}"'.format(ip_slash, bgp_pref))
         count += 1
-    return bgp
+        if not args.down:
+            bgp_pref += 100
+
+    return sorted(bgp)
 
 
 def _local_pref_sort_ips(index, ips):
