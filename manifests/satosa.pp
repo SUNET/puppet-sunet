@@ -1,6 +1,6 @@
 require stdlib
 
-class sunet::satosa($dehydrated_name=undef) {
+class sunet::satosa($dehydrated_name=undef,$image='docker.sunet.se/satosa',$tag='3.0-stable') {
    $proxy_conf = hiera("satosa_proxy_conf")
    $default_conf = { 
       "STATE_ENCRYPTION_KEY"       => hiera("satosa_state_encryption_key"),
@@ -33,8 +33,8 @@ class sunet::satosa($dehydrated_name=undef) {
       }
    }
    sunet::docker_run {'satosa':
-      image    => 'docker.sunet.se/satosa',
-      imagetag => '3.0-stable',
+      image    => $image,
+      imagetag => $tag,
       volumes  => ['/etc/satosa:/etc/satosa','/etc/dehydrated:/etc/dehydrated'],
       ports    => ['443:8000'],
       env      => ['METADATA_DIR=/etc/satosa/metadata']
