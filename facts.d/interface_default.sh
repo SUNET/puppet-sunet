@@ -1,7 +1,15 @@
-#!/bin/bash
+#!/bin/sh
 #
 # This finds (hopefully) the public interface based on default route
 
-echo -n "interface_default="
-route |grep default|awk 'END {print $NF}'
+INT=$(route | grep default | head -1 | awk '{print $NF}')
+
+# Try to handle IPv6 only hosts too
+if [ "x${INT}" = "x" ]; then
+    INT=$(ip -6 route list default | sed -e 's/.* dev //' | awk '{print $1}')
+fi
+
+if [ "x${INT}" != "x" ]; then
+    echo "interface_default=${INT}"
+fi
 

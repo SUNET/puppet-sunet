@@ -54,6 +54,23 @@ class sunet::frontend::load_balancer(
       from => 'any',
       port => '80'
     }
+
+    # Create snakeoil bundle as fallback certificate for haproxy
+    $snakeoil_key = '/etc/ssl/private/ssl-cert-snakeoil.key'
+    $snakeoil_cert = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
+    $snakeoil_bundle = '/etc/ssl/snakeoil_bundle.crt'
+    exec {"snakeoil_bundle_${name}":
+      command => "test -f ${snakeoil_key} && test -f ${snakeoil_cert} && cat ${snakeoil_cert} ${snakeoil_key} > ${snakeoil_bundle}",
+      path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
+      unless  => "test -s ${snakeoil_bundle}",
+    }
+    file {
+      $snakeoil_bundle:
+        owner => 'root',
+        group => 'haproxy',
+        mode  => '0640',
+        ;
+    }
   } else {
     fail('No SUNET frontend load balancer config found in hiera')
   }
@@ -176,6 +193,11 @@ define load_balancer_website(
   if $frontend_template != undef {
     $server_name = $name
     $params = $frontend_template_params
+    if has_key($tls_certificates, $name) {
+      $tls_certificate_bundle = $tls_certificates[$name]['bundle']
+    } elsif has_key($tls_certificates, 'snakeoil') {
+      $tls_certificate_bundle = $tls_certificates['snakeoil']['bundle']
+    }
     # Note that haproxy actually does _not_ want IPv6 addresses to be enclosed by brackets.
     $ips = $ipv4 + $ipv6
     concat::fragment { "${name}_haproxy_frontend":

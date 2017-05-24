@@ -79,6 +79,11 @@ define sunet::frontend::haproxy(
       ;
   }
 
+  package { ['python-requests',  # needed by haproxy-status
+             ]:
+    ensure => 'installed'
+  }
+
   concat { "${basedir}/scripts/haproxy-pre-start.sh":
     owner    => 'root',
     group    => 'root',
