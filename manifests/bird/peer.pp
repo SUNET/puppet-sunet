@@ -7,7 +7,7 @@ define sunet::bird::peer(
   # Hiera hash (deep) merging does not seem to work with one yaml backend and one
   # gpg backend, so we couldn't put the password in secrets.yaml and just merge it in
   $password = $password_hiera_key ? {
-    undef   => '',
+    undef   => undef,
     default => hiera($password_hiera_key)
   }
 
