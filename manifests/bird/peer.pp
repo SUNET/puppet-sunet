@@ -1,7 +1,8 @@
 define sunet::bird::peer(
-  String $remote_as,
-  String $remote_ip,
-  String $template
+  String           $remote_as,
+  String           $remote_ip,
+  String           $template,
+  Optional[String] $password = undef,
 ) {
   if is_ipaddr($remote_ip, 4) {
     concat::fragment { "${name}_bgp_peer":
