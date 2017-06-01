@@ -36,8 +36,8 @@ class sunet::rt {
                      "POSTGRES_PASSWORD=${postgres_password}"],
     }
     sunet::docker_run { 'rt-swamid':
-        image    => 'rt-swamid',
-        imagetag => 'latest',
+        image    => 'docker.sunet.se/rt-swamid',
+        imagetag => 'stable',
         ports    => ['25:25', '80:80', '443:443'],
         volumes  => ['/etc/dehydrated:/etc/ssl',
                      '/dev/log:/dev/log:rw',
