@@ -43,8 +43,14 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    sunet::nagios::nrpe_command {'check_load': 
       command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
    }
-   sunet::nagios::nrpe_command {'check_root': 
-      command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /'
+   if $::fqdn == 'docker.sunet.se' {
+      sunet::nagios::nrpe_command {'check_root':
+         command_line => '/usr/lib/nagios/plugins/check_disk -w 7% -c 5% -p /'
+      }
+   } else {
+      sunet::nagios::nrpe_command {'check_root':
+         command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -p /'
+      }
    }
    sunet::nagios::nrpe_command {'check_boot':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
