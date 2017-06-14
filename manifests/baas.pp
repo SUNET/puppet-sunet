@@ -35,15 +35,19 @@ class sunet::baas(
     } ->
     exec {"Install the debs from BaaS 1":
        command => "dpkg -i /tmp/baas/gskcrypt64*deb /tmp/baas/gskssl64*deb",
+       unless  => "test -f /tmp/baas/install_successful",
     } ->
     exec {"Install the debs from BaaS 2":
        command => "dpkg -i /tmp/baas/tivsm-api64*deb",
+       unless  => "test -f /tmp/baas/install_successful",
     } ->
     exec {"Install the debs from BaaS 3":
        command => "dpkg -i /tmp/baas/tivsm-ba.*deb",
+       unless  => "test -f /tmp/baas/install_successful",
     } ->
     exec {"Install the debs from BaaS 4":
        command => "dpkg -i /tmp/baas/tivsm-bacit*deb",
+       unless  => "test -f /tmp/baas/install_successful",
     } ->
     # IBM...... so this keystore contains a password protected(!) public CA certificate
     sunet::remote_file { "/tmp/baas/IPnett-Cloud-Root-CA.sh":
@@ -82,7 +86,7 @@ class sunet::baas(
     }
   }
 
-  # FIXME: This doesnt work because #"(/&#&/%!"%# TSM requires a human to press enter to initiate a new host with dsmc
+  # FIXME: This doesnt currently work because TSM requires a human to press enter to initiate a new host with dsmc
   exec {"Initiate the new node in BaaS":
      command => "dsmc query session -password=$baas_password",
      unless  => "test -f /etc/adsm/TSM.PWD",

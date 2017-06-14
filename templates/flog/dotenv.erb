@@ -1,6 +1,6 @@
 ALLOWED_HOSTS='flog.sunet.se flog_app 192.36.125.10 2001:6b0:7::10'
 EDUROAM_META_DATA='/opt/flog/institution.xml'
-SENTRY_DSN='https://7ad31a95e13945bba7af43e9eda41a1a:3609779bdb9142b7a2aa6180a0951e22@sentry1.nordu.net/5'
+SENTRY_DSN='<%= scope.function_safe_hiera(['sentry_dsn']) %>'
 EMAIL_HOST='localhost'
 EMAIL_HOST_PASSWORD=''
 EMAIL_HOST_USER=''

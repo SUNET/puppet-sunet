@@ -1,8 +1,16 @@
 define sunet::bird::peer(
-  String $remote_as,
-  String $remote_ip,
-  String $template
+  String           $remote_as,
+  String           $remote_ip,
+  String           $template,
+  Optional[String] $password_hiera_key = undef,
 ) {
+  # Hiera hash (deep) merging does not seem to work with one yaml backend and one
+  # gpg backend, so we couldn't put the password in secrets.yaml and just merge it in
+  $password = $password_hiera_key ? {
+    undef   => undef,
+    default => hiera($password_hiera_key)
+  }
+
   if is_ipaddr($remote_ip, 4) {
     concat::fragment { "${name}_bgp_peer":
       target   => '/etc/bird/bird.conf',

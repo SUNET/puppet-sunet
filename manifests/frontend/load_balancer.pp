@@ -98,20 +98,31 @@ define configure_peers($router_id, $peers)
 {
   $defaults = {
     router_id => $router_id,
-    local_ip  => $::ipaddress_default,
   }
   create_resources('load_balancer_peer', $peers, $defaults)
 }
 
 define load_balancer_peer(
   String           $as,
-  Optional[String] $local_ip,
   String           $remote_ip,
-  Optional[String] $router_id,
+  Optional[String] $local_ip = undef,
+  Optional[String] $router_id = undef,
 ) {
+  # If $local_ip is not set, default to either $::ipaddress_default or $::ipaddress6_default
+  # depending on the address family of $remote_ip
+  if ! is_ipaddr($local_ip) {
+    if is_ipaddr($remote_ip, 4) {
+      $_local_ip = $::ipaddress_default
+    } elsif is_ipaddr($remote_ip, 6) {
+      $_local_ip = $::ipaddress6_default
+    }
+  } else {
+    $_local_ip = $local_ip
+  }
+
   sunet::exabgp::neighbor { "peer_${name}":
     local_as       => $as,
-    local_address  => $local_ip,
+    local_address  => $_local_ip,
     peer_as        => $as,
     peer_address   => $remote_ip,
     router_id      => $router_id,
