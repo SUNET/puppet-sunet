@@ -21,23 +21,25 @@ class sunet::satosa($dehydrated_name=undef,$image='docker.sunet.se/satosa',$tag=
          cert_file => "/etc/satosa/${id}.crt"
       }
    }
-   file {"/etc/satosa/proxy_conf.yaml":
-      content => inline_template("<%= @merged_conf.to_yaml %>\n")
-   }
-   $plugins = hiera("satosa_config")
-   sort(keys($plugins)).each |$n| {
-      $conf = hiera($n)
-      $fn = $plugins[$n]
-      file { "$fn":
-         content => inline_template("<%= @conf.to_yaml %>\n")
-      }
-   }
    sunet::docker_run {'satosa':
       image    => $image,
       imagetag => $tag,
       volumes  => ['/etc/satosa:/etc/satosa','/etc/dehydrated:/etc/dehydrated'],
       ports    => ['443:8000'],
       env      => ['METADATA_DIR=/etc/satosa/metadata']
+   }
+   file {"/etc/satosa/proxy_conf.yaml":
+      content => inline_template("<%= @merged_conf.to_yaml %>\n"),
+      notify  => Sunet::Docker_run['satosa']
+   }
+   $plugins = hiera("satosa_config")
+   sort(keys($plugins)).each |$n| {
+      $conf = hiera($n)
+      $fn = $plugins[$n]
+      file { "$fn":
+         content => inline_template("<%= @conf.to_yaml %>\n"),
+         notify  => Sunet::Docker_run['satosa']
+      }
    }
    ufw::allow { "satosa-allow-https":
       ip   => 'any',
