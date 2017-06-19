@@ -28,7 +28,7 @@ class sunet::rt {
     }
 
     sunet::docker_run { 'postgres':
-        image    => 'postgres',
+        image    => 'docker.sunet.se/postgres',
         imagetag => '9.5.0',
         volumes  => ['/var/lib/postgresql/data:/var/lib/postgresql/data'],
         env      => ["POSTGRES_DB=postgres",
