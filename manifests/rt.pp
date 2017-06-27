@@ -46,6 +46,7 @@ class sunet::rt {
         env      => ["SP_HOSTNAME=rt.sunet.se",
                      "RT_HOSTNAME=rt.sunet.se",
                      "RT_OWNER=el@sunet.se",
+                     "RT_RELAYHOST=smtp.sunet.se",
                      "RT_DEFAULTEMAIL=operations",
                      "RT_Q1=swamid",
                      "RT_Q2=eduroam",
