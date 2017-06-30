@@ -21,7 +21,7 @@ define sunet::misc::ufw_allow(
     }
     each(flatten([$to1])) |$_to| {
       if $_to != 'any' and ! is_ip_address($_to) {
-        fail("'to' is not an IP address: ${_from}")
+        fail("'to' is not an IP address: ${_to}")
       }
       each(flatten([$port])) |$_port| {
         each(flatten([$proto])) |$_proto| {
