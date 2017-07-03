@@ -84,11 +84,11 @@ class sunet::rt {
         owner   => 'root',
         group   => 'root',
         path    => '/usr/local/bin/shredder.pl',
-        mode    => '0770',
+        mode    => '0755',
         content => template('sunet/rt/shredder.erb'),
     }
     sunet::scriptherder::cronjob { 'rt_spam_shredder':
-         cmd           => '/usr/local/bin/shredder.pl',
+         cmd           => '/usr/bin/perl /usr/local/bin/shredder.pl',
          minute        => '2',
          hour          => '2',
          ok_criteria   => ['exit_status=0', 'max_age=25h'],
