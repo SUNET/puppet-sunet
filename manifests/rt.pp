@@ -42,7 +42,6 @@ class sunet::rt {
         volumes  => ['/etc/dehydrated:/etc/ssl',
                      '/dev/log:/dev/log:rw',
                      '/opt/rt4/etc/RT_SiteConfig.pm:/opt/rt4/etc/RT_SiteConfig.pm:ro',
-                     '/usr/local/bin/shredder.pl:/usr/local/bin/shredder.pl',
                      '/var/spool/postfix:/var/spool/postfix'],
         env      => ["SP_HOSTNAME=rt.sunet.se",
                      "RT_HOSTNAME=rt.sunet.se",
@@ -89,7 +88,7 @@ class sunet::rt {
         content => template('sunet/rt/shredder.erb'),
     }
     sunet::scriptherder::cronjob { 'rt_spam_shredder':
-         cmd           => 'docker exec rt-swamid /usr/local/bin/shredder.pl',
+         cmd           => '/usr/local/bin/shredder.pl',
          minute        => '2',
          hour          => '2',
          ok_criteria   => ['exit_status=0', 'max_age=25h'],
