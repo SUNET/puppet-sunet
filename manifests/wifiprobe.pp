@@ -6,7 +6,7 @@ class sunet::wifiprobe {
       env      => ['ACME_URL=http://acme-c.sunet.se']
    }
     sunet::docker_run { 'wifiprobe':
-        image    => 'docker.sunet.se/wifiprobe-server',
+        image    => 'wifiprobe-server',
         imagetag => 'latest',
         ports    => ['5000:5000', '443:443'],
         volumes  => ['/etc/ssh:/etc/ssh', '/opt/probe-website:/opt/probe-website'],
