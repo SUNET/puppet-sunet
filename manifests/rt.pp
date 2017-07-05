@@ -79,6 +79,22 @@ class sunet::rt {
          warn_criteria => ['exit_status=0', 'max_age=49h'],
     }
 
+    file { '/usr/local/bin/shredder.pl':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        path    => '/usr/local/bin/shredder.pl',
+        mode    => '0755',
+        content => template('sunet/rt/shredder.erb'),
+    }
+    sunet::scriptherder::cronjob { 'rt_spam_shredder':
+         cmd           => '/usr/bin/perl /usr/local/bin/shredder.pl',
+         minute        => '2',
+         hour          => '2',
+         ok_criteria   => ['exit_status=0', 'max_age=25h'],
+         warn_criteria => ['exit_status=0', 'max_age=49h'],
+    }
+
     # Run SQL or Perl here to set RT's root user pwd ???
 
 }
