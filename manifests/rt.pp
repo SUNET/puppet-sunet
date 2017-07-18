@@ -28,7 +28,7 @@ class sunet::rt {
     }
 
     sunet::docker_run { 'postgres':
-        image    => 'postgres',
+        image    => 'docker.sunet.se/postgres',
         imagetag => '9.5.0',
         volumes  => ['/var/lib/postgresql/data:/var/lib/postgresql/data'],
         env      => ["POSTGRES_DB=postgres",
@@ -46,10 +46,13 @@ class sunet::rt {
         env      => ["SP_HOSTNAME=rt.sunet.se",
                      "RT_HOSTNAME=rt.sunet.se",
                      "RT_OWNER=el@sunet.se",
+                     "RT_RELAYHOST=smtp.sunet.se",
                      "RT_DEFAULTEMAIL=operations",
                      "RT_Q1=swamid",
                      "RT_Q2=eduroam",
-                     "RT_Q3=swamid-bot"],
+                     "RT_Q3=swamid-bot",
+                     "RT_Q4=tcs",
+                     "RT_Q5=unused"],
     } ->
     file { '/opt/rt4/etc/RT_SiteConfig.pm':
         ensure  => file,
@@ -72,6 +75,22 @@ class sunet::rt {
          cmd           => 'docker exec postgres /var/lib/postgresql/data/postgres_backup.sh',
          minute        => '4',
          hour          => '3',
+         ok_criteria   => ['exit_status=0', 'max_age=25h'],
+         warn_criteria => ['exit_status=0', 'max_age=49h'],
+    }
+
+    file { '/usr/local/bin/shredder.pl':
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        path    => '/usr/local/bin/shredder.pl',
+        mode    => '0755',
+        content => template('sunet/rt/shredder.erb'),
+    }
+    sunet::scriptherder::cronjob { 'rt_spam_shredder':
+         cmd           => '/usr/bin/perl /usr/local/bin/shredder.pl',
+         minute        => '2',
+         hour          => '2',
          ok_criteria   => ['exit_status=0', 'max_age=25h'],
          warn_criteria => ['exit_status=0', 'max_age=49h'],
     }

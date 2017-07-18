@@ -20,10 +20,18 @@ class sunet::baas(
   $baas_password = hiera('baas_password', 'NOT_SET_IN_HIERA')
   $backup_dirs_not_empty = hiera('dirs_to_backup','NOT_SET_IN_HIERA')
 
+  # This is silly but somehow you must know if BaaS has been installed already, if not you may break an already existing installation.
+  $control_file="/opt/tivoli/tsm/client/install_successful"
+
   if $baas_password != 'NOT_SET_IN_HIERA' and $backup_dirs_not_empty != 'NOT_SET_IN_HIERA' and $nodename {
     # These 2 rows to get a single string of all directories to backup + extras (flags normally)
     $dirs_to_backup_array = concat(hiera('dirs_to_backup','NOT_SET_IN_HIERA'), $extra)
     $dirs_to_backup = join($dirs_to_backup_array, ' ')
+
+    exec {"Create temp directory":
+       command => "/bin/mkdir -p /tmp/baas",
+       unless  => "test -f $control_file",
+    }
 
     sunet::remote_file { "/tmp/baas/baas.tar":
        remote_location => $src_url,
@@ -31,23 +39,23 @@ class sunet::baas(
     } ->
     exec {"Unpack BaaS source code":
        command => "tar xvf /tmp/baas/baas.tar -C /tmp/baas",
-       unless  => "test -f /tmp/baas/install_successful",
+       unless  => "test -f $control_file",
     } ->
     exec {"Install the debs from BaaS 1":
        command => "dpkg -i /tmp/baas/gskcrypt64*deb /tmp/baas/gskssl64*deb",
-       unless  => "test -f /tmp/baas/install_successful",
+       unless  => "test -f $control_file",
     } ->
     exec {"Install the debs from BaaS 2":
        command => "dpkg -i /tmp/baas/tivsm-api64*deb",
-       unless  => "test -f /tmp/baas/install_successful",
+       unless  => "test -f $control_file",
     } ->
     exec {"Install the debs from BaaS 3":
        command => "dpkg -i /tmp/baas/tivsm-ba.*deb",
-       unless  => "test -f /tmp/baas/install_successful",
+       unless  => "test -f $control_file",
     } ->
     exec {"Install the debs from BaaS 4":
        command => "dpkg -i /tmp/baas/tivsm-bacit*deb",
-       unless  => "test -f /tmp/baas/install_successful",
+       unless  => "test -f $control_file",
     } ->
     # IBM...... so this keystore contains a password protected(!) public CA certificate
     sunet::remote_file { "/tmp/baas/IPnett-Cloud-Root-CA.sh":
@@ -59,7 +67,7 @@ class sunet::baas(
        mode            => "440"
     } ->
     exec {"Install CA cert to keystore":
-       command => "/bin/sh /tmp/baas/IPnett-Cloud-Root-CA.sh && touch /tmp/baas/install_successful",
+       command => "/bin/sh /tmp/baas/IPnett-Cloud-Root-CA.sh && touch $control_file",
        unless  => "test -f /opt/tivoli/tsm/client/ba/bin/dsmcert.kdb",
     }
  

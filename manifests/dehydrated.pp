@@ -53,7 +53,7 @@ class sunet::dehydrated($staging=false,
      notify  => Exec["dehydrated-runonce"]
   }
   cron {"dehydrated-cron":
-     command => "/usr/sbin/dehydrated --keep-going -c && /usr/bin/le-ssl-compat.sh",
+     command => "/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh",
      hour    => 2,
      minute  => 13
   }
