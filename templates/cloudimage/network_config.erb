@@ -26,12 +26,9 @@ config:
       ipv6: True
 <% elsif @ip -%>
       type: static
-      address: |
-        <%= @ip %>
+      address: <%= @ip %>
 <% if @netmask -%>      netmask: <%= @netmask %><% end %>
-<% if @gateway -%>      routes: |
-        <%= @gateway %>
-<% end -%>
+<% if @gateway -%>      routes: <%= @gateway %><% end %>
 <% elsif @dhcp -%>
       type: dhcp4
 <%end -%>
