@@ -4,12 +4,11 @@ require concat
 class sunet::ssh_keyscan {
    exec {'ssh-keyscan':
       command     => 'ssh-keyscan -f /etc/ssh/sunet_keyscan_hosts.txt > /etc/ssh/ssh_known_hosts',
-      refreshonly => false
    }
    file {'/etc/ssh/ssh_known_hosts':
-      audit => 'content'
+      audit => 'content',
+      require => Exec['ssh-keyscan']
    }
-   Exec['ssh-keyscan'] -> File['/etc/ssh/ssh_known_hosts']
    concat {"/etc/ssh/sunet_keyscan_hosts.txt":
       owner  => root,
       group  => root,
