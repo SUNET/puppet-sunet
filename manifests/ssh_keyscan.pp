@@ -6,6 +6,10 @@ class sunet::ssh_keyscan {
       command     => 'ssh-keyscan -f /etc/ssh/sunet_keyscan_hosts.txt > /etc/ssh/ssh_known_hosts',
       refreshonly => true
    }
+   file {'/etc/ssh/ssh_known_hosts':
+      audit => 'content'
+   }
+   Exec['ssh-keyscan'] -> File['/etc/ssh/ssh_known_hosts']
    concat {"/etc/ssh/sunet_keyscan_hosts.txt":
       owner  => root,
       group  => root,
