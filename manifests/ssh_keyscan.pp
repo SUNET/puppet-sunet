@@ -4,7 +4,7 @@ require concat
 class sunet::ssh_keyscan {
    exec {'ssh-keyscan':
       command     => 'ssh-keyscan -f /etc/ssh/sunet_keyscan_hosts.txt > /etc/ssh/ssh_known_hosts',
-      refreshonly => true
+      refreshonly => false
    }
    file {'/etc/ssh/ssh_known_hosts':
       audit => 'content'
