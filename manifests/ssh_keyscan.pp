@@ -3,20 +3,25 @@ require concat
 
 class sunet::ssh_keyscan {
    exec {'ssh-keyscan':
-      command     => 'touch /etc/ssh/ssh_known_hosts && ssh-keyscan -t rsa,dsa,ecdsa,ed25519 -f /etc/ssh/sunet_keyscan_hosts.txt | sort -u - /etc/ssh/ssh_known_hosts | diff -u /etc/ssh/ssh_known_hosts - | patch -p0 /etc/ssh/ssh_known_hosts',
-      require     => File['/etc/ssh/sunet_keyscan_hosts.txt']
+      command     => 'touch /etc/ssh/ssh_known_hosts.scan && ssh-keyscan -t rsa,dsa,ecdsa,ed25519 -f /etc/ssh/sunet_keyscan_hosts.txt | sort -u - /etc/ssh/ssh_known_hosts.scan | diff -u /etc/ssh/ssh_known_hosts.scan - | patch -p0 /etc/ssh/ssh_known_hosts.scan',
+      creates     => '/etc/ssh/ssh_known_hosts.scan'
+   }
+   file {'/etc/ssh/ssh_known_hosts':
+      ensure      => present,
+      source      => '/etc/ssh/ssh_known_hosts.scan',
+      require     => Exec['ssh-keyscan']
    }
    concat {"/etc/ssh/sunet_keyscan_hosts.txt":
       owner  => root,
       group  => root,
       mode   => '0644',
-      notify => Exec['ssh-keyscan']
+      notify => File['/etc/ssh/ssh_known_hosts']
    }
    concat::fragment {"/etc/ssh/sunet_keyscan_hosts.txt_header":
       target  => "/etc/ssh/sunet_keyscan_hosts.txt",
       content => "# do not edit by hand - maintained by sunet::ssh_keyscan\n",
       order   => '10',
-      notify  => Exec['ssh-keyscan']
+      notify  => File['/etc/ssh/ssh_known_hosts']
    }
 }
 
