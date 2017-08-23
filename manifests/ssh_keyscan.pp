@@ -3,11 +3,11 @@ require concat
 
 class sunet::ssh_keyscan {
    exec {'ssh-keyscan':
-      command     => 'touch /etc/ssh/ssh_known_hosts.scan && ssh-keyscan -t rsa,dsa,ecdsa,ed25519 -f /etc/ssh/sunet_keyscan_hosts.txt | sort -u - /etc/ssh/ssh_known_hosts.scan | diff -u /etc/ssh/ssh_known_hosts.scan - | patch -p0 /etc/ssh/ssh_known_hosts.scan',
+      command     => 'ssh-keyscan -f /etc/ssh/sunet_keyscan_hosts.txt > /etc/ssh/ssh_known_hosts.scan',
       creates     => '/etc/ssh/ssh_known_hosts.scan'
    }
    file {'/etc/ssh/ssh_known_hosts':
-      ensure      => present,
+      ensure      => file,
       source      => '/etc/ssh/ssh_known_hosts.scan',
       require     => Exec['ssh-keyscan']
    }
