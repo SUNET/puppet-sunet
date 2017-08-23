@@ -76,7 +76,7 @@ class sunet::bird(
     sunet::sudoer { "nagios_check_bird_peers${ipver}":
       user_name    => 'nagios',
       collection   => 'nagios',
-      command_line => "/usr/sbin/birdc -r -v -s /var/run/bird/bird${ipver}.ctl 'show protocols'"
+      command_line => "/usr/sbin/birdc -r -v -s /var/run/bird/bird${ipver}.ctl show protocols"
     }
   }
 
