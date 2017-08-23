@@ -128,7 +128,7 @@ def check_peers(args, logger):
             crit_str = 'Only {} (less than {}) peers up'.format(len(ok), args.min_peers)
 
     if ok_str:
-        ok_str = 'Peers in Established state: {}'.format(ok_str)
+        ok_str = 'Peers in state \'Established\': {}'.format(ok_str)
 
     return crit_str, warn_str, ok_str
 
