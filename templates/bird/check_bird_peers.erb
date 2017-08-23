@@ -88,7 +88,7 @@ def parse_args():
 
 
 def birdc(socket_fn, logger):
-    cmd = ['/usr/sbin/birdc', '-r', '-v', '-s', socket_fn, 'show protocols']
+    cmd = ['/usr/bin/sudo', '/usr/sbin/birdc', '-r', '-v', '-s', socket_fn, 'show protocols']
     logger.debug('Executing command: {}'.format(cmd))
     proc = subprocess.Popen(cmd,
                             cwd='/',
