@@ -56,4 +56,20 @@ class sunet::bird(
   service {$bird: ensure => running }
   service {$bird6: ensure => running }
   ufw::allow {"allow-bird-bgp-tcp": ip => "any", port => "179", proto => "tcp" }
+
+  file { "/usr/lib/nagios/plugins/check_bird_peers" :
+    ensure  => 'file',
+    mode    => '0751',
+    group   => 'nagios',
+    require => Package['nagios-nrpe-server'],
+    content => template('sunet/bird/check_bird_peers.erb'),
+  }
+
+  sunet::nagios::nrpe_command {'check_bird_peers':
+    command_line => '/usr/lib/nagios/plugins/check_bird_peers',
+  }
+
+  sunet::nagios::nrpe_command {'check_bird_peers6':
+    command_line => '/usr/lib/nagios/plugins/check_bird_peers -s /var/run/bird/bird6.ctl',
+  }
 }
