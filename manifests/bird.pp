@@ -53,8 +53,14 @@ class sunet::bird(
     content  => template("sunet/bird/bird6.conf.erb"),
     notify   => Service[$bird6]
   }
-  service {$bird: ensure => running }
-  service {$bird6: ensure => running }
+  service {$bird:
+    ensure => 'running',
+    enable => 'true',
+  }
+  service {$bird6:
+    ensure => 'running',
+    enable => 'true',
+  }
   ufw::allow {"allow-bird-bgp-tcp": ip => "any", port => "179", proto => "tcp" }
 
   #
