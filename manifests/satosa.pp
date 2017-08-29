@@ -1,6 +1,6 @@
 require stdlib
 
-class sunet::satosa($dehydrated_name=undef,$image='docker.sunet.se/satosa',$tag='3.0-stable') {
+class sunet::satosa($dehydrated_name=undef,$image='docker.sunet.se/satosa',$tag='3.4-stable') {
    $proxy_conf = hiera("satosa_proxy_conf")
    $default_conf = { 
       "STATE_ENCRYPTION_KEY"       => hiera("satosa_state_encryption_key"),
@@ -15,7 +15,7 @@ class sunet::satosa($dehydrated_name=undef,$image='docker.sunet.se/satosa',$tag=
    ensure_resource('file',"/etc/satosa/run", { ensure => directory } )
    ensure_resource('file',"/etc/satosa/plugins", { ensure => directory } )
    ensure_resource('file',"/etc/satosa/metadata", { ensure => directory } )
-   ["backend","frontend","https","metadata"].each |$id| {
+   ["backend","frontend","metadata"].each |$id| {
       sunet::snippets::keygen {"satosa_${id}":
          key_file  => "/etc/satosa/${id}.key",
          cert_file => "/etc/satosa/${id}.crt"
@@ -45,17 +45,28 @@ class sunet::satosa($dehydrated_name=undef,$image='docker.sunet.se/satosa',$tag=
       ip   => 'any',
       port => '443'
    }
+   $dehydrated_status = $dehydrated_name ? {
+      undef   => 'absent',
+      default => 'present'
+   }
    sunet::docker_run {'alwayshttps':
       image    => 'docker.sunet.se/always-https',
       ports    => ['80:80'],
-      env      => ['ACME_URL=http://acme-c.sunet.se']
+      env      => ['ACME_URL=http://acme-c.sunet.se'],
+      ensure   => $dehydrated_status
    }
    ufw::allow { "satosa-allow-http":
-      ip   => 'any',
-      port => '80'
+      ip     => 'any',
+      port   => '80',
+      ensure => $dehydrated_status
    }
    if ($dehydrated_name) {
       file { '/etc/satosa/https.key': ensure => link, target => "/etc/dehydrated/certs/$dehydrated_name.key" }
       file { '/etc/satosa/https.crt': ensure => link, target => "/etc/dehydrated/certs/${dehydrated_name}/fullchain.pem" }
+   } else {
+      sunet::snippets::keygen {"satosa_https":
+         key_file  => "/etc/satosa/https.key",
+         cert_file => "/etc/satosa/https.crt"
+      }
    }
 }
