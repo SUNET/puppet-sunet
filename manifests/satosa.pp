@@ -17,7 +17,7 @@ class sunet::satosa($dehydrated_name=undef,$image='docker.sunet.se/satosa',$tag=
    ensure_resource('file',"/etc/satosa/metadata", { ensure => directory } )
    $key_data = {}
    ["backend","frontend","metadata"].each |$id| {
-      if safe_hiera("satosa_${id}_key",undef) != undef {
+      if hiera("satosa_${id}_key",undef) != undef {
          sunet::snippets::secret_file { "/etc/satosa/${id}.key": hiera_key => "satosa_${id}_key" }
          # assume cert is in cosmos repo
       } else {
