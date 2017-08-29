@@ -15,10 +15,17 @@ class sunet::satosa($dehydrated_name=undef,$image='docker.sunet.se/satosa',$tag=
    ensure_resource('file',"/etc/satosa/run", { ensure => directory } )
    ensure_resource('file',"/etc/satosa/plugins", { ensure => directory } )
    ensure_resource('file',"/etc/satosa/metadata", { ensure => directory } )
+   $key_data = {}
    ["backend","frontend","metadata"].each |$id| {
-      sunet::snippets::keygen {"satosa_${id}":
-         key_file  => "/etc/satosa/${id}.key",
-         cert_file => "/etc/satosa/${id}.crt"
+      if safe_hiera("satosa_${id}_key",undef) != undef {
+         sunet::snippets::secret_file { "/etc/satosa/${id}.key": hiera_key => "satosa_${id}_key" }
+         # assume cert is in cosmos repo
+      } else {
+         # make key pair
+         sunet::snippets::keygen {"satosa_${id}":
+            key_file  => "/etc/satosa/${id}.key",
+            cert_file => "/etc/satosa/${id}.crt"
+         }
       }
    }
    sunet::docker_run {'satosa':
