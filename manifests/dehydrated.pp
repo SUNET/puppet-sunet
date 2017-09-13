@@ -47,7 +47,7 @@ class sunet::dehydrated(
      content => template("sunet/dehydrated/config.erb")
   }
   exec { "dehydrated-runonce":
-     command     => "/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated /usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh",
+     command     => "/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh",
      refreshonly => true
   }
   file { "/etc/dehydrated/domains.txt":
