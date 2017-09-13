@@ -1,8 +1,9 @@
-class sunet::dehydrated($staging=false,
-                         $domains=undef,
-                         $httpd=false,
-                         $apache=false,
-                         $src_url="https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated")
+class sunet::dehydrated(
+  Boolean                 $staging=false,
+  Optional[Array[String]] $domains=undef,
+  Boolean                 $httpd=false,
+  Boolean                 $apache=false,
+  String                  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated")
 {
   $thedomains = $domains ? {
      undef   => hiera("letsencrypt_domains",hiera("dehydrated_domains",[{$::fqdn=>{"names"=>[$::fqdn]}}])),
@@ -17,9 +18,11 @@ class sunet::dehydrated($staging=false,
      true  => "https://acme-staging.api.letsencrypt.org/directory"
   }
   ensure_resource("package","openssl",{ensure=>"latest"})
-  sunet::remote_file { "/usr/sbin/dehydrated":
-     remote_location => $src_url,
-     mode            => "0755"
+  if $src_url =~ String[1] {
+    sunet::remote_file { "/usr/sbin/dehydrated":
+      remote_location => $src_url,
+      mode            => "0755"
+    }
   }
   file { "/usr/sbin/letsencrypt.sh":
      ensure  => absent
