@@ -47,7 +47,7 @@ class sunet::dehydrated(
      content => template("sunet/dehydrated/config.erb")
   }
   exec { "dehydrated-runonce":
-     command     => "/usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh",
+     command     => "/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated /usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh",
      refreshonly => true
   }
   file { "/etc/dehydrated/domains.txt":
@@ -55,16 +55,19 @@ class sunet::dehydrated(
      content => template("sunet/dehydrated/domains.erb"),
      notify  => Exec["dehydrated-runonce"]
   }
-  cron {"dehydrated-cron":
-     command => "/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh",
-     hour    => 2,
-     minute  => 13
+  sunet::scriptherder::cronjob { 'dehydrated':
+    cmd           => "/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh",
+    minute        => '13',
+    hour          => '2',
+    ok_criteria   => ['exit_status=0','max_age=4d'],
+    warn_criteria => ['exit_status=1','max_age=8d'],
   }
+  cron {"dehydrated-cron": ensure => absent }
   cron {"letsencrypt-cron": ensure => absent }
   if ($httpd) {
      package {"lighttpd":
         ensure  => latest
-     } -> 
+     } ->
      service {"lighttpd":
         ensure  => running
      } ->
@@ -95,7 +98,7 @@ class sunet::dehydrated(
   }
   if ($apache) {
      ensure_resource("service","apache2",{})
-     exec { "enable-dehydrated-conf": 
+     exec { "enable-dehydrated-conf":
         refreshonly  => true,
         command      => "a2enconf dehydrated",
         notify       => Service["apache2"]
@@ -111,7 +114,7 @@ class sunet::dehydrated(
         group   => "www-data",
         content => "<!DOCTYPE html><html><head><title>meep</title></head><body>meep<br/>meep</body></html>"
      } ->
-     file { "/etc/apache2/conf-available/dehydrated.conf": 
+     file { "/etc/apache2/conf-available/dehydrated.conf":
         ensure  => "file",
         content => template("sunet/dehydrated/apache.conf"),
         notify  => Exec["enable-dehydrated-conf"],
