@@ -78,7 +78,7 @@ class sunet::dehydrated(
 
   if ($httpd) {
     sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
-      allow_clients = $allow_clients,
+      allow_clients => $allow_clients,
     }
   }
   if ($apache) {
