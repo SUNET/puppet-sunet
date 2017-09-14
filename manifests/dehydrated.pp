@@ -84,6 +84,12 @@ class sunet::dehydrated(
   if ($apache) {
     sunet::dehydrated::apache_server { 'dehydrated_apache_server': }
   }
+  if has_key($conf, 'clients') {
+    $clients = $conf['clients']
+  } else {
+    $clients = false
+  }
+
   each($thedomains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
@@ -91,6 +97,14 @@ class sunet::dehydrated(
             ssh_key_type => $info['ssh_key_type'],
             ssh_key      => $info['ssh_key']
          }
+      }
+      if (is_hash($clients) and has_key($info, 'clients')) {
+        each($info['clients']) |$client| {
+          sunet::rrsync { "/etc/dehydrated/certs/$domain":
+            ssh_key_type => $clients[$client]['ssh_key_type'],
+            ssh_key      => $clients[$client]['ssh_key']
+          }
+        }
       }
     }
   }
