@@ -4,6 +4,7 @@ class sunet::dehydrated(
   Boolean                 $httpd=false,
   Boolean                 $apache=false,
   String                  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated")
+  Array                   $allow_clients = [̈́],
 {
   $conf = hiera_hash('dehydrated')
   if ! is_hash($conf) {
@@ -76,7 +77,9 @@ class sunet::dehydrated(
   cron {'letsencrypt-cron': ensure => absent }
 
   if ($httpd) {
-    sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server': }
+    sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
+      allow_clients = $allow_clients,
+    }
   }
   if ($apache) {
     sunet::dehydrated::apache_server { 'dehydrated_apache_server': }
@@ -95,6 +98,7 @@ class sunet::dehydrated(
 
 # Run lighttpd on the acme-c host
 define sunet::dehydrated::lighttpd_server(
+  $allow_clients,
 ) {
   package {'lighttpd':
     ensure  => latest
@@ -103,7 +107,8 @@ define sunet::dehydrated::lighttpd_server(
     ensure  => running
   } ->
   sunet::misc::ufw_allow { 'allow-lighthttp':
-    port  => '80'
+    from => $allow_clients,
+    port => '80'
   }
   exec {'rename-var-www-letsencrypt':
     command => 'mv /var/www/letsencrypt /var/www/dehydrated',
