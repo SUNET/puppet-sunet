@@ -3,7 +3,7 @@ class sunet::dehydrated(
   Optional[Array[String]] $domains=undef,
   Boolean                 $httpd=false,
   Boolean                 $apache=false,
-  String                  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated")
+  String                  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated"),
   Array                   $allow_clients = [],
 {
   $conf = hiera_hash('dehydrated')
