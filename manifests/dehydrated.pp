@@ -185,6 +185,7 @@ class sunet::dehydrated::client(
   String  $user='root',
   Boolean $ssl_links=false,
   Boolean $check_cert=false,
+  Optional[String] $ssh_id=undef,
 ) {
   sunet::dehydrated::client_define { "domain_${domain}":
     domain     => $domain,
@@ -192,6 +193,7 @@ class sunet::dehydrated::client(
     user       => $user,
     ssl_links  => $ssl_links,
     check_cert => $check_cert,
+    ssh_id     => $ssh_id,
   }
 }
 
@@ -202,6 +204,7 @@ define sunet::dehydrated::client_define(
   String  $user='root',
   Boolean $ssl_links=false,
   Boolean $check_cert=false,
+  Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
 ) {
   $home = $user ? {
     'root'  => '/root',
@@ -219,11 +222,15 @@ define sunet::dehydrated::client_define(
     })
   ensure_resource('sunet::ssh_keyscan::host', $server)
 
-  sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
-    hiera_key => "${domain}_ssh_key"
+  $_ssh_id = $ssh_id ? {
+    undef   => $domain,
+    default => $ssh_id,
+  }
+  sunet::snippets::secret_file { "$home/.ssh/id_${_ssh_id}":
+    hiera_key => "${_ssh_id}_ssh_key"
   } ->
   cron { "rsync_dehydrated_${domain}":
-    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
+    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
     user    => $user,
     hour    => '*',
     minute  => '13'

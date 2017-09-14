@@ -242,6 +242,7 @@ define load_balancer_website(
     sunet::dehydrated::client_define { $name :
       domain => $name,
       server => $letsencrypt_server,
+      ssh_id => 'acme-c',
     }
   }
 }
