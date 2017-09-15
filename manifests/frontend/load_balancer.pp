@@ -32,16 +32,13 @@ class sunet::frontend::load_balancer(
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
                          ],
     }
-    if (has_key($config['load_balancer'], 'static_backends')) {
-      $static_backends = $config['load_balancer']['static_backends']
-    }
     sunet::frontend::haproxy { 'load_balancer':
       basedir          => "${basedir}/haproxy",
       confdir          => $confdir,
       apidir           => $apidir,
       haproxy_image    => $config['load_balancer']['haproxy_image'],
       haproxy_imagetag => $config['load_balancer']['haproxy_imagetag'],
-      static_backends  => $static_backends,
+      static_backends  => $config['load_balancer']['static_backends'],
     }
     sunet::frontend::api { 'sunetfrontend':
       basedir => $apidir,
