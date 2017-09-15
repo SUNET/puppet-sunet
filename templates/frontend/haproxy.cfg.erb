@@ -52,5 +52,9 @@ frontend http-frontend
 
     redirect scheme https code 301 if !{ ssl_fc }
 
-backend letsencrypt_acme-c.sunet.se
-    server acme-c.sunet.se_v4 89.45.232.90:80
+<% if @acme_c_servers -%>
+<% @acme_c_servers.each do |server,addrs| -%>
+backend <%= server %>
+  <% i = 0 %><% @addrs.sort.each do |addr| %><% i = i + 1 %>server <%= server %>_<%= i %> <%= addr %><% end %>
+<% end %>
+<% end %>
