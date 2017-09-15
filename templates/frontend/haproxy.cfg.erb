@@ -55,6 +55,6 @@ frontend http-frontend
 <% if @acme_c_servers -%>
 <% @acme_c_servers.each do |server,addrs| -%>
 backend <%= server %>
-  <% i = 0 %><% @addrs.sort.each do |addr| %><% i = i + 1 %>server <%= server %>_<%= i %> <%= addr %><% end %>
+  <% i = 0 %><% addrs.sort.each do |addr| %><% i = i + 1 %>server <%= server %>_<%= i %> <%= addr %><% end %>
 <% end %>
 <% end %>
