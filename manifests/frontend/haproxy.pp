@@ -10,7 +10,7 @@ define sunet::frontend::haproxy(
   String  $confdir                = '/opt/frontend/config',
   String  $apidir                 = '/opt/frontend/api',
   # Variables used in haproxy.cfg.erb
-  Optional[Hash] $acme_c_servers = {'acme-c.sunet.se' => ['89.45.232.90:80']},
+  Optional[Hash] $static_backends = {'acme-c.sunet.se' => ['89.45.232.90:80']},
 )
 {
   include sunet::systemd_reload

@@ -52,8 +52,8 @@ frontend http-frontend
 
     redirect scheme https code 301 if !{ ssl_fc }
 
-<% if @acme_c_servers -%>
-<% @acme_c_servers.each do |server,addrs| -%>
+<% if @static_backends -%>
+<% @static_backends.each do |server,addrs| -%>
 backend <%= server %>
   <% i = 0 %><% addrs.sort.each do |addr| %><% i = i + 1 %>server <%= server %>_<%= i %> <%= addr %><% end %>
 <% end %>

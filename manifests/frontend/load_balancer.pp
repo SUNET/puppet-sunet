@@ -32,8 +32,8 @@ class sunet::frontend::load_balancer(
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
                          ],
     }
-    if (has_key($config['load_balancer'], 'acme_c_servers')) {
-      $acme_c_servers = $config['load_balancer']['acme_c_servers']
+    if (has_key($config['load_balancer'], 'static_backends')) {
+      $static_backends = $config['load_balancer']['static_backends']
     }
     sunet::frontend::haproxy { 'load_balancer':
       basedir          => "${basedir}/haproxy",
@@ -41,7 +41,7 @@ class sunet::frontend::load_balancer(
       apidir           => $apidir,
       haproxy_image    => $config['load_balancer']['haproxy_image'],
       haproxy_imagetag => $config['load_balancer']['haproxy_imagetag'],
-      acme_c_servers   => $acme_c_servers,
+      static_backends  => $static_backends,
     }
     sunet::frontend::api { 'sunetfrontend':
       basedir => $apidir,
