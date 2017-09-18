@@ -32,7 +32,7 @@ class sunet::frontend::load_balancer(
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
                          ],
     }
-    sunet::frontend::haproxy { 'load_balancer':
+    sunet::frontend::haproxy { 'load-balancer':
       basedir               => "${basedir}/haproxy",
       confdir               => $confdir,
       apidir                => $apidir,
