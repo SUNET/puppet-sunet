@@ -44,6 +44,13 @@ backend LB
     #stats hide-version
     stats uri /haproxy_stats
 
+<% if @static_backends -%>
+<% @static_backends.each do |server,addrs| -%>
+backend <%= server %>
+  <% i = 0 %><% addrs.sort.each do |addr| %><% i = i + 1 %>server <%= server %>_<%= i %> <%= addr %><% end %>
+<% end %>
+<% end %>
+
 #
 # Redirect _everything_ to HTTPS
 frontend http-frontend
@@ -56,10 +63,3 @@ frontend http-frontend
 <% end -%>
 
     redirect scheme https code 301 if !{ ssl_fc }
-
-<% if @static_backends -%>
-<% @static_backends.each do |server,addrs| -%>
-backend <%= server %>
-  <% i = 0 %><% addrs.sort.each do |addr| %><% i = i + 1 %>server <%= server %>_<%= i %> <%= addr %><% end %>
-<% end %>
-<% end %>
