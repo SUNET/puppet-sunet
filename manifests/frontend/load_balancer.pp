@@ -33,12 +33,13 @@ class sunet::frontend::load_balancer(
                          ],
     }
     sunet::frontend::haproxy { 'load_balancer':
-      basedir          => "${basedir}/haproxy",
-      confdir          => $confdir,
-      apidir           => $apidir,
-      haproxy_image    => $config['load_balancer']['haproxy_image'],
-      haproxy_imagetag => $config['load_balancer']['haproxy_imagetag'],
-      static_backends  => $config['load_balancer']['static_backends'],
+      basedir               => "${basedir}/haproxy",
+      confdir               => $confdir,
+      apidir                => $apidir,
+      haproxy_image         => $config['load_balancer']['haproxy_image'],
+      haproxy_imagetag      => $config['load_balancer']['haproxy_imagetag'],
+      port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
+      static_backends       => $config['load_balancer']['static_backends'],
     }
     sunet::frontend::api { 'sunetfrontend':
       basedir => $apidir,
