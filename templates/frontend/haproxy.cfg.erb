@@ -59,7 +59,8 @@ frontend http-frontend
 
 <% if @port80_acme_c_backend -%>
     acl port80-acme_c-acl path_beg /.well-known/acme-challenge/
+    redirect scheme https code 301 if !{ ssl_fc } !port80-acme_c-acl
     use_backend <%= @port80_acme_c_backend -%> if port80-acme_c-acl
-<% end -%>
-
+<% else %>
     redirect scheme https code 301 if !{ ssl_fc }
+<% end -%>
