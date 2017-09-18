@@ -17,10 +17,6 @@ class sunet::dehydrated(
   }
   $thedomains = $conf['domains']
 
-  #validate_array($thedomains)
-  #each($thedomains) |$domain_hash| {
-  #   validate_hash($domain_hash)
-  #}
   $ca = $staging ? {
      false => 'https://acme-v01.api.letsencrypt.org/directory',
      true  => 'https://acme-staging.api.letsencrypt.org/directory'
@@ -226,9 +222,9 @@ define sunet::dehydrated::client_define(
     undef   => $domain,
     default => $ssh_id,
   }
-  sunet::snippets::secret_file { "$home/.ssh/id_${_ssh_id}":
-    hiera_key => "${_ssh_id}_ssh_key"
-  } ->
+  ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
+    hiera_key => "${_ssh_id}_ssh_key",
+    }) ->
   cron { "rsync_dehydrated_${domain}":
     command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
     user    => $user,
