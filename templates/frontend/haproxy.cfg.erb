@@ -50,6 +50,11 @@ frontend http-frontend
     bind 0.0.0.0:80
     bind :::80
 
+<% if @port80_acme_c_backend -%>
+    acl port80-acme_c-acl path_beg /.well-known/acme-challenge/
+    use_backend <% @port80_acme_c_backend -%> if port80-acme_c-acl
+<% end %>
+
     redirect scheme https code 301 if !{ ssl_fc }
 
 <% if @static_backends -%>
