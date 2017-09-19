@@ -78,10 +78,10 @@ services:
         ports:
             - "443:443"
 
-        # Redirect http traffic to https or acme-c
-        alwayshttps:
-            image: docker.sunet.se/always-https
-            ports:
-                - 80:80
-            environment:
-                - "ACME_URL=http://acme-c.sunet.se"
+    # Redirect http traffic to https or acme-c
+    alwayshttps:
+        image: docker.sunet.se/always-https
+        ports:
+            - 80:80
+        environment:
+            - "ACME_URL=http://acme-c.sunet.se"
