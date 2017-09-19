@@ -8,7 +8,7 @@ define sunet::bird::peer(
   # gpg backend, so we couldn't put the password in secrets.yaml and just merge it in
   $password = $password_hiera_key ? {
     undef   => undef,
-    default => hiera($password_hiera_key)
+    default => hiera($password_hiera_key, undef)
   }
 
   if is_ipaddr($remote_ip, 4) {

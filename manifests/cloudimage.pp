@@ -33,6 +33,7 @@ define sunet::cloudimage (
   }
   ensure_resource('package', ['cpu-checker',
                               'mtools',
+                              'dosfstools',
                               $kvm_package,
                               'libvirt-bin',
                               'virtinst',

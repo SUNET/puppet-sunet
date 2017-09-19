@@ -67,16 +67,13 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    sunet::nagios::nrpe_command {'check_zombie_procs':
       command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
    }
-   case $::lsbdistdescription {
-      /12.04|10.04|11.04/: {
-         sunet::nagios::nrpe_command {'check_total_procs_lax':
-            command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
-         }
+   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '12.04') <= 0 {
+      sunet::nagios::nrpe_command {'check_total_procs_lax':
+         command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
       }
-      default: {
-         sunet::nagios::nrpe_command {'check_total_procs_lax':
-            command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
-         }
+   } else {
+      sunet::nagios::nrpe_command {'check_total_procs_lax':
+         command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
       }
    }
    sunet::nagios::nrpe_command {'check_uptime':

@@ -1,0 +1,87 @@
+version: '2.0'
+services:
+    comanage-registry-database:
+        image: comanage-registry-postgres
+        volumes:
+            - /opt/comanage-registry-deployment/postgres-data:/var/lib/postgresql/data
+            - /opt/comanage-registry-deployment/secrets:/run/secrets
+            - /etc/passwd:/etc/passwd:ro
+            - /etc/group:/etc/group:ro
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=password
+            - COMANAGE_REGISTRY_POSTGRES_DATABASE=registry
+            - COMANAGE_REGISTRY_POSTGRES_USER=registry_user
+            - COMANAGE_REGISTRY_POSTGRES_USER_PASSWORD=password
+        ports:
+            - "5432:5432"
+
+    comanage-registry-ldap:
+        image: comanage-registry-slapd
+        volumes:
+            - /opt/comanage-registry-deployment/slapd-data:/var/lib/ldap
+            - /opt/comanage-registry-deployment/slapd-config:/etc/ldap/slapd.d
+            - /var/run/slapd:/var/run/slapd
+            - /opt/comanage-registry-deployment/secrets:/run/secrets
+            - /etc/passwd:/etc/passwd:ro
+            - /etc/group:/etc/group:ro
+        environment:
+            - SLAPD_CERT_FILE=/run/secrets/slapd_cert_file
+            - SLAPD_PRIVKEY_FILE=/run/secrets/slapd_privkey_file
+            - SLAPD_CHAIN_FILE=/run/secrets/slapd_chain_file
+            - OLC_ROOT_PW=password
+            - OLC_SUFFIX=dc=sunet,dc=se
+            - OLC_ROOT_DN=cn=el,dc=sunet,dc=se
+        ports:
+            - "636:636"
+            - "389:389"
+
+    comanage-registry:
+        image: comanage-registry:hotfix-2.0.x-shibboleth-sp
+        depends_on:
+            - comanage-registry-ldap
+            - comanage-registry-database
+        volumes:
+            - /opt/comanage-registry-deployment/secrets:/run/secrets
+            - /etc/dehydrated/certs:/etc/dehydrated/certs:ro
+            - /var/run/shibboleth:/var/run/shibboleth
+#            - /etc/shibboleth:/opt/shibboleth-sp/etc/shibboleth
+            - /var/run/apache2:/var/run/apache2
+            - /dev/log:/dev/log:rw
+#            - /etc/passwd:/etc/passwd:ro
+#            - /etc/group:/etc/group:ro
+        environment:
+            - COMANAGE_REGISTRY_ADMIN_GIVEN_NAME=Einar
+            - COMANAGE_REGISTRY_ADMIN_FAMILY_NAME=Lonn
+            - COMANAGE_REGISTRY_ADMIN_USERNAME=el@sunet.se
+            - COMANAGE_REGISTRY_DATASOURCE=Database/Postgres
+            - COMANAGE_REGISTRY_DATABASE=registry
+            - COMANAGE_REGISTRY_DATABASE_HOST=comanage-registry-database
+            - COMANAGE_REGISTRY_DATABASE_USER=registry_user
+            - COMANAGE_REGISTRY_DATABASE_USER_PASSWORD=password
+            - COMANAGE_REGISTRY_EMAIL_FROM='gandalf@rayceem.com'
+            - COMANAGE_REGISTRY_EMAIL_TRANSPORT=Smtp
+            - COMANAGE_REGISTRY_EMAIL_HOST=tls://mail.rayceem.com
+            - COMANAGE_REGISTRY_EMAIL_PORT=465
+            - COMANAGE_REGISTRY_EMAIL_ACCOUNT=gandalf@rayceem.com
+            - COMANAGE_REGISTRY_EMAIL_ACCOUNT_PASSWORD=noneshallpass
+            - COMANAGE_REGISTRY_SECURITY_SALT=AxaUFbTHxsp3FxbPPg4gxwIg7EQaGhAAJ2eK7MEr
+            - COMANAGE_REGISTRY_SECURITY_SEED=44945979849744262062226257207
+            - SHIBBOLETH_SP_ENTITY_ID=https://comanage.sunet.se/shibboleth
+            - SHIBBOLETH_SP_CERT=/run/secrets/shibboleth_sp_cert_file
+            - SHIBBOLETH_SP_PRIVKEY=/run/secrets/shibboleth_sp_privkey_file
+            - SHIBBOLETH_SP_SAMLDS_URL=https://comanage.sunet.se/registry/pages/eds/index
+            - SHIBBOLETH_SP_METADATA_PROVIDER_XML_FILE=/run/secrets/shibboleth_sp_metadata_xml
+            - HTTPS_CERT_FILE=/etc/dehydrated/certs/comanage.sunet.se.crt
+            - HTTPS_PRIVKEY_FILE=/etc/dehydrated/certs/comanage.sunet.se.key
+            - HTTPS_CHAIN_FILE=/etc/dehydrated/certs/comanage.sunet.se-chain.crt
+        ports:
+            - "443:443"
+
+    # Redirect http traffic to https or acme-c
+    alwayshttps:
+        image: docker.sunet.se/always-https
+        ports:
+            - 80:80
+        environment:
+            - "ACME_URL=http://acme-c.sunet.se"
