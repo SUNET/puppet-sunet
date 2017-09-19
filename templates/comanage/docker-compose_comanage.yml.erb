@@ -21,6 +21,7 @@ services:
         volumes:
             - /opt/comanage-registry-deployment/slapd-data:/var/lib/ldap
             - /opt/comanage-registry-deployment/slapd-config:/etc/ldap/slapd.d
+            - /var/run/slapd:/var/run/slapd
             - /opt/comanage-registry-deployment/secrets:/run/secrets
             - /etc/passwd:/etc/passwd:ro
             - /etc/group:/etc/group:ro
@@ -37,12 +38,18 @@ services:
 
     comanage-registry:
         image: comanage-registry:hotfix-2.0.x-shibboleth-sp
+        depends_on:
+            - comanage-registry-ldap
+            - comanage-registry-database
         volumes:
             - /opt/comanage-registry-deployment/secrets:/run/secrets
             - /etc/dehydrated/certs:/etc/dehydrated/certs:ro
+            - /var/run/shibboleth:/var/run/shibboleth
+#            - /etc/shibboleth:/opt/shibboleth-sp/etc/shibboleth
+            - /var/run/apache2:/var/run/apache2
             - /dev/log:/dev/log:rw
-            - /etc/passwd:/etc/passwd:ro
-            - /etc/group:/etc/group:ro
+#            - /etc/passwd:/etc/passwd:ro
+#            - /etc/group:/etc/group:ro
         environment:
             - COMANAGE_REGISTRY_ADMIN_GIVEN_NAME=Einar
             - COMANAGE_REGISTRY_ADMIN_FAMILY_NAME=Lonn
@@ -71,11 +78,10 @@ services:
         ports:
             - "443:443"
 
-    # Redirect http traffic to https or acme-c
-    alwayshttps:
-        image: docker.sunet.se/always-https
-        ports:
-            - 80:80
-        environment:
-            - "ACME_URL=http://acme-c.sunet.se"
-
+        # Redirect http traffic to https or acme-c
+        alwayshttps:
+            image: docker.sunet.se/always-https
+            ports:
+                - 80:80
+            environment:
+                - "ACME_URL=http://acme-c.sunet.se"
