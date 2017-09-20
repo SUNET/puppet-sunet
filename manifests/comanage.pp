@@ -61,4 +61,30 @@ class sunet::comanage (
         content => $content,
     }
 
+    # Get a postgres backup up and running
+    file { "/opt/comanage-backup/postgres":
+        ensure  => directory,
+        owner   => 'postgres',
+        group   => 'postgres',
+        path    => "/opt/comanage-backup/postgres",
+        mode    => '0755',
+    }
+    file { '/root/postgres_backup.sh':
+        ensure  => file,
+        owner   => 'postgres',
+        group   => 'postgres',
+        path    => '/root/postgres_backup.sh',
+        mode    => '0770',
+        content => template('sunet/comanage/postgres_backup.erb'),
+    }
+    sunet::scriptherder::cronjob { 'postgres_backup':
+         cmd           => 'docker exec postgres /root/postgres_backup.sh',
+         minute        => '4',
+         hour          => '3',
+         ok_criteria   => ['exit_status=0', 'max_age=25h'],
+         warn_criteria => ['exit_status=0', 'max_age=49h'],
+    }
+
+
+
 }
