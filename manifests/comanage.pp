@@ -1,5 +1,4 @@
 class sunet::comanage (
-    $user          = 'root',
     $home          = '/root/comanage',
     $comanage_dir  = '/opt/comanage-registry-deployment',
 ) {
@@ -69,22 +68,20 @@ class sunet::comanage (
         path    => "/opt/comanage-backup/postgres",
         mode    => '0755',
     }
-    file { '/root/postgres_backup.sh':
+    file { '/opt/comanage-backup/postgres_backup.sh':
         ensure  => file,
         owner   => 'postgres',
         group   => 'postgres',
-        path    => '/root/postgres_backup.sh',
+        path    => '/opt/comanage-backup/postgres_backup.sh',
         mode    => '0770',
         content => template('sunet/comanage/postgres_backup.erb'),
     }
     sunet::scriptherder::cronjob { 'postgres_backup':
-         cmd           => 'docker exec postgres /root/postgres_backup.sh',
+         cmd           => 'docker exec postgres /opt/comanage-backup/postgres_backup.sh',
          minute        => '4',
          hour          => '3',
          ok_criteria   => ['exit_status=0', 'max_age=25h'],
          warn_criteria => ['exit_status=0', 'max_age=49h'],
     }
-
-
 
 }

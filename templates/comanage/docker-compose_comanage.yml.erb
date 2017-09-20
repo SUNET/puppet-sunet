@@ -5,6 +5,7 @@ services:
         volumes:
             - /opt/comanage-registry-deployment/postgres-data:/var/lib/postgresql/data
             - /opt/comanage-registry-deployment/secrets:/run/secrets
+            - /opt/comanage-backup:/opt/comanage-backup
             - /etc/passwd:/etc/passwd:ro
             - /etc/group:/etc/group:ro
         environment:
