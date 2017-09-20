@@ -77,7 +77,7 @@ class sunet::comanage (
         content => template('sunet/comanage/postgres_backup.erb'),
     }
     sunet::scriptherder::cronjob { 'postgres_backup':
-         cmd           => 'docker exec postgres /opt/comanage-backup/postgres_backup.sh',
+         cmd           => 'docker exec comanage_comanage-registry-database_1 /opt/comanage-backup/postgres_backup.sh',
          minute        => '4',
          hour          => '3',
          ok_criteria   => ['exit_status=0', 'max_age=25h'],
