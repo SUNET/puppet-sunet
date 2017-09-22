@@ -52,6 +52,14 @@ class sunet::comanage (
         mode    => '0755',
     }
 
+    # Create all the secrets from Hiera
+    $postgres_password = hiera('postgres_password', 'NOT_SET_IN_HIERA')
+    $comanage_postgres_password = hiera('comanage_postgres_password', 'NOT_SET_IN_HIERA')
+    $openldap_root_password = hiera('openldap_root_password', 'NOT_SET_IN_HIERA')
+    $comanage_email_password = hiera('comanage_email_password', 'NOT_SET_IN_HIERA')
+    $comanage_security_salt = hiera('comanage_security_salt', 'NOT_SET_IN_HIERA')
+    $comanage_security_seed = hiera('comanage_security_seed', 'NOT_SET_IN_HIERA')
+
     $content = template('sunet/comanage/docker-compose_comanage.yml.erb')
     sunet::docker_compose {'comanage_docker_compose':
         service_name => 'comanage',
