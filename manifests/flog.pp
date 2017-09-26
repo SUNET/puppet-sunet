@@ -73,9 +73,10 @@ class sunet::flog {
       depends     => ['flog-db']
    }
    sunet::docker_run {'flog_app_import':
-      image       => 'docker.sunet.se/flog/flog_app',
-      volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/'],
-      depends     => ['flog-db']
+      image    => 'docker.sunet.se/flog/flog_app',
+      imagetag => 'stable',
+      volumes  => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/'],
+      depends  => ['flog-db']
    }
    sunet::docker_run {'memcached':
       image       => 'docker.sunet.se/library/memcached',
