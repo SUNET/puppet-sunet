@@ -57,6 +57,12 @@ class sunet::flog {
        mode    => '0640',
        content => template('sunet/flog/dotenv.erb'),
    } ->
+   file {'/opt/flog/static':
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'www-data',
+      mode   => '1775',
+   } ->
    file {'/var/log/flog_cron':
       ensure => 'directory',
       owner  => 'root',
@@ -69,7 +75,7 @@ class sunet::flog {
    }
    sunet::docker_run {'flog_app':
       image       => 'docker.sunet.se/flog/flog_app',
-      volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/'],
+      volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/','/opt/flog/static/:/opt/flog/flog/static/'],
       depends     => ['flog-db']
    }
    sunet::docker_run {'flog_app_import':
@@ -84,7 +90,7 @@ class sunet::flog {
    sunet::docker_run {'flog_nginx':
       image     => 'docker.sunet.se/eduid/nginx',
       ports     => ['80:80', '443:443'],
-      volumes   => ['/opt/flog/nginx/sites-enabled/:/etc/nginx/sites-enabled/','/opt/flog/nginx/certs/:/etc/nginx/certs', '/var/log/flog_nginx/:/var/log/nginx'],
+      volumes   => ['/opt/flog/nginx/sites-enabled/:/etc/nginx/sites-enabled/','/opt/flog/nginx/certs/:/etc/nginx/certs', '/var/log/flog_nginx/:/var/log/nginx', '/opt/flog/static/:/var/www/static/'],
       depends   => ['flog-app']
    }
 }
