@@ -5,14 +5,15 @@ services:
         volumes:
             - /opt/comanage-registry-deployment/postgres-data:/var/lib/postgresql/data
             - /opt/comanage-registry-deployment/secrets:/run/secrets
+            - /opt/comanage-backup:/opt/comanage-backup
             - /etc/passwd:/etc/passwd:ro
             - /etc/group:/etc/group:ro
         environment:
             - POSTGRES_USER=postgres
-            - POSTGRES_PASSWORD=password
+            - POSTGRES_PASSWORD=<%= @postgres_password %>
             - COMANAGE_REGISTRY_POSTGRES_DATABASE=registry
             - COMANAGE_REGISTRY_POSTGRES_USER=registry_user
-            - COMANAGE_REGISTRY_POSTGRES_USER_PASSWORD=password
+            - COMANAGE_REGISTRY_POSTGRES_USER_PASSWORD=<%= @comanage_postgres_password %>
         ports:
             - "5432:5432"
 
@@ -29,7 +30,7 @@ services:
             - SLAPD_CERT_FILE=/run/secrets/slapd_cert_file
             - SLAPD_PRIVKEY_FILE=/run/secrets/slapd_privkey_file
             - SLAPD_CHAIN_FILE=/run/secrets/slapd_chain_file
-            - OLC_ROOT_PW=password
+            - OLC_ROOT_PW=<%= @openldap_root_password %>
             - OLC_SUFFIX=dc=sunet,dc=se
             - OLC_ROOT_DN=cn=el,dc=sunet,dc=se
         ports:
@@ -45,7 +46,6 @@ services:
             - /opt/comanage-registry-deployment/secrets:/run/secrets
             - /etc/dehydrated/certs:/etc/dehydrated/certs:ro
             - /var/run/shibboleth:/var/run/shibboleth
-#            - /etc/shibboleth:/opt/shibboleth-sp/etc/shibboleth
             - /var/run/apache2:/var/run/apache2
             - /dev/log:/dev/log:rw
 #            - /etc/passwd:/etc/passwd:ro
@@ -58,15 +58,15 @@ services:
             - COMANAGE_REGISTRY_DATABASE=registry
             - COMANAGE_REGISTRY_DATABASE_HOST=comanage-registry-database
             - COMANAGE_REGISTRY_DATABASE_USER=registry_user
-            - COMANAGE_REGISTRY_DATABASE_USER_PASSWORD=password
+            - COMANAGE_REGISTRY_DATABASE_USER_PASSWORD=<%= @comanage_postgres_password %>
             - COMANAGE_REGISTRY_EMAIL_FROM='gandalf@rayceem.com'
             - COMANAGE_REGISTRY_EMAIL_TRANSPORT=Smtp
             - COMANAGE_REGISTRY_EMAIL_HOST=tls://mail.rayceem.com
             - COMANAGE_REGISTRY_EMAIL_PORT=465
             - COMANAGE_REGISTRY_EMAIL_ACCOUNT=gandalf@rayceem.com
-            - COMANAGE_REGISTRY_EMAIL_ACCOUNT_PASSWORD=noneshallpass
-            - COMANAGE_REGISTRY_SECURITY_SALT=AxaUFbTHxsp3FxbPPg4gxwIg7EQaGhAAJ2eK7MEr
-            - COMANAGE_REGISTRY_SECURITY_SEED=44945979849744262062226257207
+            - COMANAGE_REGISTRY_EMAIL_ACCOUNT_PASSWORD=<%= @comanage_email_password %>
+            - COMANAGE_REGISTRY_SECURITY_SALT=<%= @comanage_security_salt %>
+            - COMANAGE_REGISTRY_SECURITY_SEED=<%= @comanage_security_seed %>
             - SHIBBOLETH_SP_ENTITY_ID=https://comanage.sunet.se/shibboleth
             - SHIBBOLETH_SP_CERT=/run/secrets/shibboleth_sp_cert_file
             - SHIBBOLETH_SP_PRIVKEY=/run/secrets/shibboleth_sp_privkey_file
