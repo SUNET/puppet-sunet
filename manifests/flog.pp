@@ -74,14 +74,16 @@ class sunet::flog {
       volumes     => ['/etc/ssl:/etc/ssl', '/var/docker/postgresql_data/:/var/lib/postgresql/','/var/log/flog_db/:/var/log/postgresql/'],
    }
    sunet::docker_run {'flog_app':
-      image       => 'docker.sunet.se/flog/flog_app',
-      volumes     => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/','/opt/flog/static/:/opt/flog/flog/static/'],
-      depends     => ['flog-db']
+      image   => 'docker.sunet.se/flog/flog_app',
+      volumes => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/','/opt/flog/static/:/opt/flog/flog/static/'],
+      env     => ['workers=4','worker_threads=2']
+      depends => ['flog-db']
    }
    sunet::docker_run {'flog_app_import':
       image    => 'docker.sunet.se/flog/flog_app',
       imagetag => 'stable',
       volumes  => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/'],
+      env      => ['workers=2']
       depends  => ['flog-db']
    }
    sunet::docker_run {'memcached':
