@@ -76,14 +76,14 @@ class sunet::flog {
    sunet::docker_run {'flog_app':
       image   => 'docker.sunet.se/flog/flog_app',
       volumes => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/','/opt/flog/static/:/opt/flog/flog/static/'],
-      env     => ['workers=4','worker_threads=2']
+      env     => ['workers=4','worker_threads=2'],
       depends => ['flog-db']
    }
    sunet::docker_run {'flog_app_import':
       image    => 'docker.sunet.se/flog/flog_app',
       imagetag => 'stable',
       volumes  => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/'],
-      env      => ['workers=2']
+      env      => ['workers=2'],
       depends  => ['flog-db']
    }
    sunet::docker_run {'memcached':
