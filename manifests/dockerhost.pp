@@ -16,7 +16,7 @@ class sunet::dockerhost(
 ) {
 
   # Remove old versions, if installed
-  package { ['lxc-docker-1.6.2', 'lxc-docker'] :
+  package { ['lxc-docker-1.6.2', 'lxc-docker', 'docker-engine'] :
      ensure => 'purged',
   } ->
 
@@ -29,10 +29,14 @@ class sunet::dockerhost(
   # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
   #
   apt::source {'docker_official':
-     location => 'https://apt.dockerproject.org/repo',
-     release  => "ubuntu-${::lsbdistcodename}",
+    ensure   => 'absent',
+  }
+
+  apt::source {'docker_ce':
+     location => 'https://download.docker.com/linux/ubuntu',
+     release  => ${::lsbdistcodename},
      repos    => 'main',
-     key      => { 'id'     => '58118E89F3A912897C070ADBF76221572C52609D',
+     key      => { 'id'     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
                    'server' => 'keyserver.ubuntu.com' },
      include  => { 'src' => false },
   }
@@ -40,12 +44,12 @@ class sunet::dockerhost(
   exec { 'dockerhost_apt_get_update':
      command     => '/usr/bin/apt-get update',
      cwd         => '/tmp',
-     require     => Apt::Source['docker_official'],
-     subscribe   => Apt::Source['docker_official'],
+     require     => Apt::Source['docker_ce'],
+     subscribe   => Apt::Source['docker_ce'],
      refreshonly => true,
   }
 
-  package { 'docker-engine' :
+  package { 'docker-ce' :
      ensure => $docker_version,
      require => Exec['dockerhost_apt_get_update'],
   }
