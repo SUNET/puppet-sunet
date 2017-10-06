@@ -61,9 +61,9 @@ services:
             - COMANAGE_REGISTRY_DATABASE_USER_PASSWORD=<%= @comanage_postgres_password %>
             - COMANAGE_REGISTRY_EMAIL_FROM='comanage@sunet.se'
             - COMANAGE_REGISTRY_EMAIL_TRANSPORT=Smtp
-            - COMANAGE_REGISTRY_EMAIL_HOST=tls://smtp.sunet.se
+            - COMANAGE_REGISTRY_EMAIL_HOST=smtp.sunet.se
             - COMANAGE_REGISTRY_EMAIL_PORT=587
-            - COMANAGE_REGISTRY_EMAIL_ACCOUNT=comanage@sunet.se
+            - COMANAGE_REGISTRY_EMAIL_ACCOUNT=comanage
             - COMANAGE_REGISTRY_EMAIL_ACCOUNT_PASSWORD=<%= @comanage_email_password %>
             - COMANAGE_REGISTRY_SECURITY_SALT=<%= @comanage_security_salt %>
             - COMANAGE_REGISTRY_SECURITY_SEED=<%= @comanage_security_seed %>
