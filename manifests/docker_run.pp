@@ -19,6 +19,7 @@ define sunet::docker_run(
   $after_start         = undef, # command executed before starting
   $after_stop          = undef, # command executed before stopping
   $use_unbound         = false, # deprecated, kept for compatibility
+  $ensure              = 'present',
 ) {
   if $use_unbound {
     warning("docker-unbound is deprecated, container name resolution should continue to work using docker network with DNS")
@@ -65,6 +66,7 @@ define sunet::docker_run(
     after_start        => $after_start,
     after_stop         => $after_stop,
     docker_service     => true,  # the service 'docker' is maintainer by puppet, so depend on it
+    ensure             => $ensure,
   }
 
   # Remove the upstart file created by earlier versions of garethr-docker
