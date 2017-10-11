@@ -13,7 +13,7 @@ StartLimitBurst=5
 TimeoutStartSec=0
 RestartSec=5
 # Restore /var/lib/unbound/root.key if it is not functional (due to being updated while the disk was full probably)
-ExecStart=-/usr/sbin/unbound-anchor -a /var/lib/unbound/root.key
+ExecStartPre=-/usr/sbin/unbound-anchor -a /var/lib/unbound/root.key
 ExecStart=/usr/sbin/unbound -d
 
 [Install]
