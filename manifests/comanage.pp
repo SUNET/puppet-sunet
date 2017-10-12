@@ -66,7 +66,7 @@ class sunet::comanage (
         group   => '_shibd',
         path    => '/etc/shibboleth/shibboleth2.xml',
         mode    => '0660',
-        content => template('sunet/comanage/shibboleth.erb'),
+        content => template('sunet/comanage/shibboleth2.erb'),
     }
 
     $content = template('sunet/comanage/docker-compose_comanage.yml.erb')
