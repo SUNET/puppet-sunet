@@ -32,12 +32,14 @@ class sunet::frontend::load_balancer(
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
                          ],
     }
-    sunet::frontend::haproxy { 'load_balancer':
-      basedir          => "${basedir}/haproxy",
-      confdir          => $confdir,
-      apidir           => $apidir,
-      haproxy_image    => $config['load_balancer']['haproxy_image'],
-      haproxy_imagetag => $config['load_balancer']['haproxy_imagetag'],
+    sunet::frontend::haproxy { 'load-balancer':
+      basedir               => "${basedir}/haproxy",
+      confdir               => $confdir,
+      apidir                => $apidir,
+      haproxy_image         => $config['load_balancer']['haproxy_image'],
+      haproxy_imagetag      => $config['load_balancer']['haproxy_imagetag'],
+      port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
+      static_backends       => $config['load_balancer']['static_backends'],
     }
     sunet::frontend::api { 'sunetfrontend':
       basedir => $apidir,
@@ -251,6 +253,7 @@ define load_balancer_website(
     sunet::dehydrated::client_define { $name :
       domain => $name,
       server => $letsencrypt_server,
+      ssh_id => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
     }
   }
 }

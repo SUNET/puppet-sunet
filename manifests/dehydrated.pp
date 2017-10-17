@@ -17,10 +17,6 @@ class sunet::dehydrated(
   }
   $thedomains = $conf['domains']
 
-  #validate_array($thedomains)
-  #each($thedomains) |$domain_hash| {
-  #   validate_hash($domain_hash)
-  #}
   $ca = $staging ? {
      false => 'https://acme-v01.api.letsencrypt.org/directory',
      true  => 'https://acme-staging.api.letsencrypt.org/directory'
@@ -84,6 +80,12 @@ class sunet::dehydrated(
   if ($apache) {
     sunet::dehydrated::apache_server { 'dehydrated_apache_server': }
   }
+  if has_key($conf, 'clients') {
+    $clients = $conf['clients']
+  } else {
+    $clients = false
+  }
+
   each($thedomains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
@@ -91,6 +93,14 @@ class sunet::dehydrated(
             ssh_key_type => $info['ssh_key_type'],
             ssh_key      => $info['ssh_key']
          }
+      }
+      if (is_hash($clients) and has_key($info, 'clients')) {
+        each($info['clients']) |$client| {
+          sunet::rrsync { "/etc/dehydrated/certs/$domain":
+            ssh_key_type => $clients[$client]['ssh_key_type'],
+            ssh_key      => $clients[$client]['ssh_key']
+          }
+        }
       }
     }
   }
@@ -171,6 +181,7 @@ class sunet::dehydrated::client(
   String  $user='root',
   Boolean $ssl_links=false,
   Boolean $check_cert=false,
+  Optional[String] $ssh_id=undef,
 ) {
   sunet::dehydrated::client_define { "domain_${domain}":
     domain     => $domain,
@@ -178,6 +189,7 @@ class sunet::dehydrated::client(
     user       => $user,
     ssl_links  => $ssl_links,
     check_cert => $check_cert,
+    ssh_id     => $ssh_id,
   }
 }
 
@@ -188,6 +200,7 @@ define sunet::dehydrated::client_define(
   String  $user='root',
   Boolean $ssl_links=false,
   Boolean $check_cert=false,
+  Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
 ) {
   $home = $user ? {
     'root'  => '/root',
@@ -205,11 +218,15 @@ define sunet::dehydrated::client_define(
     })
   ensure_resource('sunet::ssh_keyscan::host', $server)
 
-  sunet::snippets::secret_file { "$home/.ssh/id_${domain}":
-    hiera_key => "${domain}_ssh_key"
-  } ->
+  $_ssh_id = $ssh_id ? {
+    undef   => $domain,
+    default => $ssh_id,
+  }
+  ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
+    hiera_key => "${_ssh_id}_ssh_key",
+    })
   cron { "rsync_dehydrated_${domain}":
-    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${domain}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
+    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
     user    => $user,
     hour    => '*',
     minute  => '13'
