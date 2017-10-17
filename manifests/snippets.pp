@@ -80,14 +80,14 @@ define sunet::snippets::ssh_keygen($key_file=undef) {
    }
 }
 
-define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096) {
+define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096,$days=3650) {
    exec { "${title}_key":
       command => "openssl genrsa -out $key_file $size",
       onlyif  => "test ! -f $key_file",
       creates => $key_file
    } ->
    exec { "${title}_cert":
-      command => "openssl req -x509 -sha256 -new -subj \"/CN=${title}\" -key $key_file -out $cert_file",
+      command => "openssl req -x509 -sha256 -new -days $days -subj \"/CN=${title}\" -key $key_file -out $cert_file",
       onlyif  => "test ! -f $cert_file -a -f $key_file",
       creates => $cert_file
    }
@@ -113,7 +113,7 @@ define sunet::snippets::disable_ipv6_privacy() {
 # Set up scriptherder. XXX scriptherder is not *installed* here. Figure out how to.
 define sunet::snippets::scriptherder() {
   $scriptherder_dir = '/var/cache/scriptherder'
-  $delete_older_than = hiera('delete_older_than', 6)
+  $scriptherder_delete_older_than = hiera('scriptherder_delete_older_than', 6)
 
   file {
     '/etc/scriptherder':
@@ -132,7 +132,7 @@ define sunet::snippets::scriptherder() {
 
   # Remove scriptherder data older than 7 days.
   cron { 'scriptherder_cleanup':
-    command  => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${delete_older_than} -print0 | xargs -0 rm -f)",
+    command  => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${scriptherder_delete_older_than} -print0 | xargs -0 rm -f)",
     user     => 'root',
     special  => 'daily',
   }

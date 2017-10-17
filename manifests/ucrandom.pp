@@ -1,8 +1,8 @@
 define sunet::ucrandom(
    $port="4711",
    $device="/dev/random") {
-   
-   file {'/usr/bin/ucrandom': 
+
+   file {'/usr/bin/ucrandom':
       owner   => root,
       group   => root,
       mode    => '0755',
@@ -14,12 +14,11 @@ define sunet::ucrandom(
       owner   => root,
       group   => root,
       mode    => '0660',
-      replace => no,
       content => template("sunet/ucrandom/default.erb")
    }
    case $::init_type {
       'upstart': {
-         file {'/etc/init/ucrandom.conf': 
+         file {'/etc/init/ucrandom.conf':
            ensure  => file,
            owner   => root,
            group   => root,

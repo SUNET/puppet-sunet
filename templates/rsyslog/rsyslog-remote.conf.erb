@@ -1,0 +1,4 @@
+# Remote syslog
+<% @syslog_servers.each do |server| -%>
+*.*      @<%= server %>
+<% end -%>

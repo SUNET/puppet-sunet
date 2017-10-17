@@ -2,16 +2,16 @@ define sunet::metadata($url=undef,
                        $cert=undef,
                        $filename=undef) 
 {
-   ensure_resource('package',['opensaml2-tools','wget'],{ensure => present})
+   ensure_resource('package',['opensaml2-tools','wget','xmlsec1'],{ensure => present})
    $local = $filename ? {
-      undef   => $name,
-      default => $local
+      undef   => $title,
+      default => $filename
    }
    $verify = $cert ? {
       undef   => "test -s ${local}.tmp",
-      default => "samlsign -f ${local}.tmp -c ${cert}"
+      default => "xmlsec1 --verify --pubkey-cert-pem ${cert} --id-attr:ID  urn:oasis:names:tc:SAML:2.0:metadata:EntitiesDescriptor ${local}.tmp"
    }
-   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
+   $safe_name = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G')
    $fetch = "fetch_${safe_name}"
    cron {$fetch:
       command => "/usr/bin/wget --no-check-certificate -q ${url} -N -O ${local}.tmp && chmod 0644 ${local}.tmp && ${verify} && mv ${local}.tmp ${local}",

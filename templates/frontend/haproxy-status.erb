@@ -1,0 +1,185 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import socket
+import logging
+import argparse
+import requests
+
+logger = None
+
+_defaults = {'stats_url': 'http://127.0.0.1:9000/haproxy_stats;csv',
+             'syslog': False,
+             'debug': False,
+             'interface': 'lo',
+             }
+
+
+def parse_args(defaults):
+    parser = argparse.ArgumentParser(description = 'haproxy status checker',
+                                     add_help = True,
+                                     formatter_class = argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    parser.add_argument('site',
+                        nargs='+',
+                        metavar='STR',
+                        help='Site to check, in key-value format (e.g. "site=www.dev.eduid.se; min_up=2")',
+    )
+    parser.add_argument('--debug',
+                        dest = 'debug',
+                        action = 'store_true', default = defaults['debug'],
+                        help = 'Enable debug operation',
+    )
+    parser.add_argument('--syslog',
+                        dest = 'syslog',
+                        action = 'store_true', default = defaults['syslog'],
+                        help = 'Enable syslog output',
+    )
+    parser.add_argument('--stats_url',
+                        dest = 'stats_url',
+                        default = defaults['stats_url'],
+                        help = 'haproxy stats URL (CSV format)',
+                        metavar = 'URL',
+    )
+    args = parser.parse_args()
+    return args
+
+
+def haproxy_execute(cmd, args):
+    if args.stats_url.startswith('http'):
+        logger.debug('Fetching haproxy stats from {}'.format(args.stats_url))
+        data = requests.get(args.stats_url).text
+    else:
+        socket_fn = args.socket_fn
+        if socket_fn.startswith('file://'):
+            socket_fn = socket_fn[len('file://'):]
+        logger.debug('opening AF_UNIX socket {} for command "{}"'.format(socket_fn, cmd))
+        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        client.connect(socket_fn)
+        client.send(cmd + '\n')
+
+        data = ''
+        while True:
+            this = client.recv(1)
+            if not this:
+                break
+            data += this
+
+    logger.debug('haproxy result: {}'.format(data))
+    return data
+
+
+def get_status(args):
+    data = haproxy_execute('show stat', args)
+    if not data:
+        return None
+    lines = data.split('\n')
+    if not lines[0].startswith('# '):
+        logger.error('Unknown status response from haproxy: {}'.format(data))
+    fields = lines[0][2:].split(',')
+    if len(lines) < 2:
+        logger.warning('haproxy did not return status for any backends: {}'.format(data))
+        return None
+    status = {}
+    lines = lines[1:]
+    for line in lines:
+        if not line:
+            continue
+        values = line.split(',')
+        if len(values) != len(fields):
+            logger.warning('Values ({}) does not match legend ({}): {}'.format(len(values), len(fields), line))
+            continue
+        site = values[0]
+        host = values[1]
+        if site not in status:
+            status[site] = {}
+        status[site][host] = {}
+        for i in range(len(fields)):
+            status[site][host][fields[i]] = values[i]
+
+    for site in status.keys():
+        for backend in status[site].keys():
+            logger.debug('Site {} backend {}, status {}'.format(site, backend, status[site][backend].get('status')))
+    return status
+
+
+def check_site(params, data, my_ips):
+    logger.debug('Processing site {}, params {}, backends {}'.format(params['site'], params, data.keys()))
+    site = params['site']
+    backends_up = _count_backends_up(data)
+    logger.debug('Backends UP: {}'.format(backends_up))
+    min_up= params.get('min_up', 1)
+    if backends_up < int(min_up):
+        logger.debug('Fewer than {} backends up ({})'.format(min_up, backends_up))
+        return ['DOWN backends_up={}'.format(backends_up)]
+    return ['UP backends_up={}'.format(backends_up)]
+
+
+def _count_backends_up(data):
+    backends = [x for x in data.keys() if x != 'BACKEND' and data[x]['status'] == 'UP']
+    return len(backends)
+
+
+def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _defaults, my_ips=None):
+    if not args:
+        args = parse_args(defaults)
+
+    global logger
+    # initialize various components
+    if logger_in:
+        logger = logger_in
+    else:
+        logger = logging.getLogger(myname)
+        if args.debug:
+            logger.setLevel(logging.DEBUG)
+            # log to stderr when debugging
+            formatter = logging.Formatter('%(asctime)s %(name)s %(threadName)s: %(levelname)s %(message)s')
+            stream_h = logging.StreamHandler(sys.stderr)
+            stream_h.setFormatter(formatter)
+            logger.addHandler(stream_h)
+    if args.syslog:
+        syslog_h = logging.handlers.SysLogHandler()
+        formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
+        syslog_h.setFormatter(formatter)
+        logger.addHandler(syslog_h)
+
+
+    status = get_status(args)
+
+    output = []
+    for this in args.site:
+        #import json
+        #params = json.loads(this)
+        params = {}
+        # Parse strings such as 'site=www.dev.eduid.se; index=1; ips=1,2,3'
+        for kv in this.split(';'):
+            k, v = kv.split('=')
+            k = k.strip()
+            v = v.strip()
+            params[k] = v
+        logger.debug('Parsed params {}'.format(params))
+        site = params['site']
+        if site not in status:
+            logger.debug('Site {} not found in haproxy status'.format(site))
+            continue
+        res = check_site(params, status[site], my_ips)
+        if res:
+            output += res
+
+    print('\n'.join(output))
+    return output != []
+
+
+if __name__ == '__main__':
+    try:
+        progname = os.path.basename(sys.argv[0])
+        res = main(progname)
+        if res is True:
+            sys.exit(0)
+        if res is False:
+            sys.exit(1)
+        sys.exit(int(res))
+    except KeyboardInterrupt:
+        sys.exit(0)

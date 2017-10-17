@@ -92,8 +92,8 @@ define sunet::etcd_node(
    }
 
    $ports = $expose_ports ? {
-     true => ["${expose_port_pre}2380:2380",
-              "${expose_port_pre}2379:2379",
+     true => ["${expose_port_pre}:2380:2380",
+              "${expose_port_pre}:2379:2379",
               "${::ipaddress_docker0}:4001:2379",
               ],
      false => []

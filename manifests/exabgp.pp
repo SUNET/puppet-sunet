@@ -1,17 +1,18 @@
 include stdlib
 
 define sunet::exabgp(
-   $extra_arguments = [], 
-   $config          = "/etc/bgp/exabgp.conf",
-   $version         = 'latest',
-   $port            = 179,
-   $volume          = "/etc/bgp"
+  Array   $extra_arguments = [],
+  String  $config          = '/etc/bgp/exabgp.conf',
+  String  $version         = 'latest',
+  Integer $port            = 179,
+  String  $volume          = '/etc/bgp',
+  Array   $docker_volumes  = [],
 ) {
    $safe_title = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G');
    sunet::docker_run {"${safe_title}_exabgp":
-      image       => 'docker.sunet.se/exabgp',
+      image       => 'docker.sunet.se/sunet/docker-sunet-exabgp',
       imagetag    => $version,
-      volumes     => ["${volume}:${volume}:ro"],
+      volumes     => flatten(["${volume}:${volume}:ro", $docker_volumes]),
       ports       => ["${port}:${port}"],
       net         => 'host',
       command     => join(flatten([$config,$extra_arguments])," ")

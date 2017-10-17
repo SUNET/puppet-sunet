@@ -1,32 +1,32 @@
 # Set up and run Redis
 define sunet::redis::server(
-  $port            = '6379',
-  $bind            = '0.0.0.0',
-  $daemonize       = 'no',
-  $username        = 'redis',
-  $group           = 'redis',
-  $allow_clients   = [],
-  $cluster_nodes   = [],
-  $cluster_config  = 'no',
-  $cluster_name    = 'redis-cluster',
-  $sentinel_config = 'no',
-  $master_ip       = pick($cluster_nodes[0], $::ipaddress_eth0, $::ipaddress_bond0),
-  $master_port     = '6379',
-  $docker_image    = 'docker.sunet.se/eduid/redis',
-  $basedir         = "/opt/redis/${name}"
+  String            $port            = '6379',
+  String            $bind            = '0.0.0.0',
+  Enum['yes', 'no'] $daemonize       = 'no',
+  String            $username        = 'redis',
+  String            $group           = 'redis',
+  Array             $allow_clients   = [],
+  Array             $cluster_nodes   = [],
+  Enum['yes', 'no'] $cluster_config  = 'no',
+  String            $cluster_name    = 'redis-cluster',
+  Enum['yes', 'no'] $sentinel_config = 'no',
+  String            $master_ip       = pick($cluster_nodes[0], $::ipaddress_default),
+  String            $master_port     = '6379',
+  Optional[String]  $docker_image    = 'docker.sunet.se/eduid/redis',
+  String            $basedir         = "/opt/redis/${name}"
   ) {
 
   $env = $sentinel_config ? {
-    'yes' => ['extra_args=--sentinel'],
+    'yes'   => ['extra_args=--sentinel'],
     default => [],
   }
 
   # Configure all nodes as slaveof $master_ip, unless this node actually has $master_ip on eth0/bond0
   $slave_node = $master_ip ? {
-    $::ipaddress_eth0  => 'no',
-    $::ipaddress_bond0 => 'no',
+    $::ipaddress_eth0    => 'no',
+    $::ipaddress_bond0   => 'no',
     $::ipaddress_default => 'no',
-    default            => 'yes',
+    default              => 'yes',
   }
 
   sunet::misc::ufw_allow { "${name}_allow_clients":
@@ -73,16 +73,18 @@ define sunet::redis::server(
       group   => $group,
       require => Sunet::System_user[$username],
       ;
-  } ->
+  }
 
-  sunet::docker_run { $name:
-    image        => $docker_image,
-    imagetag     => 'latest',
-    net          => 'host',  # Required for Redis clustering/HA
-    volumes      => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf:ro",
-                     "${basedir}/data:/data",
-                     '/dev/log:/dev/log',
-                     ],
-    env          => flatten($env),
+  if $docker_image =~ String[1] {
+    sunet::docker_run { $name:
+      image    => $docker_image,
+      imagetag => 'latest',
+      net      => 'host',  # Required for Redis clustering/HA
+      volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf:ro",
+                   "${basedir}/data:/data",
+                   '/dev/log:/dev/log',
+                   ],
+      env      => flatten($env),
+    }
   }
 }

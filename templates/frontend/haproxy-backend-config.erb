@@ -1,0 +1,186 @@
+#!/usr/bin/env python
+#
+# Produce a haproxy 'backend' config section based on the backends that
+# are currently registered with the sunet-frontend-api.
+#
+
+import os
+import sys
+import time
+import yaml
+import logging
+import argparse
+
+logger = None
+
+_defaults = {'syslog': False,
+             'debug': False,
+             'max_age': 600,
+             }
+
+
+def parse_args(defaults):
+    parser = argparse.ArgumentParser(description = 'haproxy backend config generator',
+                                     add_help = True,
+                                     formatter_class = argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    # Positional arguments
+    parser.add_argument('site_name',
+                        metavar='SITENAME',
+                        help='Site name',
+    )
+    parser.add_argument('backend_dir',
+                        metavar='APIBACKENDDIR',
+                        help='Directory with API output files for this backend',
+    )
+    parser.add_argument('backend_conf',
+                        metavar='YAMLFILE',
+                        help='Path to yaml file with backend configuration data',
+    )
+
+    # Optional arguments
+    parser.add_argument('--max_age',
+                        dest = 'max_age',
+                        metavar = 'SECONDS', type = int,
+                        default = defaults['max_age'],
+                        help = 'Max backend file age to allow',
+    )
+    parser.add_argument('--debug',
+                        dest = 'debug',
+                        action = 'store_true', default = defaults['debug'],
+                        help = 'Enable debug operation',
+    )
+    parser.add_argument('--syslog',
+                        dest = 'syslog',
+                        action = 'store_true', default = defaults['syslog'],
+                        help = 'Enable syslog output',
+    )
+    args = parser.parse_args()
+    return args
+
+
+def backend_config(args):
+    """
+    For each backend defined in the YAML file (args.backend_conf), look for a
+    matching and current registration by the backend and produce haproxy backend
+    config statements.
+
+    Example YAML file:
+
+      ---
+      backends:
+        "130.242.130.200":
+          haproxy_config: "  server www-fre-1.eduid.se_v4 REMOTE_IP:PORT ssl check verify none"
+        "2001:6b0:54:c3:5054:ff:fea0:750":
+          haproxy_config: "  server www-fre-1.eduid.se_v6 REMOTE_IP:PORT ssl check verify none"
+
+    :returns: List of strings with haproxy backend config
+    :rtype: [str | unicode]
+    """
+    res = ['backend {}'.format(args.site_name)]
+    with open(args.backend_conf) as fd:
+        config = yaml.safe_load(fd)
+    files = []
+    for direntry in sorted(os.listdir(args.backend_dir)):
+        path = os.path.join(args.backend_dir, direntry)
+        if not os.path.isfile(path):
+            continue
+        files.append(path)
+
+    for be in sorted(config.get('backends', [])):
+        logger.info('Processing backend {}: {}'.format(be, config['backends'][be]))
+        haproxy_config_in = config['backends'][be]['haproxy_config']
+        for this in files:
+            if this.endswith('_{}.conf'.format(be)):
+                if get_fileage(this) > args.max_age:
+                    logger.info('Ignoring file {} that is older than max_age ({})'.format(this, args.max_age))
+                    continue
+
+                logger.debug('Found backend file {}'.format(this))
+                # Check file age before using this file
+
+                params = load_backend_file(this)
+                if params.get('ACTION') == 'register':
+                    haproxy_config = haproxy_config_in
+                    # whitelist what we substitute for now
+                    for subst in ['BACKEND', 'SERVER', 'PORT', 'REMOTE_IP']:
+                        if subst in params:
+                            haproxy_config = haproxy_config.replace(subst, params[subst])
+                    if haproxy_config != haproxy_config_in:
+                        logger.debug('haproxy config after substitution: {}'.format(haproxy_config))
+                    res.append(haproxy_config)
+                else:
+                    logger.debug('Ignoring backend with ACTION={}'.format(params.get('ACTION')))
+    return res + ['']
+
+def get_fileage(filename):
+    st = os.stat(filename)
+    mtime = st.st_mtime
+    real_now = int(time.time())
+    return int(real_now - mtime)
+
+def load_backend_file(filename):
+    """
+    Load a backend registration file, created by the sunet-frontend-api.
+
+    Example file:
+
+      ACTION=register
+      BACKEND=www.dev.eduid.se
+      SERVER=www-fre-1.eduid.se
+      REMOTE_IP=130.242.130.200
+      PORT=443
+
+    :returns: dict with the keys and their values
+    :rtype: dict
+    """
+    res = {}
+    fd = open(filename)
+    for line in fd.readlines():
+        while line.endswith('\n'):
+            line = line[:-1]
+        (head, sep, tail) = line.partition('=')
+        if head and tail:
+            res[head] = tail
+    return res
+
+def main(myname = 'haproxy-backend-config', args = None, logger_in = None, defaults = _defaults):
+    if not args:
+        args = parse_args(defaults)
+
+    global logger
+    # initialize various components
+    if logger_in:
+        logger = logger_in
+    else:
+        logger = logging.getLogger(myname)
+        if args.debug:
+            logger.setLevel(logging.DEBUG)
+            # log to stderr when debugging
+            formatter = logging.Formatter('%(asctime)s %(name)s %(threadName)s: %(levelname)s %(message)s')
+            stream_h = logging.StreamHandler(sys.stderr)
+            stream_h.setFormatter(formatter)
+            logger.addHandler(stream_h)
+    if args.syslog:
+        syslog_h = logging.handlers.SysLogHandler()
+        formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
+        syslog_h.setFormatter(formatter)
+        logger.addHandler(syslog_h)
+
+    output = backend_config(args)
+    print('\n'.join(output))
+    return output != []
+
+
+if __name__ == '__main__':
+    try:
+        progname = os.path.basename(sys.argv[0])
+        res = main(progname)
+        if res is True:
+            sys.exit(0)
+        if res is False:
+            sys.exit(1)
+        sys.exit(int(res))
+    except KeyboardInterrupt:
+        sys.exit(0)

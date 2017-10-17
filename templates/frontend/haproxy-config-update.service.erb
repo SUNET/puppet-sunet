@@ -1,0 +1,36 @@
+[Unit]
+Description=haproxy config updater
+After=network.target
+Wants=docker-load-balancer-haproxy.service
+#BindsTo=docker-load-balancer-haproxy.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+TimeoutSec=1
+ExecStart=/bin/sh -c "while true; do /opt/frontend/haproxy/scripts/haproxy-config-update; sleep 10; done"
+# Try to harden the service, because we can.
+ReadWriteDirectories=/opt/frontend/haproxy/etc
+ReadWriteDirectories=/opt/frontend/api/backends
+ReadOnlyDirectories=/opt
+# I don't know how to figure out which caps are actually required for the
+# file read/writing this script does :( so just remove the obvious ones
+CapabilityBoundingSet=~CAP_SYS_ADMIN
+CapabilityBoundingSet=~CAP_MAC_ADMIN
+CapabilityBoundingSet=~CAP_NET_ADMIN
+CapabilityBoundingSet=~CAP_SYS_MODULE
+CapabilityBoundingSet=~CAP_SYS_PTRACE
+# Get rid of all network sockets
+RestrictAddressFamilies=
+# These stolen from haveged.service
+SecureBits=noroot-locked
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+PrivateNetwork=yes
+ProtectSystem=full
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target

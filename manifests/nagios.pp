@@ -43,28 +43,37 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    sunet::nagios::nrpe_command {'check_load': 
       command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
    }
-   sunet::nagios::nrpe_command {'check_root': 
-      command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /'
+   if $::fqdn == 'docker.sunet.se' {
+      sunet::nagios::nrpe_command {'check_root':
+         command_line => '/usr/lib/nagios/plugins/check_disk -w 7% -c 5% -p /'
+      }
+   } else {
+      sunet::nagios::nrpe_command {'check_root':
+         command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -p /'
+      }
    }
    sunet::nagios::nrpe_command {'check_boot':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
    }
-   sunet::nagios::nrpe_command {'check_var':
-      command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /var'
+   if $::fqdn == 'docker.sunet.se' {
+      sunet::nagios::nrpe_command {'check_var':
+         command_line => '/usr/lib/nagios/plugins/check_disk -w 7% -c 5% -p /var'
+      }
+   } else {
+      sunet::nagios::nrpe_command {'check_var':
+         command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /var'
+      }
    }
    sunet::nagios::nrpe_command {'check_zombie_procs':
       command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
    }
-   case $::lsbdistdescription {
-      /12.04|10.04|11.04/: {
-         sunet::nagios::nrpe_command {'check_total_procs_lax':
-            command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
-         }
+   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '12.04') <= 0 {
+      sunet::nagios::nrpe_command {'check_total_procs_lax':
+         command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
       }
-      default: {
-         sunet::nagios::nrpe_command {'check_total_procs_lax':
-            command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
-         }
+   } else {
+      sunet::nagios::nrpe_command {'check_total_procs_lax':
+         command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
       }
    }
    sunet::nagios::nrpe_command {'check_uptime':
