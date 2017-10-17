@@ -105,8 +105,9 @@ define configure_peers($router_id, $peers)
 define load_balancer_peer(
   String           $as,
   String           $remote_ip,
-  Optional[String] $local_ip = undef,
+  Optional[String] $local_ip  = undef,
   Optional[String] $router_id = undef,
+  String           $md5       = '',
 ) {
   # If $local_ip is not set, default to either $::ipaddress_default or $::ipaddress6_default
   # depending on the address family of $remote_ip
@@ -126,6 +127,7 @@ define load_balancer_peer(
     peer_as        => $as,
     peer_address   => $remote_ip,
     router_id      => $router_id,
+    md5            => $md5,
   }
 }
 
