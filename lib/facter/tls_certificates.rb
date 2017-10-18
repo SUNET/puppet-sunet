@@ -12,7 +12,7 @@ Facter.add('tls_certificates') do
   filenames.each do | this |
     fn = File.basename(this, '_haproxy.crt')
     if res.key?(fn)
-      res[fn]['haproxy'] => this
+      res[fn]['haproxy'] = this
     else
       res[fn] = {'haproxy' => this}
     end
