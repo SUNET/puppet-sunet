@@ -1,12 +1,16 @@
 # Create TLS certificate bundles the way haproxy likes them
 define sunet::haproxy::server_key (
-    $server_name,
-    $hiera_key,
-    $ssl_dir = '/etc/ssl',
+  String $server_name,
+  String $hiera_key,
+  String $ssl_dir              = '/etc/ssl',
+  Optional[String] $cert_chain = undef,
 ) {
   $server_key         = "${ssl_dir}/${server_name}.key"
   $server_cert        = "${ssl_dir}/${server_name}.pem"
-  $server_cert_chain  = "${ssl_dir}/cert-chain.pem"
+  $server_cert_chain  = $cert_chain ? {
+    undef   => "${ssl_dir}/cert-chain.pem",
+    default => $cert_chain,
+  }
 
   sunet::misc::create_key_file { $server_key :
     hiera_key => $hiera_key,
