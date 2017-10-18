@@ -26,7 +26,7 @@ define sunet::haproxy::server_key (
     path    => ['/usr/bin', '/bin'],
     command => "test -f ${server_key} && test -f ${server_cert} && test -f ${server_cert_chain} && cat ${server_key} ${server_cert} ${server_cert_chain} > ${haproxy_bundle}",
     unless  => "test -s ${haproxy_bundle}",
-    require => [Sunet::Misc::Create_key_file["${server_key}_haproxy"],
+    require => [Sunet::Misc::Create_key_file[$server_key],
                 File[$haproxy_bundle],
                 ],
   }
