@@ -216,7 +216,11 @@ define load_balancer_website(
     $server_name = $name
     $params = $frontend_template_params
     if has_key($tls_certificates, $name) {
-      $tls_certificate_bundle = $tls_certificates[$name]['bundle']
+      if has_key($tls_certificates[$name]['haproxy']) {
+        $tls_certificate_bundle = $tls_certificates[$name]['haproxy']
+      } else {
+        $tls_certificate_bundle = $tls_certificates[$name]['bundle']
+      }
     } elsif has_key($tls_certificates, 'snakeoil') {
       $tls_certificate_bundle = $tls_certificates['snakeoil']['bundle']
     }
