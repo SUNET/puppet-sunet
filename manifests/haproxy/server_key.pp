@@ -8,8 +8,7 @@ define sunet::haproxy::server_key (
   $server_cert        = "${ssl_dir}/${server_name}.pem"
   $server_cert_chain  = "${ssl_dir}/cert-chain.pem"
 
-  sunet::misc::create_key_file { "${server_key}_haproxy" :
-    path      => $server_key,
+  sunet::misc::create_key_file { $server_key :
     hiera_key => $hiera_key,
     group     => 'ssl-cert',
   }
