@@ -1,5 +1,6 @@
 #!/bin/bash
 
+extra_args=''
 if [ "x$1" != "x" ]; then
     if [ ${1:0:1} = '-' ]; then
 	extra_args=$1
@@ -28,5 +29,5 @@ for url in $*; do
     fi
     echo "$0: Registering at ${url}/register/${site}"
 
-    curl -d "server=${fqdn}" -d "port=${port}" "${url}/register/${site}"
+    curl $extra_args -d "server=${fqdn}" -d "port=${port}" "${url}/register/${site}"
 done
