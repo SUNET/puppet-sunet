@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ "x$1" != "x" ]; then
+    if [ ${1:0:1} = '-' ]; then
+	extra_args=$1
+	shift
+    fi
+fi
+
 site=$1
 shift
 
@@ -7,7 +14,7 @@ port=$1
 shift
 
 if [ "x$1" = "x" ]; then
-    echo "syntax: $0 site port frontend-1-api-baseurl ..."
+    echo "syntax: $0 ['-curl-options'] site port frontend-1-api-baseurl ..."
     exit 1
 fi
 
