@@ -123,12 +123,9 @@ define sunet::dehydrated::lighttpd_server(
     from => $allow_clients,
     port => $server_port,
   }
-  include augeas
-  augeas { 'lighttpd.conf':
-    context => "/files/etc/lighttpd/lighttpd.conf",
-    changes => [
-                "set server.port ${server_port}"
-                ],
+  exec { 'lighttpd_server_port':
+    command => "/bin/sed -r -i -e 's/^(server.port\s*= ).*/\1${server_port}/' /etc/lighttpd/lighttpd.conf",
+    unless  => "/bin/grep -qx 'server.port\s*=\s*${server_port}'",
     notify  => Service['lighttpd'],
     require => Package['lighttpd'],
   }
