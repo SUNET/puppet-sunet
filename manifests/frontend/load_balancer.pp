@@ -158,7 +158,7 @@ define load_balancer_website(
   Hash             $frontend_template_params = {},
   Array            $allow_ports = [],
   Optional[String] $letsencrypt_server = undef,
-  Optional[Array]  $backend_haproxy_config = undef,  # ignored here, used in 'haproxy-backend-config'
+  Array            $backend_haproxy_config = [],  # used in 'haproxy-backend-config'
 ) {
   $_ipv4 = map($frontends) |$fe| {
     $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 4) }
@@ -206,7 +206,10 @@ define load_balancer_website(
 
   # 'export' config to a file usable by haproxy-config-update+haproxy-backend-config
   # to create backend configuration
-  $export_data = {'backends' => $backends}
+  $export_data = {
+    'backend_haproxy_config' => $backend_haproxy_config,
+    'backends'               => $backends,
+  }
   file { "${confdir}/${name}_backends.yml":
     ensure  => 'file',
     group   => 'sunetfrontend',
