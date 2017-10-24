@@ -143,7 +143,7 @@ define sunet::dehydrated::lighttpd_server(
     '/var/www/dehydrated':
       ensure  => 'directory',
       owner   => 'www-data',
-      group   => 'www-data'
+      group   => 'www-data',
       mode    => '0750',
       ;
     '/var/www/dehydrated/index.html':
