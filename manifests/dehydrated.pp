@@ -5,6 +5,7 @@ class sunet::dehydrated(
   Boolean                 $apache=false,
   String                  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated",
   Array                   $allow_clients = [],
+  Integer                 $server_port = 80,
 ) {
   $conf = hiera_hash('dehydrated')
   if ! is_hash($conf) {
@@ -75,6 +76,7 @@ class sunet::dehydrated(
   if ($httpd) {
     sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
       allow_clients => $allow_clients,
+      server_port   => $server_port,
     }
   }
   if ($apache) {
@@ -86,8 +88,14 @@ class sunet::dehydrated(
     $clients = false
   }
 
+  # clients is supposed to be a hash
+  # thedomains is supposed to be a list of hashes for some reason
   each($thedomains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
+      # Example: $domain = 'foo.sunet.se',
+      #          $info = {names => [foo.sunet.se],
+      #                   clients => [frontend1.sunet.se, frontend2.sunet.se]
+      #                  }
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
          sunet::rrsync { "/etc/dehydrated/certs/$domain":
             ssh_key_type => $info['ssh_key_type'],
@@ -108,7 +116,8 @@ class sunet::dehydrated(
 
 # Run lighttpd on the acme-c host
 define sunet::dehydrated::lighttpd_server(
-  $allow_clients,
+  Array   $allow_clients,
+  Integer $server_port = 80,
 ) {
   package {'lighttpd':
     ensure  => latest
@@ -118,7 +127,13 @@ define sunet::dehydrated::lighttpd_server(
   } ->
   sunet::misc::ufw_allow { 'allow-lighthttp':
     from => $allow_clients,
-    port => '80'
+    port => $server_port,
+  }
+  exec { 'lighttpd_server_port':
+    command => "/bin/sed -r -i -e 's/^(server.port\s*= ).*/\\1${server_port}/' /etc/lighttpd/lighttpd.conf",
+    unless  => "/bin/grep -qx 'server.port\s*=\s*${server_port}'",
+    notify  => Service['lighttpd'],
+    require => Package['lighttpd'],
   }
   exec {'rename-var-www-letsencrypt':
     command => 'mv /var/www/letsencrypt /var/www/dehydrated',
