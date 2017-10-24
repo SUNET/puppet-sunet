@@ -144,12 +144,13 @@ define sunet::dehydrated::lighttpd_server(
       ensure  => 'directory',
       owner   => 'www-data',
       group   => 'www-data'
+      mode    => '0750',
       ;
     '/var/www/dehydrated/index.html':
       ensure  => file,
       owner   => 'www-data',
       group   => 'www-data',
-      content => '<!DOCTYPE html><html><head><title>meep</title></head><body>meep<br/>meep</body></html>'
+      content => '<!DOCTYPE html><html><head><title>meep</title></head>\n<body>  meep<br/>\n  meep\n</body></html>'
       ;
     '/etc/lighttpd/conf-enabled/acme.conf':
       ensure  => 'file',
