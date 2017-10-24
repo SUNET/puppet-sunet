@@ -56,7 +56,7 @@ def haproxy_execute(cmd, args):
     if args.stats_url.startswith('http'):
         logger.debug('Fetching haproxy stats from {}'.format(args.stats_url))
         try:
-        data = requests.get(args.stats_url).text
+            data = requests.get(args.stats_url).text
         except requests.exceptions.ConnectionError as exc:
             raise HAProxyStatusError('Failed fetching status from {}: {}'.format(args.stats_url, exc))
     else:
