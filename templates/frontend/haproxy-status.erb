@@ -7,6 +7,8 @@ import logging
 import argparse
 import requests
 
+from logging.handlers import SysLogHandler
+
 logger = None
 
 _defaults = {'stats_url': 'http://127.0.0.1:9000/haproxy_stats;csv',
@@ -14,6 +16,9 @@ _defaults = {'stats_url': 'http://127.0.0.1:9000/haproxy_stats;csv',
              'debug': False,
              'interface': 'lo',
              }
+
+class HAProxyStatusError(Exception):
+    pass
 
 
 def parse_args(defaults):
@@ -50,7 +55,10 @@ def parse_args(defaults):
 def haproxy_execute(cmd, args):
     if args.stats_url.startswith('http'):
         logger.debug('Fetching haproxy stats from {}'.format(args.stats_url))
+        try:
         data = requests.get(args.stats_url).text
+        except requests.exceptions.ConnectionError as exc:
+            raise HAProxyStatusError('Failed fetching status from {}: {}'.format(args.stats_url, exc))
     else:
         socket_fn = args.socket_fn
         if socket_fn.startswith('file://'):
@@ -140,13 +148,17 @@ def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _d
             stream_h.setFormatter(formatter)
             logger.addHandler(stream_h)
     if args.syslog:
-        syslog_h = logging.handlers.SysLogHandler()
+        syslog_h = SysLogHandler(address='/dev/log')
         formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
         syslog_h.setFormatter(formatter)
         logger.addHandler(syslog_h)
 
 
+    try:
     status = get_status(args)
+    except HAProxyStatusError as exc:
+        logger.error(exc)
+        return False
 
     output = []
     for this in args.site:
