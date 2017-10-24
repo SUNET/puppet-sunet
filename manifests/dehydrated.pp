@@ -150,7 +150,7 @@ define sunet::dehydrated::lighttpd_server(
       ensure  => file,
       owner   => 'www-data',
       group   => 'www-data',
-      content => "<!DOCTYPE html><html><head><title>meep</title></head>\n<body>\n  meep<br/>\n  meep\n</body></html>"
+      content => "<!DOCTYPE html><html><head><title>meep</title></head>\n<body>\n  meep<br/>\n  meep\n</body></html>\n"
       ;
     '/etc/lighttpd/conf-enabled/acme.conf':
       ensure  => 'file',
