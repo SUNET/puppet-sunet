@@ -49,8 +49,8 @@ services:
             - /var/run/apache2:/var/run/apache2
             - /dev/log:/dev/log:rw
             - /etc/shibboleth/shibboleth2.xml:/opt/shibboleth-sp/etc/shibboleth/shibboleth2.xml
-            - /etc/passwd:/etc/passwd:ro
-            - /etc/group:/etc/group:ro
+#            - /etc/passwd:/etc/passwd:ro
+#            - /etc/group:/etc/group:ro
         environment:
             - COMANAGE_REGISTRY_ADMIN_GIVEN_NAME=Einar
             - COMANAGE_REGISTRY_ADMIN_FAMILY_NAME=Lonn
