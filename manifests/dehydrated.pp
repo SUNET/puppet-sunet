@@ -88,8 +88,14 @@ class sunet::dehydrated(
     $clients = false
   }
 
+  # clients is supposed to be a hash
+  # thedomains is supposed to be a list of hashes for some reason
   each($thedomains) |$domain_hash| {
     each($domain_hash) |$domain,$info| {
+      # Example: $domain = 'foo.sunet.se',
+      #          $info = {names => [foo.sunet.se],
+      #                   clients => [frontend1.sunet.se, frontend2.sunet.se]
+      #                  }
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
          sunet::rrsync { "/etc/dehydrated/certs/$domain":
             ssh_key_type => $info['ssh_key_type'],
@@ -124,7 +130,7 @@ define sunet::dehydrated::lighttpd_server(
     port => $server_port,
   }
   exec { 'lighttpd_server_port':
-    command => "/bin/sed -r -i -e 's/^(server.port\s*= ).*/\1${server_port}/' /etc/lighttpd/lighttpd.conf",
+    command => "/bin/sed -r -i -e 's/^(server.port\s*= ).*/\\1${server_port}/' /etc/lighttpd/lighttpd.conf",
     unless  => "/bin/grep -qx 'server.port\s*=\s*${server_port}'",
     notify  => Service['lighttpd'],
     require => Package['lighttpd'],
