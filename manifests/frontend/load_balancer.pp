@@ -254,7 +254,7 @@ define load_balancer_website(
     }
   }
 
-  if $letsencrypt_server != undef {
+  if $letsencrypt_server != undef and $letsencrypt_server != $::fqdn {
     sunet::dehydrated::client_define { $name :
       domain => $name,
       server => $letsencrypt_server,
