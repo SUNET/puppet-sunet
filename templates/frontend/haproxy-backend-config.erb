@@ -69,6 +69,9 @@ def backend_config(args):
     Example YAML file:
 
       ---
+      backend_haproxy_config:
+        - 'optional config'
+        - 'for this backend in haproxy'
       backends:
         "130.242.130.200":
           haproxy_config: "  server www-fre-1.eduid.se_v4 REMOTE_IP:PORT ssl check verify none"
@@ -87,6 +90,9 @@ def backend_config(args):
         if not os.path.isfile(path):
             continue
         files.append(path)
+
+    if 'backend_haproxy_config' in config:
+        res.append(config['backend_haproxy_config'])
 
     for be in sorted(config.get('backends', [])):
         logger.info('Processing backend {}: {}'.format(be, config['backends'][be]))
