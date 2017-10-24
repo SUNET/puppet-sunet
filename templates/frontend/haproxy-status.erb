@@ -155,7 +155,7 @@ def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _d
 
 
     try:
-    status = get_status(args)
+        status = get_status(args)
     except HAProxyStatusError as exc:
         logger.error(exc)
         return False
