@@ -8,7 +8,7 @@ class sunet::dehydrated(
   Integer                 $server_port = 80,
 ) {
   $conf = hiera_hash('dehydrated')
-  if ! is_hash($conf) {
+  if $conf !~ Hash {
     fail("Hiera key 'dehydrated' is not a hash")
   }
   if ! has_key($conf, 'domains') {
@@ -105,7 +105,7 @@ class sunet::dehydrated(
     }
   }
 
-  if is_hash($clients) {
+  if $clients =~ Hash[String, Hash] {
     each($clients) |$client,$client_info| {
       # Make a list of all the domains that list this client in their 'clients' list
       $domain_list1 = $thedomains.map |$domain_hash| {
@@ -129,6 +129,8 @@ class sunet::dehydrated(
         ssh_key      => $clients[$client]['ssh_key']
       }
     }
+  } elsif $clients != undef {
+    warning("Unknown format of 'clients' - ignoring")
   }
 }
 
