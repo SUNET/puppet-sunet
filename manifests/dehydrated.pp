@@ -122,7 +122,7 @@ class sunet::dehydrated(
       # Make a space separated string with all the domain names
       $dirs = join($domain_list, ' ')
 
-      #notice("Client $client domains $client_domains")
+      # anyone that ssh:s in with this ssh_key will get the certs authorized for this client packaged using tar
       sunet::snippets::ssh_command { "dehydrated_${client}" :
         command      => "/bin/tar cf - -C /etc/dehydrated/certs/ ${dirs}",
         ssh_key_type => $clients[$client]['ssh_key_type'],
@@ -270,10 +270,10 @@ define sunet::dehydrated::client_define(
       minute  => '13'
     }
   } else {
-    ensure_resource('cron',  "dehydrated_fetch_${server}", {
-      command => "ssh -Ti \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh",
-      user    => $user,
-      minute  => '*/20',
+    ensure_resource('sunet::scriptherder::cronjob',  "dehydrated_fetch_${server}", {
+      cmd    => "ssh -Ti \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh",
+      user   => $user,
+      minute => '*/20',
     })
   }
   if ($ssl_links) {
