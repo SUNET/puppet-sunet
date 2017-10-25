@@ -1,11 +1,10 @@
 class sunet::dehydrated(
-  Boolean                 $staging=false,
-  Optional[Array[String]] $domains=undef,
-  Boolean                 $httpd=false,
-  Boolean                 $apache=false,
-  String                  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated",
-  Array                   $allow_clients = [],
-  Integer                 $server_port = 80,
+  Boolean $staging=false,
+  Boolean $httpd=false,
+  Boolean $apache=false,
+  String  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated",
+  Array   $allow_clients = [],
+  Integer $server_port = 80,
 ) {
   $conf = hiera_hash('dehydrated')
   if $conf !~ Hash {
