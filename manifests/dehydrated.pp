@@ -216,14 +216,16 @@ class sunet::dehydrated::client(
   Boolean $ssl_links=false,
   Boolean $check_cert=false,
   Optional[String] $ssh_id=undef,
+  Boolean $single_domain=true,
 ) {
   sunet::dehydrated::client_define { "domain_${domain}":
-    domain     => $domain,
-    server     => $server,
-    user       => $user,
-    ssl_links  => $ssl_links,
-    check_cert => $check_cert,
-    ssh_id     => $ssh_id,
+    domain        => $domain,
+    server        => $server,
+    user          => $user,
+    ssl_links     => $ssl_links,
+    check_cert    => $check_cert,
+    ssh_id        => $ssh_id,
+    single_domain => $single_domain,
   }
 }
 
@@ -235,6 +237,7 @@ define sunet::dehydrated::client_define(
   Boolean $ssl_links=false,
   Boolean $check_cert=false,
   Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
+  Boolean $single_domain=true,
 ) {
   $home = $user ? {
     'root'  => '/root',
@@ -259,11 +262,19 @@ define sunet::dehydrated::client_define(
   ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
     hiera_key => "${_ssh_id}_ssh_key",
     })
-  cron { "rsync_dehydrated_${domain}":
-    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
-    user    => $user,
-    hour    => '*',
-    minute  => '13'
+  if $single_domain {
+    cron { "rsync_dehydrated_${domain}":
+      command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
+      user    => $user,
+      hour    => '*',
+      minute  => '13'
+    }
+  } else {
+    cron { "dehydrated_fetch_${server}":
+      command => "ssh -i \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh",
+      user    => $user,
+      minute  => '*/20',
+    }
   }
   if ($ssl_links) {
      file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }

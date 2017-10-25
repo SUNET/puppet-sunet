@@ -259,6 +259,7 @@ define load_balancer_website(
       domain => $name,
       server => $letsencrypt_server,
       ssh_id => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
+      single_domain => $letsencrypt_server in ['acme-c.dev.eduid.se'],   # XXX TEMPORARY MIGRATION THING
     }
   }
 }
