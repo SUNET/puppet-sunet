@@ -4,7 +4,7 @@ class sunet::frontend::load_balancer(
   String $basedir = '/opt/frontend',
 ) {
   $config = hiera_hash('sunet_frontend')
-  if is_hash($config) {
+  if $config =~ Hash[String, Hash] {
     $confdir = "${basedir}/config"
     $apidir = "${basedir}/api"
 
@@ -75,7 +75,7 @@ class sunet::frontend::load_balancer(
         ;
     }
   } else {
-    fail('No SUNET frontend load balancer config found in hiera')
+    fail('No/bad SUNET frontend load balancer config found in hiera')
   }
 }
 
