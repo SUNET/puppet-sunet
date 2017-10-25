@@ -1,28 +1,34 @@
 require stdlib
 require concat
 
-class sunet::ssh_keyscan {
+class sunet::ssh_keyscan(
+  String $hostsfile,
+  String $keyfile = '/etc/ssh/ssh_known_hosts',
+) {
    exec {'sunet_ssh-keyscan':
-      command     => 'ssh-keyscan -f /etc/ssh/sunet_keyscan_hosts.txt > /etc/ssh/ssh_known_hosts.scan && mv /etc/ssh/ssh_known_hosts.scan /etc/ssh/ssh_known_hosts',
+      command     => "ssh-keyscan -f ${hostsfile} > ${keyfile}.scan && mv ${keyfile}.scan ${keyfile}",
       refreshonly => true,
+      subscribe   => File[$hostsfile],
    }
 
-   concat {"/etc/ssh/sunet_keyscan_hosts.txt":
+   concat {$hostsfile:
       owner  => root,
       group  => root,
-      mode   => '0644',
-      notify => Exec['sunet_ssh-keyscan']
+      mode   => '0640',
    }
-   concat::fragment {"/etc/ssh/sunet_keyscan_hosts.txt_header":
-      target  => "/etc/ssh/sunet_keyscan_hosts.txt",
+   concat::fragment {"${hostsfile}_header":
+      target  => $hostsfile,
       content => "# do not edit by hand - maintained by sunet::ssh_keyscan\n",
       order   => '10',
-      notify  => Exec['sunet_ssh-keyscan'],
    }
 }
 
-define sunet::ssh_keyscan::host ($aliases = [], $address = undef) {
-   ensure_resource('class','sunet::ssh_keyscan',{})
+define sunet::ssh_keyscan::host (
+  Array $aliases = [],
+  Optional[String] $address = undef,
+) {
+   $hostsfile = '/etc/ssh/sunet_keyscan_hosts.txt'
+   ensure_resource('class','sunet::ssh_keyscan', {hostsfile => $hostsfile})
    $the_address = $address ? {
       undef   => dnsLookup($title),
       default => [$address]
@@ -30,9 +36,8 @@ define sunet::ssh_keyscan::host ($aliases = [], $address = undef) {
    validate_array($the_address)
    $the_aliases = concat(any2array($aliases),[$title],[$the_address])
    concat::fragment {"${title}_sunet_keyscan":
-      target  => "/etc/ssh/sunet_keyscan_hosts.txt",
+      target  => $hostsfile,
       content => inline_template("<%= the_address[0] %> <%= the_aliases.join(',') %>\n"),
       order   => '20',
-      notify  => Exec['sunet_ssh-keyscan'],
    }
 }
