@@ -2,26 +2,22 @@ require stdlib
 require concat
 
 class sunet::ssh_keyscan {
-   exec {'ssh-keyscan':
-      command     => 'ssh-keyscan -f /etc/ssh/sunet_keyscan_hosts.txt > /etc/ssh/ssh_known_hosts.scan',
-      creates     => '/etc/ssh/ssh_known_hosts.scan'
+   exec {'sunet_ssh-keyscan':
+      command     => 'ssh-keyscan -f /etc/ssh/sunet_keyscan_hosts.txt > /etc/ssh/ssh_known_hosts.scan && mv /etc/ssh/ssh_known_hosts.scan /etc/ssh/ssh_known_hosts',
+      refreshonly => true,
    }
-   file {'/etc/ssh/ssh_known_hosts':
-      ensure      => file,
-      source      => '/etc/ssh/ssh_known_hosts.scan',
-      require     => Exec['ssh-keyscan']
-   }
+
    concat {"/etc/ssh/sunet_keyscan_hosts.txt":
       owner  => root,
       group  => root,
       mode   => '0644',
-      notify => File['/etc/ssh/ssh_known_hosts']
+      notify => Exec['sunet_ssh-keyscan']
    }
    concat::fragment {"/etc/ssh/sunet_keyscan_hosts.txt_header":
       target  => "/etc/ssh/sunet_keyscan_hosts.txt",
       content => "# do not edit by hand - maintained by sunet::ssh_keyscan\n",
       order   => '10',
-      notify  => File['/etc/ssh/ssh_known_hosts']
+      notify  => Exec['sunet_ssh-keyscan'],
    }
 }
 
@@ -37,6 +33,6 @@ define sunet::ssh_keyscan::host ($aliases = [], $address = undef) {
       target  => "/etc/ssh/sunet_keyscan_hosts.txt",
       content => inline_template("<%= the_address[0] %> <%= the_aliases.join(',') %>\n"),
       order   => '20',
-      notify  => Exec['ssh-keyscan']
+      notify  => Exec['sunet_ssh-keyscan'],
    }
 }
