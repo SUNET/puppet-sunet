@@ -16,6 +16,9 @@ class sunet::dehydrated(
     # [{$::fqdn => {"names" => [$::fqdn]}}]
   }
   $thedomains = $conf['domains']
+  if $thedomains !~ Array[Hash] {
+    fail("Unknown format of 'domains' - bailing out (why it should be a list of hashes instead of just a hash I do not know)")
+  }
 
   $ca = $staging ? {
      false => 'https://acme-v01.api.letsencrypt.org/directory',
