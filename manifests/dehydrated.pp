@@ -102,14 +102,31 @@ class sunet::dehydrated(
             ssh_key      => $info['ssh_key']
          }
       }
-      if (is_hash($clients) and has_key($info, 'clients')) {
-        each($info['clients']) |$index, $client| {
-          sunet::rrsync { "rrsync_${domain}_${index}":
-            dir          => "/etc/dehydrated/certs/$domain",
-            ssh_key_type => $clients[$client]['ssh_key_type'],
-            ssh_key      => $clients[$client]['ssh_key']
+    }
+  }
+
+  if is_hash($clients) {
+    each($clients) |$client,$client_info| {
+      # Make a list of all the domains that list this client in their 'clients' list
+      $domain_list1 = $thedomains.map |$domain_hash| {
+        $domain_hash.map |$domain, $info| {
+          if has_key($info, 'clients') {
+            if ($client in $info['clients']) {
+              $domain
+            }
           }
         }
+      }
+      # Make a flat list without undef entrys
+      $domain_list = flatten($domain_list1).filter |$this| { $this != undef }
+      # Make a space separated string with all the domain names
+      $dirs = join($domain_list, ' ')
+
+      #notice("Client $client domains $client_domains")
+      sunet::snippets::ssh_command { "dehydrated_${client}" :
+        command      => "/bin/tar cf - -C /etc/dehydrated/certs/ ${dirs}",
+        ssh_key_type => $clients[$client]['ssh_key_type'],
+        ssh_key      => $clients[$client]['ssh_key']
       }
     }
   }
