@@ -1,18 +1,18 @@
 # Run a cronjob and create a scriptherder monitoring file
 define sunet::scriptherder::cronjob(
   # cron parameters
-  $cmd,
-  $ensure        = 'present',  # present or absent
-  $user          = 'root',
-  $hour          = undef,
-  $minute        = undef,
-  $monthday      = undef,
-  $weekday       = undef,
-  $special       = undef,    # e.g. 'daily'
+  String $cmd,
+  Enum['present', 'absent'] $ensure        = 'present',
+  String                    $user          = 'root',
+  Optional[String]          $hour          = undef,
+  Optional[String]          $minute        = undef,
+  Optional[String]          $monthday      = undef,
+  Optional[String]          $weekday       = undef,
+  Optional[String]          $special       = undef,    # e.g. 'daily'
   # scriptherder parameters
-  $ok_criteria   = ['exit_status=0'],
-  $warn_criteria = [],
-  $purge_results = false,    # set to 'true' to remove job metadata files
+  Array                     $ok_criteria   = ['exit_status=0'],
+  Array                     $warn_criteria = [],
+  Boolean                   $purge_results = false,    # set to 'true' to remove job metadata files
 ) {
   # used in template scriptherder_check.ini.erb
   $scriptherder_ok = join($ok_criteria, ', ')
