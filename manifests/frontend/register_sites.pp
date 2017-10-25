@@ -22,7 +22,7 @@ class sunet::frontend::register_sites(
   keys($sites).each | $site | {
     $fe_str = join($sites[$site]['frontends'], ' ')
     $port = $sites[$site]['port']
-    $extra_args = pick($sites[$site]['extra_args'], '')
+    $extra_args = pick($sites[$site]['extra_args'], ' ')
 
     cron { "sunetfronted_register_sites_${site}":
       ensure  => present,
