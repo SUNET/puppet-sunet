@@ -270,11 +270,11 @@ define sunet::dehydrated::client_define(
       minute  => '13'
     }
   } else {
-    cron { "dehydrated_fetch_${server}":
+    ensure_resource('cron',  "dehydrated_fetch_${server}", {
       command => "ssh -i \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh",
       user    => $user,
       minute  => '*/20',
-    }
+    })
   }
   if ($ssl_links) {
      file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }
