@@ -37,7 +37,7 @@ define sunet::ssh_keyscan::host (
   $the_aliases = concat(any2array($aliases),[$title],[$the_address])
   concat::fragment {"${title}_sunet_keyscan":
     target  => $hostsfile,
-    content => inline_template("<%= the_address[0] %> <%= the_aliases.join(',') %>\n"),
+    content => inline_template("<%= @the_address[0] %> <%= @the_aliases.join(',') %>\n"),
     order   => '20',
   }
 }
