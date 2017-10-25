@@ -105,7 +105,7 @@ class sunet::dehydrated(
       if (is_hash($clients) and has_key($info, 'clients')) {
         each($info['clients']) |$index, $client| {
           sunet::rrsync { "rrsync_${domain}_${index}":
-            dir          => "/etc/dehydrated/certs/$domain":
+            dir          => "/etc/dehydrated/certs/$domain",
             ssh_key_type => $clients[$client]['ssh_key_type'],
             ssh_key      => $clients[$client]['ssh_key']
           }
