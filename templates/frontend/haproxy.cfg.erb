@@ -44,13 +44,23 @@ backend LB
     #stats hide-version
     stats uri /haproxy_stats
 
+<% if @static_backends -%>
+<% @static_backends.each do |server,addrs| -%>
+backend <%= server %>
+  <% i = 0 %><% addrs.sort.each do |addr| %><% i = i + 1 %>server <%= server %>_<%= i %> <%= addr %><% end %>
+<% end %>
+<% end %>
+
 #
 # Redirect _everything_ to HTTPS
 frontend http-frontend
     bind 0.0.0.0:80
     bind :::80
 
+<% if @port80_acme_c_backend -%>
+    acl port80-acme_c-acl path_beg /.well-known/acme-challenge/
+    redirect scheme https code 301 if !{ ssl_fc } !port80-acme_c-acl
+    use_backend <%= @port80_acme_c_backend -%> if port80-acme_c-acl
+<% else %>
     redirect scheme https code 301 if !{ ssl_fc }
-
-backend letsencrypt_acme-c.sunet.se
-    server acme-c.sunet.se_v4 89.45.232.90:80
+<% end -%>

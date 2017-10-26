@@ -5,6 +5,7 @@ define sunet::exabgp::neighbor(
   String           $local_as,
   Optional[String] $router_id     = undef,
   String           $config        = '/etc/bgp/exabgp.conf',
+  String           $md5           = '',
 ) {
   sunet::misc::ufw_allow { "allow_bgp_peer_${peer_address}":
     from => $peer_address,

@@ -14,7 +14,7 @@ define sunet::misc::ipv6_ndp_proxy(
 
   exec { 'reload_sysctl_99-ipv6-ndp-proxy.conf':
     command     => '/sbin/sysctl -p /etc/sysctl.d/99-ipv6-ndp-proxy.conf',
-    refreshonly => true,
+    # always do this to work around these sysctls not being set :( refreshonly => true,
   }
 
   exec { "ipv6_ndp_proxy_${address}":
