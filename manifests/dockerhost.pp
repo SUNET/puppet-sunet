@@ -25,14 +25,19 @@ class sunet::dockerhost(
   # Add the dockerproject repository, then force an apt-get update before
   # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
   #
-  apt::source {'docker_ce':
-     location => 'https://download.docker.com/linux/ubuntu',
-     release  => $::lsbdistcodename,
-     repos    => 'edge',
-     key      => { 'id'     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
-                   'server' => 'keyserver.ubuntu.com' },
-     include  => { 'src' => false },
+  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0750'} ->
+  file {
+    '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
+      ensure  => file,
+      mode    => '0644',
+      content => template('sunet/dockerhost/docker_ce-8D81803C0EBFCD88.pub.erb'),
+      ;
+    } ->
+  apt::key { 'docker_ce':
+    id      => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
+    source  => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
   }
+
   # old source
   apt::source {'docker_official':
      location => 'https://apt.dockerproject.org/repo',
@@ -46,8 +51,8 @@ class sunet::dockerhost(
   exec { 'dockerhost_apt_get_update':
      command     => '/usr/bin/apt-get update',
      cwd         => '/tmp',
-     require     => [Apt::Source['docker_official'], Apt::Source['docker_ce']],
-     subscribe   => [Apt::Source['docker_official'], Apt::Source['docker_ce']],
+     require     => [Apt::Source['docker_official'], Apt::Key['docker_ce']],
+     subscribe   => [Apt::Source['docker_official'], Apt::Key['docker_ce']],
      refreshonly => true,
   }
 
