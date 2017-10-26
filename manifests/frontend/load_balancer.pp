@@ -4,7 +4,7 @@ class sunet::frontend::load_balancer(
   String $basedir = '/opt/frontend',
 ) {
   $config = hiera_hash('sunet_frontend')
-  if is_hash($config) {
+  if $config =~ Hash[String, Hash] {
     $confdir = "${basedir}/config"
     $apidir = "${basedir}/api"
 
@@ -75,7 +75,7 @@ class sunet::frontend::load_balancer(
         ;
     }
   } else {
-    fail('No SUNET frontend load balancer config found in hiera')
+    fail('No/bad SUNET frontend load balancer config found in hiera')
   }
 }
 
@@ -263,6 +263,7 @@ define load_balancer_website(
       domain => $name,
       server => $letsencrypt_server,
       ssh_id => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
+      single_domain => false,
     }
   }
 }

@@ -1,14 +1,13 @@
 class sunet::dehydrated(
-  Boolean                 $staging=false,
-  Optional[Array[String]] $domains=undef,
-  Boolean                 $httpd=false,
-  Boolean                 $apache=false,
-  String                  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated",
-  Array                   $allow_clients = [],
-  Integer                 $server_port = 80,
+  Boolean $staging=false,
+  Boolean $httpd=false,
+  Boolean $apache=false,
+  String  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated",
+  Array   $allow_clients = [],
+  Integer $server_port = 80,
 ) {
   $conf = hiera_hash('dehydrated')
-  if ! is_hash($conf) {
+  if $conf !~ Hash {
     fail("Hiera key 'dehydrated' is not a hash")
   }
   if ! has_key($conf, 'domains') {
@@ -17,6 +16,9 @@ class sunet::dehydrated(
     # [{$::fqdn => {"names" => [$::fqdn]}}]
   }
   $thedomains = $conf['domains']
+  if $thedomains !~ Array[Hash] {
+    fail("Unknown format of 'domains' - bailing out (why it should be a list of hashes instead of just a hash I do not know)")
+  }
 
   $ca = $staging ? {
      false => 'https://acme-v01.api.letsencrypt.org/directory',
@@ -102,15 +104,35 @@ class sunet::dehydrated(
             ssh_key      => $info['ssh_key']
          }
       }
-      if (is_hash($clients) and has_key($info, 'clients')) {
-        each($info['clients']) |$client| {
-          sunet::rrsync { "/etc/dehydrated/certs/$domain":
-            ssh_key_type => $clients[$client]['ssh_key_type'],
-            ssh_key      => $clients[$client]['ssh_key']
+    }
+  }
+
+  if $clients =~ Hash[String, Hash] {
+    each($clients) |$client,$client_info| {
+      # Make a list of all the domains that list this client in their 'clients' list
+      $domain_list1 = $thedomains.map |$domain_hash| {
+        $domain_hash.map |$domain, $info| {
+          if has_key($info, 'clients') {
+            if ($client in $info['clients']) {
+              $domain
+            }
           }
         }
       }
+      # Make a flat list without undef entrys
+      $domain_list = flatten($domain_list1).filter |$this| { $this != undef }
+      # Make a space separated string with all the domain names
+      $dirs = join($domain_list, ' ')
+
+      # anyone that ssh:s in with this ssh_key will get the certs authorized for this client packaged using tar
+      sunet::snippets::ssh_command { "dehydrated_${client}" :
+        command      => "/bin/tar cf - -C /etc/dehydrated/certs/ ${dirs}",
+        ssh_key_type => $clients[$client]['ssh_key_type'],
+        ssh_key      => $clients[$client]['ssh_key']
+      }
     }
+  } elsif $clients != undef {
+    warning("Unknown format of 'clients' - ignoring")
   }
 }
 
@@ -143,13 +165,14 @@ define sunet::dehydrated::lighttpd_server(
     '/var/www/dehydrated':
       ensure  => 'directory',
       owner   => 'www-data',
-      group   => 'www-data'
+      group   => 'www-data',
+      mode    => '0750',
       ;
     '/var/www/dehydrated/index.html':
       ensure  => file,
       owner   => 'www-data',
       group   => 'www-data',
-      content => '<!DOCTYPE html><html><head><title>meep</title></head><body>meep<br/>meep</body></html>'
+      content => "<!DOCTYPE html><html><head><title>meep</title></head>\n<body>\n  meep<br/>\n  meep\n</body></html>\n"
       ;
     '/etc/lighttpd/conf-enabled/acme.conf':
       ensure  => 'file',
@@ -197,14 +220,16 @@ class sunet::dehydrated::client(
   Boolean $ssl_links=false,
   Boolean $check_cert=false,
   Optional[String] $ssh_id=undef,
+  Boolean $single_domain=true,
 ) {
   sunet::dehydrated::client_define { "domain_${domain}":
-    domain     => $domain,
-    server     => $server,
-    user       => $user,
-    ssl_links  => $ssl_links,
-    check_cert => $check_cert,
-    ssh_id     => $ssh_id,
+    domain        => $domain,
+    server        => $server,
+    user          => $user,
+    ssl_links     => $ssl_links,
+    check_cert    => $check_cert,
+    ssh_id        => $ssh_id,
+    single_domain => $single_domain,
   }
 }
 
@@ -216,6 +241,7 @@ define sunet::dehydrated::client_define(
   Boolean $ssl_links=false,
   Boolean $check_cert=false,
   Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
+  Boolean $single_domain=true,
 ) {
   $home = $user ? {
     'root'  => '/root',
@@ -240,11 +266,19 @@ define sunet::dehydrated::client_define(
   ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
     hiera_key => "${_ssh_id}_ssh_key",
     })
-  cron { "rsync_dehydrated_${domain}":
-    command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
-    user    => $user,
-    hour    => '*',
-    minute  => '13'
+  if $single_domain {
+    cron { "rsync_dehydrated_${domain}":
+      command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
+      user    => $user,
+      hour    => '*',
+      minute  => '13'
+    }
+  } else {
+    ensure_resource('sunet::scriptherder::cronjob',  "dehydrated_fetch_${server}", {
+      cmd    => "ssh -Ti \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh",
+      user   => $user,
+      minute => '*/20',
+    })
   }
   if ($ssl_links) {
      file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }
