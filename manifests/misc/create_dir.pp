@@ -20,10 +20,10 @@ define eduid::misc::create_dir(
   # puppet is too dumb to create directories recursively,
   # so create it using mkdir and then use 'file' (hah!) to
   # fix the owner and permissions
-  ensure_resource('exec', "sudo-make-me-a-sandwich_${name}", {
+  exec { "sudo-make-me-a-sandwich_${name}":
     command => "/bin/mkdir -p ${name}",
     unless  => "/usr/bin/test -d ${name}",
-  })
+  }
 
   $require = flatten([$req_user,
                       $req_group,
