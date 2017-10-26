@@ -1,5 +1,5 @@
 # Create a directory.
-define eduid::misc::create_dir(
+define sunet::misc::create_dir(
   $owner,
   $group,
   $mode,
