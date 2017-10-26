@@ -21,7 +21,7 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef,$manage_gitweb
       owner  => $username,
       group  => $group
    } ->
-   case $ssh_key {
+   case $_ssh_key {
       undef: {
          sunet::snippets::ssh_keygen { "$home/admin": }
       }
