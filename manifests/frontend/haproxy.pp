@@ -6,9 +6,12 @@ define sunet::frontend::haproxy(
   String  $haproxy_imagetag = 'stable',
   # Variables used in haproxy-config-update.erb
   Integer $registration_age_limit = 600,
-  String  $haproxy_service_name   = 'docker-load-balancer-haproxy',
+  String  $haproxy_service_name   = 'docker-load-balancer_haproxy',
   String  $confdir                = '/opt/frontend/config',
   String  $apidir                 = '/opt/frontend/api',
+  # Variables used in haproxy.cfg.erb
+  Optional[String] $port80_acme_c_backend = 'letsencrypt_acme-c.sunet.se',
+  Optional[Hash] $static_backends = {'letsencrypt_acme-c.sunet.se' => ['89.45.232.90:80']},
 )
 {
   include sunet::systemd_reload

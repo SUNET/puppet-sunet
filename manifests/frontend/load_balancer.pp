@@ -4,7 +4,7 @@ class sunet::frontend::load_balancer(
   String $basedir = '/opt/frontend',
 ) {
   $config = hiera_hash('sunet_frontend')
-  if is_hash($config) {
+  if $config =~ Hash[String, Hash] {
     $confdir = "${basedir}/config"
     $apidir = "${basedir}/api"
 
@@ -30,14 +30,17 @@ class sunet::frontend::load_balancer(
     }
     sunet::exabgp { 'load_balancer':
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
+                         "/dev/log:/dev/log",
                          ],
     }
-    sunet::frontend::haproxy { 'load_balancer':
-      basedir          => "${basedir}/haproxy",
-      confdir          => $confdir,
-      apidir           => $apidir,
-      haproxy_image    => $config['load_balancer']['haproxy_image'],
-      haproxy_imagetag => $config['load_balancer']['haproxy_imagetag'],
+    sunet::frontend::haproxy { 'load-balancer':
+      basedir               => "${basedir}/haproxy",
+      confdir               => $confdir,
+      apidir                => $apidir,
+      haproxy_image         => $config['load_balancer']['haproxy_image'],
+      haproxy_imagetag      => $config['load_balancer']['haproxy_imagetag'],
+      port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
+      static_backends       => $config['load_balancer']['static_backends'],
     }
     sunet::frontend::api { 'sunetfrontend':
       basedir => $apidir,
@@ -72,7 +75,7 @@ class sunet::frontend::load_balancer(
         ;
     }
   } else {
-    fail('No SUNET frontend load balancer config found in hiera')
+    fail('No/bad SUNET frontend load balancer config found in hiera')
   }
 }
 
@@ -107,6 +110,7 @@ define load_balancer_peer(
   String           $remote_ip,
   Optional[String] $local_ip = undef,
   Optional[String] $router_id = undef,
+  Optional[String] $password_hiera_key = undef,
 ) {
   # If $local_ip is not set, default to either $::ipaddress_default or $::ipaddress6_default
   # depending on the address family of $remote_ip
@@ -120,12 +124,20 @@ define load_balancer_peer(
     $_local_ip = $local_ip
   }
 
+  # Hiera hash (deep) merging does not seem to work with one yaml backend and one
+  # gpg backend, so we couldn't put the password in secrets.yaml and just merge it in
+  $md5 = $password_hiera_key ? {
+    undef   => undef,
+    default => hiera($password_hiera_key, undef)
+  }
+
   sunet::exabgp::neighbor { "peer_${name}":
     local_as       => $as,
     local_address  => $_local_ip,
     peer_as        => $as,
     peer_address   => $remote_ip,
     router_id      => $router_id,
+    md5           => $md5,
   }
 }
 
@@ -146,6 +158,7 @@ define load_balancer_website(
   Hash             $frontend_template_params = {},
   Array            $allow_ports = [],
   Optional[String] $letsencrypt_server = undef,
+  Array            $backend_haproxy_config = [],  # used in 'haproxy-backend-config'
 ) {
   $_ipv4 = map($frontends) |$fe| {
     $fe['primary_ips'].filter |$ip| { is_ipaddr($ip, 4) }
@@ -193,7 +206,10 @@ define load_balancer_website(
 
   # 'export' config to a file usable by haproxy-config-update+haproxy-backend-config
   # to create backend configuration
-  $export_data = {'backends' => $backends}
+  $export_data = {
+    'backend_haproxy_config' => $backend_haproxy_config,
+    'backends'               => $backends,
+  }
   file { "${confdir}/${name}_backends.yml":
     ensure  => 'file',
     group   => 'sunetfrontend',
@@ -238,10 +254,12 @@ define load_balancer_website(
     }
   }
 
-  if $letsencrypt_server != undef {
+  if $letsencrypt_server != undef and $letsencrypt_server != $::fqdn {
     sunet::dehydrated::client_define { $name :
       domain => $name,
       server => $letsencrypt_server,
+      ssh_id => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
+      single_domain => false,
     }
   }
 }
