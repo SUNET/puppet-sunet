@@ -38,7 +38,7 @@ services:
             - "389:389"
 
     comanage-registry:
-        image: comanage-registry:hotfix-2.0.x-shibboleth-sp
+        image: comanage-registry:3.0.0-shibboleth-sp
         depends_on:
             - comanage-registry-ldap
             - comanage-registry-database
