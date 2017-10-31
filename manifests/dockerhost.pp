@@ -74,6 +74,11 @@ class sunet::dockerhost(
      require => Exec['dockerhost_apt_get_update'],
   }
 
+  $docker_command = $docker_package_name ? {
+    'docker-ce' => 'dockerd',  # docker-ce has a new dockerd executable
+    default     => undef,
+  }
+
   $daemon_subcommand = $docker_package_name ? {
     'docker-ce' => '',  # docker-ce removed the 'daemon' in '/usr/bin/docker daemon'
     default     => undef,
@@ -85,6 +90,7 @@ class sunet::dockerhost(
     use_upstream_package_source => false,
     dns                         => $docker_dns,
     extra_parameters            => $docker_extra_parameters,
+    docker_command              => $docker_command,
     daemon_subcommand           => $daemon_subcommand,
     require                     => Package[$docker_package_name],
   } ->
