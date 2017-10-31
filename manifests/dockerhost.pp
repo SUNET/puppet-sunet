@@ -74,12 +74,18 @@ class sunet::dockerhost(
      require => Exec['dockerhost_apt_get_update'],
   }
 
+  $daemon_subcommand = $docker_package_name ? {
+    'docker-ce' => '',  # docker-ce removed the 'daemon' in '/usr/bin/docker daemon'
+    default     => undef,
+  }
+
   class {'docker':
-     storage_driver              => $storage_driver,
-     manage_package              => false,
-     use_upstream_package_source => false,
-     dns                         => $docker_dns,
-     extra_parameters            => $docker_extra_parameters,
+    storage_driver              => $storage_driver,
+    manage_package              => false,
+    use_upstream_package_source => false,
+    dns                         => $docker_dns,
+    extra_parameters            => $docker_extra_parameters,
+    daemon_subcommand           => $daemon_subcommand,
   } ->
 
   if $docker_network =~ String {
