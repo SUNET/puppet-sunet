@@ -41,8 +41,7 @@ define sunet::docker_run(
   $image_tag = "${image}:${imagetag}"
   docker::image { "${name}_${image_tag}" :  # make it possible to use the same docker image more than once on a node
     image   => $image_tag,
-    require => [Package['docker-engine'],
-                ],
+    require => Class['sunet::dockerhost'],
   } ->
 
   docker::run { $name :

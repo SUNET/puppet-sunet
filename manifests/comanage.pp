@@ -60,6 +60,17 @@ class sunet::comanage (
     $comanage_security_salt = hiera('comanage_security_salt', 'NOT_SET_IN_HIERA')
     $comanage_security_seed = hiera('comanage_security_seed', 'NOT_SET_IN_HIERA')
 
+    # FIXME: Horrible but I have to do this to be able to mount passwd/group due to COmanage issue:
+    # https://github.com/Internet2/comanage-registry-docker/issues/11
+    file { '/etc/shibboleth/shibboleth2.xml':
+        ensure  => file,
+        owner   => '_shibd',
+        group   => '_shibd',
+        path    => '/etc/shibboleth/shibboleth2.xml',
+        mode    => '0666',
+        content => template('sunet/comanage/shibboleth2.erb'),
+    }
+
     $content = template('sunet/comanage/docker-compose_comanage.yml.erb')
     sunet::docker_compose {'comanage_docker_compose':
         service_name => 'comanage',

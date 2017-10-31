@@ -1,3 +1,5 @@
+require stdlib
+
 define sunet::snippets::ethernet_bonding() {
   # Set up prerequisites for Ethernet LACP bonding of eth0 and eth1,
   # for all physical hosts that are running Ubuntu.
@@ -161,7 +163,8 @@ define sunet::snippets::secret_file(
   $path      = undef,
   $owner     = root,
   $group     = root,
-  $mode      = '0400'
+  $mode      = '0400',
+  $base64    = false
 ) {
   $thefile = $path ? {
     undef    => $name,
@@ -169,11 +172,15 @@ define sunet::snippets::secret_file(
   }
   $safe_key = regsubst($hiera_key, '[^0-9A-Za-z_]', '_', 'G')
   $data = hiera($hiera_key, hiera($safe_key))
+  $decoded_data = $base64 ? {
+    true     => base64('decode',$data),
+    default  => $data
+  }
   file { "${thefile}":
     owner    => $owner,
     group    => $group,
     mode     => $mode,
-    content  => inline_template("<%= @data %>")
+    content  => inline_template("<%= @decoded_data %>")
   }
 }
 

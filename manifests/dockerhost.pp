@@ -1,6 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  $docker_version            = "1.10.3-0~${::lsbdistcodename}",
+  $docker_version,
+  $docker_package_name       = 'docker-engine',  # facilitate transition to new docker-ce package
   $storage_driver            = undef,
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
@@ -21,10 +22,28 @@ class sunet::dockerhost(
      ensure => 'absent',
   }
 
+  if $docker_package_name != 'docker-engine' {
+    # transisition to docker-ce
+    package {'docker-engine': ensure => 'purged'}
+  }
 
   # Add the dockerproject repository, then force an apt-get update before
   # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
   #
+  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'} ->
+  file {
+    '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
+      ensure  => file,
+      mode    => '0644',
+      content => template('sunet/dockerhost/docker_ce-8D81803C0EBFCD88.pub.erb'),
+      ;
+    } ->
+  apt::key { 'docker_ce':
+    id      => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
+    source  => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
+  }
+
+  # old source
   apt::source {'docker_official':
      location => 'https://apt.dockerproject.org/repo',
      release  => "ubuntu-${::lsbdistcodename}",
@@ -34,25 +53,46 @@ class sunet::dockerhost(
      include  => { 'src' => false },
   }
 
+  # new source
+  apt::source {'docker_ce':
+    location => 'https://download.docker.com/linux/ubuntu',
+    release  => $::lsbdistcodename,
+    repos    => 'edge',
+    key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
+  }
+
   exec { 'dockerhost_apt_get_update':
      command     => '/usr/bin/apt-get update',
      cwd         => '/tmp',
-     require     => Apt::Source['docker_official'],
-     subscribe   => Apt::Source['docker_official'],
+     require     => [Apt::Source['docker_official'], Apt::Key['docker_ce']],
+     subscribe   => [Apt::Source['docker_official'], Apt::Key['docker_ce']],
      refreshonly => true,
   }
 
-  package { 'docker-engine' :
+  package { $docker_package_name :
      ensure => $docker_version,
      require => Exec['dockerhost_apt_get_update'],
   }
 
+  $docker_command = $docker_package_name ? {
+    'docker-ce' => 'dockerd',  # docker-ce has a new dockerd executable
+    default     => undef,
+  }
+
+  $daemon_subcommand = $docker_package_name ? {
+    'docker-ce' => '',  # docker-ce removed the 'daemon' in '/usr/bin/docker daemon'
+    default     => undef,
+  }
+
   class {'docker':
-     storage_driver              => $storage_driver,
-     manage_package              => false,
-     use_upstream_package_source => false,
-     dns                         => $docker_dns,
-     extra_parameters            => $docker_extra_parameters,
+    storage_driver              => $storage_driver,
+    manage_package              => false,
+    use_upstream_package_source => false,
+    dns                         => $docker_dns,
+    extra_parameters            => $docker_extra_parameters,
+    docker_command              => $docker_command,
+    daemon_subcommand           => $daemon_subcommand,
+    require                     => Package[$docker_package_name],
   } ->
 
   if $docker_network =~ String {

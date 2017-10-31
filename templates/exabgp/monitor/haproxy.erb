@@ -1,6 +1,6 @@
 #!/bin/sh
 
-STATUS=`<%= @scriptdir %>/haproxy-status 'site=<%= @site %>'`
+STATUS=`<%= @scriptdir %>/haproxy-status --syslog 'site=<%= @site %>'`
 
 if [ "x`echo $STATUS | grep ^UP\ `" != "x" ]; then
     exec <%= @hookdir %>/<%= @site %>_UP.sh
