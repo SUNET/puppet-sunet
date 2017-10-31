@@ -246,9 +246,13 @@ def check_containers(expect, args, logger):
             status = data['State']['Status']
             running = data['State']['Running']
             started_at = data['State']['StartedAt']
+            health_status = None
 
-            logger.debug('{!s}: status {!s}, running {!s}, started_at {!s}'.format(
-                         this, status, running, started_at))
+            if 'Health' in data['State'] and 'Status' in data['State']['Health']:
+                health_status = data['State']['Health']['Status']
+
+            logger.debug('{!s}: status {!s}, running {!s}, started_at {!s}, health_status {!s}'.format(
+                         this, status, running, started_at, health_status))
         except KeyError:
             warning.append('{!s} unparsable'.format(this))
             continue
@@ -257,18 +261,35 @@ def check_containers(expect, args, logger):
             critical.append('{!s} not running'.format(this))
             continue
 
-        # Check how long container has been running.
+        running_seconds = None
+        runtime_str = '(unknown start time)'
         if started_at.endswith('Z'):
             running_seconds = calc_running_seconds(started_at)
-            msg = '{!s}[{!s} {!s}]'.format(this, status, timestr(running_seconds))
+            runtime_str = timestr(running_seconds)
+
+        msg = '{!s}[{!s} {!s}]'.format(this, status, runtime_str)
+
+        if health_status is not None:
+            msg = '{!s}[{!s} {!s}]'.format(this, health_status, runtime_str)
+            if health_status == 'unhealthy':
+                critical.append(msg)
+                continue
+            if health_status != 'healthy':
+                warning.append(msg)
+                continue
+
+        # Check how long container has been running.
+        if running_seconds is not None:
             if running_seconds >= args.runtime_ok:
                 ok.append(msg)
             elif running_seconds >= args.runtime_warn:
                 warning.append(msg)
             else:
                 critical.append(msg)
+            continue
         else:
-            ok.append('{!s}[{!s} (unknown start time)]'.format(this, status))
+            ok.append(msg)
+            continue
 
     return ', '.join(sorted(critical)), ', '.join(sorted(warning)), ', '.join(sorted(ok))
 
