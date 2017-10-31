@@ -86,6 +86,7 @@ class sunet::dockerhost(
     dns                         => $docker_dns,
     extra_parameters            => $docker_extra_parameters,
     daemon_subcommand           => $daemon_subcommand,
+    require                     => Package[$docker_package_name],
   } ->
 
   if $docker_network =~ String {
