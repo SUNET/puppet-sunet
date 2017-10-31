@@ -1,6 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  $docker_version            = "1.10.3-0~${::lsbdistcodename}",
+  $docker_version,
+  $docker_package_name       = 'docker-engine',  # facilitate transition to new docker-ce package
   $storage_driver            = undef,
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
@@ -64,7 +65,7 @@ class sunet::dockerhost(
      refreshonly => true,
   }
 
-  package { 'docker-engine' :
+  package { $docker_package_name :
      ensure => $docker_version,
      require => Exec['dockerhost_apt_get_update'],
   }
