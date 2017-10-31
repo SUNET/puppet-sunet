@@ -22,6 +22,10 @@ class sunet::dockerhost(
      ensure => 'absent',
   }
 
+  if $docker_package_name != 'docker-engine' {
+    # transisition to docker-ce
+    package {'docker-engine': ensure => 'purged'}
+  }
 
   # Add the dockerproject repository, then force an apt-get update before
   # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
