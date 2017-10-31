@@ -26,7 +26,7 @@ class sunet::dockerhost(
   # Add the dockerproject repository, then force an apt-get update before
   # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
   #
-  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0750'} ->
+  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'} ->
   file {
     '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
       ensure  => file,
