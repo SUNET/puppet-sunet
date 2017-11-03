@@ -275,7 +275,7 @@ define sunet::dehydrated::client_define(
     }
   } else {
     ensure_resource('sunet::scriptherder::cronjob',  "dehydrated_fetch_${server}", {
-      cmd    => "ssh -Ti \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh",
+      cmd    => "sh -c 'ssh -Ti \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh'",
       user   => $user,
       minute => '*/20',
     })
