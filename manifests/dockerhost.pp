@@ -48,15 +48,6 @@ class sunet::dockerhost(
     ensure   => 'absent',
   }
 
-  apt::source {'docker_ce':
-     location => 'https://download.docker.com/linux/ubuntu',
-     release  => $::lsbdistcodename,
-     repos    => 'edge',
-     key      => { 'id'     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
-                   'server' => 'keyserver.ubuntu.com' },
-     include  => { 'src' => false },
-  }
-
   # new source
   apt::source {'docker_ce':
     location => 'https://download.docker.com/linux/ubuntu',
