@@ -1,7 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
   $docker_version,
-  $docker_package_name       = 'docker-engine',  # facilitate transition to new docker-ce package
+  $docker_package_name       = 'docker-ce',  # facilitate transition to new docker-ce package
   $storage_driver            = undef,
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
@@ -14,7 +14,7 @@ class sunet::dockerhost(
 ) {
 
   # Remove old versions, if installed
-  package { ['lxc-docker-1.6.2', 'lxc-docker', 'docker-engine'] :
+  package { ['lxc-docker-1.6.2', 'lxc-docker'] :
      ensure => 'purged',
   } ->
 
