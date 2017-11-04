@@ -8,14 +8,17 @@ Facter.add('tls_certificates') do
     res[fn] = {'bundle' => this}
   end
 
-  filenames = Dir.glob('/etc/ssl/*_haproxy.crt')
+  # Look in /etc/ssl and /etc/ssl/private for pem files with at least one underscore in them.
+  # Assume what is left of the first underscore is a hostname and store the filename under
+  # res[hostname][rest_of_path]
+  filenames = Dir.glob(['/etc/ssl/private/*_*.pem', '/etc/ssl/private/*_*.pem'])
   filenames.each do | this |
-    fn = File.basename(this, '_haproxy.crt')
-    if res.key?(fn)
-      res[fn]['haproxy'] = this
-    else
-      res[fn] = {'haproxy' => this}
+    fn = File.basename(this, '.pem')
+    hostpart, rest = fn.split('_')
+    if ! res[hostpart]
+      res[hostpart] = {}
     end
+    res[hostpart][rest] = this
   end
 
   if File.exist? '/etc/ssl/snakeoil_bundle.crt'
