@@ -20,8 +20,8 @@ class sunet::rsyslog(
     })
 
   if $relp_syslog_servers != [] {
-
-
-
+    ensure_resource('package', 'rsyslog-relp', {
+      ensure => 'installed'
+      })
   }
 }
