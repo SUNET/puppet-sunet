@@ -9,6 +9,6 @@
 module(load="omrelp")
 
 <% @relp_syslog_servers.each do |server| -%>
-*.*      :omrelp:@<%= server %>
+*.*      :omrelp:<%= server %>
 <% end -%>
 <% end -%>
