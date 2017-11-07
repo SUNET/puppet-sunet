@@ -1,4 +1,14 @@
-# Remote syslog
+# Remote syslog configuration managed by Puppet (sunet::rsyslog)
+#
+
 <% @syslog_servers.each do |server| -%>
 *.*      @<%= server %>
+<% end -%>
+
+<% if @relp_syslog_servers != [] -%>
+module(load="omrelp")
+
+<% @relp_syslog_servers.each do |server| -%>
+*.*      :omrelp:@<%= server %>
+<% end -%>
 <% end -%>
