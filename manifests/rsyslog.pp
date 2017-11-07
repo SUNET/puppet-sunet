@@ -1,6 +1,6 @@
 class sunet::rsyslog(
   $syslog_servers = hiera_array('syslog_servers',[]),
-  $relp_syslog_servers = hiera_array('syslog_servers',[]),
+  $relp_syslog_servers = hiera_array('relp_syslog_servers',[]),
 ) {
   ensure_resource('package', 'rsyslog', {
     ensure => 'installed'
