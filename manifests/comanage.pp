@@ -64,10 +64,10 @@ class sunet::comanage (
     # https://github.com/Internet2/comanage-registry-docker/issues/11
     file { '/etc/shibboleth/shibboleth2.xml':
         ensure  => file,
-        owner   => '_shibd',
-        group   => '_shibd',
+        owner   => 'root',
+        group   => 'root',
         path    => '/etc/shibboleth/shibboleth2.xml',
-        mode    => '0666',
+        mode    => '0644',
         content => template('sunet/comanage/shibboleth2.erb'),
     }
 
