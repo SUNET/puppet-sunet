@@ -4,10 +4,10 @@ Facter.add('tls_certificates') do
 
   # Look for dehydrated certs, keys and bundles
   filenames = Dir.glob('/etc/dehydrated/certs/*.pem')
-  filenames.each do | this |
-    hostpart = File.basename(this, '.pem')
+  filenames.each do | full_fn |
+    hostpart = File.basename(full_fn, '.pem')
     res[hostpart] ||= {}
-    res[hostpart]['dehydrated_bundle'] = this
+    res[hostpart]['dehydrated_bundle'] = full_fn
   end
 
   # Look in /etc/ssl and /etc/ssl/private for crt/pem files with at least one underscore in them.
@@ -23,9 +23,9 @@ Facter.add('tls_certificates') do
                  '.crt' => '',
                  '.key' => '_key'
                 }
-  filenames.each do | this |
+  filenames.each do | full_fn |
     #debug("TLS certificate candidate: #{this}")
-    fn = File.basename(this)
+    fn = File.basename(full_fn)
     parts = fn.split('_')
     hostpart = parts.slice!(0)
     rest = parts.join('_')
@@ -41,7 +41,7 @@ Facter.add('tls_certificates') do
       rest = rest + '_cert'
     end
     res[hostpart] ||= {}
-    res[hostpart][rest] = fn
+    res[hostpart][rest] = full_fn
   end
 
   # Look for snakeoil cert, key and bundle
