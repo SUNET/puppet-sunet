@@ -230,6 +230,7 @@ define load_balancer_website(
         $tls_certificates[$name]['certkey'],
         $tls_certificates[$name]['infra_certkey'],
         $tls_certificates[$name]['bundle'],
+        $tls_certificates[$name]['dehydrated_bundle'],
         'NOMATCH',
       )
       if $_tls_certificate_bundle != 'NOMATCH' {
