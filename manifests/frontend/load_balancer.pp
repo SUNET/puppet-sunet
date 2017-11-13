@@ -220,16 +220,32 @@ define load_balancer_website(
   if $frontend_template != undef {
     $server_name = $name
     $params = $frontend_template_params
+    if has_key($tls_certificates, 'snakeoil') {
+      $snakeoil = $tls_certificates['snakeoil']['bundle']
+    }
     if has_key($tls_certificates, $name) {
       # Site name found in tls_certificates - good start
-      $tls_certificate_bundle = pick(
+      $_tls_certificate_bundle = pick(
         $tls_certificates[$name]['haproxy'],
         $tls_certificates[$name]['certkey'],
         $tls_certificates[$name]['infra_certkey'],
         $tls_certificates[$name]['bundle'],
+        'NOMATCH',
       )
-    } elsif has_key($tls_certificates, 'snakeoil') {
-      $tls_certificate_bundle = $tls_certificates['snakeoil']['bundle']
+      if $_tls_certificate_bundle != 'NOMATCH' {
+        $tls_certificate_bundle = $_tls_certificate_bundle
+      } else {
+        notice("None of the certificates for site ${name} matched my list (haproxy, certkey, infra_certkey, bundle): $tls_certificates[$name]")
+        if $snakeoil {
+          $tls_certificate_bundle = $snakeoil
+        }
+      }
+    } elsif $snakeoil {
+      $tls_certificate_bundle = $snakeoil
+    }
+
+    if $snakeoil and $tls_certificate_bundle == $snakeoil {
+      notice("Using snakeoil certificate for site ${name}")
     }
     # Note that haproxy actually does _not_ want IPv6 addresses to be enclosed by brackets.
     $ips = $ipv4 + $ipv6
