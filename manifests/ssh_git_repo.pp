@@ -31,7 +31,7 @@ define sunet::ssh_git_repo(
       incl    => "/${ssh_home}/config",
       changes => [
          "set /files/${ssh_home}/config/Host ${hostname}",
-         "set /files/${ssh_home}/config/Host[.='${hostname}']/IdentityFile/\~/.ssh/${id}"
+         "set /files/${ssh_home}/config/Host[.='${hostname}']/IdentityFile/~/.ssh/${id}"
       ]
    }
    sunet::ssh_keyscan::host {$hostname: } ->
