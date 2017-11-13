@@ -1,5 +1,5 @@
 define sunet::ssh_git_repo(
-      $hostname    = 'github.com'
+      $hostname    = 'github.com',
       $username    = 'github',
       $group       = 'github',
       $url         = undef,
