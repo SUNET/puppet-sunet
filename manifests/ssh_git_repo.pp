@@ -27,8 +27,8 @@ define sunet::ssh_git_repo(
       group     => "${group}"
    } -> 
    augeas {"ssh_config_set_host_identity":
-      lens    => "Ssh",
       incl    => "${ssh_home}/config",
+      lens    => 'Ssh.lns',
       changes => [
          "set /files${ssh_home}/config/Host ${hostname}",
          "set /files${ssh_home}/config/Host[.='${hostname}']/IdentityFile ${ssh_home}/${id}"
