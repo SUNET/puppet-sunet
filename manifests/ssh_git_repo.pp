@@ -28,10 +28,10 @@ define sunet::ssh_git_repo(
    } -> 
    augeas {"ssh_config_set_host_identity":
       lens    => "Ssh",
-      incl    => "/${ssh_home}/config",
+      incl    => "${ssh_home}/config",
       changes => [
-         "set /files/${ssh_home}/config/Host ${hostname}",
-         "set /files/${ssh_home}/config/Host[.='${hostname}']/IdentityFile ~/.ssh/${id}"
+         "set /files${ssh_home}/config/Host ${hostname}",
+         "set /files${ssh_home}/config/Host[.='${hostname}']/IdentityFile ${ssh_home}/${id}"
       ]
    }
    sunet::ssh_keyscan::host {$hostname: } ->
