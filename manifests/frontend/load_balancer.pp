@@ -235,7 +235,8 @@ define load_balancer_website(
       if $_tls_certificate_bundle != 'NOMATCH' {
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
-        notice("None of the certificates for site ${name} matched my list (haproxy, certkey, infra_certkey, bundle): $tls_certificates[$name]")
+        $_site_certs = $tls_certificates[$name]
+        notice("None of the certificates for site ${name} matched my list (haproxy, certkey, infra_certkey, bundle): $_site_certs")
         if $snakeoil {
           $tls_certificate_bundle = $snakeoil
         }
