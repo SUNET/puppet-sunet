@@ -220,10 +220,34 @@ define load_balancer_website(
   if $frontend_template != undef {
     $server_name = $name
     $params = $frontend_template_params
+    if has_key($tls_certificates, 'snakeoil') {
+      $snakeoil = $tls_certificates['snakeoil']['bundle']
+    }
     if has_key($tls_certificates, $name) {
-      $tls_certificate_bundle = $tls_certificates[$name]['bundle']
-    } elsif has_key($tls_certificates, 'snakeoil') {
-      $tls_certificate_bundle = $tls_certificates['snakeoil']['bundle']
+      # Site name found in tls_certificates - good start
+      $_tls_certificate_bundle = pick(
+        $tls_certificates[$name]['haproxy'],
+        $tls_certificates[$name]['certkey'],
+        $tls_certificates[$name]['infra_certkey'],
+        $tls_certificates[$name]['bundle'],
+        $tls_certificates[$name]['dehydrated_bundle'],
+        'NOMATCH',
+      )
+      if $_tls_certificate_bundle != 'NOMATCH' {
+        $tls_certificate_bundle = $_tls_certificate_bundle
+      } else {
+        $_site_certs = $tls_certificates[$name]
+        notice("None of the certificates for site ${name} matched my list (haproxy, certkey, infra_certkey, bundle): $_site_certs")
+        if $snakeoil {
+          $tls_certificate_bundle = $snakeoil
+        }
+      }
+    } elsif $snakeoil {
+      $tls_certificate_bundle = $snakeoil
+    }
+
+    if $snakeoil and $tls_certificate_bundle == $snakeoil {
+      notice("Using snakeoil certificate for site ${name}")
     }
     # Note that haproxy actually does _not_ want IPv6 addresses to be enclosed by brackets.
     $ips = $ipv4 + $ipv6
