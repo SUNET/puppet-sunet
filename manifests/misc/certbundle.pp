@@ -17,6 +17,14 @@ define sunet::misc::certbundle(
       group     => $group,
     }
     $req = [Sunet::Misc::Create_key_file[$keyfile]]
+    if $group != 'root' {
+      # /etc/ssl/private is owned by group ssl-cert and not world-accessible
+      # XXX this makes the assumption that there is a user named the same as the $group
+      sunet::snippets::add_user_to_group { "${group}_ssl-cert":
+        username => $group,
+        group    => 'ssl-cert',
+      }
+    }
   } else {
     $req = []
   }
