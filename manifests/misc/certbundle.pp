@@ -21,18 +21,20 @@ define sunet::misc::certbundle(
     $req = []
   }
 
-  ensure_resource('file', '/usr/local/sbin/cert-bundler', {
-    ensure  => file,
-    content => template('sunet/misc/cert-bundler.erb'),
-    mode    => '0755'
-  })
+  if $script {
+    ensure_resource('file', '/usr/local/sbin/cert-bundler', {
+      ensure  => file,
+      content => template('sunet/misc/cert-bundler.erb'),
+      mode    => '0755'
+      })
 
-  $script_args = join($script, ' ')
-  #notice("Creating ${outfile} with command /usr/local/sbin/cert-bundler --syslog $script_args")
-  ensure_resource('exec', "create_${name}", {
-    'command' => "/usr/local/sbin/cert-bundler --syslog ${script_args}",
-    'unless'  => "/usr/local/sbin/cert-bundler --unless ${script_args}",
-    'require' => $req,
-    'returns' => [0, 1],
-  })
+    $script_args = join($script, ' ')
+    #notice("Creating ${outfile} with command /usr/local/sbin/cert-bundler --syslog $script_args")
+    ensure_resource('exec', "create_${name}", {
+      'command' => "/usr/local/sbin/cert-bundler --syslog ${script_args}",
+      'unless'  => "/usr/local/sbin/cert-bundler --unless ${script_args}",
+      'require' => $req,
+      'returns' => [0, 1],
+      })
+  }
 }
