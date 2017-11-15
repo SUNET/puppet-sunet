@@ -29,7 +29,7 @@ define sunet::misc::certbundle(
     $req = []
   }
 
-  if $script {
+  if ! emtpy($script) {
     ensure_resource('file', '/usr/local/sbin/cert-bundler', {
       ensure  => file,
       content => template('sunet/misc/cert-bundler.erb'),
