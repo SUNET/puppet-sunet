@@ -43,6 +43,12 @@ class sunet::dockerhost(
     source  => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
   }
 
+  if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
+    $architecture = 'amd64'
+  } else {
+    $architecture = undef
+  }
+
   # old source
   apt::source {'docker_official':
      location => 'https://apt.dockerproject.org/repo',
@@ -55,10 +61,11 @@ class sunet::dockerhost(
 
   # new source
   apt::source {'docker_ce':
-    location => 'https://download.docker.com/linux/ubuntu',
-    release  => $::lsbdistcodename,
-    repos    => 'edge',
-    key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
+    location     => 'https://download.docker.com/linux/ubuntu',
+    release      => $::lsbdistcodename,
+    repos        => 'edge',
+    key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
+    architecture => $architecture,
   }
 
   exec { 'dockerhost_apt_get_update':
