@@ -20,6 +20,7 @@ define sunet::cloudimage (
   $ssh_keys    = undef,
   $description = '',
   $apt_dir     = '/etc/cosmos/apt',
+  $apt_proxy   = undef,
   $images_dir  = '/var/lib/libvirt/images',
   $pool_name   = 'default',
   $local_size  = '0',
