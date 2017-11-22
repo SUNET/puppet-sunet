@@ -57,7 +57,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    }
    if $::fqdn == 'docker.sunet.se' {
       sunet::nagios::nrpe_command {'check_var':
-         command_line => '/usr/lib/nagios/plugins/check_disk -w 7% -c 5% -p /var'
+         command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /var'
       }
    } else {
       sunet::nagios::nrpe_command {'check_var':
