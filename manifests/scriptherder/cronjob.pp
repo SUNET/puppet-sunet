@@ -12,7 +12,7 @@ define sunet::scriptherder::cronjob(
   Optional[String]          $special       = undef,    # e.g. 'daily'
   # scriptherder parameters
   Array[String[1]]          $ok_criteria   = ['exit_status=0'],
-  Array[String[1]]          $warn_criteria = [],
+  Array[String[1]]          $warn_criteria = ['exit_status=0'],
   Boolean                   $purge_results = false,    # set to 'true' to remove job metadata files
 ) {
   $safe_name = regsubst(pick($job_name, $title), '[^0-9A-Za-z._\-]', '_', 'G')
