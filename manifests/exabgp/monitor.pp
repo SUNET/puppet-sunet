@@ -69,6 +69,7 @@ define sunet::exabgp::monitor::haproxy(
   }
 
   file { ["$hookdir/${site}_UP.sh", "$hookdir/${site}_DOWN.sh"]:
-      mode => '0755',
+    mode => '0755',
+    require => [Exec["exabgp_hook_${site}_UP"], Exec["exabgp_hook_${site}_DOWN"]],
   }
 }
