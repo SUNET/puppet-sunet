@@ -2,14 +2,19 @@
 define sunet::misc::create_cfgfile(
   String  $content,
   String  $group,
-  String  $mode    = '0640',
-  Boolean $force   = false,
-{
-  $req_group = $group ? {
-    # groups not created in Puppet, so can't require them
-    'root'     => [],
-    'www-data' => [],
-    default    => Group[$group],
+  String  $mode      = '0640',
+  Boolean $force     = false,
+  Boolean $req_group = true,
+) {
+  if $req_group {
+    $req = $group ? {
+      # groups not created in Puppet, so can't require them
+      'root'     => [],
+      'www-data' => [],
+      default    => Group[$group],
+    }
+  } else {
+    $req = undef
   }
 
   file { $name :
@@ -17,7 +22,7 @@ define sunet::misc::create_cfgfile(
     mode    => $mode,
     group   => $group,
     content => $content,
-    require => $req_group,
+    require => $req,
     force   => $force,
   }
 }
