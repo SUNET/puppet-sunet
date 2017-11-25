@@ -1,21 +1,21 @@
-upstream django {   
+upstream django {
     server 127.0.0.1:8001; # for a web port socket
 }
- 
+
 server {
     listen         80;
     listen         [::]:80;
     server_name    <%= @hostname %>.<%= @domain %>;
     rewrite        ^ https://$server_name$request_uri? permanent;
 }
- 
+
 server {
     listen 443;
     listen [::]:443 default ipv6only=on; ## listen for ipv6
     ssl on;
     ssl_certificate /etc/ssl/certs/<%= @ssl_cert %>;
     ssl_certificate_key /etc/ssl/private/<%= @ssl_key %>;
- 
+
     # PFS settings from http://people.adams.edu/~cdmiller/posts/NSA_SSL_settings_for_nginx_and_apache/
     # NOTE: these settings exclude Win XP with IE 6
     #
@@ -24,16 +24,16 @@ server {
     ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
     ssl_session_cache shared:SSL:10m;
     ssl_ecdh_curve secp384r1;
-    ssl_dhparam /etc/ssl/dhparams.pem; 
+    ssl_dhparam /etc/ssl/dhparams.pem;
     server_name <%= @hostname %>.<%= @domain %>;
- 
+
     location /static/ {
         alias        /var/opt/norduni/norduni/src/niweb/niweb/static/;
         autoindex    on;
         access_log   off;
         expires      30d;
     }
- 
+
     location / {
         include     /etc/nginx/uwsgi_params;
         proxy_set_header   Host                 $host;
@@ -42,5 +42,5 @@ server {
         proxy_set_header   X-Forwarded-Proto    $scheme;
         proxy_redirect     off;
         uwsgi_pass  django;
-    }  
+    }
 }

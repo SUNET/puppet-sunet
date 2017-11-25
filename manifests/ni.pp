@@ -1,18 +1,18 @@
-class sunet::ni3(
+class sunet::ni(
 
   $test_server = false,
   $backup_server = false,
   String $ssl_cert,
   String $ssl_key,
 
-){ 
-  
+){
+
   $neo4j_pwd = safe_hiera('ni_neo4j_password',[])
   $ni_database_pwd = safe_hiera ('ni_database_password',[])
   $noclook_secret_key = safe_hiera ('noclook_secret_key',[])
   $google_api_key = safe_hiera ('google_api_key',[])
   $domain = $::domain
-  $hostname = $::hostname 
+  $hostname = $::hostname
 
   service { 'neo4j':
     ensure => running,
@@ -32,7 +32,7 @@ class sunet::ni3(
   file { '/etc/neo4j/neo4j.conf':
     ensure => file,
     mode => '644',
-    content => template('sunet/ni3/neo4j.conf.erb'), 
+    content => template('sunet/ni3/neo4j.conf.erb'),
     notify => Service['neo4j'],
   }
 
@@ -43,20 +43,20 @@ class sunet::ni3(
   exec {'change_neo4j_pwd':
     command => "neo4j-admin set-initial-password $neo4j_pwd",
   }
-  
+
   file {'/root/entries.sql':
     ensure => file,
     mode => '644',
     content => template('sunet/ni3/entries.sql.erb'),
   }
-  
+
   exec {'postgres_entries':
     user => 'postgres',
     command => "psql -f /root/entries.sql",
     subscribe => File['/root/entries.sql'],
     refreshonly => true,
   }
-  
+
   user {'ni':
     ensure => present,
     password => '*',
@@ -86,14 +86,14 @@ class sunet::ni3(
     cwd => '/var/opt/norduni/norduni_environment',
     require => Vcsrepo['/var/opt/norduni/norduni'],
   } ->
-  
+
   file { '/var/opt/norduni/norduni/src/niweb/.env':
     ensure => present,
     mode  => '664',
     owner => 'ni',
     group => 'ni',
     content  => template('sunet/ni3/.env.erb'),
-    notify => Service['uwsgi'], 
+    notify => Service['uwsgi'],
   } ->
 
   file {'/root/python_commands':
@@ -108,7 +108,7 @@ class sunet::ni3(
     refreshonly => true,
   } ->
 
-  if $domain == 'sunet.se'{ 
+  if $domain == 'sunet.se'{
      vcsrepo {'/var/opt/norduni/sunet-nistore':
      ensure => latest,
      provider => git,
@@ -116,8 +116,8 @@ class sunet::ni3(
      group => ni,
      source => 'git://git.nordu.net/sunet-nistore.git',
      require => User['ni'],
-     } 
-  } 
+     }
+  }
 
   if $domain == 'nordu.net'{
      vcsrepo {'/var/opt/norduni/nistore':
@@ -127,16 +127,16 @@ class sunet::ni3(
      group => ni,
      source => 'git://git.nordu.net/nistore.git',
      require => User['ni'],
-     } 
-  } 
+     }
+  }
 
   file {'/var/opt/norduni/norduni/src/scripts/restore.conf/':
     ensure => file,
     mode  => '644',
     owner => 'ni',
     group => 'ni',
-    content  => template('sunet/ni3/restore.conf.erb'),   
-  } 
+    content  => template('sunet/ni3/restore.conf.erb'),
+  }
 
   if $test_server{
      file {'/var/opt/norduni/consume.sh/':
@@ -162,7 +162,7 @@ class sunet::ni3(
        ok_criteria   => ['exit_status=0', 'max_age=721h'],
        warn_criteria => ['exit_status=0', 'max_age=723h'],
     }
-    
+
     sunet::scriptherder::cronjob { 'run_consume_script':
        cmd => "/var/opt/norduni/consume.sh",
        user => 'ni',
@@ -200,8 +200,8 @@ class sunet::ni3(
   file { '/etc/uwsgi/apps-enabled/noclook.ini':
     ensure => link,
     target => '/etc/uwsgi/apps-available/noclook.ini',
-  }   
-  
+  }
+
   file { '/tmp/django_cache':
     ensure => directory,
     owner => 'ni',
@@ -223,5 +223,5 @@ class sunet::ni3(
     mode => '644',
     content => template('sunet/ni3/default.erb'),
     notify => Service['nginx'],
-  } 
+  }
  }
