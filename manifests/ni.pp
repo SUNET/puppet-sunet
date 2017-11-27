@@ -32,22 +32,26 @@ class sunet::ni(
   file { '/etc/neo4j/neo4j.conf':
     ensure => file,
     mode => '644',
-    content => template('sunet/ni3/neo4j.conf.erb'),
+    content => template('sunet/ni/neo4j.conf.erb'),
     notify => Service['neo4j'],
-  }
-
-  file {'/var/lib/neo4j/data/dbms/auth':
-    ensure => absent,
   }
 
   exec {'change_neo4j_pwd':
     command => "neo4j-admin set-initial-password $neo4j_pwd",
+    creates => '/var/lib/neo4j/data/dbms/auth.ini',
+    require => Exec['remove_auth_file'],
+    notify => Service['neo4j'],
+  }
+
+  exec {'remove_auth_file':
+    command => "rm /var/lib/neo4j/data/dbms/auth",
+    unless => "test -e /var/lib/neo4j/data/dbms/auth.ini",
   }
 
   file {'/root/entries.sql':
     ensure => file,
     mode => '644',
-    content => template('sunet/ni3/entries.sql.erb'),
+    content => template('sunet/ni/entries.sql.erb'),
   }
 
   exec {'postgres_entries':
@@ -92,14 +96,14 @@ class sunet::ni(
     mode  => '664',
     owner => 'ni',
     group => 'ni',
-    content  => template('sunet/ni3/.env.erb'),
+    content  => template('sunet/ni/.env.erb'),
     notify => Service['uwsgi'],
   } ->
 
   file {'/root/python_commands':
     ensure => file,
     mode => '755',
-    content => template('sunet/ni3/python_commands.erb'),
+    content => template('sunet/ni/python_commands.erb'),
   } ->
 
   exec {'python_commands':
@@ -108,26 +112,13 @@ class sunet::ni(
     refreshonly => true,
   } ->
 
-  if $domain == 'sunet.se'{
-     vcsrepo {'/var/opt/norduni/sunet-nistore':
-     ensure => latest,
-     provider => git,
-     owner => ni,
-     group => ni,
-     source => 'git://git.nordu.net/sunet-nistore.git',
-     require => User['ni'],
-     }
-  }
-
-  if $domain == 'nordu.net'{
-     vcsrepo {'/var/opt/norduni/nistore':
-     ensure => latest,
-     provider => git,
-     owner => ni,
-     group => ni,
-     source => 'git://git.nordu.net/nistore.git',
-     require => User['ni'],
-     }
+  vcsrepo {'/var/opt/norduni/sunet-nistore':
+    ensure => latest,
+    provider => git,
+    owner => ni,
+    group => ni,
+    source => 'git://git.nordu.net/sunet-nistore.git',
+    require => User['ni'],
   }
 
   file {'/var/opt/norduni/norduni/src/scripts/restore.conf/':
@@ -135,14 +126,14 @@ class sunet::ni(
     mode  => '644',
     owner => 'ni',
     group => 'ni',
-    content  => template('sunet/ni3/restore.conf.erb'),
+    content  => template('sunet/ni/restore.conf.erb'),
   }
 
   if $test_server{
      file {'/var/opt/norduni/consume.sh/':
        ensure => file,
        mode => '755',
-       content => template('sunet/ni3/consume.sh.erb'),
+       content => template('sunet/ni/consume.sh.erb'),
      }
 
      file {'/var/opt/norduni/norduni/src/scripts/sunet.conf':
@@ -150,7 +141,7 @@ class sunet::ni(
        mode => '644',
        owner => 'ni',
        group => 'ni',
-       content => template('sunet/ni3/sunet.conf.erb'),
+       content => template('sunet/ni/sunet.conf.erb'),
      }
 
      sunet::scriptherder::cronjob { 'run_clone_script':
@@ -161,25 +152,19 @@ class sunet::ni(
        monthday => '1',
        ok_criteria   => ['exit_status=0', 'max_age=721h'],
        warn_criteria => ['exit_status=0', 'max_age=723h'],
-    }
+     }
 
-    sunet::scriptherder::cronjob { 'run_consume_script':
+     sunet::scriptherder::cronjob { 'run_consume_script':
        cmd => "/var/opt/norduni/consume.sh",
        user => 'ni',
        minute => '30',
        hour => '6',
        ok_criteria   => ['exit_status=0', 'max_age=25h'],
        warn_criteria => ['exit_status=0', 'max_age=49h'],
-    }
+     }
   }
 
   if $backup_server{
-
-     exec { 'create_dhparam_pem':
-       command => 'openssl dhparam -out /etc/ssl/dhparams.pem 2048',
-       unless  => '/usr/bin/test -s /etc/ssl/dhparams.pem',
-     }
-
      sunet::scriptherder::cronjob {'run_clone_script_ni2':
        command => "/var/opt/norduni/norduni/src/scripts/clone.sh -r /var/opt/norduni/sunet-nistore/",
        user => 'ni',
@@ -193,7 +178,7 @@ class sunet::ni(
   file { '/etc/uwsgi/apps-available/noclook.ini':
     ensure => present,
     mode  => '644',
-    content  => template('sunet/ni3/noclook.ini.erb'),
+    content  => template('sunet/ni/noclook.ini.erb'),
     notify => Service['uwsgi'],
   } ->
 
@@ -218,10 +203,15 @@ class sunet::ni(
     recurse => true,
   }
 
+  exec { 'create_dhparam_pem':
+       command => 'openssl dhparam -out /etc/ssl/dhparams.pem 2048',
+       unless  => '/usr/bin/test -s /etc/ssl/dhparams.pem',
+  } ->
+
   file { '/etc/nginx/sites-available/default':
     ensure => file,
     mode => '644',
-    content => template('sunet/ni3/default.erb'),
+    content => template('sunet/ni/default.erb'),
     notify => Service['nginx'],
   }
  }

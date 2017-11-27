@@ -1,7 +1,5 @@
 class sunet::ni_packages {
 
-  include apt
-
   apt::ppa {'ppa:webupd8team/java':}
 
   exec { 'accept_oracle_licence':
