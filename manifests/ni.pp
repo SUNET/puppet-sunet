@@ -48,7 +48,7 @@ class sunet::ni(
     unless => "test -e /var/lib/neo4j/data/dbms/auth.ini",
   }
 
-  file {'/root/entries.sql':
+  file {'/var/opt/norduni/entries.sql':
     ensure => file,
     mode => '644',
     content => template('sunet/ni/entries.sql.erb'),
@@ -56,8 +56,8 @@ class sunet::ni(
 
   exec {'postgres_entries':
     user => 'postgres',
-    command => "psql -f /root/entries.sql",
-    subscribe => File['/root/entries.sql'],
+    command => "psql -f /var/opt/norduni/entries.sql",
+    subscribe => File['/var/opt/norduni/entries.sql'],
     refreshonly => true,
   }
 
@@ -100,15 +100,15 @@ class sunet::ni(
     notify => Service['uwsgi'],
   } ->
 
-  file {'/root/python_commands':
+  file {'/var/opt/norduni/python_commands':
     ensure => file,
     mode => '755',
     content => template('sunet/ni/python_commands.erb'),
   } ->
 
   exec {'python_commands':
-    command => "/root/python_commands",
-    subscribe => File['/root/python_commands'],
+    command => "/var/opt/norduni/python_commands",
+    subscribe => File['/var/opt/norduni/python_commands'],
     refreshonly => true,
   } ->
 
