@@ -53,7 +53,7 @@ class sunet::rt2 {
                      "RT_Q4=tcs",
                      "RT_Q5=unused",
                      "RT_PASSWORD=${rt_root_password}"],
-    } 
+    }
 
     # Run SQL or Perl here to set RT's root user pwd ???
 
