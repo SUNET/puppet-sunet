@@ -36,11 +36,10 @@ class sunet::rt2 {
                      "POSTGRES_PASSWORD=${postgres_password}"],
     }
     sunet::docker_run { 'rt-swamid':
-        image    => 'docker.sunet.se/rt-swamid',
+        image    => 'rt-swamid',
         imagetag => 'latest',
         ports    => ['25:25', '80:80', '443:443'],
-        volumes  => ['/etc/dehydrated:/etc/ssl',
-                     '/dev/log:/dev/log:rw',
+        volumes  => ['/dev/log:/dev/log:rw',
                      '/var/spool/postfix:/var/spool/postfix'],
         env      => ["SP_HOSTNAME=rt-test.sunet.se",
                      "RT_HOSTNAME=rt-test.sunet.se",
