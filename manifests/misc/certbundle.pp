@@ -11,9 +11,15 @@ define sunet::misc::certbundle(
     default => $_bundle_key_a[0][4,-1],
   }
 
-  $_keyfile = pick($keyfile, $_bundle_key, '')
+  $_keyfile1 = pick($keyfile, $_bundle_key, '')
 
-  if $_keyfile != '' {
+  if $_keyfile1 != '' {
+    # Use path /etc/ssl/private/ if keyfile was specified without directory
+    $_keyfile = dirname($_keyfile1) ? {
+      '' => $_keyfile = '/etc/ssl/private/' + $_keyfile1,
+      default => _keyfile1,
+    }
+
     #notice("Creating keyfile ${keyfile}")
     sunet::misc::create_key_file { $_keyfile:
       hiera_key => $hiera_key,
