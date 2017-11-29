@@ -36,6 +36,16 @@ class sunet::ni(
       creates => '/var/lib/neo4j/data/dbms/auth.ini',
       notify  => Service['neo4j'],
       }
+  -> user {'ni':
+      ensure   => present,
+      password => '*',
+      home     => '/var/opt/norduni',
+      }
+  -> file { '/var/opt/norduni':
+      ensure => directory,
+      owner  => 'ni',
+      group  => 'ni',
+      }
   -> file {'/var/opt/norduni/entries.sql':
       ensure  => file,
       mode    => '0644',
@@ -47,17 +57,7 @@ class sunet::ni(
       subscribe   => File['/var/opt/norduni/entries.sql'],
       refreshonly => true,
       }
-  user {'ni':
-      ensure   => present,
-      password => '*',
-      home     => '/var/opt/norduni',
-      }
-  -> file { '/var/opt/norduni':
-      ensure => directory,
-      owner  => 'ni',
-      group  => 'ni',
-      }
-  -> vcsrepo {'/var/opt/norduni/norduni':
+  vcsrepo {'/var/opt/norduni/norduni':
       ensure   => present,
       provider => git,
       owner    => ni,
