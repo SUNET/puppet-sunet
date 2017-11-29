@@ -30,6 +30,8 @@
 #
 
 import os
+import grp
+import pwd
 import sys
 import argparse
 
@@ -38,11 +40,11 @@ import logging.handlers
 
 _defaults = {'debug': False,
              'syslog': False,
-             'unless': False, 
+             'unless': False,
              'basedir': '/etc/ssl',
              'owner': 'root',
              'group': 'root',
-             'mode': None,
+             'mode': 0o444,
              }
 
 
@@ -132,6 +134,14 @@ def parse_args(defaults):
     if not res.outfile and not outfile:
         raise ArgumentError('Outfile need to be given either as --outfile or script out=path')
     res.outfile = outfile
+    try:
+        res.owner = pwd.getpwnam(res.owner).pw_uid
+    except KeyError:
+        raise ArgumentError('No such user: {}'.format(res.owner))
+    try:
+        res.group = grp.getgrnam(res.group).gr_gid
+    except KeyError:
+        raise ArgumentError('No such group: {}'.format(res.group))
     return res
 
 
@@ -194,12 +204,15 @@ def _process_script(args, logger):
     data, private = load_files(args, logger)
     perms = 0o444
     if private or 'private/' in args.outfile:
-        logger.debug('Using non-world accessible permissions for output file {!r}'.format(args.outfile))
-        perms = 0o440
+        perms = perms & 0o770
+        logger.debug('Using non-world accessible permissions {} for output file {!r}'.format(args.outfile, oct(perms)))
 
     logger.debug('Writing {} bytes to file {} (perms {})'.format(len(data), args.outfile, oct(perms)))
 
     fd = os.open(args.outfile + '.tmp', os.O_CREAT | os.O_WRONLY, perms)
+    uid = args.owner if args.owner else -1
+    gid = args.group if args.group else -1
+    os.fchown(fd, uid, gid)
     os.write(fd, data)
     os.close(fd)
     os.rename(args.outfile + '.tmp', args.outfile)
