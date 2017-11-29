@@ -16,7 +16,7 @@ define sunet::misc::certbundle(
   if $_keyfile1 != '' {
     # Use path /etc/ssl/private/ if keyfile was specified without directory
     $_keyfile = dirname($_keyfile1) ? {
-      ''      => '/etc/ssl/private/' + $_keyfile1,
+      '.'     => sprintf('/etc/ssl/private/%s', $_keyfile1),
       default => $_keyfile1,
     }
 
