@@ -48,8 +48,8 @@ define sunet::misc::certbundle(
     $bundle_args = join($bundle, ' ')
     #notice("Creating ${outfile} with command /usr/local/sbin/cert-bundler --syslog $bundle_args")
     ensure_resource('exec', "create_${name}", {
-      'command' => "/usr/local/sbin/cert-bundler --syslog ${bundle_args}",
-      'unless'  => "/usr/local/sbin/cert-bundler --unless ${bundle_args}",
+      'command' => "/usr/local/sbin/cert-bundler --syslog --group ${group} ${bundle_args}",
+      'unless'  => "/usr/local/sbin/cert-bundler --unless --group ${group} ${bundle_args}",
       'require' => $req,
       'returns' => [0, 1],
       })
