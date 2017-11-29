@@ -1,7 +1,5 @@
 class sunet::ni_packages {
 
-  include apt
-
   apt::ppa {'ppa:webupd8team/java':}
   -> exec { 'accept_oracle_licence':
       command => '/bin/echo debconf shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections',

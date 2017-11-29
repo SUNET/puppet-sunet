@@ -5,6 +5,7 @@ class sunet::ni(
   $test_server = false,
   $backup_server = false,
 ){
+  require sunet::ni_packages
 
   $neo4j_pwd = safe_hiera('ni_neo4j_password',[])
   $ni_database_pwd = safe_hiera ('ni_database_password',[])
@@ -63,6 +64,7 @@ class sunet::ni(
       owner    => ni,
       group    => ni,
       source   => 'git://git.nordu.net/norduni.git',
+      require  => User['ni'],
       }
   -> python::virtualenv {'/var/opt/norduni/norduni_environment':
       ensure       => present,
@@ -143,31 +145,32 @@ class sunet::ni(
       ensure  => file,
       mode    => '0755',
       content => template('sunet/ni/consume.sh.erb'),
+      require => User['ni'],
       }
-    file {'/var/opt/norduni/norduni/src/scripts/sunet.conf':
-      ensure  => file,
-      mode    => '0644',
-      owner   => 'ni',
-      group   => 'ni',
-      content => template('sunet/ni/sunet.conf.erb'),
-      }
-    sunet::scriptherder::cronjob { 'run_clone_script':
-      cmd           => '/var/opt/norduni/norduni/src/scripts/clone.sh -r /var/opt/norduni/sunet-nistore/',
-      user          => 'ni',
-      minute        => '30',
-      hour          => '6',
-      monthday      => '1',
-      ok_criteria   => ['exit_status=0', 'max_age=721h'],
-      warn_criteria => ['exit_status=0', 'max_age=723h'],
-      }
-    sunet::scriptherder::cronjob { 'run_consume_script':
-      cmd           => '/var/opt/norduni/consume.sh',
-      user          => 'ni',
-      minute        => '30',
-      hour          => '6',
-      ok_criteria   => ['exit_status=0', 'max_age=25h'],
-      warn_criteria => ['exit_status=0', 'max_age=49h'],
-      }
+    -> file {'/var/opt/norduni/norduni/src/scripts/sunet.conf':
+        ensure  => file,
+        mode    => '0644',
+        owner   => 'ni',
+        group   => 'ni',
+        content => template('sunet/ni/sunet.conf.erb'),
+        }
+    -> sunet::scriptherder::cronjob { 'run_clone_script':
+        cmd           => '/var/opt/norduni/norduni/src/scripts/clone.sh -r /var/opt/norduni/sunet-nistore/',
+        user          => 'ni',
+        minute        => '30',
+        hour          => '6',
+        monthday      => '1',
+        ok_criteria   => ['exit_status=0', 'max_age=721h'],
+        warn_criteria => ['exit_status=0', 'max_age=723h'],
+        }
+    -> sunet::scriptherder::cronjob { 'run_consume_script':
+        cmd           => '/var/opt/norduni/consume.sh',
+        user          => 'ni',
+        minute        => '30',
+        hour          => '6',
+        ok_criteria   => ['exit_status=0', 'max_age=25h'],
+        warn_criteria => ['exit_status=0', 'max_age=49h'],
+        }
   }
 
   if $backup_server {
@@ -178,6 +181,7 @@ class sunet::ni(
       hour          => '6',
       ok_criteria   => ['exit_status=0', 'max_age=25h'],
       warn_criteria => ['exit_status=0', 'max_age=49h'],
+      require       => User['ni']
       }
   }
   }
