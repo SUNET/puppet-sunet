@@ -40,6 +40,7 @@ class sunet::rt2 {
         imagetag => 'latest',
         ports    => ['25:25', '80:80', '443:443'],
         volumes  => ['/dev/log:/dev/log:rw',
+                     '/etc/dehydrated:/etc/ssl',
                      '/etc/ssl:/etc/ssl',
                      '/var/spool/postfix:/var/spool/postfix'],
         env      => ["SP_HOSTNAME=rt-test.sunet.se",
