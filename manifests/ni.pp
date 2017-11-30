@@ -47,7 +47,7 @@ class sunet::ni(
       owner  => 'ni',
       group  => 'ni',
       }
-  -> file {'/var/opt/norduni/setubd.sql':
+  -> file {'/var/opt/norduni/setupdb.sql':
       ensure  => file,
       mode    => '0644',
       content => template('sunet/ni/setupdb.sql.erb'),
