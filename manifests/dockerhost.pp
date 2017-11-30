@@ -94,7 +94,7 @@ class sunet::dockerhost(
   # Make it possible to not set a class::docker DNS at all by passing in the empty string
   $_docker_dns = $docker_dns ? {
     ''      => undef,
-    default => $dockler_dns,
+    default => $docker_dns,
   }
 
   class {'docker':
