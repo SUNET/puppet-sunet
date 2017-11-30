@@ -47,15 +47,15 @@ class sunet::ni(
       owner  => 'ni',
       group  => 'ni',
       }
-  -> file {'/var/opt/norduni/entries.sql':
+  -> file {'/var/opt/norduni/setubd.sql':
       ensure  => file,
       mode    => '0644',
-      content => template('sunet/ni/entries.sql.erb'),
+      content => template('sunet/ni/setupdb.sql.erb'),
       }
-  exec {'postgres_entries':
+  exec {'postgres_setupdb':
       user        => 'postgres',
-      command     => 'psql -f /var/opt/norduni/entries.sql',
-      subscribe   => File['/var/opt/norduni/entries.sql'],
+      command     => 'psql -f /var/opt/norduni/setupdb.sql',
+      subscribe   => File['/var/opt/norduni/setupdb.sql'],
       refreshonly => true,
       }
   vcsrepo {'/var/opt/norduni/norduni':
