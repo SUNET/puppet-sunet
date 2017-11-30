@@ -52,6 +52,7 @@ class sunet::rt2 {
                      "RT_Q3=swamid-bot",
                      "RT_Q4=tcs",
                      "RT_Q5=unused",
+                     "POSTGRES_PASSWORD=${postgres_password}",
                      "RT_PASSWORD=${rt_root_password}"],
     }
 
