@@ -53,8 +53,8 @@ class sunet::rt2($cosmos_site_env) {
                      "RT_Q6=connect",
                      "RT_Q7=play",
                      "POSTGRES_PASSWORD=${postgres_password}",
-                     "RT_PASSWORD=${rt_root_password}"],
-                     $cosmos_site_env),
+                     "RT_PASSWORD=${rt_root_password}",
+                     $cosmos_site_env]),
     }
 
     file { '/var/lib/postgresql/data/postgres_backup.sh':
