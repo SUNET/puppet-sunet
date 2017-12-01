@@ -42,7 +42,7 @@ class sunet::rt2 {
         volumes  => ['/dev/log:/dev/log:rw',
                      '/etc/dehydrated:/etc/ssl',
                      '/var/spool/postfix:/var/spool/postfix'],
-        env      => ["RT_OWNER=el@sunet.se",
+        env      => flatten(["RT_OWNER=el@sunet.se",
                      "RT_RELAYHOST=smtp.sunet.se",
                      "RT_DEFAULTEMAIL=operations",
                      "RT_Q1=swamid",
@@ -54,6 +54,7 @@ class sunet::rt2 {
                      "RT_Q7=play",
                      "POSTGRES_PASSWORD=${postgres_password}",
                      "RT_PASSWORD=${rt_root_password}"],
+                     $cosmos_site_env)
     }
 
     file { '/var/lib/postgresql/data/postgres_backup.sh':
