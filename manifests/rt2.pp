@@ -1,4 +1,4 @@
-class sunet::rt2 {
+class sunet::rt2($cosmos_site_env) {
 
     # Password for RT's root user
     $rt_root_password = hiera('rt_root_password', 'NOT_SET_IN_HIERA')
