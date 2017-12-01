@@ -47,7 +47,7 @@ class sunet::ni_packages {
       }
   -> apt::pin { 'neo4j':
       packages => 'neo4j',
-      version  => '3.2.2',
+      version  => '>=3.2.2 < 4.0.0',
       priority => '600',
       }
 
