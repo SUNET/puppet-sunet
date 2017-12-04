@@ -11,7 +11,7 @@ haproxy_pidfile='<%= @haproxy_pidfile %>'
 haproxy_configs='<%= @haproxy_configs %>'
 
 function usage() {
-    echo "Syntax: $0 restart|reload container-name"
+    echo "Syntax: $0 restart|reload [container-name]"
     exit 1
 }
 
@@ -34,7 +34,7 @@ action=$1
 name=$2
 
 if [ "x$name" = "x" ]; then
-    usage
+    name='load-balancer_haproxy'
 fi
 
 case "${action}" in
