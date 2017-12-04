@@ -46,9 +46,11 @@ if [ $changed -ne 0 ]; then
 fi
 
 if [ $reload -ne 0 ]; then
-    # XXX do fancy hitless reload later
-    logger -i -t haproxy-config-update -s "Restarting haproxy service ${haproxy_service_name}"
-    service "${haproxy_service_name}" restart
+    logger -i -t haproxy-config-update -s "Preparing for haproxy service reload"
+    ${basedir}/scripts/haproxy-pre-start.sh
+    logger -i -t haproxy-config-update -s "Reloading haproxy service ${haproxy_service_name}"
+    container=$(echo $haproxy_service_name | sed -e 's/^docker-//')
+    ${basedir}/scripts/haproxyctl reload ${container}
 fi
 
 rm -f "${backend_cfgfile}.new"

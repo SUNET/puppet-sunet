@@ -16,6 +16,10 @@ define sunet::frontend::haproxy(
 {
   include sunet::systemd_reload
 
+  # Parameters used in haproxy control scripts
+  $haproxy_configs = "-f /etc/haproxy/haproxy.cfg -f /etc/haproxy/haproxy-frontends.cfg -f /etc/haproxy/haproxy-backends.cfg"
+  $haproxy_pidfile = '/run/haproxy.pid'
+
   ensure_resource('sunet::system_user', $username, {
     username => $username,
     group    => $group,
@@ -74,6 +78,11 @@ define sunet::frontend::haproxy(
       mode    => '0755',
       content => template("sunet/frontend/haproxy-backend-config.erb")
       ;
+    "$basedir/scripts/haproxyctl":
+      ensure  => 'file',
+      mode    => '0755',
+      content => template("sunet/frontend/haproxyctl.erb")
+      ;
     '/etc/systemd/system/haproxy-config-update.service':
       content => template('sunet/frontend/haproxy-config-update.service.erb'),
       notify  => [Class['sunet::systemd_reload'],
@@ -100,6 +109,7 @@ define sunet::frontend::haproxy(
 
   $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
   $be_cfg = "${basedir}/etc/haproxy-backends.cfg"
+
   concat { $fe_cfg:
     owner    => 'root',
     group    => $group,
@@ -122,9 +132,12 @@ define sunet::frontend::haproxy(
                      '/etc/dehydrated:/etc/dehydrated:ro',
                      '/dev/log:/dev/log',
                      ],
-    command      => 'haproxy-systemd-wrapper -p /run/haproxy.pid -f /etc/haproxy/haproxy.cfg -f /etc/haproxy/haproxy-frontends.cfg -f /etc/haproxy/haproxy-backends.cfg',
+    command      => "/usr/sbin/haproxy-systemd-wrapper -p ${haproxy_pidfile} ${haproxy_configs}",
     before_start => "${basedir}/scripts/haproxy-pre-start.sh",
     require      => [File["$basedir/etc/haproxy.cfg"]],
+    extra_systemd_parameters => {
+      'ExecReload'  => "$basedir/scripts/haproxyctl reload ${name}_haproxy",
+    }
   }
 
   service { 'haproxy-config-update':
