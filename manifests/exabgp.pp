@@ -22,6 +22,7 @@ define sunet::exabgp(
 
    ensure_resource('package', 'molly-guard', {ensure => 'installed'})
 
+   $svc_name = "docker-${safe_title}_exabgp"
    file {
      '/etc/molly-guard/run.d/50-shutdown-exabgp':
        owner   => 'root',
@@ -39,12 +40,12 @@ define sunet::exabgp(
        [ -f "\$MOLLYGUARD_SETTINGS" ] && . "\$MOLLYGUARD_SETTINGS"
 
        if [ \$MOLLYGUARD_DO_NOTHING = 1 ]; then
-           echo "Would have shut down ${safe_title}_exabgp now"
+           echo "Would have shut down ${svc_name} now"
            exit 0
        fi
 
-       echo -n "Shutting down ${safe_title}_exabgp..."
-       service ${safe_title}_exabgp stop
+       echo -n "Shutting down ${svc_name}..."
+       service ${svc_name} stop
        echo -n 'waiting...'
        sleep 2
        echo 'done'
