@@ -16,11 +16,8 @@ define sunet::frontend::haproxy(
 {
   include sunet::systemd_reload
 
-  $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
-  $be_cfg = "${basedir}/etc/haproxy-backends.cfg"
-
   # Parameters used in haproxy control scripts
-  $haproxy_configs = "-f /etc/haproxy/haproxy.cfg -f ${fe_cfg} -f ${be_cfg}"
+  $haproxy_configs = "-f /etc/haproxy/haproxy.cfg -f /etc/haproxy/haproxy-frontends.cfg -f /etc/haproxy/haproxy-backends.cfg"
   $haproxy_pidfile = '/run/haproxy.pid'
 
   ensure_resource('sunet::system_user', $username, {
@@ -109,6 +106,9 @@ define sunet::frontend::haproxy(
     order    => '10',
     content  => template('sunet/frontend/haproxy-pre-start.erb'),
   }
+
+  $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
+  $be_cfg = "${basedir}/etc/haproxy-backends.cfg"
 
   concat { $fe_cfg:
     owner    => 'root',
