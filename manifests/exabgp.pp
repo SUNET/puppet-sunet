@@ -20,6 +20,8 @@ define sunet::exabgp(
 
    sunet::snippets::no_icmp_redirects {"no_icmp_redirects_${safe_title}": }
 
+   ensure_resource('package', 'molly-guard', {ensure => 'installed'})
+
    file {
      '/etc/molly-guard/run.d/50-shutdown-exabgp':
        owner   => 'root',
