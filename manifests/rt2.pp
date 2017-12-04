@@ -1,6 +1,4 @@
-class sunet::rt2 (
-    $cosmos_site_env = [],
-) {
+class sunet::rt2 {
 
     # Password for RT's root user
     $rt_root_password = hiera('rt_root_password', 'NOT_SET_IN_HIERA')
@@ -38,25 +36,26 @@ class sunet::rt2 (
                      "POSTGRES_PASSWORD=${postgres_password}"],
     }
     sunet::docker_run { 'rt-swamid':
-        image    => 'rt-swamid',
+        image    => 'docker.sunet.se/rt-swamid',
         imagetag => 'latest',
         ports    => ['25:25', '80:80', '443:443'],
-        volumes  => ['/dev/log:/dev/log:rw',
-                     '/etc/dehydrated:/etc/ssl',
+        volumes  => ['/etc/dehydrated:/etc/ssl',
+                     '/dev/log:/dev/log:rw',
                      '/var/spool/postfix:/var/spool/postfix'],
-        env      => flatten(["RT_OWNER=el@sunet.se",
+        env      => ["SP_HOSTNAME=rt.sunet.se",
+                     "RT_HOSTNAME=rt.sunet.se",
+                     "RT_OWNER=el@sunet.se",
                      "RT_RELAYHOST=smtp.sunet.se",
                      "RT_DEFAULTEMAIL=operations",
                      "RT_Q1=swamid",
                      "RT_Q2=eduroam",
                      "RT_Q3=swamid-bot",
                      "RT_Q4=tcs",
-                     "RT_Q5=zoom",
+                     "RT_Q5=play",
                      "RT_Q6=connect",
-                     "RT_Q7=play",
+                     "RT_Q7=zoom",
                      "POSTGRES_PASSWORD=${postgres_password}",
                      "RT_PASSWORD=${rt_root_password}"],
-                     $cosmos_site_env),
     }
 
     file { '/var/lib/postgresql/data/postgres_backup.sh':
