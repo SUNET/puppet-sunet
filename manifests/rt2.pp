@@ -1,4 +1,6 @@
-class sunet::rt2 ($cosmos_site_env = [],) {
+class sunet::rt2 (
+    $cosmos_site_env = [],
+) {
 
     # Password for RT's root user
     $rt_root_password = hiera('rt_root_password', 'NOT_SET_IN_HIERA')
@@ -54,7 +56,7 @@ class sunet::rt2 ($cosmos_site_env = [],) {
                      "RT_Q7=play",
                      "POSTGRES_PASSWORD=${postgres_password}",
                      "RT_PASSWORD=${rt_root_password}"],
-                     "$cosmos_site_env"),
+                     $cosmos_site_env),
     }
 
     file { '/var/lib/postgresql/data/postgres_backup.sh':
