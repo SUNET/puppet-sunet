@@ -28,10 +28,15 @@ class sunet::frontend::load_balancer(
       basedir  => $basedir,
       confdir  => $confdir,
     }
+    $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
+      true  => $config['load_balancer']['exabgp_imagetag'],
+      false => 'latest',
+    }
     sunet::exabgp { 'load_balancer':
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
                          "/dev/log:/dev/log",
                          ],
+      version        => $exabgp_imagetag,
     }
     sunet::frontend::haproxy { 'load-balancer':
       basedir               => "${basedir}/haproxy",
@@ -42,8 +47,13 @@ class sunet::frontend::load_balancer(
       port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
       static_backends       => $config['load_balancer']['static_backends'],
     }
+    $api_imagetag = has_key($config['load_balancer'], 'api_imagetag') ? {
+      true  => $config['load_balancer']['api_imagetag'],
+      false => 'latest',
+    }
     sunet::frontend::api { 'sunetfrontend':
-      basedir => $apidir,
+      basedir    => $apidir,
+      docker_tag => $api_imagetag,
     }
     sysctl_ip_nonlocal_bind { 'load_balancer': }
 
