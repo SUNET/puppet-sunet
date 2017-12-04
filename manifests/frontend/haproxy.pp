@@ -136,8 +136,7 @@ define sunet::frontend::haproxy(
     before_start => "${basedir}/scripts/haproxy-pre-start.sh",
     require      => [File["$basedir/etc/haproxy.cfg"]],
     extra_systemd_parameters => {
-      'ExecReload'  => '$basedir/scripts/haproxyctl reload ${name}_haproxy',
-      'ExecRestart' => '$basedir/scripts/haproxyctl restart ${name}_haproxy',
+      'ExecReload'  => "$basedir/scripts/haproxyctl reload ${name}_haproxy",
     }
   }
 
