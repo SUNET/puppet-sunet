@@ -16,6 +16,13 @@ define sunet::frontend::haproxy(
 {
   include sunet::systemd_reload
 
+  $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
+  $be_cfg = "${basedir}/etc/haproxy-backends.cfg"
+
+  # Parameters used in haproxy control scripts
+  $haproxy_configs = "-f /etc/haproxy/haproxy.cfg -f ${fe_cfg} -f ${be_cfg}"
+  $haproxy_pidfile = '/run/haproxy.pid'
+
   ensure_resource('sunet::system_user', $username, {
     username => $username,
     group    => $group,
@@ -74,6 +81,11 @@ define sunet::frontend::haproxy(
       mode    => '0755',
       content => template("sunet/frontend/haproxy-backend-config.erb")
       ;
+    "$basedir/scripts/haproxyctl":
+      ensure  => 'file',
+      mode    => '0755',
+      content => template("sunet/frontend/haproxyctl.erb")
+      ;
     '/etc/systemd/system/haproxy-config-update.service':
       content => template('sunet/frontend/haproxy-config-update.service.erb'),
       notify  => [Class['sunet::systemd_reload'],
@@ -98,8 +110,6 @@ define sunet::frontend::haproxy(
     content  => template('sunet/frontend/haproxy-pre-start.erb'),
   }
 
-  $fe_cfg = "${basedir}/etc/haproxy-frontends.cfg"
-  $be_cfg = "${basedir}/etc/haproxy-backends.cfg"
   concat { $fe_cfg:
     owner    => 'root',
     group    => $group,
@@ -122,9 +132,16 @@ define sunet::frontend::haproxy(
                      '/etc/dehydrated:/etc/dehydrated:ro',
                      '/dev/log:/dev/log',
                      ],
-    command      => 'haproxy-systemd-wrapper -p /run/haproxy.pid -f /etc/haproxy/haproxy.cfg -f /etc/haproxy/haproxy-frontends.cfg -f /etc/haproxy/haproxy-backends.cfg',
+    command      => "haproxy-systemd-wrapper -p ${haproxy_pidfile} ${haproxy_configs}",
     before_start => "${basedir}/scripts/haproxy-pre-start.sh",
-    require      => [File["$basedir/etc/haproxy.cfg"]],
+    require      => [File["$basedir/etc/haproxy.cfg"],
+                     File[$fe_cfg],
+                     File[$be_cfg],
+                     ],
+    extra_systemd_parameters = {
+      'ExecReload'  => '$basedir/scripts/haproxyctl reload ${name}_haproxy',
+      'ExecRestart' => '$basedir/scripts/haproxyctl restart ${name}_haproxy',
+    }
   }
 
   service { 'haproxy-config-update':
