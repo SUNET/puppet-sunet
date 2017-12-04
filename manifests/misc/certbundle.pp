@@ -1,6 +1,6 @@
 # Set up certificate bundles in close to arbitrary forms
 define sunet::misc::certbundle(
-  Optional[String] $hiera_key,
+  Optional[String] $hiera_key = undef,
   Optional[String] $keyfile   = undef,
   String           $group     = 'root',
   Array[String]    $bundle = [],
