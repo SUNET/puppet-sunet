@@ -70,7 +70,7 @@ class sunet::frontend::load_balancer(
       bundle => ["cert=${snakeoil_cert}",
                  "key=${snakeoil_key}",
                  "out=${snakeoil_bundle}",
-                 ]
+                 ],
       group  => 'haproxy',
     }
   } else {
