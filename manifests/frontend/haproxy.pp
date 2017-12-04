@@ -134,10 +134,7 @@ define sunet::frontend::haproxy(
                      ],
     command      => "haproxy-systemd-wrapper -p ${haproxy_pidfile} ${haproxy_configs}",
     before_start => "${basedir}/scripts/haproxy-pre-start.sh",
-    require      => [File["$basedir/etc/haproxy.cfg"],
-                     File[$fe_cfg],
-                     File[$be_cfg],
-                     ],
+    require      => [File["$basedir/etc/haproxy.cfg"]],
     extra_systemd_parameters => {
       'ExecReload'  => '$basedir/scripts/haproxyctl reload ${name}_haproxy',
       'ExecRestart' => '$basedir/scripts/haproxyctl restart ${name}_haproxy',
