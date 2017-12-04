@@ -34,9 +34,9 @@ define sunet::exabgp(
 
        set -e
 
-       [ -f "$$MOLLYGUARD_SETTINGS" ] && . "$$MOLLYGUARD_SETTINGS"
+       [ -f "\$MOLLYGUARD_SETTINGS" ] && . "\$MOLLYGUARD_SETTINGS"
 
-       if [ $$MOLLYGUARD_DO_NOTHING = 1 ]; then
+       if [ \$MOLLYGUARD_DO_NOTHING = 1 ]; then
            echo "Would have shut down ${safe_title}_exabgp now"
            exit 0
        fi
