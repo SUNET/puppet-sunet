@@ -167,7 +167,7 @@ class sunet::ni(
         cmd           => '/var/opt/norduni/consume.sh',
         user          => 'ni',
         minute        => '30',
-        hour          => '6',
+        hour          => '4',
         ok_criteria   => ['exit_status=0', 'max_age=25h'],
         warn_criteria => ['exit_status=0', 'max_age=49h'],
         }
