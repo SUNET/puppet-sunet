@@ -132,7 +132,7 @@ define sunet::frontend::haproxy(
                      '/etc/dehydrated:/etc/dehydrated:ro',
                      '/dev/log:/dev/log',
                      ],
-    command      => "haproxy-systemd-wrapper -p ${haproxy_pidfile} ${haproxy_configs}",
+    command      => "/usr/sbin/haproxy-systemd-wrapper -p ${haproxy_pidfile} ${haproxy_configs}",
     before_start => "${basedir}/scripts/haproxy-pre-start.sh",
     require      => [File["$basedir/etc/haproxy.cfg"]],
     extra_systemd_parameters => {
