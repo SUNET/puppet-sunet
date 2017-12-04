@@ -16,7 +16,7 @@ function usage() {
 }
 
 function restart() {
-    local $name=$1
+    local name=$1
     echo "Checking config syntax in $1"
     docker exec "${name}" /cfgcheck.sh ${haproxy_configs}
     echo "Restarting $1"
@@ -24,7 +24,7 @@ function restart() {
 }
 
 function reload() {
-    local $name=$1
+    local name=$1
     echo "Reloading $1"
     docker exec "${name}" /reload.sh ${haproxy_configs}
 }
