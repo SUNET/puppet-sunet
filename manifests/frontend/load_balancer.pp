@@ -1,7 +1,7 @@
 # Interface, ExaBGP and haproxy config for a load balancer
 class sunet::frontend::load_balancer(
   String $router_id = $ipaddress_default,
-  String $basedir = '/opt/frontend',
+  String $basedir   = '/opt/frontend',
 ) {
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
@@ -57,12 +57,6 @@ class sunet::frontend::load_balancer(
     }
     sysctl_ip_nonlocal_bind { 'load_balancer': }
 
-    # XXX accomplish this with some haproxy config instead
-    #sunet::docker_run {'alwayshttps':
-    #  image    => 'docker.sunet.se/always-https',
-    #  ports    => ['80:80'],
-    #  env      => ['ACME_URL=http://acme-c.sunet.se']
-    #}
     sunet::misc::ufw_allow { "always-https-allow-http":
       from => 'any',
       port => '80'
@@ -72,17 +66,12 @@ class sunet::frontend::load_balancer(
     $snakeoil_key = '/etc/ssl/private/ssl-cert-snakeoil.key'
     $snakeoil_cert = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
     $snakeoil_bundle = '/etc/ssl/snakeoil_bundle.crt'
-    exec {"snakeoil_bundle_${name}":
-      command => "test -f ${snakeoil_key} && test -f ${snakeoil_cert} && cat ${snakeoil_cert} ${snakeoil_key} > ${snakeoil_bundle}",
-      path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
-      unless  => "test -s ${snakeoil_bundle}",
-    }
-    file {
-      $snakeoil_bundle:
-        owner => 'root',
-        group => 'haproxy',
-        mode  => '0640',
-        ;
+    sunet::misc::certbundle { 'snakeoil_bundle':
+      bundle => ["cert=${snakeoil_cert}",
+                 "key=${snakeoil_key}",
+                 "out=${snakeoil_bundle}",
+                 ]
+      group  => 'haproxy',
     }
   } else {
     fail('No/bad SUNET frontend load balancer config found in hiera')
