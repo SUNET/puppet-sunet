@@ -1,8 +1,9 @@
 # Setup and run the API
 define sunet::frontend::api(
-  $username = 'sunetfrontend',
-  $group    = 'sunetfrontend',
-  $basedir  = '/opt/frontend/api',
+  $username   = 'sunetfrontend',
+  $group      = 'sunetfrontend',
+  $basedir    = '/opt/frontend/api',
+  $docker_tag = 'latest',
 )
 {
   ensure_resource('sunet::system_user', $username, {
@@ -24,7 +25,7 @@ define sunet::frontend::api(
   }
   sunet::docker_run { "${name}_api":
     image    => 'docker.sunet.se/sunetfrontend-api',
-    imagetag => 'latest',  # XXX change to 'stable',
+    imagetag => $docker_tag,
     net      => 'host',
     volumes  => ["${basedir}/backends:/backends",
                  '/dev/log:/dev/log',

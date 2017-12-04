@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+#set Python environment
+. /var/opt/norduni/norduni_environment/bin/activate
+# Run NOCLook consumer
+cd /var/opt/norduni/norduni/src/scripts
+python noclook_consumer.py -C sunet.conf -I
+

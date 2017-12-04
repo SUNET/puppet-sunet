@@ -86,11 +86,17 @@ class sunet::dockerhost(
     default     => undef,
   }
 
+  # Make it possible to not set a class::docker DNS at all by passing in the empty string
+  $_docker_dns = $docker_dns ? {
+    ''      => undef,
+    default => $docker_dns,
+  }
+
   class {'docker':
     storage_driver              => $storage_driver,
     manage_package              => false,
     use_upstream_package_source => false,
-    dns                         => $docker_dns,
+    dns                         => $_docker_dns,
     extra_parameters            => $docker_extra_parameters,
     docker_command              => $docker_command,
     daemon_subcommand           => $daemon_subcommand,
