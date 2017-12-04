@@ -1,10 +1,10 @@
 # Create a file with secret content retrieved from hiera.
 define sunet::misc::create_key_file(
-  $hiera_key,
-  $path       = undef,
-  $owner      = 'root',
-  $group      = 'root',
-  $mode       = '0440',
+  String           $hiera_key,
+  Optional[String] $path       = undef,
+  String           $owner      = 'root',
+  String           $group      = 'root',
+  String           $mode       = '0440',
 ) {
   $_path = $path ? {
     undef   => $name,
