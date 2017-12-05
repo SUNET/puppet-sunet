@@ -9,7 +9,7 @@ define sunet::docker_run(
   String $net                = hiera('sunet_docker_default_net', 'docker'),
   Optional[String] $command  = undef,
   Optional[String] $hostname = undef,
-  Array[String] $depends     = [],
+  $depends                   = [],  # should be array of strings, but need to fix usage first
   $start_on                  = [],    # deprecated, used with 'depends' for compatibility
   $stop_on                   = [],    # currently not used, kept for compatibility
   Array[String] $dns         = [],
