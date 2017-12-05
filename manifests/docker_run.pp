@@ -19,7 +19,7 @@ define sunet::docker_run(
   $after_stop                = undef, # command executed before stopping
   Boolean $use_unbound       = false, # deprecated, kept for compatibility
   String $ensure             = 'present',
-  Array[String] $extra_parameters                = [],
+  $extra_parameters          = [],  # should be array of strings, but need to fix usage first
   Hash[String, String] $extra_systemd_parameters = {},
 ) {
   if $use_unbound {
