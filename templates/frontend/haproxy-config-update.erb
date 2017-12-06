@@ -49,8 +49,7 @@ if [ $reload -ne 0 ]; then
     logger -i -t haproxy-config-update -s "Preparing for haproxy service reload"
     ${basedir}/scripts/haproxy-pre-start.sh
     logger -i -t haproxy-config-update -s "Reloading haproxy service ${haproxy_service_name}"
-    container=$(echo $haproxy_service_name | sed -e 's/^docker-//')
-    ${basedir}/scripts/haproxyctl reload ${container}
+    systemctl reload $haproxy_service_name
 fi
 
 rm -f "${backend_cfgfile}.new"
