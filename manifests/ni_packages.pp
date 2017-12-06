@@ -21,29 +21,11 @@ class sunet::ni_packages {
       },
       notify_update => true,
       }
-  -> package {'oracle-java8-installer':
+  -> package {['oracle-java8-installer', 'postgresql', 'git', 'libpq-dev', 'nginx-full', 'uwsgi', 'uwsgi-plugin-python']:
       ensure => latest
       }
   -> package {'neo4j':
       ensure => '3.2.2',
-      }
-  -> package {'postgresql':
-      ensure => latest
-      }
-  -> package {'git':
-      ensure => latest
-      }
-  -> package {'libpq-dev':
-      ensure => latest
-      }
-  -> package {'nginx-full':
-      ensure => latest
-      }
-  -> package {'uwsgi':
-      ensure => latest
-      }
-  -> package {'uwsgi-plugin-python':
-      ensure => latest
       }
   -> apt::pin { 'neo4j':
       packages => 'neo4j',
