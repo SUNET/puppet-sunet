@@ -5,6 +5,7 @@ define sunet::etcd_node(
   $etcd_version    = 'v2.0.8',
   $proxy           = true,
   $proxy_readonly  = false,
+  $browser         = false,
   $docker_net      = 'docker',
   $etcd_s2s_ip     = $::ipaddress_eth1,
   $etcd_s2s_proto  = 'http',    # XXX default ought to be https
@@ -112,23 +113,25 @@ define sunet::etcd_node(
       net      => $docker_net,
    }
    if ! $proxy {
-      sunet::docker_run { "etcd_browser_${name}":
+     if $browser {
+       sunet::docker_run { "etcd_browser_${name}":
          image   => 'docker.sunet.se/etcd-browser',
          ports   => [ "8000:8000" ],  # XXX listening on all interfaces now
          depends => ["etcd_${name}"],
-      }
-      sunet::misc::ufw_allow { "allow-etcd-client-on-docker0":
-         from => '172.16.0.0/12',
-         to   => $::ipaddress_docker0,
-         port => '4001',
-      }
-      sunet::misc::ufw_allow { "allow-etcd-peer":
-         from => $allow_peers,
-         port => '2380',
-      }
-      sunet::misc::ufw_allow { "allow-etcd-client":
-         from => $allow_clients,
-         port => '2379',
-      }
+       }
+     }
+     sunet::misc::ufw_allow { "allow-etcd-client-on-docker0":
+       from => '172.16.0.0/12',
+       to   => $::ipaddress_docker0,
+       port => '4001',
+     }
+     sunet::misc::ufw_allow { "allow-etcd-peer":
+       from => $allow_peers,
+       port => '2380',
+     }
+     sunet::misc::ufw_allow { "allow-etcd-client":
+       from => $allow_clients,
+       port => '2379',
+     }
    }
 }
