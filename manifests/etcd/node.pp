@@ -1,6 +1,7 @@
 # etcd node
 class sunet::etcd::node(
   String $etcd_version,
+  String $service_name = 'etcd',
   $disco_url       = undef,
   $initial_cluster = undef,
   $discovery_srv   = undef,
@@ -30,7 +31,7 @@ class sunet::etcd::node(
   $c2s_ip = enclose_ipv6([$etcd_c2s_ip])[0]
   $listen_ip = enclose_ipv6([$listen_ip])[0]
 
-  sunet::misc::create_dir { "/data/${name}/${::hostname}": owner => 'root', group => 'root', mode => '0700' }
+  sunet::misc::create_dir { "/data/${service_name}/${::hostname}": owner => 'root', group => 'root', mode => '0700' }
 
   $disco_args = $disco_url ? {
     undef   => $initial_cluster ? {
@@ -85,10 +86,10 @@ class sunet::etcd::node(
     false => []
   }
 
-  sunet::docker_run { "etcd_${name}":
+  sunet::docker_run { $service_name:
     image    => $etcd_image,
     imagetag => $etcd_version,
-    volumes  => ["/data/${name}:/data",
+    volumes  => ["/data/${service_name}:/data",
                  "${tls_key_file}:${tls_key_file}:ro",
                  "${tls_ca_file}:${tls_ca_file}:ro",
                  "${tls_cert_file}:${tls_cert_file}:ro",
