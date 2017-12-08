@@ -1,27 +1,27 @@
 # etcd node
 class sunet::etcd::node(
-  String $etcd_version,
-  String $service_name = 'etcd',
-  $disco_url       = undef,
-  $initial_cluster = undef,
-  $discovery_srv   = undef,
-  $proxy           = true,
-  $proxy_readonly  = false,
-  $docker_net      = 'docker',
-  $etcd_s2s_ip     = $::fqdn,
-  $etcd_s2s_proto  = 'https',
-  $etcd_c2s_ip     = $::fqdn,
-  $etcd_c2s_proto  = 'https',
-  $etcd_listen_ip  = '0.0.0.0',
-  $etcd_image      = 'gcr.io/etcd-development/etcd',
-  $etcd_extra      = [],        # extra arguments to etcd
-  $tls_key_file    = "/etc/ssl/private/${::fqdn}_infra.key",
-  $tls_ca_file     = '/etc/ssl/certs/infra.crt',
-  $tls_cert_file   = "/etc/ssl/${::fqdn}_infra.pem",
-  $expose_ports    = true,
-  $expose_port_pre = '',
-  $allow_clients   = ['any'],
-  $allow_peers     = [],
+  String           $docker_tag,
+  String           $service_name = 'etcd',
+  Optional[String] $disco_url       = undef,
+  Optional[String] $initial_cluster = undef,
+  Optional[String] $discovery_srv   = undef,  # DNS SRV record for cluster node discovery
+  Boolean          $proxy           = true,
+  Boolean          $proxy_readonly  = false,
+  String           $etcd_s2s_ip     = $::fqdn,
+  String           $etcd_s2s_proto  = 'https',
+  String           $etcd_c2s_ip     = $::fqdn,
+  String           $etcd_c2s_proto  = 'https',
+  String           $etcd_listen_ip  = '0.0.0.0',
+  String           $docker_image    = 'gcr.io/etcd-development/etcd',
+  String           $docker_net      = 'docker',
+  Array[String]    $etcd_extra      = [],        # extra arguments to etcd
+  Optional[String] $tls_key_file    = undef,
+  Optional[String] $tls_ca_file     = undef,
+  Optional[String] $tls_cert_file   = undef,
+  Boolean          $expose_ports    = true,
+  String           $expose_port_pre = '',
+  Array[String]    $allow_clients   = ['any'],
+  Array[String]    $allow_peers     = [],
 )
 {
   include stdlib
@@ -132,8 +132,8 @@ class sunet::etcd::node(
   }
 
   sunet::docker_run { $service_name:
-    image    => $etcd_image,
-    imagetag => $etcd_version,
+    image    => $docker_image,
+    imagetag => $docker_tag,
     volumes  => ["/data/${service_name}:/data",
                  "${_tls_key_file}:${_tls_key_file}:ro",
                  "${_tls_ca_file}:${_tls_ca_file}:ro",
