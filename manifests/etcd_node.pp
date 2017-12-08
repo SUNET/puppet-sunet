@@ -1,3 +1,4 @@
+# Start an etcd (version 2) node. For etcd v3, see sunet::etcd::node.
 define sunet::etcd_node(
   $disco_url       = undef,
   $initial_cluster = undef,
