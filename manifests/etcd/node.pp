@@ -1,27 +1,28 @@
 # etcd node
 class sunet::etcd::node(
   String           $docker_tag,
-  String           $service_name = 'etcd',
-  Optional[String] $disco_url       = undef,
-  Optional[String] $initial_cluster = undef,
-  Optional[String] $discovery_srv   = undef,  # DNS SRV record for cluster node discovery
-  Boolean          $proxy           = true,
-  Boolean          $proxy_readonly  = false,
-  String           $etcd_s2s_ip     = $::fqdn,
-  String           $etcd_s2s_proto  = 'https',
-  String           $etcd_c2s_ip     = $::fqdn,
-  String           $etcd_c2s_proto  = 'https',
-  String           $etcd_listen_ip  = '0.0.0.0',
-  String           $docker_image    = 'gcr.io/etcd-development/etcd',
-  String           $docker_net      = 'docker',
-  Array[String]    $etcd_extra      = [],        # extra arguments to etcd
-  Optional[String] $tls_key_file    = undef,
-  Optional[String] $tls_ca_file     = undef,
-  Optional[String] $tls_cert_file   = undef,
-  Boolean          $expose_ports    = true,
-  String           $expose_port_pre = '',
-  Array[String]    $allow_clients   = ['any'],
-  Array[String]    $allow_peers     = [],
+  String           $service_name     = 'etcd',
+  Optional[String] $disco_url        = undef,
+  Optional[String] $initial_cluster  = undef,
+  Optional[String] $discovery_srv    = undef,  # DNS SRV record for cluster node discovery
+  Boolean          $proxy            = true,
+  Boolean          $proxy_readonly   = false,
+  String           $etcd_s2s_ip      = $::fqdn,
+  String           $etcd_s2s_proto   = 'https',
+  String           $etcd_c2s_ip      = $::fqdn,
+  String           $etcd_c2s_proto   = 'https',
+  String           $etcd_listen_ip   = '0.0.0.0',
+  String           $docker_image     = 'gcr.io/etcd-development/etcd',
+  String           $docker_net       = 'docker',
+  Array[String]    $etcd_extra       = [],        # extra arguments to etcd
+  Optional[String] $tls_key_file     = undef,
+  Optional[String] $tls_ca_file      = undef,
+  Optional[String] $tls_cert_file    = undef,
+  Boolean          $expose_ports     = true,
+  String           $expose_port_pre  = '',
+  Array[String]    $allow_clients    = ['any'],
+  Array[String]    $allow_peers      = [],
+  Boolean          $client_cert_auth = true,
 )
 {
   include stdlib
@@ -88,13 +89,20 @@ class sunet::etcd::node(
     },
     default => ["--discovery ${disco_url}"]
   }
+
+  $_client_cert_auth = $client_cert_auth ? {
+    true => '--client-cert-auth',
+    false => ''
+  }
+
   $common_args = ['/usr/local/bin/etcd',
                   $disco_args,
                   "--name ${::hostname}",
                   '--data-dir /data',
                   "--key-file ${_tls_key_file}",
-                  "--ca-file ${_tls_ca_file}",
+                  "--trusted-ca-file ${_tls_ca_file}",
                   "--cert-file ${_tls_cert_file}",
+                  $_client_cert_auth,
                   $etcd_extra,
                   ]
   # interpolation simplifications
@@ -118,8 +126,9 @@ class sunet::etcd::node(
                      "--initial-advertise-peer-urls ${s2s_url}:2380",
                      "--listen-peer-urls ${listen_s_url}:2380",
                      "--peer-key-file ${_tls_key_file}",
-                     "--peer-ca-file ${_tls_ca_file}",
+                     "--peer-trusted_ca-file ${_tls_ca_file}",
                      "--peer-cert-file ${_tls_cert_file}",
+                     '--peer-client-cert-auth',
                      ])
   }
 
