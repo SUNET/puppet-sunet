@@ -126,7 +126,7 @@ class sunet::etcd::node(
                      "--initial-advertise-peer-urls ${s2s_url}:2380",
                      "--listen-peer-urls ${listen_s_url}:2380",
                      "--peer-key-file ${_tls_key_file}",
-                     "--peer-trusted_ca-file ${_tls_ca_file}",
+                     "--peer-trusted-ca-file ${_tls_ca_file}",
                      "--peer-cert-file ${_tls_cert_file}",
                      '--peer-client-cert-auth',
                      ])
