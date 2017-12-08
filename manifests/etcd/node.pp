@@ -35,7 +35,7 @@ class sunet::etcd::node(
     true  => "[${etcd_c2s_ip}]",
     false => $etcd_c2s_ip,
   }
-  $listen_ip = enclose_ipv6([$listen_ip])[0]
+  $listen_ip = enclose_ipv6([$etcd_listen_ip])[0]
 
   # Use infra-cert per default if cert/key/ca file not supplied
   $_tls_cert_file = $tls_cert_file ? {
