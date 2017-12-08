@@ -59,15 +59,15 @@ class sunet::etcd::node(
       # script created by Puppet
 
       exec docker run --rm -it \
-      -v ${_tls_cert_file}:${_tls_cert_file}:ro \
-      -v ${_tls_key_file}:${_tls_key_file}:ro \
-      -v ${_tls_ca_file}:${_tls_ca_file}:ro \
-      --entrypoint /usr/local/bin/etcdctl \
-      ${docker_image}:${docker_tag} \
-      --discovery-srv ${discovery_srv} \
-      --key-file ${_tls_key_file} \
-      --ca-file ${_tls_ca_file} \
-      --cert-file ${_tls_cert_file} $*
+          -v ${_tls_cert_file}:${_tls_cert_file}:ro \
+          -v ${_tls_key_file}:${_tls_key_file}:ro \
+          -v ${_tls_ca_file}:${_tls_ca_file}:ro \
+          --entrypoint /usr/local/bin/etcdctl \
+          ${docker_image}:${docker_tag} \
+          --discovery-srv ${discovery_srv} \
+          --key-file ${_tls_key_file} \
+          --ca-file ${_tls_ca_file} \
+          --cert-file ${_tls_cert_file} $*
       |END
       ;
   }
