@@ -8,9 +8,9 @@ class sunet::etcd::node(
   $proxy           = true,
   $proxy_readonly  = false,
   $docker_net      = 'docker',
-  $etcd_s2s_ip     = $::ipaddress_eth1,
+  $etcd_s2s_ip     = $::fqdn,
   $etcd_s2s_proto  = 'https',
-  $etcd_c2s_ip     = '0.0.0.0',
+  $etcd_c2s_ip     = $::fqdn,
   $etcd_c2s_proto  = 'https',
   $etcd_listen_ip  = '0.0.0.0',
   $etcd_image      = 'gcr.io/etcd-development/etcd',
@@ -27,11 +27,56 @@ class sunet::etcd::node(
   include stdlib
 
   # Add brackets to bare IPv6 IP.
-  $s2s_ip = enclose_ipv6([$etcd_s2s_ip])[0]
-  $c2s_ip = enclose_ipv6([$etcd_c2s_ip])[0]
+  $s2s_ip = is_ipaddr($etcd_s2s_ip, 6) ? {
+    true  => "[${etcd_s2s_ip}]",
+    false => $etcd_s2s_ip,
+  }
+  $c2s_ip = is_ipaddr($etcd_c2s_ip, 6) ? {
+    true  => "[${etcd_c2s_ip}]",
+    false => $etcd_c2s_ip,
+  }
   $listen_ip = enclose_ipv6([$listen_ip])[0]
 
-  sunet::misc::create_dir { "/data/${service_name}/${::hostname}": owner => 'root', group => 'root', mode => '0700' }
+  # Use infra-cert per default if cert/key/ca file not supplied
+  $_tls_cert_file = $tls_cert_file ? {
+    undef => $::tls_certificates[$::fqdn]['infra_cert'],
+    default => $tls_cert_file,
+  }
+  $_tls_key_file = $tls_key_file ? {
+    undef => $::tls_certificates[$::fqdn]['infra_key'],
+    default => $tls_key_file,
+  }
+  $_tls_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
+
+  # Create simple wrapper to run ectdctl in a new docker container with all the right parameters
+  file {
+    '/usr/local/bin/etcdctl':
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0700',
+      content => inline_template(@("END"/n))
+      #!/bin/sh
+      # script created by Puppet
+
+      exec docker run --rm -it \
+      -v ${_tls_cert_file}:${_tls_cert_file}:ro \
+      -v ${_tls_key_file}:${_tls_key_file}:ro \
+      -v ${_tls_ca_file}:${_tls_ca_file}:ro \
+      --entrypoint /usr/local/bin/etcdctl \
+      ${docker_image}:${docker_tag} \
+      --discovery-srv ${discovery_srv} \
+      --key-file ${_tls_key_file} \
+      --ca-file ${_tls_ca_file} \
+      --cert-file ${_tls_cert_file} $*
+      |END
+      ;
+  }
+
+  sunet::misc::create_dir { "/data/${service_name}/${::hostname}":
+    owner => 'root',
+    group => 'root',
+    mode => '0700',
+  }
 
   $disco_args = $disco_url ? {
     undef   => $initial_cluster ? {
@@ -47,9 +92,9 @@ class sunet::etcd::node(
                   $disco_args,
                   "--name ${::hostname}",
                   '--data-dir /data',
-                  "--key-file ${tls_key_file}",
-                  "--ca-file ${tls_ca_file}",
-                  "--cert-file ${tls_cert_file}",
+                  "--key-file ${_tls_key_file}",
+                  "--ca-file ${_tls_ca_file}",
+                  "--cert-file ${_tls_cert_file}",
                   $etcd_extra,
                   ]
   # interpolation simplifications
@@ -72,9 +117,9 @@ class sunet::etcd::node(
                      "--listen-client-urls ${listen_c_url}:2379",
                      "--initial-advertise-peer-urls ${s2s_url}:2380",
                      "--listen-peer-urls ${listen_s_url}:2380",
-                     "--peer-key-file ${tls_key_file}",
-                     "--peer-ca-file ${tls_ca_file}",
-                     "--peer-cert-file ${tls_cert_file}",
+                     "--peer-key-file ${_tls_key_file}",
+                     "--peer-ca-file ${_tls_ca_file}",
+                     "--peer-cert-file ${_tls_cert_file}",
                      ])
   }
 
@@ -90,9 +135,9 @@ class sunet::etcd::node(
     image    => $etcd_image,
     imagetag => $etcd_version,
     volumes  => ["/data/${service_name}:/data",
-                 "${tls_key_file}:${tls_key_file}:ro",
-                 "${tls_ca_file}:${tls_ca_file}:ro",
-                 "${tls_cert_file}:${tls_cert_file}:ro",
+                 "${_tls_key_file}:${_tls_key_file}:ro",
+                 "${_tls_ca_file}:${_tls_ca_file}:ro",
+                 "${_tls_cert_file}:${_tls_cert_file}:ro",
                  ],
     command  => join($args, ' '),
     ports    => $ports,
