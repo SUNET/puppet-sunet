@@ -55,34 +55,8 @@ class sunet::etcd::node(
     '/usr/local/bin/etcdctl':
       owner   => 'root',
       group   => 'root',
-      mode    => '0700',
-      content => inline_template(@("END"/n))
-      #!/bin/sh
-      # script created by Puppet (sunet::etcd::node)
-
-      if [ "x$1" = "-3" ]; then
-          shift
-          params="-e 'ETCDCTL_API=3'"
-          args="--endpoints https://${fqdn}:2380 \
-                --key $key_file} \
-                --cacert ${trusted_ca_file} \
-                --cert ${cert_file}"
-      else
-      params=''
-      args="--key-file ${key_file} \
-          --ca-file ${trusted_ca_file} \
-          --cert-file ${cert_file}"
-      fi
-      exec docker run --rm -it \
-          -v ${_tls_cert_file}:${_tls_cert_file}:ro \
-          -v ${_tls_key_file}:${_tls_key_file}:ro \
-          -v ${_tls_ca_file}:${_tls_ca_file}:ro \
-          $params \
-          --entrypoint /usr/local/bin/etcdctl \
-          ${docker_image}:${docker_tag} \
-          $args \
-          $*
-      |END
+      mode    => '0750',
+      content => template('sunet/etcd/etcdctl.erb'),
       ;
   }
 
