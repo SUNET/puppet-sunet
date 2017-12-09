@@ -88,7 +88,7 @@ class sunet::etcd::node(
   $initial_advertise_peer_urls = ["${s2s_proto}://${s2s_ip}:2380"]
   $advertise_client_urls = ["${c2s_proto}://${c2s_ip}:2379"]
   $initial_cluster = $cluster_nodes.map | $this | {
-    $this_name = split($this, '.')[0]
+    $this_name = split($this, '\.')[0]
     sprintf('%s=%s://%s:2380', $this_name, $s2s_proto, $this)
   }
 
