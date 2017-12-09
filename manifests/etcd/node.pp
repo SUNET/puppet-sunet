@@ -92,7 +92,7 @@ class sunet::etcd::node(
     sprintf('%s=%s://%s:2380', $this_name, $s2s_proto, $this)
   }
 
-  sunet::misc::create_cfgfile { "${basedir}/${service_name}/etcd.conf.yml":
+  sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etcd.conf.yml":
     content => template('sunet/etcd/etcd.conf.yml.erb'),
     group   => 'root',
     force   => true,
@@ -108,12 +108,12 @@ class sunet::etcd::node(
     image    => $docker_image,
     imagetag => $docker_tag,
     volumes  => ["/${base_dir}/${service_name}/data:/data",
-                 "${basedir}/${service_name}/etcd.conf.yml:${basedir}/${service_name}/etcd.conf.yml:ro",
+                 "${base_dir}/${service_name}/etcd.conf.yml:${base_dir}/${service_name}/etcd.conf.yml:ro",
                  "${_tls_key_file}:${_tls_key_file}:ro",
                  "${_tls_ca_file}:${_tls_ca_file}:ro",
                  "${_tls_cert_file}:${_tls_cert_file}:ro",
                  ],
-    command  => "/usr/local/bin/etcd --config-file ${basedir}/${service_name}/etcd.conf.yml",
+    command  => "/usr/local/bin/etcd --config-file ${base_dir}/${service_name}/etcd.conf.yml",
     ports    => $ports,
     net      => $docker_net,
   }
