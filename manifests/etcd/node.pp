@@ -86,7 +86,7 @@ class sunet::etcd::node(
     sprintf('%s=%s://%s:2380', $this_name, $s2s_proto, $this)
   }
 
-  sunet::misc::create_dir { "${base_dir}/${service_name}/data/${::hostname}":
+  sunet::misc::create_dir { "${base_dir}/${service_name}/data":
     owner => 'root',
     group => 'root',
     mode => '0700',
@@ -108,7 +108,7 @@ class sunet::etcd::node(
   sunet::docker_run { $service_name:
     image    => $docker_image,
     imagetag => $docker_tag,
-    volumes  => ["/${base_dir}/${service_name}/data:/data",
+    volumes  => ["${base_dir}/${service_name}/data:/data",
                  "${base_dir}/${service_name}/etcd.conf.yml:${base_dir}/${service_name}/etcd.conf.yml:ro",
                  "${cert_file}:${cert_file}:ro",
                  "${key_file}:${key_file}:ro",
