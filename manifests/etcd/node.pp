@@ -40,15 +40,15 @@ class sunet::etcd::node(
   $listen_ip = enclose_ipv6([$etcd_listen_ip])[0]
 
   # Use infra-cert per default if cert/key/ca file not supplied
-  $_tls_cert_file = $tls_cert_file ? {
+  $cert_file = $tls_cert_file ? {
     undef => $::tls_certificates[$::fqdn]['infra_cert'],
     default => $tls_cert_file,
   }
-  $_tls_key_file = $tls_key_file ? {
+  $key_file = $tls_key_file ? {
     undef => $::tls_certificates[$::fqdn]['infra_key'],
     default => $tls_key_file,
   }
-  $_tls_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
+  $trusted_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
 
   # Create simple wrapper to run ectdctl in a new docker container with all the right parameters
   file {
