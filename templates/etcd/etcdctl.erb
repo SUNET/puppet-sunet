@@ -23,6 +23,6 @@ exec docker run --rm -it \
      -v <%= @trusted_ca_file %>:<%= @trusted_ca_file %>:ro \
      $params \
      --entrypoint /usr/local/bin/etcdctl \
-     ${docker_image}:${docker_tag} \
+     <%= @docker_image %>:<%= @docker_tag %> \
      $args \
      $*
