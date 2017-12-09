@@ -96,6 +96,7 @@ class sunet::etcd::node(
     content => template('sunet/etcd/etcd.conf.yml.erb'),
     group   => 'root',
     force   => true,
+    notify  => [Sunet::Docker_run[$service_name]],
   }
 
   $ports = $expose_ports ? {
