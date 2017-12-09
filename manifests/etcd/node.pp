@@ -6,11 +6,11 @@ class sunet::etcd::node(
   Array[String]    $cluster_nodes      = [$::fqdn],
   Optional[String] $discovery_srv      = undef,  # DNS SRV record for cluster node discovery
   Enum['on', 'readonly', 'off'] $proxy = 'off',
-  String           $s2s_ip             = $::fqdn,
+  String           $s2s_ip_or_host     = $::fqdn,
   String           $s2s_proto          = 'https',
-  String           $c2s_ip             = $::fqdn,
+  String           $c2s_ip_or_host     = $::fqdn,
   String           $c2s_proto          = 'https',
-  String           $listen_ip          = '0.0.0.0',
+  String           $etcd_listen_ip     = '0.0.0.0',
   String           $docker_image       = 'gcr.io/etcd-development/etcd',
   String           $docker_net         = 'docker',
   Array[String]    $etcd_extra         = [],        # extra arguments to etcd
@@ -29,13 +29,13 @@ class sunet::etcd::node(
   include stdlib
 
   # Add brackets to bare IPv6 IP.
-  $s2s_ip = is_ipaddr($etcd_s2s_ip, 6) ? {
-    true  => "[${etcd_s2s_ip}]",
-    false => $etcd_s2s_ip,
+  $s2s_ip = is_ipaddr($s2s_ip_or_host, 6) ? {
+    true  => "[${s2s_ip_or_host}]",
+    false => $s2s_ip_or_host,
   }
-  $c2s_ip = is_ipaddr($etcd_c2s_ip, 6) ? {
-    true  => "[${etcd_c2s_ip}]",
-    false => $etcd_c2s_ip,
+  $c2s_ip = is_ipaddr($c2s_ip_or_host, 6) ? {
+    true  => "[${c2s_ip_or_host}]",
+    false => $c2s_ip_or_host,
   }
   $listen_ip = enclose_ipv6([$etcd_listen_ip])[0]
 
