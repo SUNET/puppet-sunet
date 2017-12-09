@@ -94,6 +94,9 @@ class sunet::etcd::node(
 
   sunet::misc::create_cfgfile { "${basedir}/${service_name}/etcd.conf.yml":
     content => template('sunet/etcd/etcd.conf.yml.erb'),
+    group   => 'root',
+    force   => true,
+  }
   $ports = $expose_ports ? {
     true => ["${expose_port_pre}:2380:2380",
              "${expose_port_pre}:2379:2379",
