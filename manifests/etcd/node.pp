@@ -111,7 +111,7 @@ class sunet::etcd::node(
                  "${base_dir}/${service_name}/etcd.conf.yml:${base_dir}/${service_name}/etcd.conf.yml:ro",
                  "${cert_file}:${cert_file}:ro",
                  "${key_file}:${key_file}:ro",
-                 "${trusted_ca_file}:${trusted__ca_file}:ro",
+                 "${trusted_ca_file}:${trusted_ca_file}:ro",
                  ],
     command  => "/usr/local/bin/etcd --config-file ${base_dir}/${service_name}/etcd.conf.yml",
     ports    => $ports,
