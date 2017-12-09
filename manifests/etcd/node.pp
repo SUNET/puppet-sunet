@@ -76,12 +76,6 @@ class sunet::etcd::node(
       ;
   }
 
-  sunet::misc::create_dir { "${base_dir}/${service_name}/data/${::hostname}":
-    owner => 'root',
-    group => 'root',
-    mode => '0700',
-  }
-
   # variables used in etcd.conf.yml.erb
   $listen_peer_urls = ["${s2s_proto}://${listen_ip}:2380"]
   $listen_client_urls = ["${c2s_proto}://${listen_ip}:2379"]
@@ -92,11 +86,18 @@ class sunet::etcd::node(
     sprintf('%s=%s://%s:2380', $this_name, $s2s_proto, $this)
   }
 
+  sunet::misc::create_dir { "${base_dir}/${service_name}/data/${::hostname}":
+    owner => 'root',
+    group => 'root',
+    mode => '0700',
+  } ->
+
   sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etcd.conf.yml":
     content => template('sunet/etcd/etcd.conf.yml.erb'),
     group   => 'root',
     force   => true,
   }
+
   $ports = $expose_ports ? {
     true => ["${expose_port_pre}:2380:2380",
              "${expose_port_pre}:2379:2379",
