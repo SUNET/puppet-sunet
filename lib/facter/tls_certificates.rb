@@ -56,7 +56,7 @@ Facter.add('tls_certificates') do
     end
   end
 
-  res.each do | key, values |
+  res.sort.each do | key, values |
     warn("TLS certificate found: #{key} #{values}")
   end
   setcode do

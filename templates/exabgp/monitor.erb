@@ -5,7 +5,7 @@ outfile='/tmp/exabgp-monitor.out'
 rm -f $outfile
 
 while true; do
-    run-parts --regex='[^0-9A-Za-z.\-]' -- <%= @path %> > ${outfile}-new
+    run-parts --regex='[^0-9A-Za-z.\-]' -- <%= @path %> | sort > ${outfile}-new
     # check if output differ from last time, in which case we 'cat' it so exabgp picks it up
     touch $outfile
     cmp ${outfile}{-new,} > /dev/null || (mv $outfile{-new,}; cat $outfile)
