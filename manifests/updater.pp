@@ -27,6 +27,10 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
          warn_criteria => ['exit_status=0', 'max_age=49h'],
       }
    } else {
-      sunet::scriptherder::cronjob { 'update_and_upgrade': ensure => absent }
+      sunet::scriptherder::cronjob { 'update_and_upgrade':
+         cmd           => '/usr/local/sbin/silent-update-and-upgrade',
+         ensure        => absent,
+         purge_results => true,
+      }
    }
 }
