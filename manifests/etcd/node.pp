@@ -49,6 +49,16 @@ class sunet::etcd::node(
   }
   $trusted_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
 
+  # variables used in etcd.conf.yml.erb and ectdctl.erb
+  $listen_peer_urls = ["https://${listen_ip}:2380"]
+  $listen_client_urls = ["${c2s_proto}://${listen_ip}:2379"]
+  $initial_advertise_peer_urls = ["https://${s2s_ip}:2380"]
+  $advertise_client_urls = ["${c2s_proto}://${c2s_ip}:2379"]
+  $initial_cluster = $cluster_nodes.map | $this | {
+    $this_name = split($this, '\.')[0]
+    sprintf('%s=https://%s:2380', $this_name, $this)
+  }
+
   # Create simple wrapper to run ectdctl in a new docker container with all the right parameters
   file {
     '/usr/local/bin/etcdctl':
@@ -59,15 +69,6 @@ class sunet::etcd::node(
       ;
   }
 
-  # variables used in etcd.conf.yml.erb
-  $listen_peer_urls = ["https://${listen_ip}:2380"]
-  $listen_client_urls = ["${c2s_proto}://${listen_ip}:2379"]
-  $initial_advertise_peer_urls = ["https://${s2s_ip}:2380"]
-  $advertise_client_urls = ["${c2s_proto}://${c2s_ip}:2379"]
-  $initial_cluster = $cluster_nodes.map | $this | {
-    $this_name = split($this, '\.')[0]
-    sprintf('%s=https://%s:2380', $this_name, $this)
-  }
 
   sunet::misc::create_dir { "${base_dir}/${service_name}/data":
     owner => 'root',
