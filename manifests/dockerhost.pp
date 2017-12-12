@@ -24,6 +24,11 @@ class sunet::dockerhost(
 
   if $docker_package_name != 'docker-engine' {
     # transisition to docker-ce
+    exec { 'remove_dpkg_arch_i386':
+      command => '/usr/bin/dpkg --remove-architecture i386',
+      onlyif  => '/usr/bin/dpkg --print-foreign-architectures | grep i386',
+    }
+
     package {'docker-engine': ensure => 'purged'}
   }
 
