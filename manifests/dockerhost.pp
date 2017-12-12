@@ -24,6 +24,11 @@ class sunet::dockerhost(
 
   if $docker_package_name != 'docker-engine' {
     # transisition to docker-ce
+    exec { 'remove_dpkg_arch_i386':
+      command => '/usr/bin/dpkg --remove-architecture i386',
+      onlyif  => '/usr/bin/dpkg --print-foreign-architectures | grep i386',
+    }
+
     package {'docker-engine': ensure => 'purged'}
   }
 
@@ -43,6 +48,12 @@ class sunet::dockerhost(
     source  => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
   }
 
+  if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
+    $architecture = 'amd64'
+  } else {
+    $architecture = undef
+  }
+
   # old source
   apt::source {'docker_official':
     ensure   => 'absent',
@@ -50,10 +61,11 @@ class sunet::dockerhost(
 
   # new source
   apt::source {'docker_ce':
-    location => 'https://download.docker.com/linux/ubuntu',
-    release  => $::lsbdistcodename,
-    repos    => 'edge',
-    key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
+    location     => 'https://download.docker.com/linux/ubuntu',
+    release      => $::lsbdistcodename,
+    repos        => 'edge',
+    key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
+    architecture => $architecture,
   }
 
   exec { 'dockerhost_apt_get_update':
@@ -79,11 +91,17 @@ class sunet::dockerhost(
     default     => undef,
   }
 
+  # Make it possible to not set a class::docker DNS at all by passing in the empty string
+  $_docker_dns = $docker_dns ? {
+    ''      => undef,
+    default => $docker_dns,
+  }
+
   class {'docker':
     storage_driver              => $storage_driver,
     manage_package              => false,
     use_upstream_package_source => false,
-    dns                         => $docker_dns,
+    dns                         => $_docker_dns,
     extra_parameters            => $docker_extra_parameters,
     docker_command              => $docker_command,
     daemon_subcommand           => $daemon_subcommand,

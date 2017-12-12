@@ -22,14 +22,22 @@ global
     ssl-default-bind-options no-sslv3
     tune.ssl.default-dh-param 2048
 
+    spread-checks 20
+
 defaults
     log global
     mode http
     option httplog
     option dontlognull
-    timeout connect 1s
-    timeout client 20s
-    timeout server 30s
+    option redispatch
+    option forwardfor
+    # funny looking values because recommendation is to have these slightly
+    # above mulitples of three seconds to play nice with TCP resend timers
+    timeout check 5s
+    timeout connect 4s
+    timeout client 17s
+    timeout server 17s
+    timeout http-request 5s
     balance roundrobin
 
 

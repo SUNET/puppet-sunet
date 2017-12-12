@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Restart or reload haproxy running in a docker container.
+#
+# Script created by Puppet (sunet::frontend).
+#
+
+set -e
+
+haproxy_pidfile='<%= @haproxy_pidfile %>'
+haproxy_configs='<%= @haproxy_configs %>'
+
+function usage() {
+    echo "Syntax: $0 restart|reload [container-name]"
+    exit 1
+}
+
+function restart() {
+    local name=$1
+    echo "Checking config syntax in $1"
+    docker exec "${name}" /cfgcheck.sh ${haproxy_configs}
+    echo "Restarting $1"
+    service docker-${name} restart
+}
+
+function reload() {
+    local name=$1
+    echo "Reloading $1"
+    docker exec "${name}" /reload.sh ${haproxy_configs}
+}
+
+
+action=$1
+name=$2
+
+if [ "x$name" = "x" ]; then
+    name='load-balancer_haproxy'
+fi
+
+case "${action}" in
+    "restart")
+	restart $name
+	;;
+    "reload")
+	reload $name
+	;;
+    *)
+	usage
+esac
+
+echo done

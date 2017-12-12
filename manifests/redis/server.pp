@@ -13,6 +13,7 @@ define sunet::redis::server(
   String            $master_ip       = pick($cluster_nodes[0], $::ipaddress_default),
   String            $master_port     = '6379',
   Optional[String]  $docker_image    = 'docker.sunet.se/eduid/redis',
+  String            $docker_tag      = 'latest',
   String            $basedir         = "/opt/redis/${name}"
   ) {
 
@@ -78,7 +79,7 @@ define sunet::redis::server(
   if $docker_image =~ String[1] {
     sunet::docker_run { $name:
       image    => $docker_image,
-      imagetag => 'latest',
+      imagetag => $docker_tag,
       net      => 'host',  # Required for Redis clustering/HA
       volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf:ro",
                    "${basedir}/data:/data",

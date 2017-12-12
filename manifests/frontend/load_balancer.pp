@@ -1,7 +1,7 @@
 # Interface, ExaBGP and haproxy config for a load balancer
 class sunet::frontend::load_balancer(
   String $router_id = $ipaddress_default,
-  String $basedir = '/opt/frontend',
+  String $basedir   = '/opt/frontend',
 ) {
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
@@ -28,10 +28,15 @@ class sunet::frontend::load_balancer(
       basedir  => $basedir,
       confdir  => $confdir,
     }
+    $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
+      true  => $config['load_balancer']['exabgp_imagetag'],
+      false => 'latest',
+    }
     sunet::exabgp { 'load_balancer':
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
                          "/dev/log:/dev/log",
                          ],
+      version        => $exabgp_imagetag,
     }
     sunet::frontend::haproxy { 'load-balancer':
       basedir               => "${basedir}/haproxy",
@@ -42,17 +47,16 @@ class sunet::frontend::load_balancer(
       port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
       static_backends       => $config['load_balancer']['static_backends'],
     }
+    $api_imagetag = has_key($config['load_balancer'], 'api_imagetag') ? {
+      true  => $config['load_balancer']['api_imagetag'],
+      false => 'latest',
+    }
     sunet::frontend::api { 'sunetfrontend':
-      basedir => $apidir,
+      basedir    => $apidir,
+      docker_tag => $api_imagetag,
     }
     sysctl_ip_nonlocal_bind { 'load_balancer': }
 
-    # XXX accomplish this with some haproxy config instead
-    #sunet::docker_run {'alwayshttps':
-    #  image    => 'docker.sunet.se/always-https',
-    #  ports    => ['80:80'],
-    #  env      => ['ACME_URL=http://acme-c.sunet.se']
-    #}
     sunet::misc::ufw_allow { "always-https-allow-http":
       from => 'any',
       port => '80'
@@ -62,17 +66,12 @@ class sunet::frontend::load_balancer(
     $snakeoil_key = '/etc/ssl/private/ssl-cert-snakeoil.key'
     $snakeoil_cert = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
     $snakeoil_bundle = '/etc/ssl/snakeoil_bundle.crt'
-    exec {"snakeoil_bundle_${name}":
-      command => "test -f ${snakeoil_key} && test -f ${snakeoil_cert} && cat ${snakeoil_cert} ${snakeoil_key} > ${snakeoil_bundle}",
-      path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
-      unless  => "test -s ${snakeoil_bundle}",
-    }
-    file {
-      $snakeoil_bundle:
-        owner => 'root',
-        group => 'haproxy',
-        mode  => '0640',
-        ;
+    sunet::misc::certbundle { 'snakeoil_bundle':
+      bundle => ["cert=${snakeoil_cert}",
+                 "key=${snakeoil_key}",
+                 "out=${snakeoil_bundle}",
+                 ],
+      group  => 'haproxy',
     }
   } else {
     fail('No/bad SUNET frontend load balancer config found in hiera')
@@ -108,7 +107,7 @@ define configure_peers($router_id, $peers)
 define load_balancer_peer(
   String           $as,
   String           $remote_ip,
-  Optional[String] $local_ip = undef,
+  Optional[String] $local_ip  = undef,
   Optional[String] $router_id = undef,
   Optional[String] $password_hiera_key = undef,
 ) {
@@ -132,11 +131,11 @@ define load_balancer_peer(
   }
 
   sunet::exabgp::neighbor { "peer_${name}":
-    local_as       => $as,
-    local_address  => $_local_ip,
-    peer_as        => $as,
-    peer_address   => $remote_ip,
-    router_id      => $router_id,
+    local_as      => $as,
+    local_address => $_local_ip,
+    peer_as       => $as,
+    peer_address  => $remote_ip,
+    router_id     => $router_id,
     md5           => $md5,
   }
 }
@@ -220,10 +219,34 @@ define load_balancer_website(
   if $frontend_template != undef {
     $server_name = $name
     $params = $frontend_template_params
+    if has_key($tls_certificates, 'snakeoil') {
+      $snakeoil = $tls_certificates['snakeoil']['bundle']
+    }
     if has_key($tls_certificates, $name) {
-      $tls_certificate_bundle = $tls_certificates[$name]['bundle']
-    } elsif has_key($tls_certificates, 'snakeoil') {
-      $tls_certificate_bundle = $tls_certificates['snakeoil']['bundle']
+      # Site name found in tls_certificates - good start
+      $_tls_certificate_bundle = pick(
+        $tls_certificates[$name]['haproxy'],
+        $tls_certificates[$name]['certkey'],
+        $tls_certificates[$name]['infra_certkey'],
+        $tls_certificates[$name]['bundle'],
+        $tls_certificates[$name]['dehydrated_bundle'],
+        'NOMATCH',
+      )
+      if $_tls_certificate_bundle != 'NOMATCH' {
+        $tls_certificate_bundle = $_tls_certificate_bundle
+      } else {
+        $_site_certs = $tls_certificates[$name]
+        notice("None of the certificates for site ${name} matched my list (haproxy, certkey, infra_certkey, bundle): $_site_certs")
+        if $snakeoil {
+          $tls_certificate_bundle = $snakeoil
+        }
+      }
+    } elsif $snakeoil {
+      $tls_certificate_bundle = $snakeoil
+    }
+
+    if $snakeoil and $tls_certificate_bundle == $snakeoil {
+      notice("Using snakeoil certificate for site ${name}")
     }
     # Note that haproxy actually does _not_ want IPv6 addresses to be enclosed by brackets.
     $ips = $ipv4 + $ipv6

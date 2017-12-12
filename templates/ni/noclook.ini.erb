@@ -1,0 +1,30 @@
+[uwsgi]
+# Django-related settings
+plugins = python
+protocol = uwsgi
+# the base directory (full path)
+chdir           = /var/opt/norduni/norduni/src/niweb/
+# Django's wsgi file
+wsgi-file       = /var/opt/norduni/norduni/src/niweb/niweb/wsgi.py
+env             = DJANGO_SETTINGS_MODULE=niweb.settings.prod
+# the virtualenv (full path)
+home            = /var/opt/norduni/norduni_environment
+# logging
+daemonize       = /var/log/uwsgi/app/noclook.log
+# process-related settings
+# master
+master          = true
+# maximum number of worker processes
+processes       = 5
+#threads        = 2
+max-requests    = 5000
+# the socket (use the full path to be safe
+socket          = 127.0.0.1:8001
+# clear environment on exit
+vacuum          = true
+# for now we run uwsgi in lazy-apps, due to neo4j session problems
+lazy-apps       = true
+# less noisy uwsgi logs (especially with sentry)
+ignore-sigpipe = true
+ignore-write-errors = true
+disable-write-exception = true

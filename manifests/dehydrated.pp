@@ -278,6 +278,8 @@ define sunet::dehydrated::client_define(
       cmd    => "sh -c 'ssh -Ti \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh'",
       user   => $user,
       minute => '*/20',
+      ok_criteria   => ['exit_status=0', 'max_age=2h'],
+      warn_criteria => ['exit_status=0', 'max_age=96h'],
     })
   }
   if ($ssl_links) {

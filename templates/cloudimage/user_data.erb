@@ -16,6 +16,10 @@ ssh_authorized_keys:
    - <%= key %>
 <% end -%>
 <% end -%>
+<% if @apt_proxy -%>
+bootcmd:
+  - cloud-init-per once cloud_init_apt_proxy bash -c 'mkdir -p /etc/apt/apt.conf.d && echo Acquire::http::Proxy \"<%= @apt_proxy %>\"\; > /etc/apt/apt.conf.d/00proxy'
+<% end -%>
 write_files:
   - path: "/etc/default/grub.d/99-sunet-cloud-init.cfg"
     permissions: "0644"
