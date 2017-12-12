@@ -2,7 +2,7 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
    file {'/usr/local/sbin/silent-update-and-upgrade':
      mode    => '0755',
      owner   => 'root',
-     group   => 'root'
+     group   => 'root',
      content => @("END"/n)
        #!/bin/bash
        export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
