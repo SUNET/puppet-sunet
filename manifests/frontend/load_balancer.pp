@@ -107,7 +107,7 @@ define configure_peers($router_id, $peers)
 define load_balancer_peer(
   String           $as,
   String           $remote_ip,
-  Optional[String] $local_ip = undef,
+  Optional[String] $local_ip  = undef,
   Optional[String] $router_id = undef,
   Optional[String] $password_hiera_key = undef,
 ) {
@@ -131,11 +131,11 @@ define load_balancer_peer(
   }
 
   sunet::exabgp::neighbor { "peer_${name}":
-    local_as       => $as,
-    local_address  => $_local_ip,
-    peer_as        => $as,
-    peer_address   => $remote_ip,
-    router_id      => $router_id,
+    local_as      => $as,
+    local_address => $_local_ip,
+    peer_as       => $as,
+    peer_address  => $remote_ip,
+    router_id     => $router_id,
     md5           => $md5,
   }
 }
