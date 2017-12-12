@@ -7,9 +7,8 @@ class sunet::etcd::node(
   Optional[String] $discovery_srv      = undef,  # DNS SRV record for cluster node discovery
   Enum['on', 'readonly', 'off'] $proxy = 'off',
   String           $s2s_ip_or_host     = $::fqdn,
-  String           $s2s_proto          = 'https',
   String           $c2s_ip_or_host     = $::fqdn,
-  String           $c2s_proto          = 'https',
+  Enum['https', 'http'] $c2s_proto     = 'https',
   String           $etcd_listen_ip     = '0.0.0.0',
   String           $docker_image       = 'gcr.io/etcd-development/etcd',
   String           $docker_net         = 'docker',
@@ -61,13 +60,13 @@ class sunet::etcd::node(
   }
 
   # variables used in etcd.conf.yml.erb
-  $listen_peer_urls = ["${s2s_proto}://${listen_ip}:2380"]
+  $listen_peer_urls = ["https://${listen_ip}:2380"]
   $listen_client_urls = ["${c2s_proto}://${listen_ip}:2379"]
-  $initial_advertise_peer_urls = ["${s2s_proto}://${s2s_ip}:2380"]
+  $initial_advertise_peer_urls = ["https://${s2s_ip}:2380"]
   $advertise_client_urls = ["${c2s_proto}://${c2s_ip}:2379"]
   $initial_cluster = $cluster_nodes.map | $this | {
     $this_name = split($this, '\.')[0]
-    sprintf('%s=%s://%s:2380', $this_name, $s2s_proto, $this)
+    sprintf('%s=https://%s:2380', $this_name, $this)
   }
 
   sunet::misc::create_dir { "${base_dir}/${service_name}/data":
