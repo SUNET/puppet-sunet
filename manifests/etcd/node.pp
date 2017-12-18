@@ -90,7 +90,7 @@ class sunet::etcd::node(
     false => []
   }
 
-  sunet::docker_run { $service_name:
+  sunet::docker_run { $service-name:
     image    => $docker_image,
     imagetag => $docker_tag,
     volumes  => ["${base_dir}/${service_name}/data:/data",
