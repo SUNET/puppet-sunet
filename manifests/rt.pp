@@ -1,4 +1,4 @@
-class sunet::rt_test (
+class sunet::rt (
     Array[String] $cosmos_site_env = [],
 ) {
 
