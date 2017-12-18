@@ -30,7 +30,7 @@ define sunet::wordpress (
    }
    $pwd = hiera("${name}_db_password")
    ensure_resource('file',["/data/${name}","/data/${name}/html","/data/${name}/credentials"], {ensure => directory})
-   sunet::docker_run { "${name}_wordpress":
+   sunet::docker_run { "${name}-wordpress":
       image       => $wordpress_image,
       imagetag    => $wordpress_version,
       volumes     => ["/data/${name}/html:/var/www/html","/data/${name}/credentials:/etc/shibboleth/credentials"],
@@ -49,7 +49,7 @@ define sunet::wordpress (
       file {"/data/${name}/db": ensure => directory }
       group { 'mysql': ensure => 'present', system => true } ->
       user { 'mysql': ensure => 'present', groups => 'mysql', system => true } ->
-      sunet::docker_run { "${name}_mysql":
+      sunet::docker_run { "${name}-mysql":
           image       => "mysql",
           imagetag    => $mysql_version,
           volumes     => ["/data/${name}/db:/var/lib/mysql"],
