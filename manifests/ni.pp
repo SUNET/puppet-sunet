@@ -144,6 +144,8 @@ class sunet::ni(
     file {'/var/opt/norduni/consume.sh/':
       ensure  => file,
       mode    => '0755',
+      owner  => 'ni',
+      group  => 'ni',
       content => template('sunet/ni/consume.sh.erb'),
       require => User['ni'],
       }
