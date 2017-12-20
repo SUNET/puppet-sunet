@@ -4,12 +4,22 @@ set -e
 
 reinst="/mnt/seed/sunet-reinstall.tgz"
 
+force=0
+if [ "x$1" = "x-f" ]; then
+    force=1
+    shift
+fi
+
 test -d /mnt/seed || mkdir /mnt/seed
 vdb_fail=0
 mount /dev/vdb /mnt/seed || vdb_fail=1
 
 if [ $vdb_fail -ne 0 ]; then
     rmdir /mnt/seed
+    if [ $force -eq 1 ]; then
+	echo "$0: mounting /dev/vdb failed, aborting since force-mode is in effect"
+	exit 1
+    fi
     reinst="/root/`hostname -f`_sunet-reinstall.tgz"
     echo "$0: mounting /dev/vdb failed, output to local file ${reinst} instead?"
     echo "Note that you will have to take care of the file yourself."
@@ -20,7 +30,7 @@ else
     trap "umount /mnt/seed && rmdir /mnt/seed" EXIT
 fi
 
-if [ -f ${reinst} ]; then
+if [ $force -ne 1 -a -f ${reinst} ]; then
    echo "$0: File sunet-reinstall.tgz already exist:"
    echo ""
    ls -l ${reinst}
@@ -33,12 +43,13 @@ fi
 
 umask 077
 
-(test -f /etc/sunet-reinstall.keep && cat /etc/sunet-reinstall.keep;
+(test -f /etc/sunet-reinstall.keep && echo $(cat /etc/sunet-reinstall.keep);
  test -f /etc/sunet-reinstall.keep && echo /etc/sunet-reinstall.keep;
       echo /etc/ssh/*key*;
       test -d /etc/hiera/gpg && echo /etc/hiera/gpg;
-      test -d /etc/letsencrypt && echo /etc/letsencrypt;
-) | xargs tar zcvf ${reinst}
+      test -d /etc/dehydrated && echo /etc/dehydrated;
+) | xargs tar zcvf "${reinst}.new"
+mv "${reinst}.new" "${reinst}"
 
 echo ""
 echo "$0: Done"
