@@ -11,9 +11,9 @@ module Puppet::Parser::Functions
     #one, two = args
     # if two.nil?
     if args.size == 1
-      value = function_hiera([args[0], 'NOT_SET_IN_HIERA'])
+      value = call_function('hiera', [args[0], 'NOT_SET_IN_HIERA'])
     else
-      value = function_hiera(args)
+      value = call_function('hiera', args)
     end
     warning("#{args[0]} not set in Hiera") if value == 'NOT_SET_IN_HIERA' or value == args[1]
     return value
