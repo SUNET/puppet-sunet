@@ -2,13 +2,14 @@
 class sunet::security::configure_sshd(
     $configure_sftp = true,
 ) {
-  package { 'openssh-server':
+  ensure_resource('package', 'openssh-server', {
     ensure => 'installed'
-  } ->
+  })
 
-  service { 'ssh':
+  ensure_resource('service', 'ssh', {
     ensure    => 'running',
-  }
+    enable    => true,
+  })
 
   include augeas
   augeas { "sshd_config":
