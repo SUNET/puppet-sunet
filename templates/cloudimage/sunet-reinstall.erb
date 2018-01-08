@@ -48,6 +48,7 @@ umask 077
       echo /etc/ssh/*key*;
       test -d /etc/hiera/gpg && echo /etc/hiera/gpg;
       test -d /etc/dehydrated && echo /etc/dehydrated;
+      find /etc/ssl -name '*_infra.key' -type f;
 ) | xargs tar zcvf "${reinst}.new"
 mv "${reinst}.new" "${reinst}"
 
