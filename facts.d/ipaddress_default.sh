@@ -19,7 +19,7 @@ if [ "x${INT}" != "x" ]; then
 fi
 
 # Make sure to not assume the default interface for v4 traffic is the same as for v6
-INT=$(ip -6 route list default | sed -e 's/.* dev //' | awk '{print $1}')
+INT=$(ip -6 route list default | head -1 | sed -e 's/.* dev //' | awk '{print $1}')
 
 if [ "x${INT}" != "x" ]; then
     ipaddr6=$(ip -6 addr show dev "${INT}" up scope global | grep inet6 | head -1 | awk '{print $2}' | cut -d / -f 1)
