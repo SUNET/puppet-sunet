@@ -28,12 +28,12 @@ class sunet::ipam {
       }
   }
   package { ['postgresql',
-            'postgresql-9.5-ip4r', 
-            'postgresql-contrib', 
-            'apache2', 
-            'bind9', 
+            'postgresql-9.5-ip4r',
+            'postgresql-contrib',
+            'apache2',
+            'bind9',
             'libapache2-mod-wsgi',
-            'libldap2-dev', 
+            'libldap2-dev',
             'libsasl2-dev',
             'autopostgresqlbackup']:
     ensure => 'present',
