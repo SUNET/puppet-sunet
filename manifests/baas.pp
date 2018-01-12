@@ -5,8 +5,9 @@
 #      use the syntax "baas_password: XXXXXX" in edit-secrets.
 #   3. Create a list in hiera with the directories to backup, similar to this:
 #      dirs_to_backup:
-#         - /var/log
-#         - /opt/goodstuff
+#         - /var/log/
+#         - /opt/goodstuff/
+#      NOTE: These dirs_to_backup *MUST* have a trailing slash or they wont be backed!!!
 #   4. Call upon this module with the nodename, default also backs up subdirs.
 
 class sunet::baas(  
