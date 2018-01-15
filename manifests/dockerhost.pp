@@ -54,16 +54,6 @@ class sunet::dockerhost(
     $architecture = undef
   }
 
-  # old source
-  apt::source {'docker_official':
-     location => 'https://apt.dockerproject.org/repo',
-     release  => "ubuntu-${::lsbdistcodename}",
-     repos    => 'main',
-     key      => { 'id'     => '58118E89F3A912897C070ADBF76221572C52609D',
-                   'server' => 'keyserver.ubuntu.com' },
-     include  => { 'src' => false },
-  }
-
   # new source
   apt::source {'docker_ce':
     location     => 'https://download.docker.com/linux/ubuntu',
@@ -76,8 +66,8 @@ class sunet::dockerhost(
   exec { 'dockerhost_apt_get_update':
      command     => '/usr/bin/apt-get update',
      cwd         => '/tmp',
-     require     => [Apt::Source['docker_official'], Apt::Key['docker_ce']],
-     subscribe   => [Apt::Source['docker_official'], Apt::Key['docker_ce']],
+     require     => [Apt::Key['docker_ce']],
+     subscribe   => [Apt::Key['docker_ce']],
      refreshonly => true,
   }
 
@@ -201,7 +191,7 @@ class sunet::dockerhost(
   }
 
   if $ufw_allow_docker_dns {
-    if $docker_dns =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
+    if is_ipaddr($docker_dns, 4) {
       # Allow Docker containers resolving using caching resolver running on docker host
       sunet::misc::ufw_allow { 'dockerhost_dns':
           from  => '172.16.0.0/12',
