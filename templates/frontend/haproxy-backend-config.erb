@@ -99,7 +99,7 @@ def backend_config(args):
     # See if this is config in the old format that only had a single
     # backend per website
     backwards_compat = False
-    if 'backend_haproxy_config' in config:
+    if config.get('backend_haproxy_config', []) != []:
         # convert old style hash to new
         common_haproxy_config = config['backend_haproxy_config']
         backwards_compat = True
@@ -110,7 +110,7 @@ def backend_config(args):
 
     if backwards_compat:
         config = {'backends': {'default': config['backends']}}
-        logger.debug('Converted config to new style: {}'.format(config))
+        logger.debug('Converted config to new style:\n{}'.format(config))
 
     backends = config.get('backends', {})
 
