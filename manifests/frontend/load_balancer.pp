@@ -281,7 +281,7 @@ define website_backends(
     # Allow the backend servers for this website to access the sunetfrontend-api
     # to register themselves.
     $backend_ips = keys($values)
-    sunet::misc::ufw_allow { "allow_backends_to_api_${name}":
+    sunet::misc::ufw_allow { "allow_backends_to_api_${name}_${k}":
       from => $backend_ips,
       port => '8080',  # port of the sunetfronted-api
     }
