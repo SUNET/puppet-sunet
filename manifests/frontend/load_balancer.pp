@@ -279,9 +279,20 @@ define website_backends(
 
   # Allow the backend servers for this website to access the sunetfrontend-api
   # to register themselves.
+  #
+  # OLD
   sunet::misc::ufw_allow { "allow_backends_to_api_${name}":
     from => keys($backends).filter |$k| { is_ipaddr($k) },
     port => '8080',  # port of the sunetfronted-api
+  }
+  # NEW
+  each($backends) | $k, $v | {
+    if is_hash($v) {
+      sunet::misc::ufw_allow { "allow_backends_to_api_${name}_${k}":
+        from => keys($v).filter |$this| { is_ipaddr($this) },
+        port => '8080',  # port of the sunetfronted-api
+      }
+    }
   }
 
   # 'export' config to a file usable by haproxy-config-update+haproxy-backend-config
