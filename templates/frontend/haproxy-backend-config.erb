@@ -102,7 +102,6 @@ def backend_config(args):
     if config.get('backend_haproxy_config', []) != []:
         # convert old style hash to new
         common_haproxy_config = config['backend_haproxy_config']
-        backwards_compat = True
     for k,v in config['backends'].items():
         if 'haproxy_config' in v:
             backwards_compat = True
