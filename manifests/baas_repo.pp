@@ -1,7 +1,7 @@
-# So this is the chaotic install instruct for the uber chaotic BaaS... 
+# So this is the chaotic install instruct for the uber chaotic BaaS...
 #
 #   1. First of all, create a node in the BaaS API and jot down (copy) the password.
-#   2. Use edit-secrets to give the password to the node BEFORE you run this, 
+#   2. Use edit-secrets to give the password to the node BEFORE you run this,
 #      use the syntax "baas_password: XXXXXX" in edit-secrets.
 #   3. Create a list in hiera with the directories to backup, similar to this:
 #      dirs_to_backup:
@@ -10,7 +10,7 @@
 #      NOTE: These dirs_to_backup *MUST* have a trailing slash or they wont be backed!!!
 #   4. Call upon this module with the nodename, remember default also backs up subdirs.
 
-class sunet::baas_repo(  
+class sunet::baas_repo(
    String $nodename,
    $extra="-subdir=yes",
    $repo="https://repo.cloud.ipnett.com/debtest/",
