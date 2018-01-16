@@ -185,7 +185,7 @@ define load_balancer_website(
     }
   }
 
-  _website_backends { $name :
+  website_backends { $name :
     backends => $backends,
     basedir  => $basedir,
     confdir  => $confdir,
@@ -262,7 +262,7 @@ define load_balancer_website(
   }
 }
 
-define _website_backends(
+define website_backends(
   Hash   $backends,
   String $basedir,
   String $confdir,
