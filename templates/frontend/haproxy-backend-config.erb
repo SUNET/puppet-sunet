@@ -124,7 +124,10 @@ def backend_config(args):
         these_backends = backends[be]
         for addr in sorted(these_backends.keys()):
             logger.info('Processing backend {} address {}: {}'.format(be_name, addr, these_backends[addr]))
-            haproxy_config_in = these_backends[addr]['haproxy_config']
+            haproxy_config_in = these_backends[addr].get('haproxy_config')
+            if not haproxy_config_in:
+                logger.warning('Backend {} address {} has no haproxy_config!'.format(be_name, addr))
+                continue
             for this in files:
                 if this.endswith('_{}.conf'.format(addr)):
                     if get_fileage(this) > args.max_age:
