@@ -186,9 +186,10 @@ define load_balancer_website(
   }
 
   website_backends { $name :
-    backends => $backends,
-    basedir  => $basedir,
-    confdir  => $confdir,
+    backends               => $backends,
+    basedir                => $basedir,
+    confdir                => $confdir,
+    backend_haproxy_config => $backend_haproxy_config,
   }
 
   if $frontend_template != undef {
@@ -266,6 +267,7 @@ define website_backends(
   Hash   $backends,
   String $basedir,
   String $confdir,
+  Array  $backend_haproxy_config,
 ) {
   # Create backend directory for this website so that the sunetfrontend-api will
   # accept register requests from the servers
@@ -298,7 +300,8 @@ define website_backends(
   # 'export' config to a file usable by haproxy-config-update+haproxy-backend-config
   # to create backend configuration
   $export_data = {
-    'backends' => $backends,
+    'backends'               => $backends,
+    'backend_haproxy_config' => $backend_haproxy_config,
   }
   file { "${confdir}/${name}_backends.yml":
     ensure  => 'file',
