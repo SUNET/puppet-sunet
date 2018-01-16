@@ -95,12 +95,22 @@ def backend_config(args):
         files.append(path)
 
     common_haproxy_config = None
+
+    # See if this is config in the old format that only had a single
+    # backend per website
     backwards_compat = False
     if 'backend_haproxy_config' in config:
         # convert old style hash to new
         common_haproxy_config = config['backend_haproxy_config']
-        config = {'backends': {'default': config['backends']}}
         backwards_compat = True
+    for k,v in config['backends'].items():
+        if 'haproxy_config' in v:
+            backwards_compat = True
+            break
+
+    if backwards_compat:
+        config = {'backends': {'default': config['backends']}}
+        logger.debug('Converted config to new style: {}'.format(config))
 
     backends = config.get('backends', {})
 
