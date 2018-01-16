@@ -6,8 +6,6 @@ define sunet::misc::ufw_allow(
   $proto = 'tcp',  # Allow traffic using this protocol (or list of protocols).
   ) {
 
-  $_clients = flatten([ $clients_list ])
-
   # if $to is '', turn it into 'any'.
   # ufw module behaviour of changing '' to $ipaddress_eth0 or $ipaddress does not make much sense.
   $to1 = $to ? {
