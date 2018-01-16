@@ -277,14 +277,11 @@ define website_backends(
       ;
   }
 
-  each($backends) | $k, $values | {
-    # Allow the backend servers for this website to access the sunetfrontend-api
-    # to register themselves.
-    $backend_ips = keys($values)
-    sunet::misc::ufw_allow { "allow_backends_to_api_${name}_${k}":
-      from => $backend_ips,
-      port => '8080',  # port of the sunetfronted-api
-    }
+  # Allow the backend servers for this website to access the sunetfrontend-api
+  # to register themselves.
+  sunet::misc::ufw_allow { "allow_backends_to_api_${name}":
+    from => $backends.filter |$k, $v| { is_ipaddr($k) },
+    port => '8080',  # port of the sunetfronted-api
   }
 
   # 'export' config to a file usable by haproxy-config-update+haproxy-backend-config
