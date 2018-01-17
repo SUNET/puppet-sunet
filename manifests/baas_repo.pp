@@ -47,7 +47,7 @@ class sunet::baas_repo(
 
     # Time to install the stuff from Safesprings repository!
     exec {"Install TSM stuff from Safespring":
-       command => "apt-get install safespring-baas-setup && touch $control_file",
+       command => "apt-get install safespring-baas-setup expect && touch $control_file",
     }
 
     # These will probably never change but you never know so outside the chain :P
@@ -82,7 +82,6 @@ class sunet::baas_repo(
   exec {"Initiate the new node in BaaS":
      command => "/usr/local/bin/bootstrap-baas $nodename $baas_password",
      unless  => "test -f /etc/adsm/TSM.KBD",
-     require => Package['expect'],
   }
 
 }
