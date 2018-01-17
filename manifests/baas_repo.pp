@@ -35,7 +35,6 @@ class sunet::baas_repo(
     sunet::remote_file { "$gpg_file":
        remote_location => $gpg_key,
        mode            => "0600",
-       unless          => "test -f $control_file",
     } ->
     exec {"Add Safesprings key to chain & repo":
        command => "apt-key add < $gpg_file && gpg --import $gpg_file",
