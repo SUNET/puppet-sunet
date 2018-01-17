@@ -3,8 +3,8 @@
 # So since BaaS/TSM cannot be installed without human input we had to create this silly script.
 # It needs 2 values as input to run; the TSM nodename and the first-use password from BaaS/Hiera.
 
-# Read input for the TSM bootstrap and set timeout to infinite (any other timeout value breaks flow) 
-set timeout -1 
+# Read input for the TSM bootstrap and set timeout to infinite (any other timeout value breaks flow)
+set timeout -1
 set nodename [lindex $argv 0]
 set password [lindex $argv 1]
 
@@ -19,21 +19,21 @@ if {[file exists /etc/adsm/TSM.KDB]} {
   exit 0
 }
 
-spawn "/usr/bin/dsmc" 
+spawn "/usr/bin/dsmc"
 
 # Send "username" since TSM doesnt parse the config properly for some reason
-expect "Please enter your user" { 
-  send "$nodename" 
+expect "Please enter your user" {
+  send "$nodename"
   send "\r"
 }
 
 # Send "password" since TSM doesnt care about command line supplied options
-expect "Please enter password for user" { 
-  send "$password" 
+expect "Please enter password for user" {
+  send "$password"
   send "\r"
 }
 
-expect "Protect" { 
+expect "Protect" {
   send "query session\r"
   send "quit\r"
 }

@@ -61,7 +61,8 @@ class sunet::baas_repo(
        content => template("sunet/baas/dsm_opt.erb")
     }
     file { "/usr/local/bin/bootstrap-baas":
-       ensure => "file",
+       ensure  => "file",
+       mode    => "755",
        content => template("sunet/baas/bootstrap-baas")
     }
 
