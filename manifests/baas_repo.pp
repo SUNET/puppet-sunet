@@ -23,29 +23,32 @@ class sunet::baas_repo(
   $baas_password = hiera('baas_password', 'NOT_SET_IN_HIERA')
   $backup_dirs_not_empty = hiera('dirs_to_backup','NOT_SET_IN_HIERA')
 
-  # This is silly but somehow you must know if BaaS has been installed already, if not you may break an already existing installation.
-  $control_file="/opt/tivoli/tsm/client/install_successful"
-
   if $baas_password != 'NOT_SET_IN_HIERA' and $backup_dirs_not_empty != 'NOT_SET_IN_HIERA' and $nodename {
     # These 2 rows to get a single string of all directories to backup + extras (flags normally)
     $dirs_to_backup_array = concat(hiera('dirs_to_backup','NOT_SET_IN_HIERA'), $extra)
     $dirs_to_backup = join($dirs_to_backup_array, ' ')
 
+    # This is a control file used to skip these semi-heavy installation steps
+    $control_file="/opt/tivoli/tsm/install_complete.txt"
+
     # Grab PGP key from Safespring and add it & repo to sources
     sunet::remote_file { "$gpg_file":
        remote_location => $gpg_key,
-       mode            => "0600"
+       mode            => "0600",
+       unless          => "test -f $control_file",
     } ->
     exec {"Add Safesprings key to chain & repo":
        command => "apt-key add < $gpg_file && gpg --import $gpg_file",
+       unless  => "test -f $control_file",
     } ->
     exec {"Add Safesprings repository to sources and update":
        command => "add-apt-repository $repo && apt-get update",
+       unless  => "test -f $control_file",
     }
 
     # Time to install the stuff from Safesprings repository!
     exec {"Install TSM stuff from Safespring":
-       command => "apt-get install safespring-baas-setup",
+       command => "apt-get install safespring-baas-setup && touch $control_file",
     }
 
     # These will probably never change but you never know so outside the chain :P
@@ -56,6 +59,10 @@ class sunet::baas_repo(
     file { "/opt/tivoli/tsm/client/ba/bin/dsm.opt":
        ensure  => "file",
        content => template("sunet/baas/dsm_opt.erb")
+    }
+    file { "/usr/local/bin/bootstrap-baas":
+       ensure => "file",
+       content => template("sunet/baas/bootstrap-baas")
     }
 
   }
@@ -71,10 +78,11 @@ class sunet::baas_repo(
     }
   }
 
-  # FIXME: This doesnt currently work because TSM requires a human to press enter to initiate a new host with dsmc
+  # Because TSM we created an expect-script to get rid of human clickety-click needs
   exec {"Initiate the new node in BaaS":
-     command => "dsmc query session -password=$baas_password",
-     unless  => "test -f /etc/adsm/TSM.PWD",
+     command => "/usr/local/bin/bootstrap-baas $nodename $baas_password",
+     unless  => "test -f /etc/adsm/TSM.KBD",
+     require => Package['expect'],
   }
 
 }
