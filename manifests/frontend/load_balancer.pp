@@ -245,6 +245,12 @@ define load_balancer_website(
     content  => $ip_addr_add.join("\n"),
   }
 
+  concat::fragment { "${name}_haproxy-pre-start_${name}":
+    target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
+    order    => '99',
+    content  => 'exit 0',
+  }
+
   if $allow_ports != [] {
     sunet::misc::ufw_allow { "load_balancer_${name}_allow_ports":
       from => 'any',
