@@ -17,7 +17,7 @@ for FQDN in "${FQDNS_EVEN[@]}"
 do
   if [ "$FQDN" == "$MY_FQDN" ]; then
     # FQDN found in list, if today is even then return True(0)
-    test $(((`date +%j` % 2))) == 0 && echo "Today is an even day, ${FQDN} is set to be run even days so will run" && exit 0 
+    test $(((`date +%-j` % 2))) == 0 && echo "Today is an even day, ${FQDN} is set to be run even days so will run" && exit 0 
   fi 
 done
 
@@ -25,7 +25,7 @@ for FQDN in "${FQDNS_ODD[@]}"
 do
   if [ "$FQDN" == "$MY_FQDN" ]; then
     # FQDN found in list, if today is odd then return True(0)
-    test $(((`date +%j` % 2))) != 0 && echo "Today is an odd day, ${FQDN} is set to be run odd days so will run" && exit 0 
+    test $(((`date +%-j` % 2))) != 0 && echo "Today is an odd day, ${FQDN} is set to be run odd days so will run" && exit 0 
   fi
 done
 
