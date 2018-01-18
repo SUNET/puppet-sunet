@@ -31,7 +31,7 @@ class sunet::frontend::load_balancer(
     concat::fragment { "${name}_haproxy-pre-start_end":
       target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
       order    => '99',
-      content  => 'exit 0\n',
+      content  => "exit 0\n",
     }
 
     $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
