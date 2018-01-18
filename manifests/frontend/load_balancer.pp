@@ -28,6 +28,12 @@ class sunet::frontend::load_balancer(
       basedir  => $basedir,
       confdir  => $confdir,
     }
+    concat::fragment { "${name}_haproxy-pre-start_end":
+      target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
+      order    => '99',
+      content  => 'exit 0\n',
+    }
+
     $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
       true  => $config['load_balancer']['exabgp_imagetag'],
       false => 'latest',
@@ -243,12 +249,6 @@ define load_balancer_website(
     target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
     order    => '20',
     content  => $ip_addr_add.join("\n"),
-  }
-
-  concat::fragment { "${name}_haproxy-pre-start_end":
-    target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
-    order    => '99',
-    content  => 'exit 0',
   }
 
   if $allow_ports != [] {
