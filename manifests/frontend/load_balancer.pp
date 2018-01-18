@@ -245,7 +245,7 @@ define load_balancer_website(
     content  => $ip_addr_add.join("\n"),
   }
 
-  concat::fragment { "${name}_haproxy-pre-start_${name}":
+  concat::fragment { "${name}_haproxy-pre-start_end":
     target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
     order    => '99',
     content  => 'exit 0',
