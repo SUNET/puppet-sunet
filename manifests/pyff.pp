@@ -34,10 +34,15 @@ define sunet::pyff(
          depends  => ["pyff-${sanitised_title}"]
       }
    }
+   $pyff_ports = $pound_and_varnish ? {
+      true        => [],
+      false       => ["${ip_addr}80:8080"]
+   }
    sunet::docker_run {"pyff-${sanitised_title}":
       image       => $image,
       imagetag    => $version,
       volumes     => ["$dir:$dir"],
+      ports       => $pyff_ports,
       env         => ["DATADIR=$dir","EXTRA_ARGS=$pyffd_args","PIPELINE=$pipeline","LOGLEVEL=$pyffd_loglevel"]
    }
 }
