@@ -11,6 +11,8 @@ import yaml
 import logging
 import argparse
 
+import logging.handlers
+
 logger = None
 
 _defaults = {'syslog': False,
@@ -69,19 +71,20 @@ def backend_config(args):
     Example YAML file:
 
       ---
-      backend_haproxy_config:
-        - 'optional config'
-        - 'for this backend in haproxy'
       backends:
-        "130.242.130.200":
-          haproxy_config: "  server www-fre-1.eduid.se_v4 REMOTE_IP:PORT ssl check verify none"
-        "2001:6b0:54:c3:5054:ff:fea0:750":
-          haproxy_config: "  server www-fre-1.eduid.se_v6 REMOTE_IP:PORT ssl check verify none"
+        _common_haproxy_config:
+          - 'optional verbatim config'
+          - 'for all these backends'
+        default:
+          "130.242.130.200":
+            haproxy_config: "  server www-fre-1.eduid.se_v4 REMOTE_IP:PORT ssl check verify none"
+          "2001:6b0:54:c3:5054:ff:fea0:750":
+            haproxy_config: "  server www-fre-1.eduid.se_v6 REMOTE_IP:PORT ssl check verify none"
 
     :returns: List of strings with haproxy backend config
     :rtype: [str | unicode]
     """
-    res = ['backend {}'.format(args.site_name)]
+    all_res = []
     with open(args.backend_conf) as fd:
         config = yaml.safe_load(fd)
     files = []
@@ -91,34 +94,73 @@ def backend_config(args):
             continue
         files.append(path)
 
-    if 'backend_haproxy_config' in config and config['backend_haproxy_config'] != []:
-        res += config['backend_haproxy_config']
+    common_haproxy_config = None
 
-    for be in sorted(config.get('backends', [])):
-        logger.info('Processing backend {}: {}'.format(be, config['backends'][be]))
-        haproxy_config_in = config['backends'][be]['haproxy_config']
-        for this in files:
-            if this.endswith('_{}.conf'.format(be)):
-                if get_fileage(this) > args.max_age:
-                    logger.info('Ignoring file {} that is older than max_age ({})'.format(this, args.max_age))
-                    continue
+    # See if this is config in the old format that only had a single
+    # backend per website
+    backwards_compat = False
+    if config.get('backend_haproxy_config', []) != []:
+        # convert old style hash to new
+        common_haproxy_config = config['backend_haproxy_config']
+    for k,v in config['backends'].items():
+        if 'haproxy_config' in v:
+            backwards_compat = True
+            break
 
-                logger.debug('Found backend file {}'.format(this))
-                # Check file age before using this file
+    if backwards_compat:
+        config = {'backends': {'default': config['backends']}}
+        logger.debug('Converted config to new style:\n{}'.format(config))
 
-                params = load_backend_file(this)
-                if params.get('ACTION') == 'register':
-                    haproxy_config = haproxy_config_in
-                    # whitelist what we substitute for now
-                    for subst in ['BACKEND', 'SERVER', 'PORT', 'REMOTE_IP']:
-                        if subst in params:
-                            haproxy_config = haproxy_config.replace(subst, params[subst])
-                    if haproxy_config != haproxy_config_in:
-                        logger.debug('haproxy config after substitution: {}'.format(haproxy_config))
-                    res.append(haproxy_config)
-                else:
-                    logger.debug('Ignoring backend with ACTION={}'.format(params.get('ACTION')))
-    return res + ['']
+    backends = config.get('backends', {})
+
+    if backends.get('_common_haproxy_config', []) != []:
+        common_haproxy_config = backends['_common_haproxy_config']
+
+    for be in sorted(backends.keys()):
+        if be.startswith('_'):
+            continue
+
+        be_name = '{}_{}'.format(args.site_name, be)
+        if backwards_compat:
+            # for old-style config (which didn't allow for more than one set of backends)
+            # use the site name alone as backend name
+            be_name = args.site_name
+
+        res = ['backend {}'.format(be_name)]
+        if common_haproxy_config:
+            res += common_haproxy_config
+
+        these_backends = backends[be]
+        for addr in sorted(these_backends.keys()):
+            logger.info('Processing backend {} address {}: {}'.format(be_name, addr, these_backends[addr]))
+            haproxy_config_in = these_backends[addr].get('haproxy_config')
+            if not haproxy_config_in:
+                logger.warning('Backend {} address {} has no haproxy_config!'.format(be_name, addr))
+                continue
+            for this in files:
+                if this.endswith('_{}.conf'.format(addr)):
+                    if get_fileage(this) > args.max_age:
+                        logger.info('Ignoring file {} that is older than max_age ({})'.format(this, args.max_age))
+                        continue
+
+                    logger.debug('Found backend file {}'.format(this))
+                    # Check file age before using this file
+
+                    params = load_backend_file(this)
+                    if params.get('ACTION') == 'register':
+                        haproxy_config = haproxy_config_in
+                        # whitelist what we substitute for now
+                        for subst in ['BACKEND', 'SERVER', 'PORT', 'REMOTE_IP']:
+                            if subst in params:
+                                haproxy_config = haproxy_config.replace(subst, params[subst])
+                        if haproxy_config != haproxy_config_in:
+                            logger.debug('haproxy config after substitution: {}'.format(haproxy_config))
+                        res.append(haproxy_config)
+                    else:
+                        logger.debug('Ignoring backend with ACTION={}'.format(params.get('ACTION')))
+        all_res += res
+        all_res += ['']
+    return all_res
 
 def get_fileage(filename):
     st = os.stat(filename)

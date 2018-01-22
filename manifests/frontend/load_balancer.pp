@@ -28,6 +28,12 @@ class sunet::frontend::load_balancer(
       basedir  => $basedir,
       confdir  => $confdir,
     }
+    concat::fragment { "${name}_haproxy-pre-start_end":
+      target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
+      order    => '99',
+      content  => "exit 0\n",
+    }
+
     $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
       true  => $config['load_balancer']['exabgp_imagetag'],
       false => 'latest',
@@ -185,35 +191,11 @@ define load_balancer_website(
     }
   }
 
-  # Create backend directory for this website so that the sunetfrontend-api will
-  # accept register requests from the servers
-  file {
-    "${basedir}/api/backends/${name}":
-      ensure => 'directory',
-      group  => 'sunetfrontend',
-      mode   => '0770',
-      ;
-  }
-
-  # Allow the backend servers for this website to access the sunetfrontend-api
-  # to register themselves.
-  $backend_ips = keys($backends)
-  sunet::misc::ufw_allow { "allow_backends_to_api_${name}":
-    from => $backend_ips,
-    port => '8080',  # port of the sunetfronted-api
-  }
-
-  # 'export' config to a file usable by haproxy-config-update+haproxy-backend-config
-  # to create backend configuration
-  $export_data = {
-    'backend_haproxy_config' => $backend_haproxy_config,
-    'backends'               => $backends,
-  }
-  file { "${confdir}/${name}_backends.yml":
-    ensure  => 'file',
-    group   => 'sunetfrontend',
-    mode    => '0640',
-    content => inline_template("<%= @export_data.to_yaml %>\n"),
+  website_backends { $name :
+    backends               => $backends,
+    basedir                => $basedir,
+    confdir                => $confdir,
+    backend_haproxy_config => $backend_haproxy_config,
   }
 
   if $frontend_template != undef {
@@ -279,10 +261,58 @@ define load_balancer_website(
 
   if $letsencrypt_server != undef and $letsencrypt_server != $::fqdn {
     sunet::dehydrated::client_define { $name :
-      domain => $name,
-      server => $letsencrypt_server,
-      ssh_id => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
+      domain        => $name,
+      server        => $letsencrypt_server,
+      ssh_id        => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
       single_domain => false,
     }
+  }
+}
+
+define website_backends(
+  Hash   $backends,
+  String $basedir,
+  String $confdir,
+  Array  $backend_haproxy_config,
+) {
+  # Create backend directory for this website so that the sunetfrontend-api will
+  # accept register requests from the servers
+  file {
+    "${basedir}/api/backends/${name}":
+      ensure => 'directory',
+      group  => 'sunetfrontend',
+      mode   => '0770',
+      ;
+  }
+
+  # Allow the backend servers for this website to access the sunetfrontend-api
+  # to register themselves.
+  #
+  # OLD
+  sunet::misc::ufw_allow { "allow_backends_to_api_${name}":
+    from => keys($backends).filter |$k| { is_ipaddr($k) },
+    port => '8080',  # port of the sunetfronted-api
+  }
+  # NEW
+  each($backends) | $k, $v | {
+    if is_hash($v) {
+      sunet::misc::ufw_allow { "allow_backends_to_api_${name}_${k}":
+        from => keys($v).filter |$this| { is_ipaddr($this) },
+        port => '8080',  # port of the sunetfronted-api
+      }
+    }
+  }
+
+  # 'export' config to a file usable by haproxy-config-update+haproxy-backend-config
+  # to create backend configuration
+  $export_data = {
+    'backends'               => $backends,
+    'backend_haproxy_config' => $backend_haproxy_config,
+  }
+  file { "${confdir}/${name}_backends.yml":
+    ensure  => 'file',
+    group   => 'sunetfrontend',
+    mode    => '0640',
+    content => inline_template("<%= @export_data.to_yaml %>\n"),
   }
 }
