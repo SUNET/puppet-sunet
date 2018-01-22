@@ -7,6 +7,7 @@ define sunet::pyff(
    $pyffd_loglevel = "INFO",
    $acme_tool_uri = undef,
    $pound_and_varnish = true,
+   $volumes = [],
    $pipeline = "mdx.fd",
    $ip = undef) {
    $ip_addr = $ip ? {
@@ -41,7 +42,7 @@ define sunet::pyff(
    sunet::docker_run {"pyff-${sanitised_title}":
       image       => $image,
       imagetag    => $version,
-      volumes     => ["$dir:$dir"],
+      volumes     => flatten([$volumes,["$dir:$dir"]]),
       ports       => $pyff_ports,
       env         => ["DATADIR=$dir","EXTRA_ARGS=$pyffd_args","PIPELINE=$pipeline","LOGLEVEL=$pyffd_loglevel"]
    }
