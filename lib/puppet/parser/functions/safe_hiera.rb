@@ -8,12 +8,21 @@
 #
 module Puppet::Parser::Functions
   newfunction(:safe_hiera, :type => :rvalue) do |args|
-    #one, two = args
-    # if two.nil?
-    if args.size == 1
-      value = function_hiera([args[0], 'NOT_SET_IN_HIERA'])
+
+    # Puppet 3.7
+    if Facter.value(:puppetversion).start_with? '3.7.'
+      if args.size == 1
+        value = function_hiera([args[0], 'NOT_SET_IN_HIERA'])
+      else
+        value = function_hiera(args)
+      end
     else
-      value = function_hiera(args)
+      # Puppet >= 3.8 and Puppet 4.x
+      if args.size == 1
+        value = call_function('hiera', [args[0], 'NOT_SET_IN_HIERA'])
+      else
+        value = call_function('hiera', args)
+      end
     end
     warning("#{args[0]} not set in Hiera") if value == 'NOT_SET_IN_HIERA' or value == args[1]
     return value
