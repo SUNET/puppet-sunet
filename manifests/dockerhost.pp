@@ -54,14 +54,11 @@ class sunet::dockerhost(
     $architecture = undef
   }
 
-<<<<<<< HEAD
-=======
   # old source
   apt::source {'docker_official':
     ensure   => 'absent',
   }
 
->>>>>>> f4b3289ff127032c4e32ce5169ae42ee87e49169
   # new source
   apt::source {'docker_ce':
     location     => 'https://download.docker.com/linux/ubuntu',
