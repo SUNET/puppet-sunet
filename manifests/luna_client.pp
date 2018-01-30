@@ -4,7 +4,7 @@ define sunet::luna_client($hostname = undef) {
       default  => $hostname
    }
    $pin = hiera("luna_partition_password")
-   sunet::docker_run { "${name}_luna_client":
+   sunet::docker_run { "${name}-luna-client":
       image    => 'docker.sunet.se/luna-client',
       imagetag => 'latest',
       env      => ["PKCS11PIN=${pin}"],

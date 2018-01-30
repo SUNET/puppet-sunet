@@ -155,7 +155,7 @@ class sunet::gitlab {
         minute  => 0,
     }
 
-    sunet::docker_run { 'gitlab_postgres':
+    sunet::docker_run { 'gitlab-postgres':
         image    => 'postgres',
         imagetag => '9.2',
         volumes  => ['/var/opt/postgresql:/var/opt/postgresql'],
@@ -165,7 +165,7 @@ class sunet::gitlab {
                      "PGDATA=/var/opt/postgresql"]
     }
 
-    sunet::docker_run { 'gitlab_redis':
+    sunet::docker_run { 'gitlab-redis':
         image    => 'docker.sunet.se/eduid/redis',
         imagetag => 'latest',
         volumes  => ['/var/log/redis:/var/log/redis',
@@ -188,7 +188,7 @@ class sunet::gitlab {
     # that Nginx tries to reach it. Therefore we allow the Nginx
     # container to restart, and retry the upstream, up to 10 times
     # before failing and shutting down.
-    sunet::docker_run { 'gitlab_nginx':
+    sunet::docker_run { 'gitlab-nginx':
         image            => 'docker.sunet.se/eduid/nginx',
         imagetag         => 'latest',
         ports            => ['80:80', '443:443'],

@@ -38,7 +38,7 @@ services:
             - "389:389"
 
     comanage-registry:
-        image: comanage-registry:3.0.0-shibboleth-sp
+        image: docker.sunet.se/comanage-registry:3.0.0-shibboleth-sp
         depends_on:
             - comanage-registry-ldap
             - comanage-registry-database
@@ -49,8 +49,8 @@ services:
             - /var/run/apache2:/var/run/apache2
             - /dev/log:/dev/log:rw
             - /etc/shibboleth/shibboleth2.xml:/opt/shibboleth-sp/etc/shibboleth/shibboleth2.xml
-#            - /etc/passwd:/etc/passwd:ro
-#            - /etc/group:/etc/group:ro
+            - /etc/passwd:/etc/passwd:ro
+            - /etc/group:/etc/group:ro
         environment:
             - COMANAGE_REGISTRY_ADMIN_GIVEN_NAME=Einar
             - COMANAGE_REGISTRY_ADMIN_FAMILY_NAME=Lonn
@@ -68,6 +68,7 @@ services:
             - COMANAGE_REGISTRY_EMAIL_ACCOUNT_PASSWORD=<%= @comanage_email_password %>
             - COMANAGE_REGISTRY_SECURITY_SALT=<%= @comanage_security_salt %>
             - COMANAGE_REGISTRY_SECURITY_SEED=<%= @comanage_security_seed %>
+            - COMANAGE_REGISTRY_ENABLE_PLUGIN=IdentifierEnroller
             - SHIBBOLETH_SP_ENTITY_ID=https://comanage.sunet.se/shibboleth
             - SHIBBOLETH_SP_CERT=/run/secrets/shibboleth_sp_cert_file
             - SHIBBOLETH_SP_PRIVKEY=/run/secrets/shibboleth_sp_privkey_file
