@@ -120,7 +120,7 @@ def backend_config(args):
         if be.startswith('_'):
             continue
 
-        be_name = '{}_{}'.format(args.site_name, be)
+        be_name = '{}__{}'.format(args.site_name, be)
         if backwards_compat:
             # for old-style config (which didn't allow for more than one set of backends)
             # use the site name alone as backend name

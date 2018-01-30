@@ -15,7 +15,12 @@ TimeoutStopSec=30
 Restart=always
 RestartSec=10
 
+SyslogIdentifier=<%= @service_name %>
+
 WorkingDirectory=/
+
+# To make docker pull work with basic-auth credentials
+Environment="HOME=/root"
 
 ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> down
 ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> kill
