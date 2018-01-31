@@ -63,6 +63,17 @@ class sunet::dockerhost(
     architecture => $architecture,
   }
 
+  if $docker_version =~ /^\d.*/ {
+    # if it looks like a version number (as opposed to 'latest', 'installed', ...)
+    # then pin it so that automatic/manual dist-upgrades don't touch the docker package
+    apt::pin { 'docker-ce':
+      packages => $docker_package_name,
+      version  => $docker_version,
+      priority => 920,  # upgrade, but do not downgrade
+      notify   => Exec['dockerhost_apt_get_update'],
+    }
+  }
+
   exec { 'dockerhost_apt_get_update':
      command     => '/usr/bin/apt-get update',
      cwd         => '/tmp',
