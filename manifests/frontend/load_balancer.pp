@@ -241,9 +241,10 @@ define load_balancer_website(
 
   # Add the IP addresses to the list of addresses that will get added to the loopback
   # interface before haproxy starts
+  $instance = split('.', $name)  # XXX need better way than this, e.g. in case two sites starts with 'www'
   $ip_addr_add = ["# website ${name}",
-                  map($ipv4 + $ipv6) | $ip | { "ip addr add ${ip} dev lo" },
-                  "\n",
+                  map($ipv4 + $ipv6) | $ip | { "ip addr add ${ip} dev lo label lo:${instance}" },
+                  '',
                   ]
   concat::fragment { "${name}_haproxy-pre-start_${name}":
     target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
