@@ -26,7 +26,7 @@ define sunet::ssh_host_credential(
       owner     => "${username}",
       group     => "${group}"
    });
-   augeas {"ssh_config_set_host_identity":
+   augeas {"ssh_config_${hostname}":
       incl    => "${ssh_home}/config",
       lens    => 'Ssh.lns',
       changes => [
