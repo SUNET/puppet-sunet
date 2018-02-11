@@ -20,12 +20,12 @@ define sunet::ssh_host_credential(
       'root'    => '/root/.ssh',
       default   => "/home/${username}/.ssh"
    }
-   file { "${ssh_home}":
+   ensure_resource('file', $ssh_home, {
       ensure    => directory,
       mode      => '0700',
       owner     => "${username}",
       group     => "${group}"
-   } ->
+   });
    augeas {"ssh_config_set_host_identity":
       incl    => "${ssh_home}/config",
       lens    => 'Ssh.lns',
