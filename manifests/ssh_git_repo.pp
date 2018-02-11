@@ -33,7 +33,7 @@ define sunet::ssh_git_repo(
          "set /files${ssh_home}/config/Host ${hostname}",
          "set /files${ssh_home}/config/Host[.='${hostname}']/IdentityFile ${ssh_home}/${id}"
       ]
-   }
+   } ->
    sunet::ssh_keyscan::host {$hostname: } ->
    vcsrepo { "${name}":
       ensure    => $ensure,
