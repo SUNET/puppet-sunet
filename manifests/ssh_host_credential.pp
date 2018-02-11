@@ -37,7 +37,10 @@ define sunet::ssh_host_credential(
    sunet::ssh_keyscan::host {$hostname: }
    if ($ssh_privkey) {
       file { "${ssh_home}/${id}":
-         content => inline_template('<%= @ssh_privkey %>')
+         content => inline_template('<%= @ssh_privkey %>'),
+         mode    => '0400',
+         owner   => $username,
+         group   => $group
       }
    } elsif ($manage_key) {
       exec { "${title}-ssh-keygen":
