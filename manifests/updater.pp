@@ -3,7 +3,7 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
      mode    => '0755',
      owner   => 'root',
      group   => 'root',
-     content => @("END"/n)
+     content => @("END"/$n)
        #!/bin/bash
 
        export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
