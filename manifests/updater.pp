@@ -5,11 +5,14 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
      group   => 'root',
      content => @("END"/$n)
        #!/bin/bash
+       #
+       # Script created by Puppet (sunet::updater)
+       #
 
        export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 
-       if [[ "$1" == "--random-sleep" ]]; then
-           sleep $(( $RANDOM % 120))
+       if [[ "\$1" == "--random-sleep" ]]; then
+           sleep \$(( \$RANDOM % 120))
        fi
 
        apt-get -qq -y update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade
