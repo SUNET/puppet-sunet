@@ -31,10 +31,10 @@ define sunet::ssh_host_credential(
       context => "/files${ssh_home}/config",
       lens    => 'Ssh.lns',
       changes => [
-         "set Host/*[last()+1] ${hostname}",
-         "set Host/*[.='${hostname}']/IdentityFile ${ssh_home}/${id}"
+         "set Host[last()+1] ${hostname}",
+         "set Host[.='${hostname}']/IdentityFile ${ssh_home}/${id}"
       ],
-      onlyif  => "match Host/*[.='${hostname}'] size == 0"
+      onlyif  => "match Host[.='${hostname}'] size == 0"
    } ->
    sunet::ssh_keyscan::host {$hostname: }
    if ($ssh_privkey) {
