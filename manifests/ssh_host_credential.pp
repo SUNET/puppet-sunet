@@ -28,11 +28,13 @@ define sunet::ssh_host_credential(
    });
    augeas {"ssh_config_${hostname}":
       incl    => "${ssh_home}/config",
+      context => "/files${ssh_home}/config",
       lens    => 'Ssh.lns',
       changes => [
-         "set /files${ssh_home}/config/Host ${hostname}",
-         "set /files${ssh_home}/config/Host[.='${hostname}']/IdentityFile ${ssh_home}/${id}"
-      ]
+         "ins Host ${hostname}",
+         "set Host[.='${hostname}']/IdentityFile ${ssh_home}/${id}"
+      ],
+      onlyif  => "match Host[.='${hostname}'] size == 0"
    } ->
    sunet::ssh_keyscan::host {$hostname: }
    if ($ssh_privkey) {
