@@ -175,15 +175,16 @@ def check_site(site, group, status, params):
         site, group, params, group_backends))
     backends_up = []
     if group_backends:
-        backends_up = [x for x in group_backends.keys() if group_backends[x]  == 'UP']
+        backends_up = [x for x in group_backends.keys() if group_backends[x] == 'UP']
     logger.debug('Backends UP: {}'.format(backends_up))
     up = len(backends_up)
     min_up = params.get('min_up', 1)
     if up < int(min_up):
         logger.debug('Fewer than {} backends up ({})'.format(min_up, up))
-        no_check = [x for x in group_backends.keys() if group_backends[x]  == 'no check']
-        if len(no_check) == len(group_backends):
-            return ['NOCHECK site={}, group={}, backends_up={}'.format(site, group, up)]
+        if group_backends:
+            no_check = [x for x in group_backends.keys() if group_backends[x] == 'no check']
+            if len(no_check) == len(group_backends):
+                return ['NOCHECK site={}, group={}, backends_up={}'.format(site, group, up)]
         return ['DOWN    site={}, group={}, backends_up={}'.format(site, group, up)]
     return ['UP      site={}, group={}, backends_up={}'.format(site, group, up)]
 
