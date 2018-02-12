@@ -181,7 +181,6 @@ def check_site(site, group, status, params):
     min_up = params.get('min_up', 1)
     if up < int(min_up):
         logger.debug('Fewer than {} backends up ({})'.format(min_up, up))
-        no_check = []
         if group_backends:
             no_check = [x for x in group_backends.keys() if group_backends[x] == 'no check']
             if len(no_check) == len(group_backends):
