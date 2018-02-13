@@ -74,7 +74,7 @@ define sunet::wordpress (
          ensure => directory
        } ->
        cron { "${name}_mysql_dump":
-         command => "mysqldump -h ${name}-mysql.docker -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql.new && test -s /data/${name}/dump/${db_name}.sql.new && mv /data/${name}/dump/${db_name}.sql.new /data/${name}/dump/${db_name}.sql",
+         command => "mysqldump -h $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${name}_mysql) -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql.new && test -s /data/${name}/dump/${db_name}.sql.new && mv /data/${name}/dump/${db_name}.sql.new /data/${name}/dump/${db_name}.sql",
          user    => 'root',
          minute  => '*/5'
        }
