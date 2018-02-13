@@ -10,7 +10,6 @@ class sunet::ipam {
   $domain              = $::domain
   $root_nipap_password = safe_hiera('root_nipap_password',[])
 
-  ufw::allow {'allow_nagios_nipap': ip => 'any', from => '109.105.111.111', port => '1337'}
   ufw::allow {'allow_http': ip => 'any', port => '80'}
 
   $bind9_allow_servers.each |$server| {

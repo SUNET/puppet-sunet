@@ -157,7 +157,7 @@ class sunet::ni(
         content => template('sunet/ni/sunet.conf.erb'),
         }
     -> sunet::scriptherder::cronjob { 'run_clone_script':
-        cmd           => '/var/opt/norduni/norduni/src/scripts/clone.sh -r /var/opt/norduni/sunet-nistore/',
+        cmd           => '/var/opt/norduni/norduni/src/scripts/clone-gitonly.sh -r /var/opt/norduni/sunet-nistore/',
         user          => 'ni',
         minute        => '30',
         hour          => '6',
@@ -177,7 +177,7 @@ class sunet::ni(
 
   if $backup_server {
     sunet::scriptherder::cronjob { 'run_clone_script_ni2':
-      cmd           => '/var/opt/norduni/norduni/src/scripts/clone.sh -r /var/opt/norduni/sunet-nistore/',
+      cmd           => '/var/opt/norduni/norduni/src/scripts/clone-gitonly.sh -r /var/opt/norduni/sunet-nistore/',
       user          => 'ni',
       minute        => '30',
       hour          => '6',
