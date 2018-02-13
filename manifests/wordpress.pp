@@ -86,7 +86,7 @@ define sunet::wordpress (
        owner  => 'root',
        group  => 'root',
        mode   => '0700',
-       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h ${name}-mysql.docker -u ${db_user} -p${pwd} ${db_name}")
+       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${name}_mysql) -u ${db_user} -p${pwd} ${db_name}")
      }
    }
 }
