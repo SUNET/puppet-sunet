@@ -9,6 +9,7 @@ define sunet::cloudimage (
   String           $memory      = '1024',
   String           $cpus        = '1',
   Optional[Array]  $resolver    = undef,
+  Array[String]    $search      = [],
   Optional[String] $ip          = undef,
   Optional[String] $netmask     = undef,
   Optional[String] $gateway     = undef,
