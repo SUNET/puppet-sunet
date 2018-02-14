@@ -45,6 +45,14 @@ define sunet::wordpress (
                        "WORDPRESS_DB_PASSWORD=${pwd}" ]
    }
 
+   file { '/usr/local/bin/get_container_ip':
+      ensure  => file,
+      mode    => '0750',
+      owner   => 'root',
+      group   => 'root',
+      path    => '/usr/local/bin/get_container_ip',
+      content => template('sunet/dockerhost/get_container_ip.erb'),
+   }
    if (!$db_host) {
       file {"/data/${name}/db": ensure => directory }
       group { 'mysql': ensure => 'present', system => true } ->
@@ -65,7 +73,7 @@ define sunet::wordpress (
          changes => [
             "set USERNAME ${db_user}",
             "set PASSWORD ${pwd}",
-            "set DBHOST ${db_hostname}",
+            "set DBHOST '`/usr/local/bin/get_container_ip ${name}_mysql`'",
             "set DBNAMES ${db_name}"
          ]
       }
@@ -74,7 +82,7 @@ define sunet::wordpress (
          ensure => directory
        } ->
        cron { "${name}_mysql_dump":
-         command => "mysqldump -h $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${name}_mysql) -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql.new && test -s /data/${name}/dump/${db_name}.sql.new && mv /data/${name}/dump/${db_name}.sql.new /data/${name}/dump/${db_name}.sql",
+         command => "mysqldump -h $(/usr/local/bin/get_container_ip ${name}_mysql) -u ${db_user} -p${pwd} ${db_name} > /data/${name}/dump/${db_name}.sql.new && test -s /data/${name}/dump/${db_name}.sql.new && mv /data/${name}/dump/${db_name}.sql.new /data/${name}/dump/${db_name}.sql",
          user    => 'root',
          minute  => '*/5'
        }
@@ -86,7 +94,7 @@ define sunet::wordpress (
        owner  => 'root',
        group  => 'root',
        mode   => '0700',
-       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h $(docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${name}_mysql) -u ${db_user} -p${pwd} ${db_name}")
+       content => inline_template("#!/bin/bash\nsed 's/$1/$2/g' | mysql -h $(/usr/local/bin/get_container_ip ${name}_mysql) -u ${db_user} -p${pwd} ${db_name}")
      }
    }
 }
