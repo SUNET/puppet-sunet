@@ -26,6 +26,7 @@ define sunet::cloudimage (
   String           $pool_name   = 'default',
   String           $local_size  = '0',
   String           $rng         = '/dev/random',
+  Boolean          $disable_ec2 = false,  # set to true to disable fetching of metadata from 169.254.169.254
 )
 {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
