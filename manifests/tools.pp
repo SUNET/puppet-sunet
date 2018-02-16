@@ -10,11 +10,11 @@ class sunet::tools {
                    'strace',
                    'lsof',
                    ]
-  $ubuntu_tools = $::operatingsystem == 'Ubuntu' ? {
-    true => ['update-manager-core',
-             'unattended-upgrades',
-             ],
+  $extra_tools = $::operatingsystem ? {
+    'Ubuntu' => ['update-manager-core',
+                 'unattended-upgrades',
+                 ],
     false => []
   }
-  ensure_resource(package, flatten([$debian_tools, $ubuntu_tools]), {ensure => 'installed'})
+  ensure_resource(package, flatten([$debian_tools, $extra_tools]), {ensure => 'installed'})
 }
