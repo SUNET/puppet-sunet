@@ -14,7 +14,7 @@ class sunet::tools {
     'Ubuntu' => ['update-manager-core',
                  'unattended-upgrades',
                  ],
-    false => []
+    default => []
   }
   ensure_resource(package, flatten([$debian_tools, $extra_tools]), {ensure => 'installed'})
 }
