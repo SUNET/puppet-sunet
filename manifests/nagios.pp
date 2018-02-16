@@ -18,6 +18,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        require => Package[$nrpe_service],
    }
    concat {"/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg":
+       target  => "/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg",
        owner   => root,
        group   => root,
        mode    => '0644',
