@@ -62,8 +62,9 @@ class sunet::dehydrated(
       ;
   }
   exec { 'dehydrated-runonce':
-    # Run dehydrated once every time domains.txt changes
-    command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh',
+    # Run dehydrated once every time domains.txt changes; UPDATE 2018-02, since we're using the wrapper now Nagios stuff will break if we run the old command
+    # command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh',
+    command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh',
     refreshonly => true
   }
 
