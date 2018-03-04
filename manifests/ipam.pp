@@ -9,6 +9,9 @@ class sunet::ipam {
   $template_directory  = 'sunet/ipam'
   $domain              = $::domain
   $root_nipap_password = safe_hiera('root_nipap_password',[])
+  $dns_nipap_password  = safe_hiera('dns_nipap_password',[])
+  $name_servers        = ['ns1.sunet.se.', 'hostmaster.sunet.se.']
+  $alt_name_servers    = ['sunic.sunet.se', 'server.nordu.net.']
 
   ufw::allow {'allow_http': ip => 'any', port => '80'}
 
@@ -97,6 +100,10 @@ class sunet::ipam {
       command => "nipap-passwd add --username root --password ${root_nipap_password} --name 'local root user'",
       unless  => '/usr/sbin/nipap-passwd list | grep root',
       }
+  -> exec {'create_dns_user':
+      command => "nipap-passwd add --username dnsexporter --password ${dns_nipap_password} --name 'DNS user'",
+      unless  => '/usr/sbin/nipap-passwd list | grep dnsexporter',
+      }
   -> file {'/etc/nipap/nipap.conf':
       ensure  => file,
       mode    => '0644',
@@ -109,6 +116,13 @@ class sunet::ipam {
       group   => 'root',
       mode    => '0600',
       content => template("${template_directory}/.nipaprc.erb")
+      }
+  -> file { '/etc/bind/nipaprc':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'bind',
+      mode    => '0644',
+      content => template("${template_directory}/nipaprc_dns.erb")
       }
   -> file {'/etc/apache2/sites-available/nipap-default.conf':
       ensure  => file,
@@ -153,4 +167,43 @@ class sunet::ipam {
       ensure => 'present',
       match  => 'DBNAMES="all"',
      }
+  -> vcsrepo {'/root/pytter/':
+      ensure   => present,
+      provider => git,
+      source   => 'https://github.com/Eising/pytter.git',
+      }
+  -> exec { 'copy_pytter.py':
+      command => 'cp /root/pytter/pytter.py /usr/local/lib/python2.7/site-packages/',
+      unless  => 'test -f /usr/local/lib/python2.7/site-packages/pytter.py',
+    }
+  -> file { '/etc/bind/named.conf.zones':
+      ensure  => file,
+      content => template("${template_directory}/named.conf.zones.erb"),
+      }
+  -> file_line { 'include_named.conf.zones':
+      ensure => 'present',
+      line   => 'include "/etc/bind/named.conf.zones";',
+      path   => '/etc/bind/named.conf',
+      notify => Exec['reload_rndc'],
+      }
+  -> file { '/etc/bind/named.conf.options':
+      ensure  => file,
+      content => template("${template_directory}/named.conf.options.erb"),
+      notify => Exec['reload_rndc'],
+      }
+  -> exec {'reload_rndc':
+      command     => 'rndc reload',
+      subscribe   => File['/etc/bind/named.conf.zones'], 
+      refreshonly => true,
+      }
+  -> file { '/usr/local/sbin/nipap2bind':
+      ensure  => file,
+      content => template("${template_directory}/nipap2bind.erb"),
+      }
+  -> sunet::scriptherder::cronjob { 'generate_reverse_zones':
+      cmd           => '/usr/local/sbin/nipap2bind',
+      minute        => '*/15',
+      ok_criteria   => ['exit_status=0', 'max_age=35m'],
+      warn_criteria => ['exit_status=0', 'max_age=1h'],
+      }
 }
