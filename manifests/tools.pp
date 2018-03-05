@@ -1,6 +1,20 @@
-# This manifest is managed using cosmos
-
+# Install baseline of tools
 class sunet::tools {
-   $tools = ["vim","traceroute","tcpdump","molly-guard","less","rsync","screen","strace","lsof","update-manager-core","unattended-upgrades"]
-   ensure_resource(package, $tools, {ensure => 'installed'})
+  $debian_tools = ['vim',
+                   'traceroute',
+                   'tcpdump',
+                   'molly-guard',
+                   'less',
+                   'rsync',
+                   'screen',
+                   'strace',
+                   'lsof',
+                   ]
+  $extra_tools = $::operatingsystem ? {
+    'Ubuntu' => ['update-manager-core',
+                 'unattended-upgrades',
+                 ],
+    default => []
+  }
+  ensure_resource(package, flatten([$debian_tools, $extra_tools]), {ensure => 'installed'})
 }

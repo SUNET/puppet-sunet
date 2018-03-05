@@ -1,13 +1,6 @@
 ---
-# Docs: None :(
-#
-# https://gist.github.com/Informatic/0b6b24374b54d09c77b9d25595cdbd47
-#
-# The contents of this file are parsed by
-#
-#  /usr/lib/python3/dist-packages/cloudinit/net/sysconfig.py
-#
-# May the source be with you.
+# Docs: http://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v1.html#network-config-v1
+#       http://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v2.html#network-config-v2
 #
 version: 1
 config:
@@ -36,5 +29,8 @@ config:
  - type: nameserver
    address:
 <% @resolver.each do |addr| %>    - <%= addr %>
+<% if @search -%>
+   search: @search
+<% end %>
 <% end %>
 <%end %>

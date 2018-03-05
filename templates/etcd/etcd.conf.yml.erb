@@ -68,7 +68,20 @@ initial-cluster: <%= @initial_cluster.join(',') %>
 initial-cluster-token: 'etcd-cluster'
 
 # Initial cluster state ('new' or 'existing').
-initial-cluster-state: 'new'
+#
+# SUNET: Set this manually to 'new' and start the etcd service once if bootstrapping
+# a new cluster. An idea is to set this to 'new' if the data-directory does not exist.
+#
+# To re-add a node to an existing cluster after reinstall, perform these steps on one
+# of the other cluster members:
+#
+#   $ etcdctl -3 member list
+#   $ etcdctl -3 member remove <hex-id-of-reinstalled-member>
+#   $ etcdctl -3 member add hostname-of-reinstalled-member \
+#             --peer-urls=https://fqdn-of-reinstalled-member:2380 \
+#             --endpoints=https://fqdn-of-reinstalled-member:2379
+#
+initial-cluster-state: 'existing'
 
 # Reject reconfiguration requests that would cause quorum loss.
 strict-reconfig-check: false

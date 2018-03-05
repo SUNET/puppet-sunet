@@ -1,20 +1,22 @@
-define sunet::pollinate($device = "/dev/random") {
-   if ($::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '12.04') {
+define sunet::pollinate($device = '/dev/random') {
+  if ($::operatingsystem == 'Ubuntu') {
+    if ($::operatingsystemrelease == '12.04') {
       apt::ppa {'ppa:ndn/pollen': }
-   } else {
+    } else {
       apt::ppa {'ppa:ndn/pollen': ensure => absent }
-   }
-   package {"pollinate": ensure => latest } ->
-   file { "/etc/default/pollinate": 
+    }
+    package {'pollinate': ensure => installed }
+    file { '/etc/default/pollinate':
       ensure => file,
       owner  => root,
       group  => root,
-      content => template("sunet/pollen/pollinate.erb")
-   } ->
-   cron {"repollinate": 
-      command => "pollinate -r",
+      content => template('sunet/pollen/pollinate.erb')
+    }
+    cron {'repollinate':
+      command => 'pollinate -r',
       user    => root,
-      hour    => "*",
-      minute  => "0"
-   }
+      hour    => '*',
+      minute  => '0'
+    }
+  }
 }

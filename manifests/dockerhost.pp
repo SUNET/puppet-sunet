@@ -2,6 +2,7 @@
 class sunet::dockerhost(
   $docker_version,
   $docker_package_name       = 'docker-ce',  # facilitate transition to new docker-ce package
+  Enum['stable', 'edge'] $docker_repo = 'stable',
   $storage_driver            = undef,
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
@@ -63,7 +64,7 @@ class sunet::dockerhost(
   apt::source {'docker_ce':
     location     => 'https://download.docker.com/linux/ubuntu',
     release      => $::lsbdistcodename,
-    repos        => 'edge',
+    repos        => $docker_repo,
     key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
     architecture => $architecture,
   }

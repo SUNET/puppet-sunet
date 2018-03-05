@@ -173,7 +173,7 @@ def _collect_compose_service(compose_file, service_name, logger):
     res = []
     with open(compose_file) as fd:
         data = yaml.load(fd)
-        if data.get('version') not in ['2', '2.1']:
+        if data.get('version') not in ['2', '2.1', '3']:
             logger.debug('Skipping {!s}, unknown version'.format(compose_file))
             return []
         for service in data.get('services', []):
