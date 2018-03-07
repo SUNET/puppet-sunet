@@ -5,7 +5,10 @@ define sunet::frontend::load_balancer::website(
   Hash   $config
 ) {
   # Parameters used in frontend/docker-compose_template.erb
-  $instance = $name
+  $instance = has_key($config, 'instance') ? {
+    true => $config['instance'],
+    false => $name,
+  }
 
   # 'export' config to a file
   file {
