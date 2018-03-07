@@ -130,7 +130,7 @@ define configure_websites_old($websites, $basedir, $confdir)
 define configure_websites($websites, $basedir, $confdir)
 {
   each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website', $site, {
+    create_resources('sunet::frontend::load_balancer::website', {$site => {}}, {
       'basedir' => $basedir,
       'confdir' => $confdir,
       'config' => $config,
