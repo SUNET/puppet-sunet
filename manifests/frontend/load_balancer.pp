@@ -23,10 +23,19 @@ class sunet::frontend::load_balancer(
 
     sunet::exabgp::config { 'exabgp_config': }
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
-    configure_websites { 'websites':
-      websites => $config['load_balancer']['websites'],
-      basedir  => $basedir,
-      confdir  => $confdir,
+    if has_key($config['load_balancer'], 'websites_old') {
+      configure_websites_old { 'websites_old':
+        websites => $config['load_balancer']['websites_old'],
+        basedir  => $basedir,
+        confdir  => $confdir,
+      }
+    }
+    if has_key($config['load_balancer'], 'websites') {
+      configure_websites { 'websites':
+        websites => $config['load_balancer']['websites'],
+        basedir  => $basedir,
+        confdir  => $confdir,
+      }
     }
     concat::fragment { "${name}_haproxy-pre-start_end":
       target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
@@ -110,10 +119,21 @@ define configure_peers($router_id, $peers)
   create_resources('sunet::frontend::load_balancer::peer', $peers, $defaults)
 }
 
-define configure_websites($websites, $basedir, $confdir)
+define configure_websites_old($websites, $basedir, $confdir)
 {
-  create_resources('sunet::frontend::load_balancer::website', $websites, {
+  create_resources('sunet::frontend::load_balancer::website_old', $websites, {
     'basedir' => $basedir,
     'confdir' => $confdir,
     })
+}
+
+define configure_websites($websites, $basedir, $confdir)
+{
+  each($websites) | $site, $config | {
+    create_resources('sunet::frontend::load_balancer::website', $site, {
+      'basedir' => $basedir,
+      'confdir' => $confdir,
+      'config' => $config,
+      })
+  }
 }
