@@ -1,10 +1,11 @@
 # Wrapper for garethr-docker docker_compose to do SUNET specific things
 define sunet::docker_compose(
-  String $content,
-  String $compose_dir,
-  String $description,
-  String $service_name,
-  String $service_prefix = 'sunet',
+  String        $content,
+  String        $compose_dir,
+  String        $description,
+  String        $service_name,
+  String        $service_prefix = 'sunet',
+  Array[String] $service_extras = [],
 ) {
   $compose_file = "${compose_dir}/${service_name}/${service_name}.yml"
 
@@ -22,8 +23,9 @@ define sunet::docker_compose(
   })
 
   sunet::docker_compose_service { "${service_prefix}-${service_name}":
-    compose_file => $compose_file,
-    description  => $description,
-    require      => File[$compose_file],
+    compose_file   => $compose_file,
+    description    => $description,
+    require        => File[$compose_file],
+    service_extras => $service_extras,
   }
 }
