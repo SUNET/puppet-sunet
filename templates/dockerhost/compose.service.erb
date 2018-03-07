@@ -34,5 +34,12 @@ ExecStop=/usr/local/bin/docker-compose -f <%= @compose_file %> stop
 
 NotifyAccess=all
 
+<% if @service_extras.is_a? Array -%>
+# service_extras :
+<% @service_extras.each do |this| -%>
+<%= this %>
+<% end -%>
+
+
 [Install]
 WantedBy=multi-user.target
