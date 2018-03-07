@@ -31,6 +31,6 @@ define sunet::frontend::load_balancer::website(
     service_name   => $instance,
     compose_dir    => "${confdir}/${name}/compose",
     description    => "SUNET frontend setup for ${instance}",
-    service_extras => ["ExecStartPost=-${basedir}/scripts/container-network-config --site ${name}"],
+    service_extras => ["ExecStartPost=-${basedir}/scripts/container-network-config ${name}"],
   }
 }
