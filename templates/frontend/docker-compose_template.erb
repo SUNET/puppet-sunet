@@ -26,7 +26,7 @@ services:
   always-https:
     image: docker.sunet.se/always-https
     ports:
-      - 80:80
+      - 8080:80
     environment:
       - 'ACME_URL=http://<%= @port80_acme_c_backend %>'
 
