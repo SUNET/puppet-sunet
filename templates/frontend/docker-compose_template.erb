@@ -1,0 +1,37 @@
+---
+version: '3'
+
+services:
+
+#  haproxy:
+#    image: <%= @haproxy_image %>:<%= @haproxy_imagetag %>
+#    restart: always
+#    networks:
+#      - <%= @instance %>_default
+#    volumes:
+#      - '<%= @basedir %>/etc:/etc/haproxy:ro'
+#      - '<%= @basedir %>/run:/var/run/haproxy'
+#      - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
+#      - '/etc/dehydrated:/etc/dehydrated:ro'  # XXX reduce to only necessary set of files later
+#      - '/dev/log:/dev/log'
+#    links:
+#      - varnish
+
+#  varnish:
+#    image: <%= @varnish_image %>:<%= @varnish_imagetag %>
+#    ports:
+#      - 1080:80
+
+  # Redirect http traffic to https or acme-c
+  always-https:
+    image: docker.sunet.se/always-https
+    ports:
+      - 80:80
+    environment:
+      - 'ACME_URL=http://<%= @port80_acme_c_backend %>'
+
+# Provide user-friendly name of bridge interface
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-<%= @instance %>
