@@ -7,11 +7,11 @@ services:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     restart: always
     volumes:
+      - '/dev/log:/dev/log'
 #      - '<%= @basedir %>/etc:/etc/haproxy:ro'
 #      - '<%= @basedir %>/run:/var/run/haproxy'
-#      - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
 #      - '/etc/dehydrated:/etc/dehydrated:ro'  # XXX reduce to only necessary set of files later
-      - '/dev/log:/dev/log'
+      - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
       - 'haproxy_data:/etc/haproxy'
 #    links:
 #      - varnish
