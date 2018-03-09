@@ -28,6 +28,7 @@ services:
     restart: always
     volumes:
       - /opt/frontend/scripts:/opt/frontend/scripts:ro
+      - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @site_name %>:/opt/frontend/config/<%= @site_name %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
       - haproxy_data:/etc/haproxy
