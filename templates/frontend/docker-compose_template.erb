@@ -3,32 +3,36 @@ version: '3'
 
 services:
 
-#  haproxy:
-#    image: <%= @haproxy_image %>:<%= @haproxy_imagetag %>
-#    restart: always
-#    networks:
-#      - <%= @instance %>_default
-#    volumes:
+  haproxy:
+    image: <%= @haproxy_image %>:<%= @haproxy_imagetag %>
+    restart: always
+    volumes:
 #      - '<%= @basedir %>/etc:/etc/haproxy:ro'
 #      - '<%= @basedir %>/run:/var/run/haproxy'
 #      - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
 #      - '/etc/dehydrated:/etc/dehydrated:ro'  # XXX reduce to only necessary set of files later
-#      - '/dev/log:/dev/log'
+      - '/dev/log:/dev/log'
+      - 'haproxy_data:/etc/haproxy'
 #    links:
 #      - varnish
+     depends_on:
+       - config
 
 #  varnish:
 #    image: <%= @varnish_image %>:<%= @varnish_imagetag %>
 #    ports:
 #      - 1080:80
 
-  # Redirect http traffic to https or acme-c
-  always-https:
-    image: docker.sunet.se/always-https
-    ports:
-      - 7080:80
-    environment:
-      - 'ACME_URL=http://<%= @port80_acme_c_backend %>'
+  config:
+    image: docker.sunet.se/frontend/frontend-tools:latest
+    restart: always
+    volumes:
+      - /opt/frontend/scripts:/opt/frontend/scripts:ro
+      - haproxy_data:/etc/haproxy
+    command: /opt/frontend/scripts/generate-haproxy-config --site <%= @site_name %>
+
+volumes:
+  haproxy_data:
 
 # Provide user-friendly name of bridge interface
 networks:
