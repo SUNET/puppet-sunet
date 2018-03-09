@@ -35,7 +35,7 @@ define sunet::frontend::load_balancer::website(
     if $snakeoil and $tls_certificate_bundle == $snakeoil {
       notice("Using snakeoil certificate for site ${name}")
     }
-    $config2 = merge($config, {'tls_certificate_bundle': $tls_certificate_bundle})
+    $config2 = merge($config, {'tls_certificate_bundle' => $tls_certificate_bundle})
   } else {
     $config2 = $config
   }
