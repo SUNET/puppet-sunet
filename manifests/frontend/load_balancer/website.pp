@@ -4,7 +4,7 @@ define sunet::frontend::load_balancer::website(
   String $confdir,
   Hash   $config
 ) {
-  if ! has_key('tls_certificate_bundle', $config) {
+  if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
     if has_key($tls_certificates, 'snakeoil') {
       $snakeoil = $tls_certificates['snakeoil']['bundle']
