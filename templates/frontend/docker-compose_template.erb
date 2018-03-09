@@ -4,7 +4,7 @@ version: '3'
 services:
 
   haproxy:
-    image: <%= @haproxy_image %>:<%= @haproxy_imagetag %>
+    image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     restart: always
     volumes:
 #      - '<%= @basedir %>/etc:/etc/haproxy:ro'
@@ -15,8 +15,8 @@ services:
       - 'haproxy_data:/etc/haproxy'
 #    links:
 #      - varnish
-     depends_on:
-       - config
+    depends_on:
+      - config
 
 #  varnish:
 #    image: <%= @varnish_image %>:<%= @varnish_imagetag %>
@@ -24,7 +24,7 @@ services:
 #      - 1080:80
 
   config:
-    image: docker.sunet.se/frontend/frontend-tools:latest
+    image: 'docker.sunet.se/frontend/frontend-tools:latest'
     restart: always
     volumes:
       - /opt/frontend/scripts:/opt/frontend/scripts:ro
