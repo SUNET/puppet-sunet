@@ -24,6 +24,8 @@ define sunet::frontend::load_balancer::website(
     true => $config['instance'],
     false => $name,
   }
+  $haproxy_image = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
+  $haproxy_imagetag = pick($config['haproxy_imagetag'], 'stable')
 
   sunet::docker_compose { "frontend-${instance}":
     content        => template('sunet/frontend/docker-compose_template.erb'),
