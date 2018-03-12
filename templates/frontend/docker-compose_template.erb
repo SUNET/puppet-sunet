@@ -17,7 +17,7 @@ services:
 #      - varnish
     depends_on:
       - config
-    env:
+    environment:
       - 'WAIT_FOR_INTERFACE=sarimner0'
     command: /autoreload.sh
 
