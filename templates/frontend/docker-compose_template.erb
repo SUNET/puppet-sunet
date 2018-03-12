@@ -13,18 +13,21 @@ services:
       - '/etc/dehydrated:/etc/dehydrated:ro'  # XXX reduce to only necessary set of files later
       - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
       - 'haproxy_data:/etc/haproxy'
-#    links:
-#      - varnish
+    links:
+      - varnish
     depends_on:
       - config
     environment:
       - 'WAIT_FOR_INTERFACE=sarimner0'
     command: /autoreload.sh
 
-#  varnish:
-#    image: <%= @varnish_image %>:<%= @varnish_imagetag %>
-#    ports:
-#      - 1080:80
+  varnish:
+    image: <%= @varnish_image %>:<%= @varnish_imagetag %>docker.thulin.net/other/varnish:latest
+    ports:
+      - 1080:80
+    volumes:
+      - /opt/frontend/config/<%= @site_name %>/default.vcl:/etc/varnish/default.vcl:ro
+    command: varnishd -F -f /etc/varnish/default.vcl -s malloc,100M -a 127.0.0.1:1080
 
   config:
     image: 'docker.sunet.se/frontend/frontend-tools:latest'
