@@ -13,8 +13,6 @@ services:
       - '/etc/dehydrated:/etc/dehydrated:ro'  # XXX reduce to only necessary set of files later
       - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
       - 'haproxy_data:/etc/haproxy'
-    links:
-      - varnish
     depends_on:
       - config
     environment:
