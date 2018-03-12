@@ -22,7 +22,7 @@ services:
     command: /autoreload.sh
 
   varnish:
-    image: <%= @varnish_image %>:<%= @varnish_imagetag %>docker.thulin.net/other/varnish:latest
+    image: <%= @varnish_image %>:<%= @varnish_imagetag %>
     ports:
       - 1080:80
     volumes:
