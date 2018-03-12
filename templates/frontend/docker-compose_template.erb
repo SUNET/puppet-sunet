@@ -17,6 +17,7 @@ services:
 #      - varnish
     depends_on:
       - config
+    command: /autoreload.sh
 
 #  varnish:
 #    image: <%= @varnish_image %>:<%= @varnish_imagetag %>
