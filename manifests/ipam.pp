@@ -200,8 +200,14 @@ class sunet::ipam {
       ensure  => file,
       content => template("${template_directory}/nipap2bind.erb"),
       }
+  -> file { '/etc/bind/generated/commit.sh':
+      ensure  => file,
+      mode    => '0755',
+      group   => 'bind',
+      content => template("${template_directory}/commit.sh.erb"),
+      }
   -> sunet::scriptherder::cronjob { 'generate_reverse_zones':
-      cmd           => '/usr/local/sbin/nipap2bind',
+      cmd           => '/usr/local/sbin/nipap2bind && /etc/bind/generated/commit.sh',
       minute        => '*/15',
       ok_criteria   => ['exit_status=0', 'max_age=35m'],
       warn_criteria => ['exit_status=0', 'max_age=1h'],
