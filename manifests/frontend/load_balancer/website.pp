@@ -4,26 +4,29 @@ define sunet::frontend::load_balancer::website(
   String $confdir,
   Hash   $config
 ) {
+  $instance  = $name
+  $site_name = pick($config['site_name'], $instance)
+
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
     if has_key($tls_certificates, 'snakeoil') {
       $snakeoil = $tls_certificates['snakeoil']['bundle']
     }
-    if has_key($tls_certificates, $name) {
+    if has_key($tls_certificates, $site_name) {
       # Site name found in tls_certificates - good start
       $_tls_certificate_bundle = pick(
-        $tls_certificates[$name]['haproxy'],
-        $tls_certificates[$name]['certkey'],
-        $tls_certificates[$name]['infra_certkey'],
-        $tls_certificates[$name]['bundle'],
-        $tls_certificates[$name]['dehydrated_bundle'],
+        $tls_certificates[$site_name]['haproxy'],
+        $tls_certificates[$site_name]['certkey'],
+        $tls_certificates[$site_name]['infra_certkey'],
+        $tls_certificates[$site_name]['bundle'],
+        $tls_certificates[$site_name]['dehydrated_bundle'],
         'NOMATCH',
       )
       if $_tls_certificate_bundle != 'NOMATCH' {
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
-        $_site_certs = $tls_certificates[$name]
-        notice("None of the certificates for site ${name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): $_site_certs")
+        $_site_certs = $tls_certificates[$site_name]
+        notice("None of the certificates for site ${site_name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): $_site_certs")
         if $snakeoil {
           $tls_certificate_bundle = $snakeoil
         }
@@ -42,12 +45,12 @@ define sunet::frontend::load_balancer::website(
 
   # 'export' config to one YAML file per instance
   file {
-    "${confdir}/${name}":
+    "${confdir}/${instance}":
       ensure  => 'directory',
       group   => 'sunetfrontend',
       mode    => '0750',
       ;
-    "${confdir}/${name}/config.yml":
+    "${confdir}/${instance}/config.yml":
       ensure  => 'file',
       group   => 'sunetfrontend',
       mode    => '0640',
@@ -56,8 +59,6 @@ define sunet::frontend::load_balancer::website(
   }
 
   # Parameters used in frontend/docker-compose_template.erb
-  $site_name        = $name
-  $instance         = pick($config['instance'], $site_name)
   $haproxy_image    = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag = pick($config['haproxy_imagetag'], 'stable')
   $varnish_image    = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
@@ -68,7 +69,7 @@ define sunet::frontend::load_balancer::website(
     service_prefix => 'frontend',
     service_name   => $instance,
     compose_dir    => "${confdir}/${name}/compose",
-    description    => "SUNET frontend instance ${instance} (site ${name})",
+    description    => "SUNET frontend instance ${instance} (site ${site_name})",
     service_extras => ["ExecStartPost=-${basedir}/scripts/container-network-config ${name}"],
   }
 }
