@@ -24,15 +24,25 @@ class sunet::frontend::load_balancer(
     sunet::exabgp::config { 'exabgp_config': }
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
     if has_key($config['load_balancer'], 'websites_old') {
-      configure_websites_old { 'websites_old':
-        websites => $config['load_balancer']['websites_old'],
+      sunet::frontend::haproxy { 'load-balancer':
+        basedir               => "${basedir}/haproxy",
+        confdir               => $confdir,
+        apidir                => $apidir,
+        haproxy_image         => $config['load_balancer']['haproxy_image'],
+        haproxy_imagetag      => $config['load_balancer']['haproxy_imagetag'],
+        port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
+        static_backends       => $config['load_balancer']['static_backends'],
+      }
+
+    configure_websites_old { 'websites_old':
+        websites => $config['load_balancer']['websites'],
         basedir  => $basedir,
         confdir  => $confdir,
       }
     }
-    if has_key($config['load_balancer'], 'websites') {
+    if has_key($config['load_balancer'], 'websites2') {
       configure_websites { 'websites':
-        websites => $config['load_balancer']['websites'],
+        websites => $config['load_balancer']['websites2'],
         basedir  => $basedir,
         confdir  => $confdir,
       }
@@ -53,22 +63,10 @@ class sunet::frontend::load_balancer(
                          ],
       version        => $exabgp_imagetag,
     }
-    sunet::frontend::haproxy { 'load-balancer':
-      basedir               => "${basedir}/haproxy",
-      confdir               => $confdir,
-      apidir                => $apidir,
-      haproxy_image         => $config['load_balancer']['haproxy_image'],
-      haproxy_imagetag      => $config['load_balancer']['haproxy_imagetag'],
-      port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
-      static_backends       => $config['load_balancer']['static_backends'],
-    }
-    $api_imagetag = has_key($config['load_balancer'], 'api_imagetag') ? {
-      true  => $config['load_balancer']['api_imagetag'],
-      false => 'latest',
-    }
+
     sunet::frontend::api { 'sunetfrontend':
       basedir    => $apidir,
-      docker_tag => $api_imagetag,
+      docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
     }
     sysctl_ip_nonlocal_bind { 'load_balancer': }
 
@@ -133,7 +131,7 @@ define configure_websites($websites, $basedir, $confdir)
     create_resources('sunet::frontend::load_balancer::website', {$site => {}}, {
       'basedir' => $basedir,
       'confdir' => $confdir,
-      'config' => $config,
+      'config'  => $config,
       })
   }
 }
