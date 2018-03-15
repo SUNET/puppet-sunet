@@ -39,7 +39,7 @@ services:
       - /opt/frontend/config/<%= @site_name %>:/opt/frontend/config/<%= @site_name %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
       - haproxy_data:/etc/haproxy
-    command: /opt/frontend/scripts/generate-haproxy-config --site <%= @site_name %> --haproxy_template /opt/frontend/config/<%= @site_name %>/haproxy.j2
+    command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template /opt/frontend/config/<%= @site_name %>/haproxy.j2
 
 volumes:
   haproxy_data:
