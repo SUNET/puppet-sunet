@@ -24,7 +24,7 @@ services:
     expose:
       - 1080
     volumes:
-      - /opt/frontend/config/<%= @site_name %>/default.vcl:/etc/varnish/default.vcl:ro
+      - /opt/frontend/config/common/default.vcl:/etc/varnish/default.vcl:ro
     command: varnishd -F -f /etc/varnish/default.vcl -s malloc,100M -a 0.0.0.0:1080
     restart: always
     depends_on:
