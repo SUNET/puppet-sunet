@@ -1,6 +1,7 @@
 #!/bin/sh
 
-STATUS=`<%= @scriptdir %>/haproxy-status --syslog 'site=<%= @site %>'`
+#STATUS=`<%= @scriptdir %>/haproxy-status --syslog 'site=<%= @site %>'`
+STATUS='UP temp-disabled'
 
 if [ "x`echo $STATUS | grep ^UP\ `" != "x" ]; then
     exec <%= @hookdir %>/<%= @site %>_UP.sh
