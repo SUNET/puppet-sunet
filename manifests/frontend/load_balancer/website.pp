@@ -54,6 +54,7 @@ define sunet::frontend::load_balancer::website(
       ensure  => 'file',
       group   => 'sunetfrontend',
       mode    => '0640',
+      force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config2.to_yaml %>\n"),
       ;
   }
