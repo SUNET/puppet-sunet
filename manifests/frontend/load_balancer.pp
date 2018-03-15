@@ -34,10 +34,16 @@ class sunet::frontend::load_balancer(
         static_backends       => $config['load_balancer']['static_backends'],
       }
 
-    configure_websites_old { 'websites_old':
+      configure_websites_old { 'websites_old':
         websites => $config['load_balancer']['websites'],
         basedir  => $basedir,
         confdir  => $confdir,
+      }
+
+      concat::fragment { "${name}_haproxy-pre-start_end":
+        target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
+        order    => '99',
+        content  => "exit 0\n",
       }
     }
     if has_key($config['load_balancer'], 'websites2') {
@@ -46,11 +52,6 @@ class sunet::frontend::load_balancer(
         basedir  => $basedir,
         confdir  => $confdir,
       }
-    }
-    concat::fragment { "${name}_haproxy-pre-start_end":
-      target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
-      order    => '99',
-      content  => "exit 0\n",
     }
 
     $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
