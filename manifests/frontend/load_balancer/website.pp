@@ -23,7 +23,7 @@ define sunet::frontend::load_balancer::website(
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
         $_site_certs = $tls_certificates[$name]
-        notice("None of the certificates for site ${name} matched my list (haproxy, certkey, infra_certkey, bundle): $_site_certs")
+        notice("None of the certificates for site ${name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): $_site_certs")
         if $snakeoil {
           $tls_certificate_bundle = $snakeoil
         }
@@ -40,7 +40,7 @@ define sunet::frontend::load_balancer::website(
     $config2 = $config
   }
 
-  # 'export' config to a file
+  # 'export' config to one YAML file per instance
   file {
     "${confdir}/${name}":
       ensure  => 'directory',
@@ -68,7 +68,7 @@ define sunet::frontend::load_balancer::website(
     service_prefix => 'frontend',
     service_name   => $instance,
     compose_dir    => "${confdir}/${name}/compose",
-    description    => "SUNET frontend setup for ${instance}",
+    description    => "SUNET frontend instance ${instance} (site ${name})",
     service_extras => ["ExecStartPost=-${basedir}/scripts/container-network-config ${name}"],
   }
 }
