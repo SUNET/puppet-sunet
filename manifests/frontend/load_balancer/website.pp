@@ -81,6 +81,8 @@ define sunet::frontend::load_balancer::website(
         from => keys($v).filter |$this| { is_ipaddr($this) },
         port => $api_port,
       }
+    } else {
+      notice("Backend ${k} is not a hash: ${v}")
     }
   }
 }
