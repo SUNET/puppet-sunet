@@ -79,9 +79,9 @@ define sunet::frontend::load_balancer::website(
     # k should be a backend name (like 'default') and v a hash with it's backends:
     #   $v = {host.example.org => {ips => [192.0.2.1]}}
     if is_hash($v) {
-      each($config['backends']) | $name, $params | {
+      each($v) | $name, $params | {
         sunet::misc::ufw_allow { "allow_backends_to_api_${k}_${name}":
-          from => params['ips'],
+          from => $params['ips'],
           port => $api_port,
         }
       }
