@@ -30,7 +30,7 @@ config:
    address:
 <% @resolver.each do |addr| %>    - <%= addr %>
 <% if @search -%>
-   search: @search
+   search: <%= @search %>
 <% end %>
 <% end %>
 <%end %>
