@@ -8,18 +8,7 @@ class sunet::frontend::load_balancer(
     $confdir = "${basedir}/config"
     $apidir = "${basedir}/api"
 
-    exec { 'load_balancer_mkdir':
-      command => "/bin/mkdir -p ${basedir}",
-      unless  => "/usr/bin/test -d ${basedir}",
-    } ->
-    file {
-      '/etc/bgp':
-        ensure => 'directory',
-        ;
-      $confdir:
-        ensure => 'directory',
-        ;
-    }
+    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir], { owner => 'root', group => 'root', mode => '0755' })
 
     sunet::exabgp::config { 'exabgp_config': }
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }

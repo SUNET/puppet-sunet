@@ -10,11 +10,8 @@ define sunet::docker_compose(
 ) {
   $compose_file = "${compose_dir}/${service_name}/${compose_filename}"
 
-  # docker-compose uses dirname as project name
-  ensure_resource('file', [$compose_dir, "${compose_dir}/${service_name}"], {
-      ensure => 'directory',
-      mode   => '700',
-  })
+  # docker-compose uses dirname as project name, so we add $service_name and put the compose_file in there
+  ensure_resource('sunet::misc::create_dir', ["${compose_dir}/${service_name}"], { owner => 'root', group => 'root', mode => '0700' })
 
   ensure_resource('file', $compose_file, {
       ensure  => 'file',
