@@ -1,8 +1,9 @@
 # New kind of website with one docker-compose setup per website
 define sunet::frontend::load_balancer::website(
-  String $basedir,
-  String $confdir,
-  Hash   $config
+  String  $basedir,
+  String  $confdir,
+  Hash    $config
+  Integer $api_port = 8080,
 ) {
   $instance  = $name
   $site_name = pick($config['site_name'], $instance)
@@ -72,5 +73,14 @@ define sunet::frontend::load_balancer::website(
     compose_dir    => "${confdir}/${name}/compose",
     description    => "SUNET frontend instance ${instance} (site ${site_name})",
     service_extras => ["ExecStartPost=-${basedir}/scripts/container-network-config ${name}"],
+  }
+
+  each($config['backends']) | $k, $v | {
+    if is_hash($v) {
+      sunet::misc::ufw_allow { "allow_backends_to_api_${name}_${k}":
+        from => keys($v).filter |$this| { is_ipaddr($this) },
+        port => $api_port,
+      }
+    }
   }
 }
