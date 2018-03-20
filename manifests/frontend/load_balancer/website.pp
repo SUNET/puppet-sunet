@@ -67,12 +67,13 @@ define sunet::frontend::load_balancer::website(
   $varnish_imagetag = pick($config['varnish_imagetag'], 'stable')
 
   sunet::docker_compose { "frontend-${instance}":
-    content        => template('sunet/frontend/docker-compose_template.erb'),
-    service_prefix => 'frontend',
-    service_name   => $instance,
-    compose_dir    => "${confdir}/${name}/compose",
-    description    => "SUNET frontend instance ${instance} (site ${site_name})",
-    service_extras => ["ExecStartPost=-${basedir}/scripts/container-network-config ${name}"],
+    content          => template('sunet/frontend/docker-compose_template.erb'),
+    service_prefix   => 'frontend',
+    service_name     => $instance,
+    compose_dir      => $confdir,
+    compose_filename => 'docker-compose.yml',
+    description      => "SUNET frontend instance ${instance} (site ${site_name})",
+    service_extras   => ["ExecStartPost=-${basedir}/scripts/container-network-config ${name}"],
   }
 
   each($config['backends']) | $k, $v | {

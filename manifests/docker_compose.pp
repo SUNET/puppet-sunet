@@ -6,8 +6,9 @@ define sunet::docker_compose(
   String        $service_name,
   String        $service_prefix = 'sunet',
   Array[String] $service_extras = [],
+  String        $compose_filename = "${service_name}.yml",
 ) {
-  $compose_file = "${compose_dir}/${service_name}/${service_name}.yml"
+  $compose_file = "${compose_dir}/${service_name}/${compose_filename}"
 
   # docker-compose uses dirname as project name
   ensure_resource('file', [$compose_dir, "${compose_dir}/${service_name}"], {
