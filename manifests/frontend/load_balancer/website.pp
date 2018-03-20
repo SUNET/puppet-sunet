@@ -2,7 +2,7 @@
 define sunet::frontend::load_balancer::website(
   String  $basedir,
   String  $confdir,
-  Hash    $config
+  Hash    $config,
   Integer $api_port = 8080,
 ) {
   $instance  = $name
