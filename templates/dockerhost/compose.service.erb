@@ -21,7 +21,7 @@ WorkingDirectory=/
 
 # To make docker pull work with basic-auth credentials
 Environment="HOME=/root"
-Environment="COMPOSE_OPTIONS='--name <%= @_service_name %>_compose'"
+Environment="COMPOSE_OPTIONS=--name <%= @_service_name %>_compose"
 
 ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> down
 ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> kill
