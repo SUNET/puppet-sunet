@@ -44,7 +44,7 @@ define sunet::frontend::load_balancer::website(
     $config2 = $config
   }
 
-  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}"], { owner => 'root', group => 'root', mode => '0750' })
+  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}"], { owner => 'root', group => 'root', mode => '0700' })
 
   # 'export' config to one YAML file per instance
   file {
