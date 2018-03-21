@@ -8,7 +8,6 @@ services:
     restart: always
     volumes:
       - '/dev/log:/dev/log'
-#      - '<%= @basedir %>/etc:/etc/haproxy:ro'
 #      - '<%= @basedir %>/run:/var/run/haproxy'
       - '/etc/dehydrated:/etc/dehydrated:ro'  # XXX reduce to only necessary set of files later
       - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
@@ -19,16 +18,20 @@ services:
       - 'WAIT_FOR_INTERFACE=sarimner0'
     command: /autoreload.sh
 
+<% if @varnish_enabled == true %>
   varnish:
     image: <%= @varnish_image %>:<%= @varnish_imagetag %>
     expose:
       - 1080
     volumes:
-      - /opt/frontend/config/common/default.vcl:/etc/varnish/default.vcl:ro
-    command: varnishd -F -f /etc/varnish/default.vcl -s malloc,100M -a 0.0.0.0:1080
+      - <%= @varnish_config %>:/etc/varnish/default.vcl:ro
+    command: varnishd -F -f /etc/varnish/default.vcl -s <%= @varnish_storage %> -a 0.0.0.0:1080
     restart: always
     depends_on:
       - haproxy
+<% else %>
+  # varnish disabled
+<% end %>
 
   config:
     image: 'docker.sunet.se/frontend/frontend-tools:latest'

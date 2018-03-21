@@ -62,6 +62,9 @@ define sunet::frontend::load_balancer::website(
   $haproxy_imagetag = pick($config['haproxy_imagetag'], 'stable')
   $varnish_image    = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
   $varnish_imagetag = pick($config['varnish_imagetag'], 'stable')
+  $varnish_config   = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
+  $varnish_enabled  = pick($config['varnish_enabled'], true)
+  $varnish_storage  = pick($config['varnish_storage'], 'malloc,100M')
 
   sunet::docker_compose { "frontend-${instance}":
     content          => template('sunet/frontend/docker-compose_template.erb'),
