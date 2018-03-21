@@ -18,7 +18,7 @@ services:
       - 'WAIT_FOR_INTERFACE=sarimner0'
     command: /autoreload.sh
 
-<% if @varnish_enabled == true %>
+<% if @varnish_enabled == true -%>
   varnish:
     image: <%= @varnish_image %>:<%= @varnish_imagetag %>
     expose:
@@ -29,9 +29,9 @@ services:
     restart: always
     depends_on:
       - haproxy
-<% else %>
+<% else -%>
   # varnish disabled
-<% end %>
+<% end -%>
 
   config:
     image: 'docker.sunet.se/frontend/frontend-tools:latest'
