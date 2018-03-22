@@ -12,6 +12,7 @@ services:
       - '/etc/dehydrated:/etc/dehydrated:ro'  # XXX reduce to only necessary set of files later
       - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
       - 'haproxy_data:/etc/haproxy'
+      - 'haproxy_control:/var/run/haproxy-control'
     depends_on:
       - config
     environment:
@@ -44,8 +45,21 @@ services:
       - haproxy_data:/etc/haproxy
     command: /opt/frontend/scripts/generate-haproxy-config --debug --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
 
+  monitor:
+    image: 'docker.sunet.se/frontend/frontend-tools:latest'
+    restart: always
+    volumes:
+      - /opt/frontend/scripts:/opt/frontend/scripts:ro
+      - /opt/frontend/config/common:/opt/frontend/config/common:ro
+      - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
+      - haproxy_control:/var/run/haproxy-control
+    command: /opt/frontend/scripts/monitor-haproxy --debug
+    depends_on:
+      - haproxy
+
 volumes:
   haproxy_data:
+  haproxy_control:
 
 # Provide user-friendly name of bridge interface
 networks:
