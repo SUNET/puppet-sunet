@@ -53,7 +53,7 @@ services:
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - haproxy_control:/var/run/haproxy-control
-    command: /opt/frontend/scripts/monitor-haproxy --debug
+    command: /opt/frontend/scripts/monitor-haproxy --stats_url /var/run/haproxy-control/stats 'site=<%= @site_name %>;group=default'
     depends_on:
       - haproxy
 
