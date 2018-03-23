@@ -49,6 +49,7 @@ class sunet::frontend::load_balancer(
     }
     sunet::exabgp { 'load_balancer':
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
+                         '/opt/frontend/monitor:/opt/frontend/monitor:ro',
                          "/dev/log:/dev/log",
                          ],
       version        => $exabgp_imagetag,
