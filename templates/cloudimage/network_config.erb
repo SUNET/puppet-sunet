@@ -25,9 +25,13 @@ config:
 <% elsif @ip6 -%>
     - type: static
       control: auto
-      address: |
-        <%= @ip6 %>
       ipv6: True
+      # A newline is inserted somewhere at the end of the address
+      # and needs to be removed, otherwise the netmask will end up
+      # on the next line.
+      address: '<%= @ip6.chomp %>'
+<% if @netmask6 -%>      netmask: '<%= @netmask6 %>'<% end %>
+<% if @gateway6 -%>      gateway: '<%= @gateway6 %>'<% end %>
 <% end -%>
 <% if @resolver -%>
  - type: nameserver
