@@ -6,13 +6,15 @@
 #       same time, only one of the MOVED_TO events will be detected.
 #       Probably need to re-implement this in Python to solve that.
 
+basedir='<%= @basedir %>'
+
 # initial announce of everything on startup
-cat <%= @basedir %>/monitor/*/announce
+cat "${basedir}"/monitor/*/announce
 
 while [ 1 ]; do
-    # Wait for MOVED_TO events recursively in /opt/frontend/monitor/.
+    # Wait for MOVED_TO events recursively in ${basedir}/monitor/.
     # The point of doing it recursively is to also notice added sites.
-    out=$(inotifywait -e moved_to -r <%= @basedir %>/monitor/)
+    out=$(inotifywait -e moved_to -r "${basedir}/monitor/")
     dir=$(echo $out | awk '/MOVED_TO announce$/{print $1}')
     if [[ $dir != '' ]]; then
 	cat "${dir}/announce"
