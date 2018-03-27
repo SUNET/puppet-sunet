@@ -95,6 +95,7 @@ define sunet::frontend::load_balancer::website2(
       #   $v = {ips => [192.0.2.1]}}
       if is_hash($v) and has_key($v, 'ips') {
         sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
+          from => 'any',
           to   => $v['ips'],
           port => $config['allow_ports'],
         }
