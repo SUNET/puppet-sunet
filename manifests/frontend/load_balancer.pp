@@ -1,4 +1,7 @@
 # Interface, ExaBGP and haproxy config for a load balancer
+#
+# Two versions of the websites setup are supported, but they won't work simultaneously!
+#
 class sunet::frontend::load_balancer(
   String $router_id = $ipaddress_default,
   String $basedir   = '/opt/frontend',
@@ -10,12 +13,13 @@ class sunet::frontend::load_balancer(
 
     ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir], { owner => 'root', group => 'root', mode => '0755' })
 
-    sunet::exabgp::config { 'exabgp_config': }
-    configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
     if has_key($config['load_balancer'], 'websites') {
       #
       # Old style config
       #
+      sunet::exabgp::config { 'exabgp_config': }
+      configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
+
       sunet::frontend::haproxy { 'load-balancer':
         basedir               => "${basedir}/haproxy",
         confdir               => $confdir,
@@ -44,6 +48,15 @@ class sunet::frontend::load_balancer(
       #
       # New style config
       #
+      sunet::exabgp::config { 'exabgp_config': }
+      file { '/etc/bgp/monitor':
+        ensure   => file,
+        mode     => '0755',
+        content  => template("sunet/frontend/websites2_monitor.sh.erb")
+      }
+
+      configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
+
       configure_websites2 { 'websites':
         websites => $config['load_balancer']['websites2'],
         basedir  => $basedir,
