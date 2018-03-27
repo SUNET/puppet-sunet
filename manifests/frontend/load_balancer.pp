@@ -12,7 +12,10 @@ class sunet::frontend::load_balancer(
 
     sunet::exabgp::config { 'exabgp_config': }
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
-    if has_key($config['load_balancer'], 'websites_old') {
+    if has_key($config['load_balancer'], 'websites') {
+      #
+      # Old style config
+      #
       sunet::frontend::haproxy { 'load-balancer':
         basedir               => "${basedir}/haproxy",
         confdir               => $confdir,
@@ -23,7 +26,7 @@ class sunet::frontend::load_balancer(
         static_backends       => $config['load_balancer']['static_backends'],
       }
 
-      configure_websites_old { 'websites_old':
+      configure_websites { 'websites':
         websites => $config['load_balancer']['websites'],
         basedir  => $basedir,
         confdir  => $confdir,
@@ -34,9 +37,14 @@ class sunet::frontend::load_balancer(
         order    => '99',
         content  => "exit 0\n",
       }
+
+      sysctl_ip_nonlocal_bind { 'load_balancer': }
     }
     if has_key($config['load_balancer'], 'websites2') {
-      configure_websites { 'websites':
+      #
+      # New style config
+      #
+      configure_websites2 { 'websites':
         websites => $config['load_balancer']['websites2'],
         basedir  => $basedir,
         confdir  => $confdir,
@@ -59,7 +67,6 @@ class sunet::frontend::load_balancer(
       basedir    => $apidir,
       docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
     }
-    sysctl_ip_nonlocal_bind { 'load_balancer': }
 
     sunet::misc::ufw_allow { "always-https-allow-http":
       from => 'any',
@@ -108,18 +115,18 @@ define configure_peers($router_id, $peers)
   create_resources('sunet::frontend::load_balancer::peer', $peers, $defaults)
 }
 
-define configure_websites_old($websites, $basedir, $confdir)
+define configure_websites($websites, $basedir, $confdir)
 {
-  create_resources('sunet::frontend::load_balancer::website_old', $websites, {
+  create_resources('sunet::frontend::load_balancer::website', $websites, {
     'basedir' => $basedir,
     'confdir' => $confdir,
     })
 }
 
-define configure_websites($websites, $basedir, $confdir)
+define configure_websites2($websites, $basedir, $confdir)
 {
   each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website', {$site => {}}, {
+    create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
       'basedir' => $basedir,
       'confdir' => $confdir,
       'config'  => $config,
