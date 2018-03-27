@@ -13,6 +13,10 @@ class sunet::frontend::load_balancer(
 
     ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir], { owner => 'root', group => 'root', mode => '0755' })
 
+    if has_key($config['load_balancer'], 'websites') and has_key($config['load_balancer'], 'websites2') {
+      fail("Can't configure websites and websites2 at the same time unfortunately")
+    }
+
     if has_key($config['load_balancer'], 'websites') {
       #
       # Old style config

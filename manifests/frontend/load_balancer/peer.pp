@@ -33,4 +33,3 @@ define sunet::frontend::load_balancer::peer(
     md5           => $md5,
   }
 }
-
