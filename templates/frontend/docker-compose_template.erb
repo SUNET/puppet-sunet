@@ -5,6 +5,8 @@ services:
 
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
+    ports:
+      - "443"
     restart: always
     volumes:
       - '/dev/log:/dev/log'
@@ -23,7 +25,7 @@ services:
   varnish:
     image: <%= @varnish_image %>:<%= @varnish_imagetag %>
     expose:
-      - 1080
+      - "1080"
     volumes:
       - <%= @varnish_config %>:/etc/varnish/default.vcl:ro
     command: varnishd -F -f /etc/varnish/default.vcl -s <%= @varnish_storage %> -a 0.0.0.0:1080
