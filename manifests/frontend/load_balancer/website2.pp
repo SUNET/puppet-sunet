@@ -88,4 +88,17 @@ define sunet::frontend::load_balancer::website2(
       }
     }
   }
+
+  if has_key($config, 'allow_ports') {
+    each($config['frontends']) | $k, $v | {
+      # k should be a frontend FQDN and $v a hash with ips in it:
+      #   $v = {ips => [192.0.2.1]}}
+      if is_hash($v) and has_key($v, 'ips') {
+        sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
+          from => $v['ips'],
+          port => $api_port,
+        }
+      }
+    }
+  }
 }
