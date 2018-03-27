@@ -1,4 +1,7 @@
 # Interface, ExaBGP and haproxy config for a load balancer
+#
+# Two versions of the websites setup are supported, but they won't work simultaneously!
+#
 class sunet::frontend::load_balancer(
   String $router_id = $ipaddress_default,
   String $basedir   = '/opt/frontend',
@@ -8,30 +11,61 @@ class sunet::frontend::load_balancer(
     $confdir = "${basedir}/config"
     $apidir = "${basedir}/api"
 
-    exec { 'load_balancer_mkdir':
-      command => "/bin/mkdir -p ${basedir}",
-      unless  => "/usr/bin/test -d ${basedir}",
-    } ->
-    file {
-      '/etc/bgp':
-        ensure => 'directory',
-        ;
-      $confdir:
-        ensure => 'directory',
-        ;
+    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir], { owner => 'root', group => 'root', mode => '0755' })
+
+    if has_key($config['load_balancer'], 'websites') and has_key($config['load_balancer'], 'websites2') {
+      fail("Can't configure websites and websites2 at the same time unfortunately")
     }
 
-    sunet::exabgp::config { 'exabgp_config': }
-    configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
-    configure_websites { 'websites':
-      websites => $config['load_balancer']['websites'],
-      basedir  => $basedir,
-      confdir  => $confdir,
+    if has_key($config['load_balancer'], 'websites') {
+      #
+      # Old style config
+      #
+      sunet::exabgp::config { 'exabgp_config': }
+      configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
+
+      sunet::frontend::haproxy { 'load-balancer':
+        basedir               => "${basedir}/haproxy",
+        confdir               => $confdir,
+        apidir                => $apidir,
+        haproxy_image         => $config['load_balancer']['haproxy_image'],
+        haproxy_imagetag      => $config['load_balancer']['haproxy_imagetag'],
+        port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
+        static_backends       => $config['load_balancer']['static_backends'],
+      }
+
+      configure_websites { 'websites':
+        websites => $config['load_balancer']['websites'],
+        basedir  => $basedir,
+        confdir  => $confdir,
+      }
+
+      concat::fragment { "${name}_haproxy-pre-start_end":
+        target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
+        order    => '99',
+        content  => "exit 0\n",
+      }
+
+      sysctl_ip_nonlocal_bind { 'load_balancer': }
     }
-    concat::fragment { "${name}_haproxy-pre-start_end":
-      target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
-      order    => '99',
-      content  => "exit 0\n",
+    if has_key($config['load_balancer'], 'websites2') {
+      #
+      # New style config
+      #
+      sunet::exabgp::config { 'exabgp_config': }
+      file { '/etc/bgp/monitor':
+        ensure   => file,
+        mode     => '0755',
+        content  => template("sunet/frontend/websites2_monitor.sh.erb")
+      }
+
+      configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
+
+      configure_websites2 { 'websites':
+        websites => $config['load_balancer']['websites2'],
+        basedir  => $basedir,
+        confdir  => $confdir,
+      }
     }
 
     $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
@@ -40,28 +74,16 @@ class sunet::frontend::load_balancer(
     }
     sunet::exabgp { 'load_balancer':
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
+                         '/opt/frontend/monitor:/opt/frontend/monitor:ro',
                          "/dev/log:/dev/log",
                          ],
       version        => $exabgp_imagetag,
     }
-    sunet::frontend::haproxy { 'load-balancer':
-      basedir               => "${basedir}/haproxy",
-      confdir               => $confdir,
-      apidir                => $apidir,
-      haproxy_image         => $config['load_balancer']['haproxy_image'],
-      haproxy_imagetag      => $config['load_balancer']['haproxy_imagetag'],
-      port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
-      static_backends       => $config['load_balancer']['static_backends'],
-    }
-    $api_imagetag = has_key($config['load_balancer'], 'api_imagetag') ? {
-      true  => $config['load_balancer']['api_imagetag'],
-      false => 'latest',
-    }
+
     sunet::frontend::api { 'sunetfrontend':
       basedir    => $apidir,
-      docker_tag => $api_imagetag,
+      docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
     }
-    sysctl_ip_nonlocal_bind { 'load_balancer': }
 
     sunet::misc::ufw_allow { "always-https-allow-http":
       from => 'any',
@@ -116,4 +138,15 @@ define configure_websites($websites, $basedir, $confdir)
     'basedir' => $basedir,
     'confdir' => $confdir,
     })
+}
+
+define configure_websites2($websites, $basedir, $confdir)
+{
+  each($websites) | $site, $config | {
+    create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
+      'basedir' => $basedir,
+      'confdir' => $confdir,
+      'config'  => $config,
+      })
+  }
 }
