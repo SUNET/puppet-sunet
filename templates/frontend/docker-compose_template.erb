@@ -5,7 +5,7 @@ services:
 
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
-    ports:
+    expose:
       - "443"
     restart: always
     volumes:
