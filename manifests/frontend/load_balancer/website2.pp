@@ -73,7 +73,7 @@ define sunet::frontend::load_balancer::website2(
     compose_dir      => $confdir,
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
-    service_extras   => ["ExecStartPost=-${basedir}/scripts/container-network-config ${name}"],
+    service_extras   => ["ExecStartPost=-${basedir}/scripts/configure-container-network ${name}"],
   }
 
   each($config['backends']) | $k, $v | {
