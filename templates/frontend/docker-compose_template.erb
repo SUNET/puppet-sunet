@@ -10,20 +10,23 @@ services:
     restart: always
     volumes:
       - '/dev/log:/dev/log'
-#      - '<%= @basedir %>/run:/var/run/haproxy'
       - '/etc/dehydrated:/etc/dehydrated:ro'  # XXX reduce to only necessary set of files later
-      - '/etc/ssl:/etc/ssl:ro'  # XXX reduce to only necessary set of files later
+      - '/etc/ssl:/etc/ssl:ro'                # XXX reduce to only necessary set of files later
+      - '/opt/frontend/scripts/haproxy-start.sh:/haproxy-start.sh:ro'
       - 'haproxy_data:/etc/haproxy'
       - 'haproxy_control:/var/run/haproxy-control'
     depends_on:
       - config
     environment:
       - 'WAIT_FOR_INTERFACE=sarimner0'
-    command: /autoreload.sh
+<% if @varnish_enabled == true -%>
+      - 'WAIT_FOR_CONTAINER=varnish'
+<% end -%>
+    command: /haproxy-start.sh
 
 <% if @varnish_enabled == true -%>
   varnish:
-    image: <%= @varnish_image %>:<%= @varnish_imagetag %>
+    image: '<%= @varnish_image %>:<%= @varnish_imagetag %>'
     expose:
       - "1080"
     volumes:
