@@ -8,10 +8,6 @@ define sunet::frontend::load_balancer::website2(
   $instance  = $name
   $site_name = pick($config['site_name'], $instance)
 
-  class { 'ufw':
-    forward => 'ACCEPT',
-  }
-
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
     if has_key($tls_certificates, 'snakeoil') {
@@ -105,5 +101,8 @@ define sunet::frontend::load_balancer::website2(
         }
       }
     }
+  }
+  exec { "workaround_allow_forwarding_to_${instance}":
+    command => "/usr/sbin/ufw route allow out on br-${instance}",
   }
 }
