@@ -82,6 +82,9 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    sunet::nagios::nrpe_command {'check_reboot':
       command_line => '/usr/lib/nagios/plugins/check_reboot'
    }
+   sunet::nagios::nrpe_command {'check_status':
+      command_line => '/usr/local/bin/check_status'
+   }
    sunet::nagios::nrpe_command {'check_mailq':
       command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
    }
