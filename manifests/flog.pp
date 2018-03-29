@@ -45,6 +45,12 @@ class sunet::flog {
       group  => 'www-data',
       mode   => '1775',
    } ->
+   file {'/var/log/flog_app_importer':
+      ensure => 'directory',
+      owner  => 'root',
+      group  => 'www-data',
+      mode   => '1775',
+   } ->
    file { "/opt/flog/nginx/certs/flog.sunet.se.key":
      ensure  => file,
      path    => "/opt/flog/nginx/certs/flog.sunet.se.key",
@@ -82,8 +88,8 @@ class sunet::flog {
    sunet::docker_run {'flog-app-import':
       image    => 'docker.sunet.se/flog/flog_app',
       imagetag => 'stable',
-      volumes  => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app/:/opt/flog/logs/'],
-      env      => ['workers=2'],
+      volumes  => ['/opt/flog/dotenv:/opt/flog/.env','/var/log/flog_app_importer/:/opt/flog/logs/'],
+      env      => ['workers=4'],
       depends  => ['flog-db']
    }
    sunet::docker_run {'memcached':

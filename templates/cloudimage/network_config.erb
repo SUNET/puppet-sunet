@@ -8,29 +8,35 @@ config:
    mac_address: '<%= @mac %>'
    name: eth0
    subnets:
-    - control: auto
-<% if @ip6 == 'auto' -%>
-      # type dhcp6 != SLAAC, but it doesn't look like cloudinit/net/network_state.py can do SLAAC
-      type: dhcp6
-<% elsif @ip6 -%>
-      type: static
-      address: |
-        <%= @ip6 %>
-      ipv6: True
-<% elsif @ip -%>
-      type: static
+<% if @ip -%>
+    - type: static
+      control: auto
       address: '<%= @ip %>'
 <% if @netmask -%>      netmask: '<%= @netmask %>'<% end %>
 <% if @gateway -%>      gateway: '<%= @gateway %>'<% end %>
 <% elsif @dhcp -%>
-      type: dhcp4
-<%end -%>
+    - type: dhcp4
+      control: auto
+<% end -%>
+<% if @ip6 == 'auto' -%>
+    # type dhcp6 != SLAAC, but it doesn't look like cloudinit/net/network_state.py can do SLAAC
+    - type: dhcp6
+      control: auto
+<% elsif @ip6 -%>
+    - type: static
+      control: auto
+      address: |
+        <%= @ip6 %>
+      ipv6: True
+<% end -%>
 <% if @resolver -%>
  - type: nameserver
    address:
-<% @resolver.each do |addr| %>    - <%= addr %>
+<% @resolver.each do |addr| %>    - '<%= addr %>'
+<% end -%>
 <% if @search -%>
-   search: @search
+   search:
+<% @search.each do |search_domain| %>    - '<%= search_domain %>'
+<% end -%>
+<% end -%>
 <% end %>
-<% end %>
-<%end %>

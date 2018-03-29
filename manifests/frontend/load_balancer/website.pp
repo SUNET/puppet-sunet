@@ -1,3 +1,4 @@
+# Old kind of website with one shared haproxy
 define sunet::frontend::load_balancer::website(
   Array            $frontends,
   Hash             $backends,
