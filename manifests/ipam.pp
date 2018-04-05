@@ -1,6 +1,7 @@
 class sunet::ipam {
 
   $bind9_allow_servers = hiera_array('bind9_allow_servers',[])
+  $bind9_proto         = ['tcp', 'udp']
   $https_allow_servers = hiera_array('https_allow_servers',[])
   $db_password         = safe_hiera('nipap_db_password',[])
   $web_ui_username     = nipap-www
@@ -10,24 +11,19 @@ class sunet::ipam {
   $domain              = $::domain
   $root_nipap_password = safe_hiera('root_nipap_password',[])
   $dns_nipap_password  = safe_hiera('dns_nipap_password',[])
-  $name_servers        = ['ns1.sunet.se.', 'hostmaster.sunet.se.']
-  $alt_name_servers    = ['sunic.sunet.se', 'server.nordu.net.']
+  $primary_dns_server  = $::fqdn
+  $name_servers        = ['ns1.sunet.se.', 'sunic.sunet.se.', 'server.nordu.net.']
 
   ufw::allow {'allow_http': ip => 'any', port => '80'}
 
-  $bind9_allow_servers.each |$server| {
-    ufw::allow { "allow_bind9_${server}":
-      from => $server,
-      ip   => 'any',
-      port => '53',
-    }
-  }
-  $https_allow_servers.each |$server| {
-      ufw::allow { "allow_web_${server}_to_${port}":
-      from => $server,
-      ip   => 'any',
+  sunet::misc::ufw_allow { 'allow_https':
+      from => $https_allow_servers,
       port => '443',
-      }
+  }
+  sunet::misc::ufw_allow { 'allow_bind9':
+    from  => $bind9_allow_servers,
+    port  => '53',
+    proto => $bind9_proto,
   }
   package { ['postgresql',
             'postgresql-9.5-ip4r',
@@ -143,11 +139,10 @@ class sunet::ipam {
       ensure => link,
       target => '/etc/apache2/sites-available/nipap-default.conf',
       }
-  -> exec { 'enables_apache_modules':
-      command => 'a2enmod ssl && a2enmod proxy_http && a2enmod wsgi',
-      subscribe => File['/etc/apache2/sites-available/nipap-ssl.conf'],
-      refreshonly => true,
-      notify  => Service['apache2']
+  -> file {'/usr/local/lib/python2.7/site-packages/pytter.py':
+      ensure  => file,
+      mode    => '0644',
+      content => template("${template_directory}/pytter.py.erb"),
       }
   -> file {'/etc/nipap/nipap-www.ini':
       ensure  => file,
@@ -167,15 +162,16 @@ class sunet::ipam {
       ensure => 'present',
       match  => 'DBNAMES="all"',
      }
-  -> vcsrepo {'/root/pytter/':
+  -> file { '/etc/bind/generated':
+      ensure  => directory,
+      owner   => 'root',
+      group   => 'bind',
+      mode    => '2755',
+      }
+  -> vcsrepo { '/etc/bind/generated':
       ensure   => present,
       provider => git,
-      source   => 'https://github.com/Eising/pytter.git',
       }
-  -> exec { 'copy_pytter.py':
-      command => 'cp /root/pytter/pytter.py /usr/local/lib/python2.7/site-packages/',
-      unless  => 'test -f /usr/local/lib/python2.7/site-packages/pytter.py',
-    }
   -> file { '/etc/bind/named.conf.zones':
       ensure  => file,
       content => template("${template_directory}/named.conf.zones.erb"),
@@ -193,7 +189,7 @@ class sunet::ipam {
       }
   -> exec {'reload_rndc':
       command     => 'rndc reload',
-      subscribe   => File['/etc/bind/named.conf.zones'], 
+      subscribe   => File['/etc/bind/named.conf.zones'],
       refreshonly => true,
       }
   -> file { '/usr/local/sbin/nipap2bind':
@@ -207,9 +203,9 @@ class sunet::ipam {
       content => template("${template_directory}/commit.sh.erb"),
       }
   -> sunet::scriptherder::cronjob { 'generate_reverse_zones':
-      cmd           => '/usr/local/sbin/nipap2bind && /etc/bind/generated/commit.sh',
+      cmd           => 'bash -c "/usr/local/sbin/nipap2bind && /etc/bind/generated/commit.sh"',
       minute        => '*/15',
-      ok_criteria   => ['exit_status=0', 'max_age=35m'],
-      warn_criteria => ['exit_status=0', 'max_age=1h'],
+      ok_criteria   => ['exit_status=128', 'max_age=35m'],
+      warn_criteria => ['exit_status=128', 'max_age=1h'],
       }
 }

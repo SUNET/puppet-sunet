@@ -22,6 +22,6 @@ options {
 
 	auth-nxdomain no;    # conform to RFC1035
 	listen-on-v6 { any; };
-  allow-transfer { <%= @bind9_allow_servers[5] %>;127.0.0.1; };
-  also-notify { <%= @bind9_allow_servers[5] %>; };
+  allow-transfer { <%= @bind9_allow_servers[2] %>;<%= @bind9_allow_servers[3] %>;<%= @bind9_allow_servers[4] %>;<%= @bind9_allow_servers[5] %>;<%= @bind9_allow_servers[6] %>;<%= @bind9_allow_servers[7] %>;127.0.0.1; };
+  also-notify { <%= @bind9_allow_servers[2] %>;<%= @bind9_allow_servers[3] %>;<%= @bind9_allow_servers[4] %>;<%= @bind9_allow_servers[5] %>;<%= @bind9_allow_servers[6] %>;<%= @bind9_allow_servers[7] %>; };
 };
