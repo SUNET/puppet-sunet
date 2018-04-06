@@ -8,6 +8,17 @@ Facter.add('tls_certificates') do
     hostpart = File.basename(full_fn, '.pem')
     res[hostpart] ||= {}
     res[hostpart]['dehydrated_bundle'] = full_fn
+    ['cert', 'privkey', 'chain', 'fullchain'].each do | part |
+      partname = '/etc/dehydrated/certs/' + hostpart + '/' + part + '.pem'
+      if part == 'privkey'
+        part = 'key'  # consistency with non-dehydrated certs
+      end
+      if File.exists? partname
+        res[hostpart]['dehydrated_' + part] = partname
+      else
+        warn("Not found: #{partname}")
+      end
+    end
   end
 
   # Look in /etc/ssl and /etc/ssl/private for crt/pem files with at least one underscore in them.
