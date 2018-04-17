@@ -1,4 +1,4 @@
-# Local user account creation for nipap cli users follows.
+# Creation of local user accounts to use nipap cli is configured through below defined type.
 
 define sunet::ipam::cli_user(
     String $username,
