@@ -10,7 +10,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    $allowed_hosts = join($nrpe_clients,",")
 
    package {$nrpe_service:
-       ensure => 'latest',
+       ensure => 'installed',
    } ->
    service {$nrpe_service:
        ensure  => 'running',
@@ -37,10 +37,10 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        require => Package['nagios-nrpe-server'],
        content => template('sunet/nagioshost/nrpe.cfg.erb'),
    }
-   sunet::nagios::nrpe_command {'check_users': 
+   sunet::nagios::nrpe_command {'check_users':
       command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
    }
-   sunet::nagios::nrpe_command {'check_load': 
+   sunet::nagios::nrpe_command {'check_load':
       command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
    }
    if $::fqdn == 'docker.sunet.se' {
