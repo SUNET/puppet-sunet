@@ -11,6 +11,7 @@ define sunet::ipam::cli_user(
       ensure   => present,
       password => '*',
       home     => "/home/${username}",
+      shell    => '/bin/bash'
     }
     # Creates a home directory for the system user.
     -> file { "/home/${username}":
