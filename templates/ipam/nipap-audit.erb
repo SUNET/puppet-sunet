@@ -140,20 +140,21 @@ class AuditLog:
         if type(data) is not dict:
             print("Not a dict")
             raise
-        output = "{:<15} {}\n".format("Log id", data['id'])
-        output += "{:<15} {}\n".format("Author:", data['username'])
-        output += "{:<15} {}\n".format("Date:", data['timestamp'].strftime('%c'))
+        output = unicode("")
+        output += u"{:<15} {}\n".format("Log id", data['id'])
+        output += u"{:<15} {}\n".format("Author:", data['username'])
+        output += u"{:<15} {}\n".format("Date:", data['timestamp'].strftime('%c'))
         if re.search(".*attr:.*", data['description']):
             res = re.match(r'(.*\d\b).*attr: (\{.*\})', data['description'])
             description = res.group(1)
             dataset = res.group(2)
-            output += "{:<15} {}\n".format("Description:", description)
+            output += u"{:<15} {}\n".format("Description:", description)
             parsed = eval(dataset)
-            output += "New data:\n"
+            output += u"New data:\n"
             for k,v in parsed.items():
-                output += "{:<16}{:<20}: {:<32}\n".format("",k, v)
+                output += u"{:<16}{:<20}: {:<32}\n".format("",k, v)
         else:
-            output += "{:<15} {}\n".format("Description:", data['description'])
+            output += u"{:<15} {}\n".format("Description:", data['description'])
         return output
 
 
