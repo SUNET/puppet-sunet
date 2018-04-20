@@ -48,10 +48,11 @@ class sunet::ipam::main {
   -> package {[nipap-cli, nipap-www]:
       ensure => present,
       }
-  -> service { 'nipapd':
+  -> service { ['nipapd', 'postgresql']:
       ensure => running,
       enable => true,
       }
+
 
   # Password for postgres database that nipap uses. The variable is used in change_db_password.sql.erb template.
   $db_password = safe_hiera('nipap_db_password',[])
@@ -88,6 +89,14 @@ class sunet::ipam::main {
       mode    => '0644',
       content => template('sunet/ipam//nipap.conf.erb'),
       notify  => Service['nipapd'],
+      }
+  # Makes postgres database administrative login for local system users 'trusted'.
+  -> file_line { 'change_login_method':
+      ensure => 'present',
+      line   => 'local   all             all                                     trust',
+      path   => '/etc/postgresql/9.5/main/pg_hba.conf',
+      match  => 'local   all             all                                     peer',
+      notify => Service['postgresql'],
       }
 
   # The following is used by configuration file of service - autopostgresqlbackup that backs up the postgres databases.

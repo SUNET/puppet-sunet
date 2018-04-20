@@ -22,15 +22,18 @@ class sunet::ipam::dns_config {
       enable => true,
       }
 
+  # Password of the bind9's user account to authenticate twoards the backend of nipap.
+  # The variable is used in nipap.conf.erb template too.
+  $dns_nipap_password = safe_hiera('dns_nipap_password',[])
+
+  # Array of zones that the host is master to.
+  $zones = hiera_array('zones',[])
+
   # Hostname of SOA in zone records. The variable is used in nipap2bind.erb template.
   $primary_dns_server = $::fqdn
 
   # Hostnames of the name servers in zone records. The variable is used in nipap2bind.erb template.
   $name_servers = ['ns1.sunet.se.', 'sunic.sunet.se.', 'server.nordu.net.']
-
-  # Password of the bind9's user account to authenticate twoards the backend of nipap.
-  # The variable is used in nipap.conf.erb template too.
-  $dns_nipap_password = safe_hiera('dns_nipap_password',[])
 
   # Below directory holds all the zone records.
   file { '/etc/bind/generated':
@@ -103,5 +106,4 @@ class sunet::ipam::dns_config {
       ok_criteria   => ['exit_status=0', 'max_age=35m'],
       warn_criteria => ['exit_status=0', 'max_age=1h'],
       }
-
 }
