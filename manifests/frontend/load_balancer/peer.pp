@@ -10,14 +10,13 @@ define sunet::frontend::load_balancer::peer(
   if ! is_ipaddr($local_ip) {
     if is_ipaddr($remote_ip, 4) {
       $_local_ip = $::ipaddress_default
-      if ($_local_ip == undef) {
-        fail("Could not figure out local IPv4 address using fact \$ipaddress_default, got: $_local_ip")
-      }
+      $_local_ip_family = 4
     } elsif is_ipaddr($remote_ip, 6) {
       $_local_ip = $::ipaddress6_default
-      if ($_local_ip == undef) {
-        fail("Could not figure out local IPv6 address using fact \$ipaddress6_default, got: $_local_ip")
-      }
+      $_local_ip_family = 4
+    }
+    if ($_local_ip == undef) {
+      fail("Could not figure out local IPv${_local_ip_family} address using fact \$::ipaddress_default, got: '$_local_ip'")
     }
   } else {
     $_local_ip = $local_ip
