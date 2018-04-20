@@ -11,20 +11,17 @@ module Puppet::Parser::Functions
 
     # Puppet 3.7
     if Facter.value(:puppetversion).start_with? '3.7.'
-      if args.size == 1
-        value = function_hiera([args[0], 'NOT_SET_IN_HIERA'])
-      else
-        value = function_hiera(args)
-      end
+      value = function_hiera([args[0], 'NOT_SET_IN_HIERA'])
     else
       # Puppet >= 3.8 and Puppet 4.x
-      if args.size == 1
-        value = call_function('hiera', [args[0], 'NOT_SET_IN_HIERA'])
-      else
-        value = call_function('hiera', args)
+      value = call_function('hiera', [args[0], 'NOT_SET_IN_HIERA'])
+    end
+    if value == 'NOT_SET_IN_HIERA'
+      warning("#{args[0]} not set in Hiera")
+      if args.size == 2
+        return args[1]
       end
     end
-    warning("#{args[0]} not set in Hiera") if value == 'NOT_SET_IN_HIERA' or value == args[1]
     return value
   end
 end

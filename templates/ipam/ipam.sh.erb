@@ -1,0 +1,7 @@
+#!/bin/bash
+
+/usr/local/sbin/nipap2bind
+/usr/sbin/rndc reload
+cd /etc/bind/generated
+/usr/bin/git add .
+/usr/bin/git diff-index --quiet HEAD || /usr/bin/git commit -a -m "Updated zone files"

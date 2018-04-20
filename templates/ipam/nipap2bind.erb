@@ -35,9 +35,10 @@ a = AuthOptions({
     'authoritative_source': 'nipap2bind'
 })
 
-alt_dns_servers = ['<%= @alt_name_servers[0] %>', '<%= @alt_name_servers[1] %>']
-rd = pytter.Pytter('<%= @name_servers[0] %>', '<%= @name_servers[1] %>', alt_dns_servers)
-rd.aggregate_v6 = 32
+alt_dns_servers = ['<%= @name_servers[0] %>', '<%= @name_servers[1] %>', '<%= @name_servers[2] %>']
+
+rd = pytter.Pytter('<%= @primary_dns_server %>.', 'hostmaster.<%= @domain %>.', alt_dns_servers)
+rd.aggregate_v6 = 48
 
 # check if serial file exists
 
@@ -87,7 +88,7 @@ for p in prefixes:
         if res:
             if not p.node.endswith("."):
                 if len(p.node.split(".")) == 1:
-                    hostname = "{}.nordu.net.".format(p.node)
+                    hostname = "{}.sunet.se.".format(p.node)
                 else:
                     hostname = "{}.".format(p.node)
             else:

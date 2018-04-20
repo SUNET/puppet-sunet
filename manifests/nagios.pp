@@ -10,7 +10,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    $allowed_hosts = join($nrpe_clients,",")
 
    package {$nrpe_service:
-       ensure => 'latest',
+       ensure => 'installed',
    } ->
    service {$nrpe_service:
        ensure  => 'running',
@@ -37,10 +37,10 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        require => Package['nagios-nrpe-server'],
        content => template('sunet/nagioshost/nrpe.cfg.erb'),
    }
-   sunet::nagios::nrpe_command {'check_users': 
+   sunet::nagios::nrpe_command {'check_users':
       command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
    }
-   sunet::nagios::nrpe_command {'check_load': 
+   sunet::nagios::nrpe_command {'check_load':
       command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
    }
    if $::fqdn == 'docker.sunet.se' {
@@ -72,15 +72,25 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
          command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
       }
    } else {
-      sunet::nagios::nrpe_command {'check_total_procs_lax':
+     if is_hash($facts) and ('frontend_server' in $facts['cosmos']['host_roles']) {
+       # There are more processes than normal on frontend hosts
+       sunet::nagios::nrpe_command {'check_total_procs_lax':
+         command_line => '/usr/lib/nagios/plugins/check_procs -k -w 500 -c 750'
+       }
+     } else {
+       sunet::nagios::nrpe_command {'check_total_procs_lax':
          command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
-      }
+       }
+     }
    }
    sunet::nagios::nrpe_command {'check_uptime':
       command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
    }
    sunet::nagios::nrpe_command {'check_reboot':
       command_line => '/usr/lib/nagios/plugins/check_reboot'
+   }
+   sunet::nagios::nrpe_command {'check_status':
+      command_line => '/usr/local/bin/check_status'
    }
    sunet::nagios::nrpe_command {'check_mailq':
       command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
