@@ -105,4 +105,14 @@ define sunet::frontend::load_balancer::website2(
   exec { "workaround_allow_forwarding_to_${instance}":
     command => "/usr/sbin/ufw route allow out on br-${instance}",
   }
+
+  # Create backend directory for this website so that the sunetfrontend-api will
+  # accept register requests from the servers
+  file {
+    "${basedir}/api/backends/${site_name}":
+      ensure => 'directory',
+      group  => 'sunetfrontend',
+      mode   => '0770',
+      ;
+  }
 }
