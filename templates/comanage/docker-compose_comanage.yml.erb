@@ -68,7 +68,7 @@ services:
             - COMANAGE_REGISTRY_EMAIL_ACCOUNT_PASSWORD=<%= @comanage_email_password %>
             - COMANAGE_REGISTRY_SECURITY_SALT=<%= @comanage_security_salt %>
             - COMANAGE_REGISTRY_SECURITY_SEED=<%= @comanage_security_seed %>
-            - COMANAGE_REGISTRY_ENABLE_PLUGIN=IdentifierEnroller
+            - COMANAGE_REGISTRY_ENABLE_PLUGIN=IdentifierEnroller,MailmanProvisioner
             - SHIBBOLETH_SP_ENTITY_ID=https://comanage.sunet.se/shibboleth
             - SHIBBOLETH_SP_CERT=/run/secrets/shibboleth_sp_cert_file
             - SHIBBOLETH_SP_PRIVKEY=/run/secrets/shibboleth_sp_privkey_file
