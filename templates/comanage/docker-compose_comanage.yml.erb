@@ -1,7 +1,7 @@
 version: '2.0'
 services:
     comanage-registry-database:
-        image: comanage-registry-postgres
+        image: docker.sunet.se/comanage-registry-postgres
         volumes:
             - /opt/comanage-registry-deployment/postgres-data:/var/lib/postgresql/data
             - /opt/comanage-registry-deployment/secrets:/run/secrets
@@ -18,7 +18,7 @@ services:
             - "5432:5432"
 
     comanage-registry-ldap:
-        image: comanage-registry-slapd
+        image: docker.sunet.se/comanage-registry-slapd
         volumes:
             - /opt/comanage-registry-deployment/slapd-data:/var/lib/ldap
             - /opt/comanage-registry-deployment/slapd-config:/etc/ldap/slapd.d
