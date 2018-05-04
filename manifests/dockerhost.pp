@@ -2,7 +2,7 @@
 class sunet::dockerhost(
   $docker_version,
   $docker_package_name       = 'docker-engine',  # facilitate transition to new docker-ce package
-  Enum['stable', 'edge'] $docker_repo = 'stable',
+  Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver            = undef,
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
