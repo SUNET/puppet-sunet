@@ -13,6 +13,7 @@ class sunet::pages($host='127.0.0.1',$port='5000',$version='latest') {
                       "/var/run/docker.sock:/var/run/docker.sock:rw",
                       "/root/.ssh:/root/.ssh:ro",
                       "/etc/ssh/config:/etc/ssh/config:ro",
+                      "/etc/ssh/ssh_known_hosts:/etc/ssh/ssh_known_hosts:ro",
                       '/etc/sunet-pages.yaml:/etc/sunet-pages.yaml:ro'],
       env         => ['SUNET_PAGES_CONFIG=/etc/sunet-pages.yaml'],
       ports       => ["$host:$port:5000"]
