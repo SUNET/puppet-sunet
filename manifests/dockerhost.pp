@@ -107,6 +107,7 @@ class sunet::dockerhost(
   class {'docker':
     storage_driver              => $storage_driver,
     manage_package              => false,
+    manage_kernel               => false,
     use_upstream_package_source => false,
     dns                         => $_docker_dns,
     extra_parameters            => $docker_extra_parameters,
