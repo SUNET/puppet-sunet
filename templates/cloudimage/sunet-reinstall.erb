@@ -47,6 +47,7 @@ umask 077
  test -f /etc/sunet-reinstall.keep && echo /etc/sunet-reinstall.keep;
       echo /etc/ssh/*key*;
       test -d /etc/hiera/gpg && echo /etc/hiera/gpg;
+      test -d /etc/hiera/eyaml && echo /etc/hiera/eyaml;
       test -d /etc/dehydrated && echo /etc/dehydrated;
       find /etc/ssl -name '*_infra.key' -type f;
 ) | xargs tar zcvf "${reinst}.new"
