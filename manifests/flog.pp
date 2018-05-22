@@ -97,7 +97,7 @@ class sunet::flog {
    }
    sunet::docker_run {'flog-nginx':
       image     => 'docker.sunet.se/eduid/nginx',
-      ports     => ['80:80', '443:443'],
+      ports     => ['443:443'],
       volumes   => ['/opt/flog/nginx/sites-enabled/:/etc/nginx/sites-enabled/','/opt/flog/nginx/certs/:/etc/nginx/certs', '/var/log/flog_nginx/:/var/log/nginx', '/opt/flog/static/:/var/www/static/'],
       depends   => ['flog-app']
    }
