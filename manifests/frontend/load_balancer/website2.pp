@@ -109,7 +109,7 @@ define sunet::frontend::load_balancer::website2(
   if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
     sunet::dehydrated::client_define { $name :
       domain        => $name,
-      server        => $letsencrypt_server,
+      server        => $config['letsencrypt_server'],
       ssh_id        => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
       single_domain => false,
     }
