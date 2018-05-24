@@ -2,35 +2,34 @@
 # Docs: http://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v1.html#network-config-v1
 #       http://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v2.html#network-config-v2
 #
-network:
-  version: 2
-  ethernets:
-    eth0:
-      match:
-        mac_address: '<%= @mac %>'
-      set-name: eth0
+version: 2
+ethernets:
+  eth0:
+    match:
+      mac_address: '<%= @mac %>'
+    set-name: 'eth0'
 <% if @addresses -%>
-    addresses: <%= @addresses %>
+  addresses: <%= @addresses %>
 <% elsif @dhcp4 -%>
-    dhcp4: true
+  dhcp4: true
 <% elsif @dhcp6 -%>
-    dhcp6: true
+  dhcp6: true
 <% end -%>
 <% if @gateway -%>
-    gateway: '<%= @gateway %>'
+  gateway: '<%= @gateway %>'
 <% end -%>
 <% if @gateway6 -%>
-    gateway6: '<%= @gateway6 %>'
+  gateway6: '<%= @gateway6 %>'
 <% end -%>
 <% if @resolver -%>
-    nameservers:
-      addresses: <%= @resolver %>
+  nameservers:
+    addresses: <%= @resolver %>
 <% if @search -%>
-      search: <%= @search %>
+    search: <%= @search %>
 <% end -%>
 <% end -%>
 <% if @eth0_extra -%>
-<% @eth0_extra.each do |this| %>    <%= this %>
+<% @eth0_extra.each do |this| %>  <%= this %>
 <% end -%>
 <% end -%>
 <% if @extra -%>
