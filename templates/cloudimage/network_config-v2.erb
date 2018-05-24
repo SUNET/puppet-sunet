@@ -6,7 +6,7 @@ version: 2
 ethernets:
   eth0:
     match:
-      mac_address: '<%= @mac %>'
+      macaddress: '<%= @mac %>'
     set-name: 'eth0'
 <% if @addresses -%>
     addresses: <%= @addresses %>
