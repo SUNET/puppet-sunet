@@ -31,7 +31,7 @@ define sunet::cloudimage (
   # Parameters for networkv_ver 2
   Array[String]    $addresses   = [],
   Boolean          $dhcp4       = true,
-  Boolean          $dhcp6       = true,
+  Boolean          $dhcp6       = false,
 )
 {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
