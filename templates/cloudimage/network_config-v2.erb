@@ -2,8 +2,8 @@
 # Docs: http://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v1.html#network-config-v1
 #       http://cloudinit.readthedocs.io/en/latest/topics/network-config-format-v2.html#network-config-v2
 #
-network:
-  version: 2
+version: 2
+config:
   ethernets:
     eth0:
       match:
@@ -31,6 +31,7 @@ network:
 <% end -%>
 <% if @eth0_extra -%>
 <% @eth0_extra.each do |this| %>    <%= this %>
+<% end -%>
 <% end -%>
 <% if @extra -%>
 <%= @extra %>
