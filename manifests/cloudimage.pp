@@ -27,6 +27,11 @@ define sunet::cloudimage (
   String           $local_size  = '0',
   String           $rng         = '/dev/random',
   Boolean          $disable_ec2 = false,  # set to true to disable fetching of metadata from 169.254.169.254
+  String           $network_ver = '1',
+  # Parameters for networkv_ver 2
+  Array[String]    $addresses   = [],
+  Boolean          $dhcp4       = true,
+  Boolean          $dhcp6       = true,
 )
 {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
@@ -56,6 +61,10 @@ define sunet::cloudimage (
     mode   => '0755',
   })
 
+  $network_template = $network_ver ? {
+    '1' => 'sunet/cloudimage/network_config.erb',
+    '2' => 'sunet/cloudimage/network_config-v2.erb',
+  }
   file {
     "${script_dir}/${name}":
       ensure => 'directory',
@@ -77,7 +86,7 @@ define sunet::cloudimage (
       mode    => "0750",
       ;
     $network_config:
-      content => template("sunet/cloudimage/network_config.erb"),
+      content => template($network_template),
       require => File[$script_dir],
       mode    => "0750",
       ;
