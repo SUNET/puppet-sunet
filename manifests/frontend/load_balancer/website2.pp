@@ -106,6 +106,15 @@ define sunet::frontend::load_balancer::website2(
     command => "/usr/sbin/ufw route allow out on br-${instance}",
   }
 
+  if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
+    sunet::dehydrated::client_define { $name :
+      domain        => $name,
+      server        => $letsencrypt_server,
+      ssh_id        => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
+      single_domain => false,
+    }
+  }
+
   # Create backend directory for this website so that the sunetfrontend-api will
   # accept register requests from the servers
   file {
