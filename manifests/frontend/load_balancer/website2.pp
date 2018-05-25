@@ -50,7 +50,7 @@ define sunet::frontend::load_balancer::website2(
     'frontend_ip4' => $::ipaddress_default,
     'frontend_ip6' => $::ipaddress6_default,
     'frontend_fqdn' => $::fqdn,
-  }
+  })
 
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}"], { owner => 'root', group => 'root', mode => '0700' })
 
