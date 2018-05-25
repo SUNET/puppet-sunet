@@ -44,6 +44,14 @@ define sunet::frontend::load_balancer::website2(
     $config2 = $config
   }
 
+  # Add IP and hostname of the host running the container - used to reach the
+  # acme-c proxy in eduid
+  $config3 = merge($config2, {
+    'frontend_ip4' => $::ipaddress_default,
+    'frontend_ip6' => $::ipaddress6_default,
+    'frontend_fqdn' => $::fqdn,
+  }
+
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}"], { owner => 'root', group => 'root', mode => '0700' })
 
   # 'export' config to one YAML file per instance
@@ -53,7 +61,7 @@ define sunet::frontend::load_balancer::website2(
       group   => 'sunetfrontend',
       mode    => '0640',
       force   => true,
-      content => inline_template("# File created from Hiera by Puppet\n<%= @config2.to_yaml %>\n"),
+      content => inline_template("# File created from Hiera by Puppet\n<%= @config3.to_yaml %>\n"),
       ;
   }
 
