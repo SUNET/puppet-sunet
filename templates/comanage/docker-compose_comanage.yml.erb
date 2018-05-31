@@ -38,7 +38,7 @@ services:
             - "389:389"
 
     comanage-registry:
-        image: docker.sunet.se/comanage-registry:3.1.0-shibboleth-sp
+        image: docker.sunet.se/comanage-registry:3.1.1-shibboleth-sp
         depends_on:
             - comanage-registry-ldap
             - comanage-registry-database
