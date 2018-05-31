@@ -37,7 +37,7 @@ define sunet::frontend::load_balancer::website2(
     }
 
     if $snakeoil and $tls_certificate_bundle == $snakeoil {
-      notice("Using snakeoil certificate for site ${name}")
+      notice("Using snakeoil certificate for instance ${instance} (site ${site_name})")
     }
     $config2 = merge($config, {'tls_certificate_bundle' => $tls_certificate_bundle})
   } else {
@@ -104,5 +104,15 @@ define sunet::frontend::load_balancer::website2(
   }
   exec { "workaround_allow_forwarding_to_${instance}":
     command => "/usr/sbin/ufw route allow out on br-${instance}",
+  }
+
+  # Create backend directory for this website so that the sunetfrontend-api will
+  # accept register requests from the servers
+  file {
+    "${basedir}/api/backends/${site_name}":
+      ensure => 'directory',
+      group  => 'sunetfrontend',
+      mode   => '0770',
+      ;
   }
 }

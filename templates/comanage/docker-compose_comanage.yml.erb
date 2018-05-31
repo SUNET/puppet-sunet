@@ -1,7 +1,7 @@
 version: '2.0'
 services:
     comanage-registry-database:
-        image: comanage-registry-postgres
+        image: docker.sunet.se/comanage-registry-postgres
         volumes:
             - /opt/comanage-registry-deployment/postgres-data:/var/lib/postgresql/data
             - /opt/comanage-registry-deployment/secrets:/run/secrets
@@ -18,7 +18,7 @@ services:
             - "5432:5432"
 
     comanage-registry-ldap:
-        image: comanage-registry-slapd
+        image: docker.sunet.se/comanage-registry-slapd
         volumes:
             - /opt/comanage-registry-deployment/slapd-data:/var/lib/ldap
             - /opt/comanage-registry-deployment/slapd-config:/etc/ldap/slapd.d
@@ -38,7 +38,7 @@ services:
             - "389:389"
 
     comanage-registry:
-        image: docker.sunet.se/comanage-registry:3.0.0-shibboleth-sp
+        image: docker.sunet.se/comanage-registry:3.1.0-shibboleth-sp
         depends_on:
             - comanage-registry-ldap
             - comanage-registry-database
@@ -68,7 +68,7 @@ services:
             - COMANAGE_REGISTRY_EMAIL_ACCOUNT_PASSWORD=<%= @comanage_email_password %>
             - COMANAGE_REGISTRY_SECURITY_SALT=<%= @comanage_security_salt %>
             - COMANAGE_REGISTRY_SECURITY_SEED=<%= @comanage_security_seed %>
-            - COMANAGE_REGISTRY_ENABLE_PLUGIN=IdentifierEnroller
+            - COMANAGE_REGISTRY_ENABLE_PLUGIN=IdentifierEnroller,MailmanProvisioner
             - SHIBBOLETH_SP_ENTITY_ID=https://comanage.sunet.se/shibboleth
             - SHIBBOLETH_SP_CERT=/run/secrets/shibboleth_sp_cert_file
             - SHIBBOLETH_SP_PRIVKEY=/run/secrets/shibboleth_sp_privkey_file
