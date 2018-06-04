@@ -50,7 +50,7 @@ define sunet::misc::certbundle(
       })
 
     $bundle_args = join($bundle, ' ')
-    #notice("Creating ${outfile} with command /usr/local/sbin/cert-bundler --syslog $bundle_args")
+    #notice("Creating file with command /usr/local/sbin/cert-bundler --syslog --group ${group} $bundle_args")
     ensure_resource('exec', "create_${name}", {
       'command' => "/usr/local/sbin/cert-bundler --syslog --group ${group} ${bundle_args}",
       'unless'  => "/usr/local/sbin/cert-bundler --unless --group ${group} ${bundle_args}",
