@@ -30,7 +30,7 @@ class sunet::rsyslog(
   }
 
   if ($tcp_port or $udp_port) {
-     $common = ["set /files/etc/rsyslog.conf/\$ModLoad imuxsock", "set /files/etc/rsyslog.conf/\$ModLoad imklog"]
+     $common = ['set /files/etc/rsyslog.conf/\$ModLoad imuxsock', 'set /files/etc/rsyslog.conf/\$ModLoad imklog']
      $set_udp = $udp_port ? {
         undef   => [],
         default => ['set /files/etc/rsyslog.conf/\$ModLoad imudp',"set /files/etc/rsyslog.conf/\$UDPServerRun $udp_port"]
