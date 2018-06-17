@@ -3,10 +3,10 @@
 
 <% if @udp_port -%>
 module(load="imudp")
-input(type="imudp",port="<%= @udp_port %>")
+input(type="imudp" port="<%= @udp_port %>")
 <% end -%>
 
 <% if @tcp_port -%>
 module(load="imtcp")
-input(type="imtcp",port="<%= @tcp_port %>")
+input(type="imtcp" port="<%= @tcp_port %>")
 <% end -%>
