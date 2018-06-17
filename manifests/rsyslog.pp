@@ -2,7 +2,9 @@ class sunet::rsyslog(
   $syslog_servers = hiera_array('syslog_servers',[]),
   $relp_syslog_servers = hiera_array('relp_syslog_servers',[]),
   $udp_port = hiera('udp_port',undef),
+  $udp_client = hiera('udp_client',"any"),
   $tcp_port = hiera('tcp_port',undef),
+  $tcp_client = hiera('tcp_client',"any"),
 ) {
   ensure_resource('package', 'rsyslog', {
     ensure => 'installed'
@@ -27,17 +29,35 @@ class sunet::rsyslog(
       })
   }
 
-  $set_udp = $udp_port ? {
-     undef   => [],
-     default => ["set \$ModLoad imudp","set \$UDPServerRun $udp_port"]
-  }
-
-  $set_tcp = $tcp_port ? {
-     undef   => [],
-     default => ["set \$ModLoad imtcp","set \$TCPServerRun $tcp_port"]
-  }
-
   if ($tcp_port or $udp_port) {
+     $set_udp = $udp_port ? {
+        undef   => [],
+        default => ["set \$ModLoad imudp","set \$UDPServerRun $udp_port"]
+     }
+
+     $set_tcp = $tcp_port ? {
+        undef   => [],
+        default => ["set \$ModLoad imtcp","set \$TCPServerRun $tcp_port"]
+     }
+
+     if ($udp_port) {
+        ufw::allow { "allow-syslog-udp-${udp_port}": 
+           from  => "${udp_client}",
+           ip    => 'any',
+           proto => 'udp',
+           port  => "${udp_port}"
+        }
+     }
+
+     if ($tcp_port) {
+        ufw::allow { "allow-syslog-tcp-${tcp_port}":
+           from  => "${tcp_client}",
+           ip    => 'any',
+           proto => 'tcp',
+           port  => "${tcp_port}"
+        }
+     }
+
      $changes = flatten([$set_udp,$set_tcp])
      include augeas
      augeas { "rsyslog_conf":
