@@ -32,12 +32,12 @@ class sunet::rsyslog(
   if ($tcp_port or $udp_port) {
      $set_udp = $udp_port ? {
         undef   => [],
-        default => ["set \$ModLoad imudp","set \$UDPServerRun $udp_port"]
+        default => ['set /files/etc/rsyslog.conf/\$ModLoad imudp',"set /files/etc/rsyslog.conf/\$UDPServerRun $udp_port"]
      }
 
      $set_tcp = $tcp_port ? {
         undef   => [],
-        default => ["set \$ModLoad imtcp","set \$TCPServerRun $tcp_port"]
+        default => ['set /files/etc/rsyslog.conf/\$ModLoad imtcp',"set /files/etc/rsyslog.conf/\$TCPServerRun $tcp_port"]
      }
 
      if ($udp_port) {
