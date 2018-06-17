@@ -54,6 +54,7 @@ class sunet::rsyslog(
        mode    => '644',
        content => template('sunet/rsyslog/rsyslog-local.conf.erb'),
        require => Package['rsyslog'],
+       notify  => Service['rsyslog']
      }
 
   }
