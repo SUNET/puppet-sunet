@@ -38,7 +38,7 @@ class sunet::rsyslog(
   }
 
   if ($tcp_port or $udp_port) {
-     $changes = flatten($set_udp,$set_tcp)
+     $changes = flatten([$set_udp,$set_tcp])
      include augeas
      augeas { "rsyslog_conf":
         context => "/files/etc/rsyslog.conf",
