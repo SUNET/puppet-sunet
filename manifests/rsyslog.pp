@@ -37,7 +37,7 @@ class sunet::rsyslog(
      default => ["set \$ModLoad imtcp","set \$TCPServerRun $tcp_port"]
   }
 
-  if $tcp_port || $udp_port {
+  if ($tcp_port or $udp_port) {
      $changes = flatten($set_udp,$set_tcp)
      include augeas
      augeas { "rsyslog_conf":
