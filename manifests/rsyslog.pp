@@ -61,7 +61,6 @@ class sunet::rsyslog(
      $changes = flatten([$set_udp,$set_tcp])
      include augeas
      augeas { "rsyslog_conf":
-        incl    => "/etc/rsyslog.conf",
         context => "/files/etc/rsyslog.conf",
         changes => $changes,
         notify  => Service['rsyslog']
