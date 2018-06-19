@@ -10,9 +10,16 @@ class sunet::security::configure_sshd(
     ensure    => 'running',
   }
 
-  $set_ed25519_key = $::operatingsystemrelease ? {
-    '12.04' => [],  # ubuntu 12.04 sshd does not support ed25519, hopefully everything else does
-    default => ['set HostKey /etc/ssh/ssh_host_ed25519_key'],
+  if $::operatingsystemrelease != '12.04' {
+    # Generate an ed25519 ssh host key. Ubuntu 12.04 does not support that, but hopefully
+    # everything running !ubuntu does so we only exclude 12.04.
+    exec { "ed25519-ssh-host-key":
+      command => 'ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key',
+      onlyif  => 'test ! -s /etc/ssh/ssh_host_ed25519_key.pub -o ! -s /etc/ssh/ssh_host_ed25519_key'
+    }
+    $set_ed25519_key = ['set HostKey /etc/ssh/ssh_host_ed25519_key']
+  } else {
+    $set_ed25519_key = []
   }
 
   include augeas
