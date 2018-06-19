@@ -8,4 +8,9 @@ class sunet::auditd {
                   "set /files/etc/audisp/plugins.d/syslog.conf/args \"LOG_INFO\""],
       notify  => Service['auditd']
    }
+   file { '/etc/audit/audit.rules': 
+      content => templates("sunet/audit/audit.rules.erb"),
+      mode    => '0600',
+      notify  => Service['auditd']
+   }
 }
