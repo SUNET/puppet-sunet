@@ -10,14 +10,22 @@ class sunet::security::configure_sshd(
     ensure    => 'running',
   }
 
+  $set_ed25519_key = $::operatingsystemrelease ? {
+    '12.04' => [],  # ubuntu 12.04 sshd does not support ed25519, hopefully everything else does
+    default => ['set HostKey /etc/ssh/ssh_host_ed25519_key'],
+  }
+
   include augeas
   augeas { "sshd_config":
     context => "/files/etc/ssh/sshd_config",
-    changes => [
-                "set PasswordAuthentication no",
-                "set X11Forwarding no",
-                "set LogLevel VERBOSE",  # log pubkey used for root login
-                ],
+    changes => flatten([
+                        "set PasswordAuthentication no",
+                        "set X11Forwarding no",
+                        "set LogLevel VERBOSE",  # log pubkey used for root login
+                        "rm HostKey /etc/ssh/ssh_host_dsa_key",
+                        ],
+                        $set_ed25519_key,
+                       )
     notify  => Service['ssh'],
     require => Package['openssh-server'],
   }
