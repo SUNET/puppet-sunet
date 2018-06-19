@@ -32,7 +32,7 @@ class sunet::security::configure_sshd(
                         "rm HostKey /etc/ssh/ssh_host_dsa_key",
                         ],
                         $set_ed25519_key,
-                       )
+                       ),
     notify  => Service['ssh'],
     require => Package['openssh-server'],
   }
