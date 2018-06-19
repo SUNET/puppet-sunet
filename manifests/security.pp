@@ -31,8 +31,8 @@ class sunet::security::configure_sshd(
                         "set PasswordAuthentication no",
                         "set X11Forwarding no",
                         "set LogLevel VERBOSE",  # log pubkey used for root login
-                        "rm HostKey",
-                        $set_hostkey,
+                        #"rm HostKey",
+                        #$set_hostkey,
                         ]),
     notify  => Service['ssh'],
     require => Package['openssh-server'],
