@@ -37,7 +37,7 @@ a = AuthOptions({
 
 alt_dns_servers = ['<%= @name_servers[0] %>', '<%= @name_servers[1] %>', '<%= @name_servers[2] %>']
 
-rd = pytter.Pytter('<%= @primary_dns_server %>.', 'hostmaster.<%= @domain %>.', alt_dns_servers)
+rd = pytter.Pytter('<%= @fqdn %>.', 'hostmaster.<%= @domain %>.', alt_dns_servers)
 rd.aggregate_v6 = 48
 
 # check if serial file exists

@@ -51,12 +51,6 @@ class sunet::flog {
       group  => 'www-data',
       mode   => '1775',
    } ->
-   file { "/opt/flog/nginx/certs/flog.sunet.se.key":
-     ensure  => file,
-     path    => "/opt/flog/nginx/certs/flog.sunet.se.key",
-     mode    => '0640',
-     content => hiera('server_cert_key', 'NOT_SET_IN_HIERA'),
-   } ->
    file { "/opt/flog/dotenv":
        ensure  => file,
        path    => "/opt/flog/dotenv",
@@ -97,8 +91,8 @@ class sunet::flog {
    }
    sunet::docker_run {'flog-nginx':
       image     => 'docker.sunet.se/eduid/nginx',
-      ports     => ['80:80', '443:443'],
-      volumes   => ['/opt/flog/nginx/sites-enabled/:/etc/nginx/sites-enabled/','/opt/flog/nginx/certs/:/etc/nginx/certs', '/var/log/flog_nginx/:/var/log/nginx', '/opt/flog/static/:/var/www/static/'],
+      ports     => ['443:443'],
+      volumes   => ['/opt/flog/nginx/sites-enabled/:/etc/nginx/sites-enabled/', '/etc/dehydrated/certs:/etc/nginx/certs:ro', '/var/log/flog_nginx/:/var/log/nginx', '/opt/flog/static/:/var/www/static/'],
       depends   => ['flog-app']
    }
 }

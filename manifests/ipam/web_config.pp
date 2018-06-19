@@ -18,10 +18,6 @@ class sunet::ipam::web_config {
       enable => true,
       }
 
-  # Domain name of the host which uses this manifest. The variable is used in nipap-default.conf.erb
-  # and nipap-www.ini.erb template.
-  $domain = $::domain
-
   # Configuration of the web service follows.
   file { '/etc/apache2/sites-available/nipap-default.conf':
     ensure  => file,

@@ -11,8 +11,6 @@ class sunet::ni(
   $ni_database_pwd = safe_hiera ('ni_database_password',[])
   $noclook_secret_key = safe_hiera ('noclook_secret_key',[])
   $google_api_key = safe_hiera ('google_api_key',[])
-  $domain = $::domain
-  $hostname = $::hostname
 
   service { 'neo4j':
     ensure => running,

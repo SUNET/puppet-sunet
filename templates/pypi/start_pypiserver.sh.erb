@@ -22,7 +22,8 @@ chown -R pypi: "${log_dir}"
 
 echo ""
 echo "$0: Starting ${run}"
-exec ${run} --fallback-url https://pypi.python.org/simple \
+exec start-stop-daemon --start -c pypi:pypi --exec ${run} -- \
+    --fallback-url https://pypi.python.org/simple \
     --log-file "${log_dir}/pypiserver.log" \
     -v -v \
     $packages_dir

@@ -29,9 +29,6 @@ class sunet::ipam::dns_config {
   # Array of zones that the host is master to.
   $zones = hiera_array('zones',[])
 
-  # Hostname of SOA in zone records. The variable is used in nipap2bind.erb template.
-  $primary_dns_server = $::fqdn
-
   # Hostnames of the name servers in zone records. The variable is used in nipap2bind.erb template.
   $name_servers = ['ns1.sunet.se.', 'sunic.sunet.se.', 'server.nordu.net.']
 

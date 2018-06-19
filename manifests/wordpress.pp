@@ -8,7 +8,7 @@ define sunet::wordpress (
   $wordpress_version = "4.1.1",
   # Here one can specify e.g. ${::ipaddress_eth1}:8080:80
   $wordpress_ports   = "8080:80",
-  $myqsl_version     = "5.7",
+  $mysql_version     = "5.7",
   $mysql_user        = undef,
   $mysql_db_name     = undef,
   $mysql_dump        = false

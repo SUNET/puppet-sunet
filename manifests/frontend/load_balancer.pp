@@ -99,7 +99,7 @@ class sunet::frontend::load_balancer(
                  "key=${snakeoil_key}",
                  "out=${snakeoil_bundle}",
                  ],
-      group  => 'haproxy',
+      group  => 'ssl-cert',
     }
   } else {
     fail('No/bad SUNET frontend load balancer config found in hiera')

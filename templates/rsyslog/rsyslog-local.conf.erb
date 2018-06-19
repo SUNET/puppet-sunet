@@ -1,0 +1,12 @@
+# Local udp/tcp syslog configuration managed by Puppet (sunet::rsyslog)
+#
+
+<% if @udp_port -%>
+module(load="imudp")
+input(type="imudp" port="<%= @udp_port %>")
+<% end -%>
+
+<% if @tcp_port -%>
+module(load="imtcp")
+input(type="imtcp" port="<%= @tcp_port %>")
+<% end -%>
