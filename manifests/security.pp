@@ -18,7 +18,7 @@ class sunet::security::configure_sshd(
       onlyif  => 'test ! -s /etc/ssh/ssh_host_ed25519_key.pub -o ! -s /etc/ssh/ssh_host_ed25519_key'
     }
     $set_hostkey = ['set HostKey[1] /etc/ssh/ssh_host_ed25519_key',
-                    'set HostKey[2] /etc/ssh/ssh_host_rsa_key',
+                    #'set HostKey[2] /etc/ssh/ssh_host_rsa_key',
                     ]
   } else {
     $set_hostkey = ['set HostKey[1] /etc/ssh/ssh_host_rsa_key']
