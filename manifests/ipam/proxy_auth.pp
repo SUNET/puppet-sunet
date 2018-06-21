@@ -4,7 +4,7 @@ class sunet::ipam::proxy_auth {
 
   # Install dependencies for mod_auth_mellon which is an authentication module for Apache.
   package { ['pkg-config', 'liblasso3', 'libapache2-mod-auth-mellon']:
-  	ensure => installed,
+    ensure => installed,
   }
 
   # The file contains configurations for proxy authentication via nipap web GUI.
