@@ -2,7 +2,7 @@
     ServerName ipam.<%= @domain %>
     ProxyPass /.well-known/acme-challenge http://acme-c.sunet.se/.well-known/acme-challenge/
     ProxyPassReverse /.well-known/acme-challenge http://acme-c.sunet.se/.well-known/acme-challenge/
-    Redirect permanent / https://ipam.<%= @domain %>
+    Redirect permanent / https://ipam.<%= @domain %>/
     <IfModule mod_headers.c>
         Header always set Strict-Transport-Security "max-age=15768000; includeSubDomains; preload"
         Header always set X-Frame-Options "DENY"

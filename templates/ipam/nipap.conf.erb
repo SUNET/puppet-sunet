@@ -95,7 +95,7 @@ db_sslmode = require            ; database SSL mode
 # --------------------------------------------
 #
 [auth]
-default_backend = nordunet                ; which backend to use by default
+default_backend = local                ; which backend to use by default
 auth_cache_timeout = 3600              ; seconds cached auth entries are stored
 
 # example backend with SQLite
@@ -105,13 +105,13 @@ type = SqliteAuth
 db_path = /etc/nipap/local_auth.db     ; path to SQLite database used
 
 # example backend for LDAP
-[auth.backends.nordunet]
-type = LdapAuth
+#[auth.backends.nordunet]
+#type = LdapAuth
 #
-basedn = ou=people,dc=nordu,dc=net
-uri = ldap://ldap.nordu.net
-binddn_fmt = uid={},ou=people,dc=nordu,dc=net
-search = uid={}                        ; LDAP search filter
+#basedn = ou=people,dc=nordu,dc=net
+#uri = ldap://ldap.nordu.net
+#binddn_fmt = uid={},ou=people,dc=nordu,dc=net
+#search = uid={}                        ; LDAP search filter
 #basedn = ou=Users,dc=example,dc=com       ; base DN
 #uri = ldaps://ldap.example.com            ; LDAP server URI
 #tls = False                            ; initiate TLS, use ldap://
@@ -156,8 +156,8 @@ search = uid={}                        ; LDAP search filter
 # Examples:
 #
 # Everyone with an account can login and gets read/write access:
-rw_group = cn=ndn-sysadmin,ou=groups,dc=nordu,dc=net
-ro_group =
+#rw_group = cn=ndn-sysadmin,ou=groups,dc=nordu,dc=net
+#ro_group =
 ##
 # Users specified by rw_group, i.e. 'tech', gets read/write access, everyone
 # else gets read only access:
@@ -190,3 +190,11 @@ xmlrpc_uri = http://nipap-www@local:<%= @web_ui_password %>@127.0.0.1:1337
 # just greet the user.
 #welcome_message = Welcome to NIPAP at COMPANY. Please login using your XYZ credentials.
 welcome_message = <%= @welcome_message %>
+
+[auth.proxy]
+header = MELLON_EPPN
+full_name_header = MELLON_DISPLAY_NAME
+rw_header = MELLON_ENTITLEMENTS
+rw_values = urn:x-ldapgroup:ndn-sysadmin
+rw_split = ;
+ro_values = __DENY__
