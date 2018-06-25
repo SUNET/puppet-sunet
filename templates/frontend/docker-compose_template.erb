@@ -7,7 +7,10 @@ services:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     expose:
       - "443"
-    restart: always
+    # No point in restarting the haproxy container - the systemd service ExecStartPost will not
+    # execute again, so the restarted haproxy container won't get the sarimner0 interface and
+    # nothing will work anyways until the whole service is restarted
+    restart: never
     volumes:
       - '/dev/log:/dev/log'
 <% if @tls_certificate_bundle -%>
