@@ -212,7 +212,12 @@ def main(myname = 'haproxy-status', args = None, logger_in = None, defaults = _d
         formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
         syslog_h.setFormatter(formatter)
         logger.addHandler(syslog_h)
-
+    elif not args.debug:
+        # log to stdout when not using syslog
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+        stream_h = logging.StreamHandler(sys.stdout)
+        stream_h.setFormatter(formatter)
+        logger.addHandler(stream_h)
 
     try:
         status = get_status(args)
