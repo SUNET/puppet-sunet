@@ -52,7 +52,17 @@ define sunet::frontend::load_balancer::website2(
     'frontend_fqdn' => $::fqdn,
   })
 
-  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}"], { owner => 'root', group => 'root', mode => '0700' })
+  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
+                                              "${confdir}/${instance}/certs",
+                                              ], { owner => 'root', group => 'root', mode => '0700' })
+
+  # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
+  # so the service can be restarted
+  file {
+    "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
+      source => $tls_certificate_bundle,
+      notify => Sunet::Docker_compose["frontend-${instance}"],
+  }
 
   # 'export' config to one YAML file per instance
   file {
