@@ -78,7 +78,7 @@ define sunet::frontend::load_balancer::website2(
   # Parameters used in frontend/docker-compose_template.erb
   $haproxy_image    = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag = pick($config['haproxy_imagetag'], 'stable')
-  $haproxy_volumes  = pick($config['haproxy_volumes'], '')
+  $haproxy_volumes  = pick($config['haproxy_volumes'], false)
   $varnish_image    = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
   $varnish_imagetag = pick($config['varnish_imagetag'], 'stable')
   $varnish_config   = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
