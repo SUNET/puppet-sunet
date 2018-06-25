@@ -13,4 +13,14 @@ class sunet::auditd {
       mode    => '0600',
       notify  => Service['auditd']
    }
+   file { '/etc/audit/rules.d/audit.rules':
+      content => template("sunet/audit/audit.rules.erb"),
+      mode    => '0600',
+      notify  => Service['auditd']
+   }
+   file { '/etc/audit/rules.d/sunet.rules':
+      content => template("sunet/audit/sunet.rules.erb"),
+      mode    => '0600',
+      notify  => Service['auditd']
+   }
 }
