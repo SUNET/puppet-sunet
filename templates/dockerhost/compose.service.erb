@@ -29,7 +29,7 @@ ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> rm -f
 <% if @pull_on_start != true -%>#<% end -%>ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> pull
 
 <% if @run_command -%>
-ExecStart=/usr/local/bin/docker-compose -f <%= @compose_file %> run <% @run_command %>
+ExecStart=/usr/local/bin/docker-compose -f <%= @compose_file %> run <%= @run_command %>
 <% else -%>
 ExecStart=/usr/local/bin/docker-compose -f <%= @compose_file %> up --force-recreate --no-deps
 <% end -%>
