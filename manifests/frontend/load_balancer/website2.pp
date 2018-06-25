@@ -85,10 +85,6 @@ define sunet::frontend::load_balancer::website2(
   $varnish_enabled  = pick($config['varnish_enabled'], false)
   $varnish_storage  = pick($config['varnish_storage'], 'malloc,100M')
 
-  $run_command = $instance ? {
-    'graphs' => 'haproxy',
-    default  => undef,
-  }
   sunet::docker_compose { "frontend-${instance}":
     content          => template('sunet/frontend/docker-compose_template.erb'),
     service_prefix   => 'frontend',
@@ -97,7 +93,7 @@ define sunet::frontend::load_balancer::website2(
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
     service_extras   => ["ExecStartPost=-${basedir}/scripts/configure-container-network ${name}"],
-    run_command      => $run_command,
+    run_command      => 'haproxy',
   }
 
   each($config['backends']) | $k, $v | {
