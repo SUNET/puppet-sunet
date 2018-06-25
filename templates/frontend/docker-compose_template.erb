@@ -10,7 +10,7 @@ services:
     # No point in restarting the haproxy container - the systemd service ExecStartPost will not
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
     # nothing will work anyways until the whole service is restarted
-    restart: no
+    restart: 'no'
     volumes:
       - '/dev/log:/dev/log'
 <% if @tls_certificate_bundle -%>
