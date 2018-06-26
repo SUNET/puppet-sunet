@@ -10,14 +10,30 @@ class sunet::security::configure_sshd(
     ensure    => 'running',
   }
 
+  if $::operatingsystemrelease != '12.04' {
+    # Generate an ed25519 ssh host key. Ubuntu 12.04 does not support that, but hopefully
+    # everything running !ubuntu does so we only exclude 12.04.
+    exec { "ed25519-ssh-host-key":
+      command => 'ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key',
+      onlyif  => 'test ! -s /etc/ssh/ssh_host_ed25519_key.pub -o ! -s /etc/ssh/ssh_host_ed25519_key'
+    }
+    $set_hostkey = ['set HostKey[1] /etc/ssh/ssh_host_ed25519_key',
+                    #'set HostKey[2] /etc/ssh/ssh_host_rsa_key',
+                    ]
+  } else {
+    $set_hostkey = ['set HostKey[1] /etc/ssh/ssh_host_rsa_key']
+  }
+
   include augeas
   augeas { "sshd_config":
     context => "/files/etc/ssh/sshd_config",
-    changes => [
-                "set PasswordAuthentication no",
-                "set X11Forwarding no",
-                "set LogLevel VERBOSE",  # log pubkey used for root login
-                ],
+    changes => flatten([
+                        "set PasswordAuthentication no",
+                        "set X11Forwarding no",
+                        "set LogLevel VERBOSE",  # log pubkey used for root login
+                        "rm HostKey",
+                        $set_hostkey,
+                        ]),
     notify  => Service['ssh'],
     require => Package['openssh-server'],
   }
