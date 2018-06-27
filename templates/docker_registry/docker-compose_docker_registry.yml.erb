@@ -2,7 +2,7 @@
 version: '2.1'
 services:
     registry:
-        image: registry:<% registry_tag %>
+        image: registry:<% @registry_tag %>
         container_name: registry
         depends_on:
             - registry-auth
