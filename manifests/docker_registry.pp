@@ -1,8 +1,9 @@
 class sunet::docker_registry (
-    String $public_hostname          = 'docker.sunet.se',
+    String $public_hostname          = 'docker.example.com',
     String $registry_images_basedir  = '/var/lib/registry',
     String $registry_conf_basedir    = '/etc/docker/registry',
     String $apache_conf_basedir      = '/etc/apache2',
+    String $registry_tag             = '2',
 ) {
     ensure_resource('sunet::system_user', 'www-data', {
         username => 'www-data',
