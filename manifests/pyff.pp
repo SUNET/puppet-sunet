@@ -49,6 +49,6 @@ define sunet::pyff(
    file {'/usr/local/bin/mirror-mdq.sh':
       ensure      => file,
       mode        => '0755',
-      content     => template("sunet/pyff/mirror_mdq.sh.erb")
+      content     => template("sunet/pyff/mirror-mdq.sh")
    }
 }
