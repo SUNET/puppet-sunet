@@ -19,10 +19,10 @@ services:
             - 443:443
         volumes:
             - <%= @apache_conf_basedir %>/sites-available/registry-auth-ssl.conf:/etc/apache2/sites-available/registry-auth-ssl.conf:ro
-            - /etc/dehydrated/certs/<%= @public_hostname %>.key:/etc/ssl/private/<%= @public_hostname %>.key:ro
-            - /etc/dehydrated/certs/<%= @public_hostname %>.crt:/etc/ssl/certs/<%= @public_hostname %>.crt:ro
-            - /etc/dehydrated/certs/<%= @public_hostname %>-chain.crt:/etc/ssl/certs/<%= @public_hostname %>-chain.crt
-            - /etc/ssl/certs/<%= @public_hostname %>-client-ca.crt:/etc/ssl/certs/<%= @public_hostname %>-client-ca.crt:ro
+            - /etc/dehydrated/certs/<%= @fqdn %>.key:/etc/ssl/private/<%= @fqdn %>.key:ro
+            - /etc/dehydrated/certs/<%= @fqdn %>.crt:/etc/ssl/certs/<%= @fqdn %>.crt:ro
+            - /etc/dehydrated/certs/<%= @fqdn %>-chain.crt:/etc/ssl/certs/<%= @fqdn %>-chain.crt
+            - /etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt:/etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt:ro
 
     always-https:
         image: docker.sunet.se/always-https
