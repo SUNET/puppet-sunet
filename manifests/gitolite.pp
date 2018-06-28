@@ -1,5 +1,5 @@
 
-class sunet::gitolite($username='git',$group='git',$ssh_key=undef,$manage_gitweb=true) {
+class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
    ensure_resource('sunet::system_user', $username, {
       username   => $username,
       group      => $group,
