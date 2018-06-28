@@ -1,5 +1,6 @@
 class sunet::docker_registry (
-    String $public_hostname          = 'docker.example.com',
+    String $registry_public_hostname = 'docker.example.com',
+    String $fqdn                     = 'docker-prod-1.example.com',
     String $registry_images_basedir  = '/var/lib/registry',
     String $registry_conf_basedir    = '/etc/docker/registry',
     String $apache_conf_basedir      = '/etc/apache2',
@@ -39,7 +40,7 @@ class sunet::docker_registry (
         content => template('sunet/docker_registry/registry-auth-ssl.erb')
     }
 
-    file { "/etc/ssl/certs/${public_hostname}-client-ca.crt":
+    file { "/etc/ssl/certs/${registry_public_hostname}-client-ca.crt":
         ensure  => file,
         mode    => '0444',
         group   => 'www-data',

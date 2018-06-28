@@ -1,5 +1,5 @@
 <VirtualHost *:443>
-    ServerName <%= @public_hostname %>
+    ServerName <%= @registry_public_hostname %>
     SSLEngine On
     SSLProtocol             all -SSLv3 -TLSv1 -TLSv1.1
     SSLCipherSuite          ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA25
@@ -7,20 +7,20 @@
     SSLCompression          off
     SSLSessionTickets       off
 
-    SSLCertificateFile /etc/ssl/certs/<%= @public_hostname %>.crt
-    SSLCertificateChainFile /etc/ssl/certs/<%= @public_hostname %>-chain.crt
-    SSLCertificateKeyFile /etc/ssl/private/<%= @public_hostname %>.key
+    SSLCertificateFile /etc/ssl/certs/<%= @fqdn %>.crt
+    SSLCertificateChainFile /etc/ssl/certs/<%= @fqdn %>-chain.crt
+    SSLCertificateKeyFile /etc/ssl/private/<%= @fqdn %>.key
 
     # Everyone who wants to POST something have to present a client cert
     # that is signed by this CA.
-    SSLCACertificateFile /etc/ssl/certs/<%= @public_hostname %>-client-ca.crt
+    SSLCACertificateFile /etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt
     SSLVerifyClient optional
     SSLVerifyDepth 1
     DocumentRoot /var/www/
 
     ServerAdmin noc@example.com
 
-    Header set Host "<%= @public_hostname %>"
+    Header set Host "<%= @registry_public_hostname %>"
     RequestHeader set X-Forwarded-Proto "https"
 
     # HSTS (mod_headers is required) (15768000 seconds = 6 months)
