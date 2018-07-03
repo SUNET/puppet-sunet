@@ -184,6 +184,14 @@ define sunet::snippets::secret_file(
   }
 }
 
+define sunet::snippets::reinstall::keep() {
+   ensure_resource('file','/etc/sunet-reinstall.keep',{owner=>'root',group=>'root',mode=>'0644'})
+   exec { "preserve_$name_during_reinstall":
+      command => "echo $name >> /etc/sunet-reinstall.keep",
+      onlyif  => "grep -qv '^$name\$' /etc/sunet-reinstall.keep"
+   }
+}
+
 define sunet::snippets::ssh_command(
   $user         = 'root',
   $manage_user  = false,
