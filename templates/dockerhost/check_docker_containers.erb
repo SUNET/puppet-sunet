@@ -240,6 +240,13 @@ def check_containers(expect, args, logger):
         logger.debug('Docker inspect {!r}'.format(this))
         data = docker_inspect(this, logger)
         if not data:
+            # try to find containers started with docker-compose run too
+            if this.endswith('_1'):
+                data = docker_inspect(this[:-2] + '_run_1', logger)
+                if data:
+                    # update 'this' for logging below
+                    this = this[:-2] + '_run_1'
+        if not data:
             critical.append('{!s} not found'.format(this))
             continue
         try:
