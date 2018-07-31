@@ -56,4 +56,12 @@ class sunet::docker_registry (
         description      => 'docker-registry service',
     }
 
+    sunet::scriptherder::cronjob { 'check_for_updated_docker_image':
+        cmd           => '/usr/local/bin/check_for_updated_docker_image',
+        hour          => '1',
+        minute        => '5',
+        ok_criteria   => ['exit_status=0'],
+        warn_criteria => ['max_age=5d']
+    }
+
 }
