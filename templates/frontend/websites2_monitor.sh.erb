@@ -8,6 +8,11 @@
 
 basedir='<%= @basedir %>'
 
+while [ -f "${basedir}"/monitor/EXABGP_MONITOR_DISABLE ]; do
+    echo "# Not announcing anything while the file ${basedir}/monitor/EXABGP_MONITOR_DISABLE exists"
+    sleep 20
+done
+
 # initial announce of everything on startup
 cat "${basedir}"/monitor/*/announce
 
