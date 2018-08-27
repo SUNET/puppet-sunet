@@ -309,11 +309,9 @@ define sunet::dehydrated::client_define(
        })
      sunet::scriptherder::cronjob { "check_cert_${domain}":
        cmd           => "/usr/bin/check_cert.sh ${domain}",
-       minute        => '30',
-       hour          => '9',
-       weekday       => '1',
-       ok_criteria   => ['exit_status=0','max_age=8d'],
-       warn_criteria => ['exit_status=1','max_age=15d'],
+       minute        => '18',
+       ok_criteria   => ['exit_status=0','max_age=2h'],
+       warn_criteria => ['exit_status=1','max_age=1d'],
      }
   }
 }
