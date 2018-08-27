@@ -222,7 +222,7 @@ class sunet::dehydrated::client(
   String  $server='acme-c.sunet.se',
   String  $user='root',
   Boolean $ssl_links=false,
-  Boolean $check_cert=false,
+  Boolean $check_cert=true,
   Optional[String] $ssh_id=undef,
   Boolean $single_domain=true,
 ) {
@@ -243,7 +243,7 @@ define sunet::dehydrated::client_define(
   String  $server='acme-c.sunet.se',
   String  $user='root',
   Boolean $ssl_links=false,
-  Boolean $check_cert=false,
+  Boolean $check_cert=true,
   Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
   Boolean $single_domain=true,
 ) {
