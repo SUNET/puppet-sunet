@@ -108,6 +108,7 @@ define sunet::frontend::load_balancer::website(
     sunet::dehydrated::client_define { $name :
       domain        => $name,
       server        => $letsencrypt_server,
+      check_cert    => false,
       ssh_id        => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
       single_domain => false,
     }
