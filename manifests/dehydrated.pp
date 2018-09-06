@@ -222,18 +222,20 @@ class sunet::dehydrated::client(
   String  $server='acme-c.sunet.se',
   String  $user='root',
   Boolean $ssl_links=false,
-  Boolean $check_cert=false,
+  Boolean $check_cert=true,
+  String  $check_cert_port='443',
   Optional[String] $ssh_id=undef,
   Boolean $single_domain=true,
 ) {
   sunet::dehydrated::client_define { "domain_${domain}":
-    domain        => $domain,
-    server        => $server,
-    user          => $user,
-    ssl_links     => $ssl_links,
-    check_cert    => $check_cert,
-    ssh_id        => $ssh_id,
-    single_domain => $single_domain,
+    domain          => $domain,
+    server          => $server,
+    user            => $user,
+    ssl_links       => $ssl_links,
+    check_cert      => $check_cert,
+    check_cert_port => $check_cert_port,
+    ssh_id          => $ssh_id,
+    single_domain   => $single_domain,
   }
 }
 
@@ -243,7 +245,8 @@ define sunet::dehydrated::client_define(
   String  $server='acme-c.sunet.se',
   String  $user='root',
   Boolean $ssl_links=false,
-  Boolean $check_cert=false,
+  Boolean $check_cert=true,
+  String  $check_cert_port='443',
   Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
   Boolean $single_domain=true,
 ) {
@@ -308,12 +311,12 @@ define sunet::dehydrated::client_define(
        content => template('sunet/dehydrated/check_cert.erb'),
        })
      sunet::scriptherder::cronjob { "check_cert_${domain}":
-       cmd           => "/usr/bin/check_cert.sh ${domain}",
-       minute        => '30',
-       hour          => '9',
-       weekday       => '1',
-       ok_criteria   => ['exit_status=0','max_age=8d'],
-       warn_criteria => ['exit_status=1','max_age=15d'],
+       cmd           => "/usr/bin/check_cert.sh ${domain} ${check_cert_port}",
+       minute        => '18',
+       hour          => '*',
+       weekday       => '*',
+       ok_criteria   => ['exit_status=0','max_age=2h'],
+       warn_criteria => ['exit_status=1','max_age=1d'],
      }
   }
 }
