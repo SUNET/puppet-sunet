@@ -30,7 +30,6 @@ services:
 
     depends_on:
       - config
-      - monitor
     environment:
       - 'WAIT_FOR_INTERFACE=sarimner0'
 <% if @varnish_enabled == true -%>
@@ -78,6 +77,8 @@ services:
       - 'HOSTFQDN=<%= @fqdn %>'
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
+    depends_on:
+      - haproxy
 
 volumes:
   haproxy_data:
