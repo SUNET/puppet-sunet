@@ -1,5 +1,5 @@
 
-class sunet::gitolite($username='git',$group='git',$ssh_key=undef,$manage_gitweb=true) {
+class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
    ensure_resource('sunet::system_user', $username, {
       username   => $username,
       group      => $group,
@@ -7,6 +7,7 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef,$manage_gitweb
       shell      => '/bin/bash' 
    })
    $hostname = $::fqdn
+   $shortname = $::hostname
    $home = $username ? {
       'root'    => '/root',
       default   => "/home/${username}"
@@ -32,15 +33,15 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef,$manage_gitweb
       }
    } ->
    package {'gitolite3': ensure => latest } ->
-   exec {'gitolite-setup':
-      command     => "gitolite setup -pk $home/admin.pub",
-      user        => $username,
-      environment => ["HOME=$home"]
-   } ->
    file { "$home/.gitolite.rc":
       ensure  => file,
       content => template("sunet/gitolite/gitolite-rc.erb"),
       owner   => $username,
       group   => $group
+   } ->
+   exec {'gitolite-setup':
+      command     => "gitolite setup -pk $home/admin.pub",
+      user        => $username,
+      environment => ["HOME=$home"]
    }
 }

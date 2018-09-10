@@ -37,7 +37,7 @@ my $number_of_errors = 0;
 
 open(FILE,$filename) or die "Can't open $filename for reading: $!\n";
 while (<FILE>) {
-    if ($count >= $line_number)
+    if (($count >= $line_number) && (length( $_ ) > 1))
     {
         chomp;
         push (@dnszones, substr($_, 4));

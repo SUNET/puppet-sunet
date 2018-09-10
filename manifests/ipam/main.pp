@@ -7,9 +7,6 @@ class sunet::ipam::main {
   package { ['postgresql',
              'postgresql-9.5-ip4r',
              'postgresql-contrib',
-             'libapache2-mod-wsgi',
-             'libldap2-dev',
-             'libsasl2-dev',
              'autopostgresqlbackup',
              'pwgen']:
     ensure => 'present',
@@ -37,7 +34,7 @@ class sunet::ipam::main {
   -> file { '/root/nipapd.preseed':
       ensure  => file,
       mode    => '0644',
-      content => template('sunet/ipam//nipapd.preseed.erb'),
+      content => template('sunet/ipam/nipapd.preseed.erb'),
       }
   -> package { 'nipapd':
       ensure       => present,
@@ -69,7 +66,7 @@ class sunet::ipam::main {
   file { '/root/change_db_password.sql':
     ensure  => file,
     mode    => '0644',
-    content => template('sunet/ipam//change_db_password.sql.erb'),
+    content => template('sunet/ipam/change_db_password.sql.erb'),
     require => Package['nipapd'],
   }
   -> exec { 'change_db_password':
@@ -87,7 +84,7 @@ class sunet::ipam::main {
   -> file { '/etc/nipap/nipap.conf':
       ensure  => file,
       mode    => '0644',
-      content => template('sunet/ipam//nipap.conf.erb'),
+      content => template('sunet/ipam/nipap.conf.erb'),
       notify  => Service['nipapd'],
       }
   # Makes postgres database administrative login for local system users 'trusted'.

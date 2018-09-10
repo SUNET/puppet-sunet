@@ -1,6 +1,7 @@
 class sunet::ipam::web_config {
 
   require sunet::ipam::main
+  require sunet::ipam::proxy_auth
 
   # The array of IP addresses that are allowed to communicate over https.
   $https_allow_servers = hiera_array('https_allow_servers',[])
@@ -10,7 +11,7 @@ class sunet::ipam::web_config {
     from => $https_allow_servers,
     port => '443',
   }
-  package { 'apache2':
+  package { ['apache2', 'libapache2-mod-wsgi']:
   	ensure => installed,
   }
   -> service { 'apache2':
@@ -29,6 +30,7 @@ class sunet::ipam::web_config {
       ensure  => file,
       mode    => '0644',
       content => template('sunet/ipam/nipap-ssl.conf.erb'),
+      notify  => Service['apache2'],
       }
   -> file { '/etc/apache2/sites-enabled/nipap-ssl.conf':
       ensure => link,

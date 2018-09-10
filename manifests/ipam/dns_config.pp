@@ -15,7 +15,7 @@ class sunet::ipam::dns_config {
     proto => $bind9_proto,
   }
   package { 'bind9':
-  	ensure => installed,
+    ensure => installed,
   }
   -> service { 'bind9':
       ensure => running,
@@ -63,6 +63,7 @@ class sunet::ipam::dns_config {
       }
   -> exec { 'reload_rndc':
       command     => 'rndc reload',
+      unless      => 'named-checkconf /etc/bind/named.conf.zones && named-checkconf /etc/bind/named.conf && named-checkconf /etc/bind/named.conf.options',
       subscribe   => File['/etc/bind/named.conf.zones'],
       refreshonly => true,
       }

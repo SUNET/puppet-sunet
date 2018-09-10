@@ -46,4 +46,9 @@ define sunet::pyff(
       ports       => $pyff_ports,
       env         => ["DATADIR=$dir","EXTRA_ARGS=$pyffd_args","PIPELINE=$pipeline","LOGLEVEL=$pyffd_loglevel"]
    }
+   file {'/usr/local/bin/mirror-mdq.sh':
+      ensure      => file,
+      mode        => '0755',
+      content     => template("sunet/pyff/mirror-mdq.sh")
+   }
 }

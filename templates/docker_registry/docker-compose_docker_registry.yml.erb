@@ -1,0 +1,33 @@
+---
+version: '2.1'
+services:
+    registry:
+        image: registry:<%= @registry_tag %>
+        container_name: registry
+        depends_on:
+            - registry-auth
+        expose:
+            - 5000
+        volumes:
+            - /etc/docker/registry/config.yml:/etc/docker/registry/config.yml:ro
+            - /var/lib/registry:/var/lib/registry:rw
+
+    registry-auth:
+        image: docker.sunet.se/sunet/docker-registry-auth:stable
+        container_name: registry-auth
+        ports:
+            - 443:443
+        volumes:
+            - <%= @apache_conf_basedir %>/sites-available/registry-auth-ssl.conf:/etc/apache2/sites-available/registry-auth-ssl.conf:ro
+            - /etc/dehydrated/certs/<%= @fqdn %>.key:/etc/ssl/private/<%= @fqdn %>.key:ro
+            - /etc/dehydrated/certs/<%= @fqdn %>.crt:/etc/ssl/certs/<%= @fqdn %>.crt:ro
+            - /etc/dehydrated/certs/<%= @fqdn %>-chain.crt:/etc/ssl/certs/<%= @fqdn %>-chain.crt
+            - /etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt:/etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt:ro
+
+    always-https:
+        image: docker.sunet.se/always-https
+        container_name: always-https
+        ports:
+            - 80:80
+        environment:
+            - "ACME_URL=http://acme-c.sunet.se"
