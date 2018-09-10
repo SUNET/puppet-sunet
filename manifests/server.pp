@@ -53,4 +53,13 @@ class sunet::server(
   if $disable_all_local_users {
     class { 'sunet::security::disable_all_local_users': }
   }
+
+  # Avoid bright red error message on Ubuntu 18.04 with Puppet 5.4
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') == 0 {
+    sunet::misc::create_dir { '/opt/puppetlabs/puppet/share/augeas/lenses':
+      owner => 'root',
+      group => 'root',
+      mode  => '0755',
+    }
+  }
 }
