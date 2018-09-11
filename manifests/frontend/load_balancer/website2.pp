@@ -52,7 +52,17 @@ define sunet::frontend::load_balancer::website2(
     'frontend_fqdn' => $::fqdn,
   })
 
-  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}"], { owner => 'root', group => 'root', mode => '0700' })
+  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
+                                              "${confdir}/${instance}/certs",
+                                              ], { owner => 'root', group => 'root', mode => '0700' })
+
+  # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
+  # so the service can be restarted
+  file {
+    "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
+      source => $tls_certificate_bundle,
+      notify => Sunet::Docker_compose["frontend-${instance}"],
+  }
 
   # 'export' config to one YAML file per instance
   file {
@@ -68,6 +78,7 @@ define sunet::frontend::load_balancer::website2(
   # Parameters used in frontend/docker-compose_template.erb
   $haproxy_image    = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag = pick($config['haproxy_imagetag'], 'stable')
+  $haproxy_volumes  = pick($config['haproxy_volumes'], false)
   $varnish_image    = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
   $varnish_imagetag = pick($config['varnish_imagetag'], 'stable')
   $varnish_config   = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
