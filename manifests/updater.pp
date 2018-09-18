@@ -1,4 +1,9 @@
-class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
+class sunet::updater(
+  Boolean $cosmos_automatic_reboot = false,
+  Boolean $cron   = false,
+  String  $hour   = '4',
+  String  $minute = '2̈́',
+) {
    file {'/usr/local/sbin/silent-update-and-upgrade':
      mode    => '0755',
      owner   => 'root',
@@ -30,8 +35,8 @@ class sunet::updater($cosmos_automatic_reboot = false, $cron = false) {
    if ($cron) {
       sunet::scriptherder::cronjob { 'update_and_upgrade':
          cmd           => '/usr/local/sbin/silent-update-and-upgrade --random-sleep',
-         minute        => '2',
-         hour          => '4',
+         minute        => $minute,
+         hour          => $hour,
          ok_criteria   => ['exit_status=0', 'max_age=25h'],
          warn_criteria => ['exit_status=0', 'max_age=49h'],
       }
