@@ -2,7 +2,7 @@ class sunet::updater(
   Boolean $cosmos_automatic_reboot = false,
   Boolean $cron   = false,
   String  $hour   = '4',
-  String  $minute = '2̈́',
+  String  $minute = '2',
 ) {
    file {'/usr/local/sbin/silent-update-and-upgrade':
      mode    => '0755',
