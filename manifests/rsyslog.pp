@@ -1,6 +1,8 @@
+include stdlib
 class sunet::rsyslog(
   $syslog_servers = hiera_array('syslog_servers',[]),
   $relp_syslog_servers = hiera_array('relp_syslog_servers',[]),
+  $syslog_enable_remote = hiera_boolean('syslog_enable_remote','true'),
   $udp_port = hiera('udp_port',undef),
   $udp_client = hiera('udp_client',"any"),
   $tcp_port = hiera('tcp_port',undef),
@@ -9,6 +11,8 @@ class sunet::rsyslog(
   ensure_resource('package', 'rsyslog', {
     ensure => 'installed'
   })
+
+  $do_remote = str2bool($syslog_enable_remote)
 
   file { '/etc/rsyslog.d/60-remote.conf':
     ensure  => file,
