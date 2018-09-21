@@ -2,7 +2,7 @@ include stdlib
 class sunet::rsyslog(
   $syslog_servers = hiera_array('syslog_servers',[]),
   $relp_syslog_servers = hiera_array('relp_syslog_servers',[]),
-  $syslog_enable_remote = hiera_boolean('syslog_enable_remote','true'),
+  $syslog_enable_remote = safe_hiera('syslog_enable_remote','true'),
   $udp_port = hiera('udp_port',undef),
   $udp_client = hiera('udp_client',"any"),
   $tcp_port = hiera('tcp_port',undef),
