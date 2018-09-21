@@ -1,5 +1,5 @@
 # Remote syslog configuration managed by Puppet (sunet::rsyslog)
-# Remote enabled by remote_enabled : <%= @do_remote %>
+# Remote enabled by syslog_enable_remote: <%= @do_remote %>
 
 <% if @do_remote %>
 <% @syslog_servers.each do |server| -%>
