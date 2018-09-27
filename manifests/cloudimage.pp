@@ -28,10 +28,11 @@ define sunet::cloudimage (
   String           $rng         = '/dev/random',
   Boolean          $disable_ec2 = false,  # set to true to disable fetching of metadata from 169.254.169.254
   String           $network_ver = '1',
-  # Parameters for networkv_ver 2
+  # Parameters for network_ver 2
   Array[String]    $addresses   = [],
   Boolean          $dhcp4       = true,
   Boolean          $dhcp6       = false,
+  String           $install_options = '',  # for passing arbitrary parameters to virt-install
 )
 {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
