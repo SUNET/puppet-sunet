@@ -19,20 +19,25 @@ services:
 
     comanage-registry-ldap:
         image: docker.sunet.se/comanage-registry-slapd
+        command: ["slapd", "-d", "256", "-h", "ldapi:/// ldap:/// ldaps:///", "-u", "openldap", "-g", "openldap"]
         volumes:
             - /opt/comanage-registry-deployment/slapd-data:/var/lib/ldap
             - /opt/comanage-registry-deployment/slapd-config:/etc/ldap/slapd.d
+            - /opt/comanage-registry-deployment/slapd-ldif/bootstrap.ldif:/ldif/admin/bootstrap.ldif
+            - /opt/comanage-registry-deployment/slapd-ldif/olcAccess.ldif:/ldif/config/olcAccess.ldif
             - /var/run/slapd:/var/run/slapd
+            - /etc/dehydrated/certs:/etc/dehydrated/certs:ro
             - /opt/comanage-registry-deployment/secrets:/run/secrets
             - /etc/passwd:/etc/passwd:ro
             - /etc/group:/etc/group:ro
         environment:
-            - SLAPD_CERT_FILE=/run/secrets/slapd_cert_file
-            - SLAPD_PRIVKEY_FILE=/run/secrets/slapd_privkey_file
-            - SLAPD_CHAIN_FILE=/run/secrets/slapd_chain_file
-            - OLC_ROOT_PW=<%= @openldap_root_password %>
+            - SLAPD_CERT_FILE=/etc/dehydrated/certs/comanage.sunet.se.crt
+            - SLAPD_PRIVKEY_FILE=/etc/dehydrated/certs/comanage.sunet.se.key
+            - SLAPD_CHAIN_FILE=/etc/dehydrated/certs/comanage.sunet.se-chain.crt
+            - OLC_ROOT_PW={CRYPT}$$6$$rounds=5000$$uItHQdEYpyGr.Pdb$$35KB89HoWJ6a7N/BHNipG64.NFOG1MByxNkjvJ3i0GqGZ.UNWJdSQukKTLCTCBJ/ruVQorLrjAV7MWynYvIG9.
             - OLC_SUFFIX=dc=sunet,dc=se
-            - OLC_ROOT_DN=cn=el,dc=sunet,dc=se
+            - OLC_ROOT_DN=cn=admin,dc=sunet,dc=se
+            - OLC_ROOT_DN_PASSWORD_FILE=/run/secrets/olc_root_dn_password
         ports:
             - "636:636"
             - "389:389"
