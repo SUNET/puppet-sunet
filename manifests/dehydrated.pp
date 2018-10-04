@@ -224,6 +224,7 @@ class sunet::dehydrated::client(
   Boolean $ssl_links=false,
   Boolean $check_cert=true,
   String  $check_cert_port='443',
+  Boolean $manage_ssh_key=true,
   Optional[String] $ssh_id=undef,
   Boolean $single_domain=true,
 ) {
@@ -234,6 +235,7 @@ class sunet::dehydrated::client(
     ssl_links       => $ssl_links,
     check_cert      => $check_cert,
     check_cert_port => $check_cert_port,
+    manage_ssh_key  => $manage_ssh_key,
     ssh_id          => $ssh_id,
     single_domain   => $single_domain,
   }
@@ -246,8 +248,8 @@ define sunet::dehydrated::client_define(
   String  $user='root',
   Boolean $ssl_links=false,
   Boolean $check_cert=true,
-  Boolean $manage_ssh_key=true,
   String  $check_cert_port='443',
+  Boolean $manage_ssh_key=true,
   Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
   Boolean $single_domain=true,
 ) {
