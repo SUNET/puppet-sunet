@@ -52,6 +52,14 @@ class sunet::comanage (
         mode    => '0755',
     }
 
+    file { "${comanage_dir}/slapd-ldif":
+        ensure  => directory,
+        owner   => 'openldap',
+        group   => 'openldap',
+        path    => "${comanage_dir}/slapd-ldif",
+        mode    => '0755',
+    }
+
     # Create all the secrets from Hiera
     $postgres_password = hiera('postgres_password', 'NOT_SET_IN_HIERA')
     $comanage_postgres_password = hiera('comanage_postgres_password', 'NOT_SET_IN_HIERA')
@@ -59,6 +67,10 @@ class sunet::comanage (
     $comanage_email_password = hiera('comanage_email_password', 'NOT_SET_IN_HIERA')
     $comanage_security_salt = hiera('comanage_security_salt', 'NOT_SET_IN_HIERA')
     $comanage_security_seed = hiera('comanage_security_seed', 'NOT_SET_IN_HIERA')
+    $openldap_olc_root_dn_password = hiera('openldap_olc_root_dn_password', 'NOT_SET_IN_HIERA')
+    $openldap_syncrepl_system_password = hiera('openldap_syncrepl_system_password', 'NOT_SET_IN_HIERA')
+    $openldap_registry_system_password = hiera('openldap_registry_system_password', 'NOT_SET_IN_HIERA')
+    $openldap_samlproxy_system_password = hiera('openldap_samlproxy_system_password', 'NOT_SET_IN_HIERA')
 
     # FIXME: Horrible but I have to do this to be able to mount passwd/group due to COmanage issue:
     # https://github.com/Internet2/comanage-registry-docker/issues/11
@@ -69,6 +81,30 @@ class sunet::comanage (
         path    => '/etc/shibboleth/shibboleth2.xml',
         mode    => '0644',
         content => template('sunet/comanage/shibboleth2.erb'),
+    }
+
+    #Contents of slap-data directory
+    file { "${comanage_dir}/slapd-data/bootstrap.ldif":
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => template('sunet/comanage/bootstrap.ldif.erb'),
+    }
+    file { "${comanage_dir}/slapd-data/olcAccess.ldif":
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => template('sunet/comanage/olcAccess.ldif.erb'),
+    }
+    #the password for the OpenLDAP admin with dn cn=admin,dc=sunet,dc=se
+    file { "${comanage_dir}/secrets/olc_root_dn_password":
+        ensure  => file,
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        content => template('sunet/comanage/olc_root_dn_password.erb'),
     }
 
     $content = template('sunet/comanage/docker-compose_comanage.yml.erb')
