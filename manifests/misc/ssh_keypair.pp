@@ -1,4 +1,4 @@
-define sunet::misc::ssh_key_file(
+define sunet::misc::ssh_keypair(
   String $public,
   String $private,
   String $user = 'root',
