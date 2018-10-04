@@ -2,7 +2,7 @@ define sunet::misc::ssh_keypair(
   String $public,
   String $private,
   String $user = 'root',
-  Enum ['present', 'absent'] $ensure = 'present',
+  Enum['present', 'absent'] $ensure = 'present',
 ) {
   file {
     $name:
