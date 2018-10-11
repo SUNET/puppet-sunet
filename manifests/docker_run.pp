@@ -40,12 +40,10 @@ define sunet::docker_run(
   }
 
   $image_tag = "${image}:${imagetag}"
-
-  # make it possible to use the same docker image more than once on a node
-  ensure_resource('docker::image', $image_tag, {
-    require => [Package['docker-engine'],
-                ],
-  })
+  docker::image { "${name}_${image_tag}" :  # make it possible to use the same docker image more than once on a node
+    image   => $image_tag,
+    require => Class['sunet::dockerhost'],
+  } ->
 
   docker::run { $name :
     image              => $image_tag,
@@ -61,11 +59,11 @@ define sunet::docker_run(
     command            => $command,
     dns                => $dns,
     depends            => $_depends,
-    require            => flatten([$req,
-                                   Docker::Image[$image_tag],
-                                   ]),
+    require            => flatten([$req]),
     before_start       => $before_start,
     before_stop        => $before_stop,
+    after_start        => $after_start,
+    after_stop         => $after_stop,
     docker_service     => true,  # the service 'docker' is maintainer by puppet, so depend on it
     ensure             => $ensure,
     extra_parameters   => flatten([$extra_parameters]),
