@@ -135,6 +135,11 @@ class InstanceDir(object):
         return '<{}({})>'.format(self.__class__.__name__, self.name)
 
     def reload(self):
+        """
+        Reload the announce file.
+
+        :return: True if file contents were updated, False otherwise. None on errors.
+        """
         #self._logger.debug('{}: Loading {}'.format(self, self.announce_fn))
         try:
             with open(self.announce_fn) as fd:
@@ -144,7 +149,7 @@ class InstanceDir(object):
                     if this.startswith('announce ') or this.startswith('withdraw '):
                         new += [this]
                     else:
-                        self._logger.warning('Discarded unknown command: {!r}'.format(this))
+                        self._logger.warning('{}: Discarded unknown command: {!r}'.format(self, this))
         except IOError as exc:
             self._logger.warning('Error reading announce file {}: {}'.format(self.announce_fn, exc))
             return None
@@ -170,6 +175,12 @@ class InstanceDir(object):
         return False
 
     def withdraw(self):
+        """
+        Withdraw routes previously loaded from the announce file. Typically called when
+        the file disappears.
+
+        :return:
+        """
         self._logger.info('{}: Withdrawing any previous announcements'.format(self))
         new = []
         for line in self._contents:
@@ -182,8 +193,18 @@ class InstanceDir(object):
         self._contents = new
 
     def poll(self, now):
+        """
+        Periodic poll to see if the file contents changed without this script getting
+        notified about it somehow.
+
+        Maybe the inotify mechanism works 100%, but better make double sure that all
+        updates are propagated to the router infrastructure.
+
+        :param now: Current timestamp
+        :return: None
+        """
         if now > self._timeout_ts:
-            inc = self._timeout + (random.random() * 5)  # spread out over time
+            inc = self._timeout + random.random() - 0.5
             self._logger.debug('{}: Polling for changes (next timeout in {:.2f} seconds)'.format(self, inc))
             self._timeout_ts = now + inc
             if self.reload():
@@ -204,7 +225,8 @@ def main(args, logger):
         dir = os.path.join(args.monitor_dir, this)
         if os.path.isdir(dir):
             i.add_watch(dir, mask=mask)
-            dirs[dir] = InstanceDir(dir,  args.timeout, logger)
+            _timeout = args.timeout + (random.random() * 5) - 2.5  # spread polling intervals
+            dirs[dir] = InstanceDir(dir,  _timeout, logger)
             logger.debug('Startup added instance {!s}'.format(dirs[dir]))
 
     logger.info('Waiting for inotify events under {}'.format(args.monitor_dir))
@@ -229,7 +251,8 @@ def main(args, logger):
             if os.path.isdir(instance_dir):
                 # Instance added
                 i.add_watch(instance_dir, mask=mask)
-                dirs[instance_dir] = InstanceDir(instance_dir, args.timeout, logger)
+                _timeout = args.timeout + (random.random() * 5) - 2.5  # spread polling intervals
+                dirs[instance_dir] = InstanceDir(instance_dir, _timeout, logger)
             elif instance_dir in dirs:
                 # Instance removed
                 this = dirs.pop(instance_dir)
