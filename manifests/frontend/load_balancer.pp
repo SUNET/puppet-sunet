@@ -56,7 +56,7 @@ class sunet::frontend::load_balancer(
       file { '/etc/bgp/monitor':
         ensure   => file,
         mode     => '0755',
-        content  => template("sunet/frontend/websites2_monitor.sh.erb")
+        content  => template("sunet/frontend/websites2_monitor.py.erb")
       }
 
       configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
