@@ -54,9 +54,10 @@ class sunet::frontend::load_balancer(
       #
       sunet::exabgp::config { 'exabgp_config': }
       file { '/etc/bgp/monitor':
-        ensure   => file,
-        mode     => '0755',
-        content  => template("sunet/frontend/websites2_monitor.py.erb")
+        ensure  => file,
+        mode    => '0755',
+        content => template("sunet/frontend/websites2_monitor.py.erb")
+        notify  => Sunet:Exabgp['load_balancer'],
       }
 
       configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
