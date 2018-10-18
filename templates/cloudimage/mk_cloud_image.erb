@@ -19,6 +19,7 @@ images_dir="<%= @images_dir %>"
 pool_name="<%= @pool_name %>"
 rng="<%= @rng %>"
 install_options="<%= @install_options %>"
+sb_args="<%= @sb_args %>"
 
 cd "${images_dir}"
 
@@ -96,4 +97,5 @@ eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memball
     --disk path=${images_dir}/${seed},bus=virtio \
     ${local_disk_arg} \
     ${network} \
-    ${install_options}
+    ${install_options} \
+    ${sb_args}
