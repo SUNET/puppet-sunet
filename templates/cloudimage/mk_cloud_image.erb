@@ -87,6 +87,7 @@ if [ "x${rng}" != "x" ]; then
 fi
 
 # destroy and undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
+rm -f "/var/lib/libvirt/qemu/nvram/${hostname}_VARS.fd"  # need to remove UEFI NVRAM file if it exists
 virsh destroy ${hostname} || true
 virsh undefine ${hostname} || true
 
