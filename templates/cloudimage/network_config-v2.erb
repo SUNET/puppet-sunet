@@ -10,9 +10,11 @@ ethernets:
     set-name: 'eth0'
 <% if @addresses != [] -%>
     addresses: <%= @addresses %>
-<% elsif @dhcp4 -%>
+<% end -%>
+<% if @dhcp4 -%>
     dhcp4: true
-<% elsif @dhcp6 -%>
+<% end -%>
+<% if @dhcp6 -%>
     dhcp6: true
 <% end -%>
 <% if @gateway -%>
