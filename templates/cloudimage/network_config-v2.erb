@@ -8,7 +8,7 @@ ethernets:
     match:
       macaddress: '<%= @mac %>'
     set-name: 'eth0'
-<% if @addresses -%>
+<% if @addresses != [] -%>
     addresses: <%= @addresses %>
 <% elsif @dhcp4 -%>
     dhcp4: true
