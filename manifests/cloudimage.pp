@@ -41,14 +41,22 @@ define sunet::cloudimage (
   } else {
     $kvm_package = 'kvm'  # old name
   }
-  ensure_resource('package', ['cpu-checker',
-                              'mtools',
-                              'dosfstools',
-                              $kvm_package,
-                              'libvirt-bin',
-                              'virtinst',
-                              'ovmf',  # for UEFI booting virtual machines
-                              ], {ensure => 'installed'})
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 {
+    # Manages CPU affinity for virtual CPUs. Seems to be required on new KVM hosts in eduid,
+    # to keep the VMs from crashing.
+    $numad_package = 'numad'
+  } else {
+    $numad_package = []
+  }
+  ensure_resource('package', flatten(['cpu-checker',
+                                      'mtools',
+                                      'dosfstools',
+                                      $kvm_package,
+                                      'libvirt-bin',
+                                      'virtinst',
+                                      'ovmf',  # for UEFI booting virtual machines
+                                      $numad_package,
+                                      ]), {ensure => 'installed'})
 
   $image_url_a = split($image_url, "/")
   $image_name = $image_url_a[-1]
