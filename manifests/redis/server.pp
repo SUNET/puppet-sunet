@@ -81,7 +81,7 @@ define sunet::redis::server(
       image    => $docker_image,
       imagetag => $docker_tag,
       net      => 'host',  # Required for Redis clustering/HA
-      volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf:ro",
+      volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
                    "${basedir}/data:/data",
                    '/dev/log:/dev/log',
                    ],
