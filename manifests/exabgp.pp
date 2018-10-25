@@ -4,7 +4,6 @@ define sunet::exabgp(
   Array   $extra_arguments = [],
   String  $config          = '/etc/bgp/exabgp.conf',
   String  $version         = 'latest',
-  Integer $port            = 179,
   String  $volume          = '/etc/bgp',
   Array   $docker_volumes  = [],
 ) {
@@ -13,7 +12,6 @@ define sunet::exabgp(
       image       => 'docker.sunet.se/sunet/docker-sunet-exabgp',
       imagetag    => $version,
       volumes     => flatten(["${volume}:${volume}:ro", $docker_volumes]),
-      ports       => ["${port}:${port}"],
       net         => 'host',
       command     => join(flatten([$config,$extra_arguments])," ")
    }

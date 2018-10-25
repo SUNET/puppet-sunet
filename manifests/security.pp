@@ -2,13 +2,14 @@
 class sunet::security::configure_sshd(
     $configure_sftp = true,
 ) {
-  package { 'openssh-server':
+  ensure_resource('package', 'openssh-server', {
     ensure => 'installed'
-  } ->
+  })
 
-  service { 'ssh':
+  ensure_resource('service', 'ssh', {
     ensure    => 'running',
-  }
+    enable    => true,
+  })
 
   if $::operatingsystemrelease != '12.04' {
     # Generate an ed25519 ssh host key. Ubuntu 12.04 does not support that, but hopefully

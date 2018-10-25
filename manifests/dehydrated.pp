@@ -224,6 +224,7 @@ class sunet::dehydrated::client(
   Boolean $ssl_links=false,
   Boolean $check_cert=true,
   String  $check_cert_port='443',
+  Boolean $manage_ssh_key=true,
   Optional[String] $ssh_id=undef,
   Boolean $single_domain=true,
 ) {
@@ -234,6 +235,7 @@ class sunet::dehydrated::client(
     ssl_links       => $ssl_links,
     check_cert      => $check_cert,
     check_cert_port => $check_cert_port,
+    manage_ssh_key  => $manage_ssh_key,
     ssh_id          => $ssh_id,
     single_domain   => $single_domain,
   }
@@ -247,6 +249,7 @@ define sunet::dehydrated::client_define(
   Boolean $ssl_links=false,
   Boolean $check_cert=true,
   String  $check_cert_port='443',
+  Boolean $manage_ssh_key=true,
   Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
   Boolean $single_domain=true,
 ) {
@@ -270,9 +273,11 @@ define sunet::dehydrated::client_define(
     undef   => $domain,
     default => $ssh_id,
   }
-  ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
-    hiera_key => "${_ssh_id}_ssh_key",
-    })
+  if $manage_ssh_key {
+    ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
+      hiera_key => "${_ssh_id}_ssh_key",
+      })
+  }
   if $single_domain {
     cron { "rsync_dehydrated_${domain}":
       command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
