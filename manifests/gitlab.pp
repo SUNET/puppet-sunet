@@ -170,7 +170,7 @@ class sunet::gitlab {
         imagetag => 'latest',
         volumes  => ['/var/log/redis:/var/log/redis',
                      '/var/opt/redis:/data',
-                     '/etc/gitlab/redis/redis.conf:/etc/redis/redis.conf:ro'],
+                     '/etc/gitlab/redis/redis.conf:/etc/redis/redis.conf'],
     }
 
     sunet::docker_run { 'gitlab':
