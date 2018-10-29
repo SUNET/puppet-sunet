@@ -33,6 +33,7 @@ define sunet::cloudimage (
   Boolean          $dhcp4       = true,
   Boolean          $dhcp6       = false,
   String           $install_options = '',  # for passing arbitrary parameters to virt-install
+  Boolean          $secure_boot = false,
 )
 {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
@@ -40,13 +41,22 @@ define sunet::cloudimage (
   } else {
     $kvm_package = 'kvm'  # old name
   }
-  ensure_resource('package', ['cpu-checker',
-                              'mtools',
-                              'dosfstools',
-                              $kvm_package,
-                              'libvirt-bin',
-                              'virtinst',
-                              ], {ensure => 'installed'})
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 and $::hostname != 'kvm-dev-1' {
+    # Manages CPU affinity for virtual CPUs. Seems to be required on new KVM hosts in eduid,
+    # to keep the VMs from crashing.
+    $numad_package = 'numad'
+  } else {
+    $numad_package = []
+  }
+  ensure_resource('package', flatten(['cpu-checker',
+                                      'mtools',
+                                      'dosfstools',
+                                      $kvm_package,
+                                      'libvirt-bin',
+                                      'virtinst',
+                                      'ovmf',  # for UEFI booting virtual machines
+                                      $numad_package,
+                                      ]), {ensure => 'installed'})
 
   $image_url_a = split($image_url, "/")
   $image_name = $image_url_a[-1]
@@ -56,6 +66,20 @@ define sunet::cloudimage (
   $meta_data = "${script_dir}/${name}/${name}_meta-data"
   $user_data = "${script_dir}/${name}/${name}_user-data"
   $network_config = "${script_dir}/${name}/${name}_network-config"
+
+  if $secure_boot {
+    if str2bool($::sunet_kvmhost_can_secureboot) {
+      $sb_args = '--boot=uefi,loader_secure=yes,loader=/usr/share/OVMF/OVMF_CODE.secboot.fd,nvram_template=/usr/share/OVMF/OVMF_VARS.ms.fd --machine=q35 --features smm=on'
+    } else {
+      # The ovmf package in Ubuntu 18.04 did not include the boot loader and NVRAM content to
+      # do secure boot. It needs to be installed from a newer distribution.
+      #
+      # XXX an alternative here would be to set sb_args to just '--boot=uefi,loader_secure=yes'
+      # which would make it possible to install VMs and _then_ install the secure boot loader
+      # (and virsh editing all the already installed VMs).
+      fail("Secure boot of VM ${name} was requested, but it seems the `ovmf' package on this host is too old")
+    }
+  }
 
   ensure_resource('file', $script_dir, {
     ensure => 'directory',
