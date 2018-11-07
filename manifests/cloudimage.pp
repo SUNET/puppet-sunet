@@ -41,7 +41,7 @@ define sunet::cloudimage (
   } else {
     $kvm_package = 'kvm'  # old name
   }
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 and $::hostname != 'kvm-dev-1' {
     # Manages CPU affinity for virtual CPUs. Seems to be required on new KVM hosts in eduid,
     # to keep the VMs from crashing.
     $numad_package = 'numad'
