@@ -116,6 +116,12 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        require => Package['nagios-nrpe-server'],
        content => template('sunet/nagioshost/check_process.erb'),
    }
+   file { "/usr/lib/nagios/plugins/check_checkrestart" :
+       ensure  => 'file',
+       mode    => '0751',
+       group   => 'nagios',
+       content => template('sunet/nagioshost/check_checkrestart.erb'),
+   }
    if ($::operatingsystem == 'Ubuntu' and $::operatingsystemmajrelease == '16.04') {
       file { "/usr/lib/nagios/plugins/check_memory":
           ensure  => 'file',
