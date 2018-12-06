@@ -88,6 +88,12 @@ class sunet::dockerhost(
      require => Exec['dockerhost_apt_get_update'],
   }
 
+  package { [
+             'python3-yaml',  # check_docker_containers requirement
+             ] :
+     ensure => 'installed',
+  }
+
   $docker_command = $docker_package_name ? {
     'docker-ce' => 'dockerd',  # docker-ce has a new dockerd executable
     default     => undef,
