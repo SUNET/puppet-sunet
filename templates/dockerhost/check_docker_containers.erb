@@ -190,7 +190,7 @@ def docker_inspect(container, logger):
                             )
     (stdout, _stderr) = proc.communicate()
     try:
-        data = json.loads(stdout)
+        data = json.loads(stdout.decode('utf-8'))
     except ValueError as exc:
         logger.error('Failed parsing output of {!s}: {!s}'.format(' '.join(cmd), exc))
         logger.debug('Unparsable output was:\n{!r}'.format(stdout))
