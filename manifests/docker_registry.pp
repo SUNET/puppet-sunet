@@ -4,6 +4,7 @@ class sunet::docker_registry (
     String $registry_images_basedir  = '/var/lib/registry',
     String $registry_conf_basedir    = '/etc/docker/registry',
     String $apache_conf_basedir      = '/etc/apache2',
+    String $registry_cleanup_basedir = '/usr/local/bin/clean-registry',
     String $registry_tag             = '2',
 ) {
     ensure_resource('sunet::system_user', 'www-data', {
@@ -62,6 +63,24 @@ class sunet::docker_registry (
         minute        => '5',
         ok_criteria   => ['exit_status=0'],
         warn_criteria => ['max_age=5d']
+    }
+
+    package {['python-yaml', 'python-ipaddress', 'python-requests']:
+        ensure => installed
+    } ->
+
+    file { "${registry_cleanup_basedir}/clean_registry_cron":
+        ensure  => file,
+        mode    => '0774',
+        content => template('sunet/docker_registry/clean_registry_cron.erb')
+    } ->
+
+    sunet::scriptherder::cronjob { 'clean_registry':
+        cmd           => "${registry_cleanup_basedir}/clean_registry_cron",
+        weekday       => 'Saturday',
+        hour          => '9',
+        ok_criteria   => ['exit_status=0'],
+        warn_criteria => ['max_age=9d']
     }
 
 }

@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# We don't want to run cosmos during the cleanup
+# to avoid that e.g. apache starts again and clients
+# starts pulling and pushing.
+touch /etc/no-automatic-cosmos
+
+# Stop the Apache container so that no new requests
+# are made during the cleanup.
+docker stop registry-auth
+
+# Start the actual cleanup
+/usr/local/bin/clean-registry/clean_registry.py /usr/local/bin/clean-registry/config_file.yaml
+
+# A sleep before we start again might be good
+sleep 10
+
+# Run the garbage collection after removing layers
+docker exec -it registry /bin/registry garbage-collect /etc/docker/registry/config.yml
+
+# Start all the containers again.
+systemctl restart sunet-docker-registry
+
+# Enable cosmos again
+rm /etc/no-automatic-cosmos
