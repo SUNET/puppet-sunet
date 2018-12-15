@@ -65,22 +65,22 @@ class sunet::docker_registry (
         warn_criteria => ['max_age=5d']
     }
 
-    package {['python-yaml', 'python-ipaddress', 'python-requests']:
-        ensure => installed
-    } ->
-
-    file { "${registry_cleanup_basedir}/clean_registry_cron":
-        ensure  => file,
-        mode    => '0774',
-        content => template('sunet/docker_registry/clean_registry_cron.erb')
-    } ->
-
-    sunet::scriptherder::cronjob { 'clean_registry':
-        cmd           => "${registry_cleanup_basedir}/clean_registry_cron",
-        weekday       => 'Saturday',
-        hour          => '9',
-        ok_criteria   => ['exit_status=0'],
-        warn_criteria => ['max_age=9d']
-    }
+#    package {['python-yaml', 'python-ipaddress', 'python-requests']:
+#        ensure => installed
+#    } ->
+#
+#    file { "${registry_cleanup_basedir}/clean_registry_cron":
+#        ensure  => file,
+#        mode    => '0774',
+#        content => template('sunet/docker_registry/clean_registry_cron.erb')
+#    } ->
+#
+#    sunet::scriptherder::cronjob { 'clean_registry':
+#        cmd           => "${registry_cleanup_basedir}/clean_registry_cron",
+#        weekday       => 'Saturday',
+#        hour          => '9',
+#        ok_criteria   => ['exit_status=0'],
+#        warn_criteria => ['max_age=9d']
+#    }
 
 }
