@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# If cosmos is disabled we should avoid running
+if [[ -f /etc/no-automatic-cosmos ]]; then
+    exit 1
+fi
+
 # We don't want to run cosmos during the cleanup
 # to avoid that e.g. apache starts again and clients
 # starts pulling and pushing.
