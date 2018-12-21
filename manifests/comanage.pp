@@ -8,6 +8,22 @@ class sunet::comanage (
     sunet::system_user {'_shibd': username => '_shibd', group => '_shibd' }
     sunet::system_user {'openldap': username => 'openldap', group => 'openldap' }
 
+    # Bootstrap docker working directory and comanage-registry itself
+    file { "${comanage_dir}":
+        ensure  => directory,
+        owner   => 'root',
+        group   => 'root',
+        path    => "${comanage_dir}",
+        mode    => '0755',
+    }
+    file { "${home}":
+        ensure  => directory,
+        owner   => 'root',
+        group   => 'root',
+        path    => "${home}",
+        mode    => '0755',
+    }
+
     # Create the directories that the above system users use/need
     file { "${comanage_dir}/postgres-data":
         ensure  => directory,
