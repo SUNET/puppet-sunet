@@ -8,6 +8,7 @@ define sunet::pyff(
    $acme_tool_uri = undef,
    $pound_and_varnish = true,
    $volumes = [],
+   $docker_run_extra_parameters = [],
    $pipeline = "mdx.fd",
    $ip = undef) {
    $ip_addr = $ip ? {
@@ -22,7 +23,8 @@ define sunet::pyff(
          volumes  => ["${ssl_dir}:/etc/ssl"],
          env      => ["BACKEND_PORT=tcp://varnish-${sanitised_title}.docker:80"],
          ports    => ["${ip_addr}443:443"],
-         depends  => ["varnish-${sanitised_title}"]
+         depends  => ["varnish-${sanitised_title}"],
+         extra_parameters => $docker_run_extra_parameters
       }
       $acme_env = $acme_tool_uri ? {
          undef    => [],
@@ -44,7 +46,8 @@ define sunet::pyff(
       imagetag    => $version,
       volumes     => flatten([$volumes,["$dir:$dir"]]),
       ports       => $pyff_ports,
-      env         => ["DATADIR=$dir","EXTRA_ARGS=$pyffd_args","PIPELINE=$pipeline","LOGLEVEL=$pyffd_loglevel"]
+      env         => ["DATADIR=$dir","EXTRA_ARGS=$pyffd_args","PIPELINE=$pipeline","LOGLEVEL=$pyffd_loglevel"],
+      extra_parameters => $docker_run_extra_parameters
    }
    file {'/usr/local/bin/mirror-mdq.sh':
       ensure      => file,
