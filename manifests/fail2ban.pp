@@ -13,4 +13,5 @@ class sunet::fail2ban {
   exec {'reload fail2ban':
     command     => 'systemctl reload fail2ban',
     refreshonly => true,
+  }
 }
