@@ -13,7 +13,10 @@ class sunet::tools {
   $extra_tools = $::operatingsystem ? {
     'Ubuntu' => ['update-manager-core',
                  'unattended-upgrades',
+                 'rng-tools',
                  ],
+    'Debian' => ['rng-tools5',
+                ],
     default => []
   }
   ensure_resource(package, flatten([$debian_tools, $extra_tools]), {ensure => 'installed'})
