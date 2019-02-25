@@ -6,6 +6,7 @@ class sunet::server(
   $ntpd_config = true,
   $scriptherder = true,
   $unattended_upgrades = false,
+  $unattended_upgrades_use_template = false,
   $disable_ipv6_privacy = false,
   $disable_all_local_users = false,
 ) {
@@ -43,7 +44,9 @@ class sunet::server(
   }
 
   if $unattended_upgrades {
-    class { 'sunet::security::unattended_upgrades': }
+    class { 'sunet::security::unattended_upgrades':
+      use_template => $unattended_upgrades_use_template,
+    }
   }
 
   if $disable_ipv6_privacy {
