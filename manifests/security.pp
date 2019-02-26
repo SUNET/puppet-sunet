@@ -52,7 +52,6 @@ class sunet::security::configure_sshd(
 class sunet::security::unattended_upgrades(
   $use_template = false,
 ) {
-  package {'unattended-upgrades': } ->
   file { '/etc/dpkg/unattended-upgrades.debconf':
     ensure  => present,
     content => template('sunet/security/unattended-upgrades.debconf.erb'),
