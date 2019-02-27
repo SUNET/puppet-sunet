@@ -32,8 +32,8 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
             mode    => 0600,
             owner   => $username,
             group   => $group,
-         } ->
-         $pubkey = sunet::snippets::ssh_pubkey_from_privkey("$home/admin") ->
+         }
+         $pubkey = sunet::snippets::ssh_pubkey_from_privkey("$home/admin")
          file { "$home/admin.pub":
             content => inline_template('<%= @pubkey %>')
          }
