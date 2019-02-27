@@ -88,7 +88,7 @@ define sunet::snippets::ssh_pubkey_from_privkey($privkey_file=undef) {
     default => $privkey_file
   }
   exec { "ssh_pubkey_from_privkey-${_privkey_file}":
-    command => "ssh-keygen -y -f $_privkey_file",
+    command => "ssh-keygen -y -f ${_privkey_file} > ${_privkey_file}.pub",
   }
 }
 

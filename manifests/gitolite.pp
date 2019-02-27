@@ -33,10 +33,7 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
             owner   => $username,
             group   => $group,
          }
-         $pubkey = sunet::snippets::ssh_pubkey_from_privkey { "$home/admin": }
-         file { "$home/admin.pub":
-            content => inline_template('<%= @pubkey %>')
-         }
+         sunet::snippets::ssh_pubkey_from_privkey { "$home/admin": }
       }
    } ->
    package {'gitolite3': ensure => latest } ->
