@@ -82,6 +82,12 @@ define sunet::snippets::ssh_keygen($key_file=undef) {
    }
 }
 
+define sunet::snippets::ssh_pubkey_from_privkey($privkey_file) {
+   exec { "${title}":
+      command => "ssh-keygen -y -f ${privkey_file}",
+   }
+}
+
 define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096,$days=3650) {
    exec { "${title}_key":
       command => "openssl genrsa -out $key_file $size",
