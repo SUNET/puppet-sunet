@@ -82,10 +82,14 @@ define sunet::snippets::ssh_keygen($key_file=undef) {
    }
 }
 
-define sunet::snippets::ssh_pubkey_from_privkey($privkey_file) {
-   exec { "${title}":
-      command => "ssh-keygen -y -f ${privkey_file}",
-   }
+define sunet::snippets::ssh_pubkey_from_privkey($privkey_file=undef) {
+  $_privkey_file = $privkey_file ? {
+    undef   => $name,
+    default => $privkey_file
+  }
+  exec { "ssh_pubkey_from_privkey-${_privkey_file}":
+    command => "ssh-keygen -y -f $_privkey_file",
+  }
 }
 
 define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096,$days=3650) {
