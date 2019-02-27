@@ -29,7 +29,7 @@ class sunet::gitolite($username='git',$group='git',$ssh_key=undef) {
       default: {
          file { "$home/admin":
             content => inline_template('<%= @_ssh_key %>'),
-            mode    => 0600,
+            mode    => '0600',
             owner   => $username,
             group   => $group,
          }
