@@ -75,5 +75,9 @@ class sunet::gitolite(
             username => 'gitdaemon',
             group    => $group,
         }
+        ufw::allow { 'allow-git-daemon':
+            ip   => 'any',
+            port => '9418',
+        }
     }
 }
