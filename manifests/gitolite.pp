@@ -1,8 +1,9 @@
 class sunet::gitolite(
-    $username           = 'git',
-    $group              = 'git',
-    $ssh_key            = undef,
-    $enable_git_daemon  = false,
+    $username                         = 'git',
+    $group                            = 'git',
+    $ssh_key                          = undef,
+    $enable_git_daemon                = false,
+    $save_private_admin_key_on_server = true,
 ) {
     ensure_resource('sunet::system_user', $username, {
         username   => $username,
@@ -31,21 +32,31 @@ class sunet::gitolite(
         group  => $group
     } ->
 
-    case $_ssh_key {
-        undef: {
-            sunet::snippets::ssh_keygen { "$home/admin": }
-        }
-        default: {
-            file { "$home/admin":
-                ensure  => file,
-                content => inline_template('<%= @_ssh_key %>'),
-                mode    => '0600',
-                owner   => 'root',
-                group   => 'root',
+    if $save_private_admin_key_on_server {
+        case $_ssh_key {
+            undef: {
+                sunet::snippets::ssh_keygen { "$home/admin": }
             }
-            sunet::snippets::ssh_pubkey_from_privkey { "$home/admin": }
+            default: {
+                file { "$home/admin":
+                    ensure  => file,
+                    mode    => '0600',
+                    owner   => 'root',
+                    group   => 'root',
+                    content => inline_template('<%= @_ssh_key %>'),
+                }
+                sunet::snippets::ssh_pubkey_from_privkey { "$home/admin": }
+            }
         }
-    } ->
+    } elsif $save_private_admin_key_on_server == false {
+        $gitolite_initial_public_admin_key = safe_hiera('gitolite-initial-public-admin-key', undef)
+        file { "$home/admin.pub":
+            ensure  => file,
+            owner   => 'root',
+            group   => 'root',
+            content => inline_template('<%= @gitolite_initial_public_admin_key %>'),
+        }
+    }
 
     package {'gitolite3': ensure => latest } ->
     file { "$home/.gitolite.rc":
