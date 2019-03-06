@@ -9,6 +9,6 @@ class sunet::cgit(
   package {$package: ensure => 'installed' }
 
   file { '/etc/cgitrc':
-    content => template('cgit/cgitrc.erb'),
+    content => template('sunet/cgit/cgitrc.erb'),
   }
 }
