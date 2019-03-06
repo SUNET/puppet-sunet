@@ -1,6 +1,6 @@
 class sunet::cgit::webserver(
-  String $service = 'apache2',
-  String $package = 'apache2',
+  String $service = $name,
+  String $package = $service,
   String $www_user = 'www-data',
   String $git_group = 'git',
 ) {

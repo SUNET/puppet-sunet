@@ -2,7 +2,7 @@ class sunet::cgit(
   String $package       = 'cgit',
   String $cgitrepo_path = '/home/git/repositories/',
 ) {
-  include sunet::cgit::webserver
+  sunet::cgit::webserver { 'apache2': }
 
   package {$package: ensure => 'installed' }
 
