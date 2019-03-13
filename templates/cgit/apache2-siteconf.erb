@@ -1,0 +1,26 @@
+#
+# Maintained by puppet - don't edit by hand
+# Source: puppet-sunet/templates/cgit/apache2-siteconf.erb
+#
+
+<IfModule mod_ssl.c>
+	<VirtualHost <%= @fqdn -%>:443>
+		ServerName <%= @fqdn -%>
+		ServerAdmin hostmaster@sunet.se
+		ErrorLog ${APACHE_LOG_DIR}/<%= @fqdn -%>-error.log
+        	CustomLog ${APACHE_LOG_DIR}/<%= @fqdn -%>-access.log combined
+
+		SSLEngine on
+		SSLCertificateFile /etc/ssl/certs/<%= @fqdn -%>.crt
+		SSLCertificateKeyFile /etc/ssl/private/<%= @fqdn -%>.key
+		SSLCertificateChainFile /etc/ssl/certs/<%= @fqdn -%>-chain.crt
+		<FilesMatch "\.(cgi)$">
+			SSLOptions +StdEnvVars
+		</FilesMatch>
+		<Directory /usr/lib/cgi-bin>
+			SSLOptions +StdEnvVars
+		</Directory>
+
+		Alias / "/cgit/"
+	</VirtualHost>
+</IfModule>
