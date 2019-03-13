@@ -1,5 +1,6 @@
 class sunet::acme(
-  String $server = 'acme-c.sunet.se',
+  String  $server = 'acme-c.sunet.se',
+  Boolean $ufw_80 = false,
 ) {
   file { '/etc/apache2/conf-available/acme.conf':
     content => template('sunet/acme/apache-conf.erb'),
@@ -16,8 +17,10 @@ class sunet::acme(
     notify  => Service['apache2'],
   }
 
-  sunet::misc::ufw_allow { 'acme: ':
-    from => 'any',
-    port => 80,
+  if $ufw_80 {
+    sunet::misc::ufw_allow { 'acme: ':
+      from => 'any',
+      port => 80,
+    }
   }
 }
