@@ -25,7 +25,7 @@ class sunet::cgit(
 
   exec { '/etc/apache2/sites-enabled/010-cgit.conf':
     command => 'a2ensite 010-cgit',
-    creates => $name,
+    creates => $title,
     onlyif  => 'test -s /etc/ssl/certs/git.sunet.se.crt',
     notify  => Service['apache2'],
   }
