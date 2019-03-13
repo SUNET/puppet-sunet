@@ -1,12 +1,6 @@
 class sunet::acme(
   String $server = 'acme-c.sunet.se',
 ) {
-  service { 'acme-httpserver':
-    ensure  => 'running',
-    enable  => true,
-    require => Package['apache2'],
-  }
-
   file { '/etc/apache2/conf-available/acme.conf':
     content => template('sunet/acme/apache-conf.erb'),
     notify  => Service['apache2'],

@@ -4,14 +4,6 @@ class sunet::cgit(
   String $www_user      = 'www-data',
   String $git_group     = 'git',
 ) {
-  ensure_packages(['apache2'])
-
-  service { 'apache2':
-    ensure  => 'running',
-    enable  => true,
-    require => Package['apache2'],
-  }
-
   exec { 'let web user read git repos':
     command => "adduser $www_user $git_group",
   }
