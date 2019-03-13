@@ -6,13 +6,18 @@ class sunet::acme(
     notify  => Service['apache2'],
   }
 
-  exec { 'enable proxy modules':
+  exec { 'acme: enable proxy modules':
     command => 'a2enmod proxy proxy_http',
     notify  => Service['apache2'],
   }
 
-  exec { 'enable acme conf':
+  exec { 'acme: enable acme conf':
     command => 'a2enconf acme',
     notify  => Service['apache2'],
+  }
+
+  sunet::misc::ufw_allow { 'acme: ':
+    from => 'any',
+    port => 80,
   }
 }
