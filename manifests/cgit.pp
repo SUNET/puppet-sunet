@@ -17,7 +17,7 @@ class sunet::cgit(
 
   exec { 'enable CGI':
     command => 'a2enmod cgid',
-    creates => '/etc/apache2/mods-enabled/cgid.conf',
+    creates => '/etc/apache2/mods-enabled/cgid.load',
     notify  => Service['apache2'],
   }
 
