@@ -1,10 +1,10 @@
 class sunet::cgit(
   String $package       = 'cgit',
   String $cgitrepo_path = '/home/git/repositories/',
-  String $www_user  = 'www-data',
-  String $git_group = 'git',
+  String $www_user      = 'www-data',
+  String $git_group     = 'git',
 ) {
-  ensure_package(['apache2'])
+  ensure_packages(['apache2'])
 
   service { 'apache2':
     ensure  => 'running',
