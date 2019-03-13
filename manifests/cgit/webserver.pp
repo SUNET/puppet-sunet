@@ -1,5 +1,5 @@
-class sunet::cgit::webserver(
-  String $www_user = 'www-data',
+define sunet::cgit::webserver(
+  String $www_user  = 'www-data',
   String $git_group = 'git',
 ) {
   class { 'sunet::apache2': }
