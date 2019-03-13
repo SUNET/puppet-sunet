@@ -1,16 +1,8 @@
 class sunet::cgit::webserver(
-  String $service = 'apache2',
-  String $package = $service,
   String $www_user = 'www-data',
   String $git_group = 'git',
 ) {
-  ensure_packages([$package])
-
-  service { "$service":
-    ensure => 'running',
-    enable => true,
-    require => Package[$package],
-  }
+  sunet::apache2{'apache2 for cgit':}
 
   exec { 'let web user read git repos':
     command => "adduser $www_user $git_group",
@@ -18,6 +10,6 @@ class sunet::cgit::webserver(
 
   exec { 'enable CGI':
     command => 'a2enmod cgi',
-    notify  => Service[$service],
+    notify  => Service['apache2'],
   }
 }
