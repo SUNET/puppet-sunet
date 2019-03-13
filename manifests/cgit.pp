@@ -28,4 +28,5 @@ class sunet::cgit(
     creates => $name,
     onlyif  => 'test -s /etc/ssl/certs/git.sunet.se.crt',
     notify  => Service['apache2'],
+  }
 }
