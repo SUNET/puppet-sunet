@@ -10,6 +10,7 @@ class sunet::apache2(
 
   exec { 'enable TLS':
     command => 'a2enmod ssl',
+    creates => '/etc/apache2/mods-enabled/ssl.load',
     notify  => Service['apache2'],
   }
 }
