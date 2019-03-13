@@ -4,9 +4,7 @@ class sunet::cgit::webserver(
   String $www_user = 'www-data',
   String $git_group = 'git',
 ) {
-  package { $package:
-    ensure => 'installed'
-  }
+  ensure_packages([$package])
 
   service { "$service":
     ensure => 'running',
