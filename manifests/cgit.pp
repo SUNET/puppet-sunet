@@ -9,6 +9,12 @@ class sunet::cgit(
     command => "adduser $www_user $git_group",
   }
 
+  exec { 'disable 000-default':
+    command => 'a2dissite 000-default',
+    onlyif  => 'test -L /etc/apache2/sites-enabled/000-default.conf',
+    notify  => Service['apache2'],
+  }
+
   exec { 'enable CGI':
     command => 'a2enmod cgid',
     creates => '/etc/apache2/mods-enabled/cgid.conf',
