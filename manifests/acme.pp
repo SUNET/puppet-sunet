@@ -1,7 +1,7 @@
 class sunet::acme(
   String $server = 'acme-c.sunet.se',
 ) {
-  service { 'apache2':
+  service { 'acme-httpserver':
     ensure  => 'running',
     enable  => true,
     require => Package['apache2'],
