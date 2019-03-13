@@ -20,7 +20,7 @@ class sunet::cgit(
   }
 
   file { '/etc/apache2/sites-available/010-cgit':
-    template => 'sunet/cgit/apache2-siteconf.erb',
+    content => template('sunet/cgit/apache2-siteconf.erb'),
   }
 
   exec { '/etc/apache2/sites-enabled/010-cgit.conf':
