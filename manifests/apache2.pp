@@ -7,4 +7,9 @@ class sunet::apache2(
     enable  => true,
     require => Package['apache2'],
   }
+
+  exec { 'enable TLS':
+    command => 'a2enmod ssl',
+    notify  => Service['apache2'],
+  }
 }
