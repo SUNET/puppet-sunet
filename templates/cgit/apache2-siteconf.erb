@@ -4,8 +4,8 @@
 #
 
 <VirtualHost *:80>
-    ServerName <%= @fqdn %>
-    Redirect 302 / https://<%= @fqdn %>
+    ServerName <%= @public_hostname %>
+    Redirect 302 / https://<%= @public_hostname %>
 </VirtualHost>
 
 <IfModule mod_ssl.c>
@@ -14,7 +14,7 @@
     SSLStaplingReturnResponderErrors off
     SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
     <VirtualHost *:443>
-        ServerName <%= @fqdn %>
+        ServerName <%= @public_hostname %>
         ServerAdmin hostmaster@sunet.se
 
         ErrorLog ${APACHE_LOG_DIR}/<%= @fqdn -%>-error.log
