@@ -9,6 +9,12 @@ class sunet::cgit(
     command => "adduser $www_user $git_group",
   }
 
+  exec { 'disable status module':
+    command => 'a2dismod status',
+    onlyif  => 'test -L /etc/apache2/mods-enabled/status.conf',
+    notify  => Service['apache2'],
+  }
+
   exec { 'disable 000-default':
     command => 'a2dissite 000-default',
     onlyif  => 'test -L /etc/apache2/sites-enabled/000-default.conf',
