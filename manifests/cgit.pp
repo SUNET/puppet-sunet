@@ -1,9 +1,10 @@
 class sunet::cgit(
   String $fqdn,
-  String $package       = 'cgit',
-  String $cgitrepo_path = '/home/git/repositories/',
-  String $www_user      = 'www-data',
-  String $git_group     = 'git',
+  String $public_hostname,
+  String $package         = 'cgit',
+  String $cgitrepo_path   = '/home/git/repositories/',
+  String $www_user        = 'www-data',
+  String $git_group       = 'git',
 ) {
   exec { 'let web user read git repos':
     command => "adduser $www_user $git_group",
