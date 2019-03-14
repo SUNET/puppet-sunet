@@ -3,14 +3,20 @@
 # Source: puppet-sunet/templates/cgit/apache2-siteconf.erb
 #
 
+<VirtualHost *:80>
+    ServerName <%= @fqdn %>
+    Redirect 302 / https://<%= @fqdn %>
+</VirtualHost>
+
 <IfModule mod_ssl.c>
     SSLUseStapling on
     SSLStaplingResponderTimeout 5
     SSLStaplingReturnResponderErrors off
     SSLStaplingCache shmcb:/var/run/apache2/stapling_cache(128000)
-    <VirtualHost <%= @fqdn -%>:443>
+    <VirtualHost *:443>
         ServerName <%= @fqdn %>
         ServerAdmin hostmaster@sunet.se
+
         ErrorLog ${APACHE_LOG_DIR}/<%= @fqdn -%>-error.log
         CustomLog ${APACHE_LOG_DIR}/<%= @fqdn -%>-access.log combined
 
@@ -33,13 +39,13 @@
 
         Protocols h2 http/1.1
 
-        <FilesMatch "\.(cgi)$">
-            SSLOptions +StdEnvVars
-        </FilesMatch>
-        <Directory /usr/lib/cgi-bin>
-            SSLOptions +StdEnvVars
-        </Directory>
+        Alias /cgit-css "/usr/share/cgit/"
+        ScriptAlias / "/usr/lib/cgit/cgit.cgi/"
 
-        Alias / "/cgit/"
+        <Directory "/usr/lib/cgit/">
+            AllowOverride None
+            Options +ExecCGI +FollowSymlinks -Indexes
+            Require all granted
+        </Directory>
     </VirtualHost>
 </IfModule>

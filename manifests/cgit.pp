@@ -15,6 +15,12 @@ class sunet::cgit(
     notify  => Service['apache2'],
   }
 
+  exec { 'disable default cgit configuration':
+    command => 'a2disconf cgit',
+    onlyif  => 'test -L /etc/apache2/conf-enabled/cgit.conf',
+    notify  => Service['apache2'],
+  }
+
   exec { 'enable CGI':
     command => 'a2enmod cgid',
     creates => '/etc/apache2/mods-enabled/cgid.load',
