@@ -1,0 +1,16 @@
+# Last Modified: Sat Mar  9 01:04:29 2019
+#include <tunables/global>
+
+/usr/lib/git-core/git-daemon {
+  #include <abstractions/base>
+
+  @{HOME}/repositories/*.git/** r,
+  /lib/x86_64-linux-gnu/ld-*.so mr,
+  /usr/bin/git rix,
+  /usr/lib/git-core/git mr,
+  /usr/lib/git-core/git rix,
+  /usr/lib/git-core/git-daemon mr,
+  /usr/lib/git-core/git-upload-pack mr,
+  /usr/lib/git-core/git-upload-pack rix,
+
+}

@@ -4,6 +4,7 @@ class sunet::gitolite(
     $ssh_key                          = undef,
     $enable_git_daemon                = false,
     $save_private_admin_key_on_server = true,
+    $use_apparmor                     = false,
 ) {
     ensure_resource('sunet::system_user', $username, {
         username   => $username,
@@ -89,6 +90,33 @@ class sunet::gitolite(
         sunet::misc::ufw_allow { 'allow-git-daemon':
             from => 'any',
             port => '9418',
+        }
+    }
+
+    if $use_apparmor {
+        file { '/etc/apparmor-cosmos':
+            ensure => 'directory',
+        } ->
+        file { '/etc/apparmor-cosmos/usr.share.gitolite3.gitolite-shell':
+            ensure  => 'file',
+            owner   => 'root',
+            group   => 'root',
+            content => template('sunet/gitolite/usr.share.gitolite3.gitolite-shell.erb'),
+            require => File['/etc/apparmor-cosmos'],
+        }
+        file { '/etc/apparmor-cosmos/usr.lib.git-core.git-daemon':
+            ensure  => 'file',
+            owner   => 'root',
+            group   => 'root',
+            content => template('sunet/gitolite/usr.lib.git-core.git-daemon.erb'),
+            require => File['/etc/apparmor-cosmos'],
+        }
+
+        apparmor::profile { 'usr.share.gitolite3.gitolite-shell':
+            source => '/etc/apparmor-cosmos/usr.share.gitolite3.gitolite-shell',
+        }
+        apparmor::profile { 'usr.lib.git-core.git-daemon':
+            source => '/etc/apparmor-cosmos/usr.lib.git-core.git-daemon',
         }
     }
 }
