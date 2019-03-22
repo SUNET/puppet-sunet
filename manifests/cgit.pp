@@ -2,7 +2,7 @@ class sunet::cgit(
   String $fqdn,
   String $public_hostname,
   String $package         = 'cgit',
-  String $cgitrepo_path   = '/home/git/repositories/',
+  String $cgitrepo_path   = '/home/git/repositories',
   String $cgit_logo       = '',
   String $www_user        = 'www-data',
   String $git_group       = 'git',

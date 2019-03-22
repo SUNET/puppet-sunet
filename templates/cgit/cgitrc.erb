@@ -6,12 +6,13 @@
 # see cgitrc(5) for details
 
 css=/cgit-css/cgit.css
-<% if @cgit_logo != '' %>
-logo=/cgit-css/<%= @cgit_logo %>
-<% else %>
+<% if @cgit_logo != '' -%>
+logo=/cgit-css/<%= @cgit_logo -%>
+<% else -%>
 logo=/cgit-css/cgit.png
-<% end -%>
+<% end %>
 
 robots=noindex, nofollow
 
+strict-export=git-daemon-export-ok
 scan-path=<%= @cgitrepo_path %>
