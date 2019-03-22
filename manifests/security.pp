@@ -106,7 +106,9 @@ class sunet::security::disable_all_local_users() {
 # change the boot parameters for the kernel to turn it on.
 # Debian 10 will, according to the current information, have
 # Apparmor enabled by default so this might not be needed in the future.
+# apparmor-utils is installed so we can test and debug profiles.
 class sunet::security::apparmor() {
+    package {'apparmor-utils': ensure => latest }
     if $::operatingsystem == 'Debian' {
         case $::operatingsystemmajrelease {
             '9':  { exec { 'enable_apparmor_on_Debian_9':
