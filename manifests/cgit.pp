@@ -37,6 +37,18 @@ class sunet::cgit(
         notify  => Service['apache2'],
     }
 
+    exec { 'enable HTTP2':
+        command => 'a2enmod http2',
+        creates => '/etc/apache2/mods-enabled/http2.load',
+        notify  => Service['apache2'],
+    }
+
+    exec { 'enable headers':
+        command => 'a2enmod headers',
+        creates => '/etc/apache2/mods-enabled/headers.load',
+        notify  => Service['apache2'],
+    }
+
     file { '/etc/cgitrc':
         content => template('sunet/cgit/cgitrc.erb'),
     }

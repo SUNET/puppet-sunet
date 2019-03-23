@@ -6,6 +6,12 @@
 <VirtualHost *:80>
     ServerName <%= @public_hostname %>
     Redirect 302 / https://<%= @public_hostname %>
+
+    <IfModule mod_headers.c>
+        Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Header always set Content-Security-Policy upgrade-insecure-requests
+    </IfModule>
+
 </VirtualHost>
 
 <IfModule mod_ssl.c>
