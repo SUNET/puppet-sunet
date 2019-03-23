@@ -4,6 +4,8 @@ class sunet::cgit(
     String $package         = 'cgit',
     String $cgitrepo_path   = '/home/git/repositories',
     String $cgit_logo       = '',
+    String $root_title      = 'Default title',
+    String $root_desc       = 'Default description',
     String $www_user        = 'www-data',
     String $git_group       = 'git',
 ) {
