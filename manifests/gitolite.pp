@@ -94,22 +94,23 @@ class sunet::gitolite(
     }
 
     if $use_apparmor {
-        file { '/etc/apparmor-cosmos':
-            ensure => 'directory',
+        # To avoid a duplicated declaration with other manifests
+        # such as unbound.pp etc, exec instead of file is used here.
+        exec { 'gitolite_apparmor_dir':
+            command => 'mkdir -p /etc/apparmor-cosmos',
+            unless  => 'test -d /etc/apparmor-cosmos',
         } ->
         file { '/etc/apparmor-cosmos/usr.share.gitolite3.gitolite-shell':
             ensure  => 'file',
             owner   => 'root',
             group   => 'root',
             content => template('sunet/gitolite/usr.share.gitolite3.gitolite-shell.erb'),
-            require => File['/etc/apparmor-cosmos'],
         }
         file { '/etc/apparmor-cosmos/usr.lib.git-core.git-daemon':
             ensure  => 'file',
             owner   => 'root',
             group   => 'root',
             content => template('sunet/gitolite/usr.lib.git-core.git-daemon.erb'),
-            require => File['/etc/apparmor-cosmos'],
         }
 
         apparmor::profile { 'usr.share.gitolite3.gitolite-shell':

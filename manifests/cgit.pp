@@ -50,12 +50,17 @@ class sunet::cgit(
         notify  => Service['apache2'],
     }
 
+    # To avoid a duplicated declaration with other manifests
+    # such as unbound.pp etc, exec instead of file is used here.
+    exec { 'cgit_apparmor_dir':
+        command => 'mkdir -p /etc/apparmor-cosmos',
+        unless  => 'test -d /etc/apparmor-cosmos',
+    } ->
     file { '/etc/apparmor-cosmos/usr.lib.cgit.cgit.cgi':
         ensure  => 'file',
         owner   => 'root',
         group   => 'root',
         content => template('sunet/cgit/usr.lib.cgit.cgit.cgi.erb'),
-        require => File['/etc/apparmor-cosmos'],
     }
 
     apparmor::profile { 'usr.lib.cgit.cgit.cgi':
