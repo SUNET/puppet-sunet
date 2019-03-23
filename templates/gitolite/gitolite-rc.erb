@@ -21,7 +21,11 @@
     UMASK                           =>  0027,
 
     # look for "git-config" in the documentation
-    GIT_CONFIG_KEYS                 =>  '',
+    <% if @cgit_custom_config == true -%>
+GIT_CONFIG_KEYS                 =>  'gitweb\.owner gitweb\.description',
+    <% else -%>
+GIT_CONFIG_KEYS                 =>  '',
+    <% end -%>
 
     # comment out if you don't need all the extra detail in the logfile
     LOG_EXTRA                       =>  1,
@@ -158,7 +162,11 @@
             # 'upstream',
 
             # updates 'description' file instead of 'gitweb.description' config item
-            # 'cgit',
+            <% if @cgit_custom_config == true -%>
+'cgit',
+            <% else -%>
+# 'cgit',
+            <% end -%>
 
             # allow repo-specific hooks to be added
             # 'repo-specific-hooks',

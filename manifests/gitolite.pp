@@ -5,6 +5,7 @@ class sunet::gitolite(
     $enable_git_daemon                = false,
     $save_private_admin_key_on_server = true,
     $use_apparmor                     = false,
+    $cgit_custom_config               = false,
 ) {
     ensure_resource('sunet::system_user', $username, {
         username   => $username,
