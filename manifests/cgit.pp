@@ -9,6 +9,8 @@ class sunet::cgit(
     String $www_user        = 'www-data',
     String $git_group       = 'git',
 ) {
+    package { $package: ensure => latest } ->
+
     exec { 'let web user read git repos':
         command => "adduser $www_user $git_group",
     }
