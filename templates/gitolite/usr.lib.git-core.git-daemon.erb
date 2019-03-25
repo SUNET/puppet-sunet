@@ -1,4 +1,4 @@
-# Last Modified: Fri Mar 22 22:10:54 2019
+# Last Modified: Mon Mar 25 09:01:03 2019
 #include <tunables/global>
 
 /usr/lib/git-core/git-daemon {
@@ -18,5 +18,6 @@
   /usr/lib/git-core/git-upload-pack mr,
   /usr/lib/git-core/git-upload-pack rix,
   @{HOME}/repositories/*.git/** r,
+  @{HOME}/repositories/user/** r,
 
 }
