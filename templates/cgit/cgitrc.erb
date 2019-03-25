@@ -15,7 +15,7 @@ logo=/cgit-css/<%= @cgit_logo -%>
 logo=/cgit-css/cgit.png
 <% end %>
 
-robots=noindex, nofollow
+robots=index, nofollow
 
 # Enable ASCII art commit history graph on the log pages
 enable-commit-graph=1
@@ -25,6 +25,8 @@ enable-log-filecount=1
 
 # Show number of added/removed lines per commit on the log pages
 enable-log-linecount=1
+
+clone-url=https://<%= @public_hostname -%>/$CGIT_REPO_URL git@<%= @public_hostname -%>:$CGIT_REPO_URL
 
 strict-export=git-daemon-export-ok
 enable-git-config=1
