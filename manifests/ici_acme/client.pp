@@ -1,6 +1,5 @@
 class sunet::ici_acme::client(
-  String $ca_url => 'http://ca-test-1.sunet.se/',
-
+  String $ca_url = 'http://ca-test-1.sunet.se/',
 ) {
   package { 'python3-josepy':
     ensure => 'installed',
@@ -23,6 +22,11 @@ class sunet::ici_acme::client(
         ensure  => file,
         mode    => '0755',
         content => template('sunet/ici_acme/ici-acme-pre-auth.py.erb'),
+      ;
+    '/usr/local/sbin/dehydrated':
+        ensure  => file,
+        mode    => '0755',
+        content => template('sunet/ici_acme/sunet_patched_dehydrated.erb'),
       ;
   }
 }
