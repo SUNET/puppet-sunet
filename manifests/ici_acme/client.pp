@@ -29,4 +29,11 @@ class sunet::ici_acme::client(
         content => template('sunet/ici_acme/sunet_patched_dehydrated.erb'),
       ;
   }
+
+  sunet::scriptherder::cronjob { 'ici_acme_client':
+    cmd           => '/usr/local/sbin/ici_acme_client',
+    special       => 'daily',
+    ok_criteria   => ['exit_status=0', 'max_age=25h'],
+    warn_criteria => ['exit_status=0', 'max_age=49h'],
+  }
 }
