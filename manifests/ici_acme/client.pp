@@ -31,7 +31,7 @@ class sunet::ici_acme::client(
   }
 
   sunet::scriptherder::cronjob { 'ici_acme_client':
-    cmd           => '/usr/local/sbin/ici_acme_client',
+    cmd           => '/usr/local/sbin/ici_acme_client --random-sleep',
     special       => 'daily',
     ok_criteria   => ['exit_status=0', 'max_age=25h'],
     warn_criteria => ['exit_status=0', 'max_age=49h'],
