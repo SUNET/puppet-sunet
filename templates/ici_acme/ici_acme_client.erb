@@ -20,21 +20,23 @@ if [[ $1 == '--random-sleep' ]]; then
     sleep $sleep
 fi
 
-if [[ ! -f ${ACCOUNTDIR}/*/registration_info.json ]]; then #|| ! grep -q ${CA} ${ACCOUNTDIR}/*/registration_info.json ]]; then
+# Check for existing account
+/usr/local/sbin/ici-acme-pre-auth.py --url ${CA} --dehydrated_account_dir ${ACCOUNTDIR} is_registered
+if [[ $? != 0 ]]; then
     /usr/local/sbin/dehydrated --config ${DEHYDRATED_CONFIG} --register --accept-terms
 fi
 
 FQDN=$(hostname -f)
 if [[ -f ${BASEDIR}/certs/${FQDN}/cert.pem ]]; then
     /usr/local/sbin/ici-acme-pre-auth.py --url ${CA} \
-					 --dehydrated_account_dir ${ACCOUNTDIR}/* \
+					 --dehydrated_account_dir ${ACCOUNTDIR} \
 					 renew \
 					 --cert dehydrated_client/certs/${FQDN}/cert.pem \
 					 --key dehydrated_client/certs/${FQDN}/privkey.pem
 else
     if [[ -f ${BASEDIR}/preauth_token.yaml ]]; then
 	/usr/local/sbin/ici-acme-pre-auth.py --debug --url ${CA} \
-					     --dehydrated_account_dir ${ACCOUNTDIR}/* \
+					     --dehydrated_account_dir ${ACCOUNTDIR} \
 					     init \
 					     --token_file ${BASEDIR}/preauth_token.yaml
     else
