@@ -31,8 +31,8 @@ if [[ -f ${BASEDIR}/certs/${FQDN}/cert.pem ]]; then
     /usr/local/sbin/ici-acme-pre-auth.py --url ${CA} \
 					 --dehydrated_account_dir ${ACCOUNTDIR} \
 					 renew \
-					 --cert dehydrated_client/certs/${FQDN}/cert.pem \
-					 --key dehydrated_client/certs/${FQDN}/privkey.pem
+					 --cert ${BASEDIR}/certs/${FQDN}/cert.pem \
+					 --key ${BASEDIR}/certs/${FQDN}/privkey.pem
 else
     if [[ -f ${BASEDIR}/preauth_token.yaml ]]; then
 	/usr/local/sbin/ici-acme-pre-auth.py --debug --url ${CA} \
