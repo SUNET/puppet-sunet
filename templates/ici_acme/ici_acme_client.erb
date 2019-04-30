@@ -32,6 +32,8 @@ if [[ -f ${BASEDIR}/preauth_token.yaml ]]; then
 					 --dehydrated_account_dir ${ACCOUNTDIR} \
 					 init \
 					 --token_file ${BASEDIR}/preauth_token.yaml
+    # The nonce is spent at this point, so we might as well delete the file
+    rm -f ${BASEDIR}/preauth_token.yaml
 else
     if [[ -f ${BASEDIR}/certs/${FQDN}/cert.pem ]]; then
 	/usr/local/sbin/ici-acme-pre-auth.py --url ${CA} \
@@ -45,9 +47,7 @@ else
     fi
 fi
 
-dehydrated --cron -a prime256v1 --force --config ${DEHYDRATED_CONFIG} --domain ${FQDN}
-
-rm -f ${BASEDIR}/preauth_token.yaml
+/usr/local/sbin/dehydrated --cron -a prime256v1 --force --config ${DEHYDRATED_CONFIG} --domain ${FQDN}
 
 echo "$0: All done"
 exit 0
