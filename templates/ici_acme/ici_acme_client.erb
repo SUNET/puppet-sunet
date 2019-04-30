@@ -27,18 +27,18 @@ if [[ $? != 0 ]]; then
 fi
 
 FQDN=$(hostname -f)
-if [[ -f ${BASEDIR}/certs/${FQDN}/cert.pem ]]; then
-    /usr/local/sbin/ici-acme-pre-auth.py --url ${CA} \
+if [[ -f ${BASEDIR}/preauth_token.yaml ]]; then
+    /usr/local/sbin/ici-acme-pre-auth.py --debug --url ${CA} \
 					 --dehydrated_account_dir ${ACCOUNTDIR} \
-					 renew \
-					 --cert ${BASEDIR}/certs/${FQDN}/cert.pem \
-					 --key ${BASEDIR}/certs/${FQDN}/privkey.pem
+					 init \
+					 --token_file ${BASEDIR}/preauth_token.yaml
 else
-    if [[ -f ${BASEDIR}/preauth_token.yaml ]]; then
-	/usr/local/sbin/ici-acme-pre-auth.py --debug --url ${CA} \
+    if [[ -f ${BASEDIR}/certs/${FQDN}/cert.pem ]]; then
+	/usr/local/sbin/ici-acme-pre-auth.py --url ${CA} \
 					     --dehydrated_account_dir ${ACCOUNTDIR} \
-					     init \
-					     --token_file ${BASEDIR}/preauth_token.yaml
+					     renew \
+					     --cert ${BASEDIR}/certs/${FQDN}/cert.pem \
+					     --key ${BASEDIR}/certs/${FQDN}/privkey.pem
     else
 	echo "$0: No existing certificate (${BASEDIR}/certs/${FQDN}/cert.pem), and ${BASEDIR}/preauth_token.yaml not found"
 	exit 1
