@@ -28,7 +28,7 @@ fi
 
 FQDN=$(hostname -f)
 if [[ -f ${BASEDIR}/preauth_token.yaml ]]; then
-    /usr/local/sbin/ici-acme-pre-auth.py --debug --url ${CA} \
+    /usr/local/sbin/ici-acme-pre-auth.py --url ${CA} \
 					 --dehydrated_account_dir ${ACCOUNTDIR} \
 					 init \
 					 --token_file ${BASEDIR}/preauth_token.yaml
