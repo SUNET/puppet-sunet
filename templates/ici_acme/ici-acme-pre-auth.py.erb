@@ -233,13 +233,17 @@ def create_renew_pre_auth(directory: Mapping, args: argparse.Namespace) -> str:
 
     now = datetime.datetime.utcnow()
     claims = {'renew': True,
-              'exp': now + datetime.timedelta(seconds=300),
-              'iat': datetime.datetime.utcnow(),
+              'exp': (now + datetime.timedelta(seconds=300)).isoformat(),
+              'iat': datetime.datetime.utcnow().isoformat(),
               'aud': directory['newAuthz'],
               'crit': ['exp'],
               }
-    token = jose.JWS.sign(payload=claims, headers=headers, key=info.private_key, alg=info.alg)
-    return token
+    jose.jws.Signature.header_cls = AcmeHeader
+    token = jose.JWS.sign(payload=json.dumps(claims).encode(),
+                          key=info.private_key, alg=info.alg, include_jwk=False,
+                          protect={'alg'},
+                          **headers)
+    return token.to_compact().decode('utf-8')
 
 
 def post_pre_auth(token: str, endpoints: Endpoints, args: argparse.Namespace) -> bool:
@@ -291,7 +295,7 @@ def main():
             info = load_dehydrated_info(args)
             if info and info.url is not None:
                 # TODO: Verify account using newAccount with onlyReturnExisting=True.
-                logger.debug(f'Dehydrated account for URL {info .url} found')
+                logger.debug(f'Dehydrated account for URL {info.url} found')
                 res = True
         elif args.mode in ['renew', 'init']:
             if args.mode == 'renew':
