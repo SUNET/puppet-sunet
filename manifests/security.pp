@@ -31,6 +31,7 @@ class sunet::security::configure_sshd(
     changes => flatten([
                         "set PasswordAuthentication no",
                         "set X11Forwarding no",
+                        "set AllowAgentForwarding no",
                         "set LogLevel VERBOSE",  # log pubkey used for root login
                         "rm HostKey",
                         $set_hostkey,
