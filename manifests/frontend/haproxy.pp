@@ -14,6 +14,8 @@ define sunet::frontend::haproxy(
   Optional[Hash] $static_backends = {'letsencrypt_acme-c.sunet.se' => ['89.45.232.90:80']},
 )
 {
+  fail("This variant of SUNET frontend is obsolete - move to docker-compose based one (Särimner)")
+
   include sunet::systemd_reload
 
   # Parameters used in haproxy control scripts
