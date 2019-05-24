@@ -54,7 +54,7 @@ services:
 <% end -%>
 
   config:
-    image: 'docker.sunet.se/frontend/frontend-tools:latest'
+    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
     restart: always
     volumes:
       - /opt/frontend/scripts:/opt/frontend/scripts:ro
@@ -65,7 +65,7 @@ services:
     command: /opt/frontend/scripts/generate-haproxy-config --debug --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
 
   monitor:
-    image: 'docker.sunet.se/frontend/frontend-tools:latest'
+    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
     restart: always
     volumes:
       - /opt/frontend/scripts:/opt/frontend/scripts:ro
