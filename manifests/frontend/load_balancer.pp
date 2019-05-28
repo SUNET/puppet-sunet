@@ -41,9 +41,9 @@ class sunet::frontend::load_balancer(
       }
 
       concat::fragment { "${name}_haproxy-pre-start_end":
-        target   => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
-        order    => '99',
-        content  => "exit 0\n",
+        target  => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
+        order   => '99',
+        content => "exit 0\n",
       }
 
       sysctl_ip_nonlocal_bind { 'load_balancer': }
@@ -56,7 +56,7 @@ class sunet::frontend::load_balancer(
       file { '/etc/bgp/monitor':
         ensure  => file,
         mode    => '0755',
-        content => template("sunet/frontend/websites2_monitor.py.erb"),
+        content => template('sunet/frontend/websites2_monitor.py.erb'),
         notify  => Sunet::Exabgp['load_balancer'],
       }
 
@@ -76,7 +76,7 @@ class sunet::frontend::load_balancer(
     sunet::exabgp { 'load_balancer':
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
                          '/opt/frontend/monitor:/opt/frontend/monitor:ro',
-                         "/dev/log:/dev/log",
+                         '/dev/log:/dev/log',
                          ],
       version        => $exabgp_imagetag,
     }
@@ -86,7 +86,7 @@ class sunet::frontend::load_balancer(
       docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
     }
 
-    sunet::misc::ufw_allow { "always-https-allow-http":
+    sunet::misc::ufw_allow { 'always-https-allow-http':
       from => 'any',
       port => '80'
     }
@@ -116,7 +116,7 @@ define sysctl_ip_nonlocal_bind() {
                 'set net.ipv4.ip_nonlocal_bind 1',
                 'set net.ipv6.ip_nonlocal_bind 1',
                 ],
-    notify => Exec['reload_sysctl_10-sunet-frontend-ip-non-local-bind.conf'],
+    notify  => Exec['reload_sysctl_10-sunet-frontend-ip-non-local-bind.conf'],
   }
 
   exec { 'reload_sysctl_10-sunet-frontend-ip-non-local-bind.conf':
