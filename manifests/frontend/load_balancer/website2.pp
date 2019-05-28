@@ -86,6 +86,7 @@ define sunet::frontend::load_balancer::website2(
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
+  $statsd_enabled         = pick($config['statsd_enabled'], false)
 
   sunet::docker_compose { "frontend-${instance}":
     content          => template('sunet/frontend/docker-compose_template.erb'),
