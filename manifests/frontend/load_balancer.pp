@@ -89,8 +89,8 @@ class sunet::frontend::load_balancer(
     sunet::frontend::statsd { 'frontend_statsd':
       docker_image    => pick($config['statsd_image'], 'docker.sunet.se/eduid/statsd'),
       docker_imagetag => pick($config['statsd_imagetag'], 'stable'),
-      repeat_host     => pick($config['statsd_repeat_host'], undef),
-      repeat_port     => pick($config['statsd_repeat_port'], undef),
+      repeat_host     => pick($config['statsd_repeat_host'], ''),
+      repeat_port     => pick($config['statsd_repeat_port'], ''),
     }
 
     sunet::misc::ufw_allow { 'always-https-allow-http':
