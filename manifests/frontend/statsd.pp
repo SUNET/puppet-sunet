@@ -17,7 +17,8 @@ define sunet::frontend::statsd(
   sunet::docker_run { 'sunetfrontend_statsd':
     image    => $docker_image,
     imagetag => $docker_imagetag,
-    port     => ['8125/udp'],
+    expose   => ['8125/udp'],
+    net      => 'host',
     env      => $env,
   }
 }
