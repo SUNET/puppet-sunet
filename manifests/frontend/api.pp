@@ -14,9 +14,10 @@ define sunet::frontend::api(
   exec { 'api_mkdir':
     command => "/bin/mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}",
-  } ->
+  }
+
   file {
-    "$basedir/backends":
+    "${basedir}/backends":
       ensure  => 'directory',
       mode    => '0770',
       group   => $group,
@@ -31,6 +32,6 @@ define sunet::frontend::api(
                  '/dev/log:/dev/log',
                  '/var/log/sunetfrontend-api:/var/log/sunetfrontend-api',
                  ],
-    require  => [File["$basedir/backends"]],
+    require  => [File["${basedir}/backends"]],
   }
 }
