@@ -13,7 +13,7 @@ define sunet::frontend::telegraf(
     group    => $group,
   })
 
-  exec { 'api_mkdir':
+  exec { 'telegraf_mkdir':
     command => "/bin/mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}",
   }
