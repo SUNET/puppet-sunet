@@ -20,11 +20,11 @@ define sunet::frontend::telegraf(
 
   file {
     "${basedir}/telegraf.conf":
-      ensure   => 'file',
-      mode     => '0640',
-      group    => $group,
-      require  => Sunet::System_user[$username],
-      template => template('sunet/frontend/load_balancer_telegraf.conf.erb')
+      ensure  => 'file',
+      mode    => '0640',
+      group   => $group,
+      require => Sunet::System_user[$username],
+      content => template('sunet/frontend/load_balancer_telegraf.conf.erb')
       ;
   }
 
