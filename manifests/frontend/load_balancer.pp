@@ -86,11 +86,10 @@ class sunet::frontend::load_balancer(
       docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
     }
 
-    sunet::frontend::statsd { 'frontend_statsd':
-      docker_image    => pick($config['load_balancer']['statsd_image'], 'docker.sunet.se/eduid/statsd'),
-      docker_imagetag => pick($config['load_balancer']['statsd_imagetag'], 'stable'),
-      repeat_host     => $config['load_balancer']['statsd_repeat_host'],
-      repeat_port     => $config['load_balancer']['statsd_repeat_port'],
+    sunet::frontend::telegraf { 'frontend_telegraf':
+      docker_image    => pick($config['load_balancer']['telegraf_image'], 'docker.sunet.se/eduid/telegraf'),
+      docker_imagetag => pick($config['load_balancer']['telegraf_imagetag'], 'stable'),
+      forward_url     => $config['load_balancer']['stats_forwrad_url'],
     }
 
     sunet::misc::ufw_allow { 'always-https-allow-http':
