@@ -89,7 +89,7 @@ class sunet::frontend::load_balancer(
     sunet::frontend::telegraf { 'frontend_telegraf':
       docker_image    => pick($config['load_balancer']['telegraf_image'], 'docker.sunet.se/eduid/telegraf'),
       docker_imagetag => pick($config['load_balancer']['telegraf_imagetag'], 'stable'),
-      forward_url     => $config['load_balancer']['stats_forwrad_url'],
+      forward_url     => $config['load_balancer']['telegraf_forward_url'],
     }
 
     sunet::misc::ufw_allow { 'always-https-allow-http':
