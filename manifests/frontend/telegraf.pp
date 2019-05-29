@@ -34,6 +34,7 @@ define sunet::frontend::telegraf(
     expose   => ['8125/udp'],
     net      => 'host',  # listening on localhost with --net host is better than exposing ports that will sneak past ufw rules
     volumes  => ["${basedir}/telegraf.conf:/etc/telegraf/telegraf.conf:ro",
+                 '/etc/ssl/certs/infra.crt:/etc/telegraf/ca.pem:ro',
                  ]
   }
 }
