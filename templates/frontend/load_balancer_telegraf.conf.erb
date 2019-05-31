@@ -3,7 +3,7 @@
     # Protocol, must be "tcp", "udp", "udp4" or "udp6" (default=udp)
     protocol = "udp"
     # Address and port to host UDP listener on
-    service_address = ":8125"
+    service_address = "<%= @statsd_listen_address %>:<%= @statsd_listen_port %>"
     # Reset gauges every interval (default=true)
     delete_gauges = false
     # Percentiles to calculate for timing & histogram stats

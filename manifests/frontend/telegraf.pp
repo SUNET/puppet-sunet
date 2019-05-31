@@ -1,11 +1,13 @@
 # Setup and run one Telegraf per frontend
 define sunet::frontend::telegraf(
-  String           $docker_image    = 'docker.sunet.se/eduid/telegraf',
-  String           $docker_imagetag = 'stable',
-  String           $basedir         = '/opt/frontend/telegraf',
-  String           $username        = 'sunetfrontend',
-  String           $group           = 'sunetfrontend',
-  Optional[String] $forward_url     = undef,
+  String           $docker_image          = 'docker.sunet.se/eduid/telegraf',
+  String           $docker_imagetag       = 'stable',
+  String           $basedir               = '/opt/frontend/telegraf',
+  String           $username              = 'sunetfrontend',
+  String           $group                 = 'sunetfrontend',
+  Optional[String] $forward_url           = undef,
+  String           $statsd_listen_address = '',  # empty for all addressse
+  Integer          $statsd_listen_port    = 8125,
 )
 {
   ensure_resource('sunet::system_user', $username, {

@@ -73,7 +73,11 @@ services:
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/monitor/<%= @instance %>:/opt/frontend/monitor/<%= @instance %>:rw
       - haproxy_control:/var/run/haproxy-control
-    command: /opt/frontend/scripts/monitor-haproxy <% if @statsd_enabled == true -%>--statsd_host 127.0.0.1 --statsd_prefix sarimner.<%= @instance %> <% end -%>--stats_url /var/run/haproxy-control/stats 'site=<%= @site_name %>;group=default'
+    command: >
+        /opt/frontend/scripts/monitor-haproxy
+	    <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
+	    --stats_url /var/run/haproxy-control/stats
+	    'site=<%= @site_name %>;group=default'
     environment:
       - 'HOSTFQDN=<%= @fqdn %>'
       - 'INSTANCE=<%= @instance %>'
