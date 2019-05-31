@@ -89,14 +89,11 @@ define sunet::frontend::load_balancer::website2(
   $statsd_enabled         = pick($config['statsd_enabled'], false)
   $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
 
-  # create shellscript that patiently tries to start frontends one at a time, to not trash the system at boot
-  file {
-    '/usr/local/bin/start-frontend':
-      ensure  => 'file',
-      mode    => '0755',
-      content => template('sunet/frontend/start-frontend.erb'),
-      ;
-  }
+  ensure_resource('file', '/usr/local/bin/start-frontend', {
+    ensure  => 'file',
+    mode    => '0755',
+    content => template('sunet/frontend/start-frontend.erb'),
+  })
 
   sunet::docker_compose { "frontend-${instance}":
     content          => template('sunet/frontend/docker-compose_template.erb'),
