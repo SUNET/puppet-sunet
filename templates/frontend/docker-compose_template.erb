@@ -75,9 +75,9 @@ services:
       - haproxy_control:/var/run/haproxy-control
     command: >
         /opt/frontend/scripts/monitor-haproxy
-	    <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
-	    --stats_url /var/run/haproxy-control/stats
-	    'site=<%= @site_name %>;group=default'
+            <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
+            --stats_url /var/run/haproxy-control/stats
+            'site=<%= @site_name %>;group=default'
     environment:
       - 'HOSTFQDN=<%= @fqdn %>'
       - 'INSTANCE=<%= @instance %>'
