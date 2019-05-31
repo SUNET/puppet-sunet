@@ -99,19 +99,6 @@ define sunet::frontend::load_balancer::website2(
     service_extras   => ["ExecStartPost=-${basedir}/scripts/configure-container-network ${name}"],
   }
 
-  each($config['backends']) | $k, $v | {
-    # k should be a backend name (like 'default') and v a hash with it's backends:
-    #   $v = {host.example.org => {ips => [192.0.2.1]}}
-    if is_hash($v) {
-      each($v) | $name, $params | {
-        sunet::misc::ufw_allow { "allow_backends_to_api_${instance}_${k}_${name}":
-          from => $params['ips'],
-          port => $api_port,
-        }
-      }
-    }
-  }
-
   if has_key($config, 'allow_ports') {
     each($config['frontends']) | $k, $v | {
       # k should be a frontend FQDN and $v a hash with ips in it:
@@ -139,13 +126,18 @@ define sunet::frontend::load_balancer::website2(
     }
   }
 
-  # Create backend directory for this website so that the sunetfrontend-api will
-  # accept register requests from the servers
-  file {
-    "${basedir}/api/backends/${site_name}":
-      ensure => 'directory',
-      group  => 'sunetfrontend',
-      mode   => '0770',
-      ;
+  # Set up the API for this instance
+  each($config['backends']) | $k, $v | {
+    # k should be a backend name (like 'default') and v a hash with it's backends:
+    #   $v = {host.example.org => {ips => [192.0.2.1]}}
+    if is_hash($v) {
+      each($v) | $name, $params | {
+        sunet::frontend::api::instance { "api_${instance}_${k}":
+          site_name   => $site_name,
+          backend_ips => $params['ips'],
+          api_port    => $api_port,
+        }
+      }
+    }
   }
 }
