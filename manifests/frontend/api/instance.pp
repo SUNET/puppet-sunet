@@ -16,6 +16,5 @@ define sunet::frontend::api::instance(
       ensure => 'directory',
       group  => 'sunetfrontend',
       mode   => '0770',
-      ;
   })
 }
