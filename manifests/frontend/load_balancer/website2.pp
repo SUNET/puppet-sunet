@@ -41,6 +41,7 @@ define sunet::frontend::load_balancer::website2(
     }
     $config2 = merge($config, {'tls_certificate_bundle' => $tls_certificate_bundle})
   } else {
+    $tls_certificate_bundle = $config['tls_certificate_bundle']
     $config2 = $config
   }
 

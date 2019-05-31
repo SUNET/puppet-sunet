@@ -31,6 +31,7 @@ class sunet::security::configure_sshd(
     changes => flatten([
                         "set PasswordAuthentication no",
                         "set X11Forwarding no",
+                        "set AllowAgentForwarding no",
                         "set LogLevel VERBOSE",  # log pubkey used for root login
                         "rm HostKey",
                         $set_hostkey,
@@ -49,7 +50,9 @@ class sunet::security::configure_sshd(
 }
 
 # Make sure automatic security upgrades are activated
-class sunet::security::unattended_upgrades() {
+class sunet::security::unattended_upgrades(
+  $use_template = false,
+) {
   file { '/etc/dpkg/unattended-upgrades.debconf':
     ensure  => present,
     content => template('sunet/security/unattended-upgrades.debconf.erb'),
@@ -58,6 +61,35 @@ class sunet::security::unattended_upgrades() {
     command => 'debconf-set-selections /etc/dpkg/unattended-upgrades.debconf && dpkg-reconfigure -fdebconf unattended-upgrades',
     unless  => 'debconf-show unattended-upgrades | grep -q "unattended-upgrades/enable_auto_updates: true$"',
     path    => ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
+  }
+  if $use_template {
+    if $::operatingsystem == 'Ubuntu' {
+      case $::operatingsystemrelease {
+        '14.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
+                    ensure  => present,
+                    content => template('sunet/security/50unattended-upgrades.ubuntu_14.04.erb')}
+                  }
+        '16.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
+                    ensure  => present,
+                    content => template('sunet/security/50unattended-upgrades.ubuntu_16.04.erb')}
+                  }
+        '18.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
+                    ensure  => present,
+                    content => template('sunet/security/50unattended-upgrades.ubuntu_18.04.erb')}
+                  }
+        default:  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
+                    ensure  => present,
+                    content => template('sunet/security/50unattended-upgrades.ubuntu_default.erb')}
+                  }
+      }
+    } elsif $::operatingsystem == 'Debian' {
+        file { '/etc/apt/apt.conf.d/50unattended-upgrades' :
+          ensure  => present,
+          content => template('sunet/security/50unattended-upgrades.debian_default.erb'),
+        }
+    } else {
+        warning('Unsupported OS for class sunet::security::unattended_upgrades')
+    }
   }
 }
 
@@ -69,4 +101,21 @@ class sunet::security::disable_all_local_users() {
     onlyif  => 'cat /etc/shadow | awk -F : \'{print $2}\' | grep -v ^!',
     before  => Package['openssh-server'],
   }
+}
+
+# Since Apparmor is not enabled by default on Debian 9 we need to
+# change the boot parameters for the kernel to turn it on.
+# Debian 10 will, according to the current information, have
+# Apparmor enabled by default so this might not be needed in the future.
+# apparmor-utils is installed so we can test and debug profiles.
+class sunet::security::apparmor() {
+    package {'apparmor-utils': ensure => latest }
+    if $::operatingsystem == 'Debian' {
+        case $::operatingsystemmajrelease {
+            '9':  { exec { 'enable_apparmor_on_Debian_9':
+                    command => 'bash -c \'source /etc/default/grub && sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"${GRUB_CMDLINE_LINUX_DEFAULT}\"/GRUB_CMDLINE_LINUX_DEFAULT=\"${GRUB_CMDLINE_LINUX_DEFAULT} apparmor=1 security=apparmor\"/g" /etc/default/grub && update-grub\'',
+                    unless => 'grep -q "apparmor" /etc/default/grub', }
+                  }
+        }
+    }
 }

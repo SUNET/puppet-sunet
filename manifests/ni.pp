@@ -61,7 +61,7 @@ class sunet::ni(
       provider => git,
       owner    => ni,
       group    => ni,
-      source   => 'git://git.nordu.net/norduni.git',
+      source   => 'git://code.nordu.net/norduni.git',
       require  => User['ni'],
       }
   -> python::virtualenv {'/var/opt/norduni/norduni_environment':
@@ -128,7 +128,7 @@ class sunet::ni(
       provider => git,
       owner    => ni,
       group    => ni,
-      source   => 'git://git.nordu.net/sunet-nistore.git',
+      source   => 'git://code.nordu.net/sunet-nistore.git',
       }
   -> file {'/var/opt/norduni/norduni/src/scripts/restore.conf/':
       ensure  => file,
