@@ -8,6 +8,7 @@ define sunet::frontend::telegraf(
   Optional[String] $forward_url           = undef,
   String           $statsd_listen_address = '',  # empty for all addressse
   Integer          $statsd_listen_port    = 8125,
+  Array[String]    $allow_clients         = ['172.16.0.0/12'],
 )
 {
   ensure_resource('sunet::system_user', $username, {
@@ -34,10 +35,16 @@ define sunet::frontend::telegraf(
   sunet::docker_run { 'sunetfrontend_telegraf':
     image    => $docker_image,
     imagetag => $docker_imagetag,
-    expose   => ['8125/udp'],
+    expose   => ["${statsd_listen_port}/udp"],
     net      => 'host',  # listening on localhost with --net host is better than exposing ports that will sneak past ufw rules
     volumes  => ["${basedir}/telegraf.conf:/etc/telegraf/telegraf.conf:ro",
                  '/etc/ssl/certs/infra.crt:/etc/telegraf/ca.pem:ro',
                  ]
+  }
+
+  sunet::misc::ufw_allow { 'allow_telegraf_statsd':
+    from  => $allow_clients,
+    port  => $statsd_listen_port,
+    proto => 'udp',
   }
 }
