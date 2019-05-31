@@ -1,5 +1,5 @@
 # Setup and run the API
-define sunet::frontend::api(
+define sunet::frontend::api::server(
   $username   = 'sunetfrontend',
   $group      = 'sunetfrontend',
   $basedir    = '/opt/frontend/api',

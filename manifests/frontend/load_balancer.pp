@@ -81,7 +81,7 @@ class sunet::frontend::load_balancer(
       version        => $exabgp_imagetag,
     }
 
-    sunet::frontend::api { 'sunetfrontend':
+    sunet::frontend::api::server { 'sunetfrontend':
       basedir    => $apidir,
       docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
     }
