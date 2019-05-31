@@ -1,0 +1,22 @@
+#!/bin/bash
+
+basedir=$1
+name=$2
+compose_file=$3
+
+if [ ! -f "${compose_file}" ]; then
+    echo "Syntax: $0 basedir name compose-file"
+    exit 1
+fi
+
+lockfile=/var/lock/frontend-start
+echo "$0: Trying to get frontend-start lock using file ${lockfile}"
+
+(
+    flock -x 9 || exit 1
+    set -e
+    echo "$0: Lock acquired"
+    /usr/local/bin/docker-compose -f "${compose_file}" up --force-recreate --no-deps
+    ${basedir}/scripts/configure-container-network ${name}
+    echo "$0: Releasing lock"
+) 9>${lockfile}
