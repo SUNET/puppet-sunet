@@ -141,7 +141,7 @@ define sunet::frontend::load_balancer::website2(
     #   $v = {host.example.org => {ips => [192.0.2.1]}}
     if is_hash($v) {
       each($v) | $name, $params | {
-        sunet::frontend::api::instance { "api_${instance}_${k}":
+        sunet::frontend::api::instance { "api_${instance}_${k}_${name}":
           site_name   => $site_name,
           backend_ips => $params['ips'],
           api_port    => $api_port,
