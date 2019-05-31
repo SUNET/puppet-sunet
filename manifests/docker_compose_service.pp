@@ -1,9 +1,10 @@
 # Manage a service using docker-compose
 define sunet::docker_compose_service(
-  $compose_file,
-  $description,
-  $service_name = undef,
-  $pull_on_start = false,
+  String           $compose_file,
+  String           $description,
+  Optional[String] $service_name = undef,
+  Boolean          $pull_on_start = false,
+  Array[String]    $service_extras = [],
 ) {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
     include sunet::systemd_reload

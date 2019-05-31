@@ -147,7 +147,7 @@ class sunet::norduni {
         unless  => '/usr/bin/test -s /var/opt/norduni/nginx/ssl/dhparam.pem',
     }
 
-    sunet::docker_run { 'norduni_postgres':
+    sunet::docker_run { 'norduni-postgres':
         image    => 'postgres',
         imagetag => 'latest',
         volumes  => ['/var/opt/norduni/data/postgresql:/var/lib/postgresql/data/', '/var/opt/norduni/postgres/init/init-noclook-db.sh:/docker-entrypoint-initdb.d/init-noclook-db.sh'],
@@ -155,14 +155,14 @@ class sunet::norduni {
                      "POSTGRES_PASSWORD=${postgres_master_password}"]
     }
 
-    sunet::docker_run { 'norduni_neo4j':
+    sunet::docker_run { 'norduni-neo4j':
         image    => 'neo4j',
         imagetag => 'latest',
         volumes  => ['/var/opt/norduni/data/neo4j:/data'],
         env      => ["NEO4J_AUTH=neo4j/docker"]
     }
 
-    sunet::docker_run { 'norduni_noclook':
+    sunet::docker_run { 'norduni-noclook':
         image    => 'docker.sunet.se/norduni/noclook',
         imagetag => 'latest',
         volumes  => ['/var/opt/norduni/noclook/etc/dotenv:/var/opt/norduni/norduni/src/niweb/.env:ro',
@@ -179,7 +179,7 @@ class sunet::norduni {
         depends  => ['norduni-postgres', 'norduni-neo4j']
     }
 
-    sunet::docker_run { 'norduni_nginx':
+    sunet::docker_run { 'norduni-nginx':
         image            => 'docker.sunet.se/eduid/nginx',
         imagetag         => 'latest',
         ports            => ['80:80', '443:443'],

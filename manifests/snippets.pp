@@ -82,6 +82,17 @@ define sunet::snippets::ssh_keygen($key_file=undef) {
    }
 }
 
+define sunet::snippets::ssh_pubkey_from_privkey($privkey_file=undef) {
+  $_privkey_file = $privkey_file ? {
+    undef   => $name,
+    default => $privkey_file
+  }
+  exec { "ssh_pubkey_from_privkey-${_privkey_file}":
+    command => "ssh-keygen -y -f ${_privkey_file} > ${_privkey_file}.pub",
+    onlyif  => "test ! -s ${_privkey_file}.pub -a -s ${_privkey_file}"
+  }
+}
+
 define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096,$days=3650) {
    exec { "${title}_key":
       command => "openssl genrsa -out $key_file $size",
@@ -182,6 +193,15 @@ define sunet::snippets::secret_file(
     mode     => $mode,
     content  => inline_template("<%= @decoded_data %>")
   }
+}
+
+define sunet::snippets::reinstall::keep() {
+   $safe_name = regsubst($name, '[^0-9A-Za-z_]', '_', 'G')
+   ensure_resource('file','/etc/sunet-reinstall.keep',{owner=>'root',group=>'root',mode=>'0644'})
+   exec { "preserve_${safe_name}_during_reinstall":
+      command => "echo $name >> /etc/sunet-reinstall.keep",
+      onlyif  => "grep -ve '^${name}\$' /etc/sunet-reinstall.keep"
+   }
 }
 
 define sunet::snippets::ssh_command(

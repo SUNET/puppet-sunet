@@ -11,8 +11,6 @@ class sunet::ni(
   $ni_database_pwd = safe_hiera ('ni_database_password',[])
   $noclook_secret_key = safe_hiera ('noclook_secret_key',[])
   $google_api_key = safe_hiera ('google_api_key',[])
-  $domain = $::domain
-  $hostname = $::hostname
 
   service { 'neo4j':
     ensure => running,
@@ -63,7 +61,7 @@ class sunet::ni(
       provider => git,
       owner    => ni,
       group    => ni,
-      source   => 'git://git.nordu.net/norduni.git',
+      source   => 'git://code.nordu.net/norduni.git',
       require  => User['ni'],
       }
   -> python::virtualenv {'/var/opt/norduni/norduni_environment':
@@ -130,7 +128,7 @@ class sunet::ni(
       provider => git,
       owner    => ni,
       group    => ni,
-      source   => 'git://git.nordu.net/sunet-nistore.git',
+      source   => 'git://code.nordu.net/sunet-nistore.git',
       }
   -> file {'/var/opt/norduni/norduni/src/scripts/restore.conf/':
       ensure  => file,
@@ -144,6 +142,8 @@ class sunet::ni(
     file {'/var/opt/norduni/consume.sh/':
       ensure  => file,
       mode    => '0755',
+      owner  => 'ni',
+      group  => 'ni',
       content => template('sunet/ni/consume.sh.erb'),
       require => User['ni'],
       }
@@ -155,7 +155,7 @@ class sunet::ni(
         content => template('sunet/ni/sunet.conf.erb'),
         }
     -> sunet::scriptherder::cronjob { 'run_clone_script':
-        cmd           => '/var/opt/norduni/norduni/src/scripts/clone.sh -r /var/opt/norduni/sunet-nistore/',
+        cmd           => '/var/opt/norduni/norduni/src/scripts/clone-gitonly.sh -r /var/opt/norduni/sunet-nistore/',
         user          => 'ni',
         minute        => '30',
         hour          => '6',
@@ -175,7 +175,7 @@ class sunet::ni(
 
   if $backup_server {
     sunet::scriptherder::cronjob { 'run_clone_script_ni2':
-      cmd           => '/var/opt/norduni/norduni/src/scripts/clone.sh -r /var/opt/norduni/sunet-nistore/',
+      cmd           => '/var/opt/norduni/norduni/src/scripts/clone-gitonly.sh -r /var/opt/norduni/sunet-nistore/',
       user          => 'ni',
       minute        => '30',
       hour          => '6',

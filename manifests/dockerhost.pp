@@ -2,6 +2,7 @@
 class sunet::dockerhost(
   $docker_version,
   $docker_package_name       = 'docker-ce',  # facilitate transition to new docker-ce package
+  Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver            = undef,
   $docker_extra_parameters   = undef,
   $run_docker_cleanup        = true,
@@ -10,7 +11,7 @@ class sunet::dockerhost(
   $ufw_allow_docker_dns      = true,
   $manage_dockerhost_unbound = false,
   $compose_image             = 'docker.sunet.se/library/docker-compose',
-  $compose_version           = '1.7.0',
+  $compose_version           = '1.15.0',
 ) {
 
   # Remove old versions, if installed
@@ -24,6 +25,11 @@ class sunet::dockerhost(
 
   if $docker_package_name != 'docker-engine' {
     # transisition to docker-ce
+    exec { 'remove_dpkg_arch_i386':
+      command => '/usr/bin/dpkg --remove-architecture i386',
+      onlyif  => '/usr/bin/dpkg --print-foreign-architectures | grep i386',
+    }
+
     package {'docker-engine': ensure => 'purged'}
   }
 
@@ -58,22 +64,39 @@ class sunet::dockerhost(
   apt::source {'docker_ce':
     location     => 'https://download.docker.com/linux/ubuntu',
     release      => $::lsbdistcodename,
-    repos        => 'edge',
+    repos        => $docker_repo,
     key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
     architecture => $architecture,
+  }
+
+  if $docker_version =~ /^\d.*/ {
+    # if it looks like a version number (as opposed to 'latest', 'installed', ...)
+    # then pin it so that automatic/manual dist-upgrades don't touch the docker package
+    apt::pin { 'docker-ce':
+      packages => $docker_package_name,
+      version  => $docker_version,
+      priority => 920,  # upgrade, but do not downgrade
+      notify   => Exec['dockerhost_apt_get_update'],
+    }
   }
 
   exec { 'dockerhost_apt_get_update':
      command     => '/usr/bin/apt-get update',
      cwd         => '/tmp',
-     require     => [Apt::Source['docker_official'], Apt::Key['docker_ce']],
-     subscribe   => [Apt::Source['docker_official'], Apt::Key['docker_ce']],
+     require     => [Apt::Key['docker_ce']],
+     subscribe   => [Apt::Key['docker_ce']],
      refreshonly => true,
   }
 
   package { $docker_package_name :
      ensure => $docker_version,
      require => Exec['dockerhost_apt_get_update'],
+  }
+
+  package { [
+             'python3-yaml',  # check_docker_containers requirement
+             ] :
+     ensure => 'installed',
   }
 
   $docker_command = $docker_package_name ? {
@@ -95,6 +118,7 @@ class sunet::dockerhost(
   class {'docker':
     storage_driver              => $storage_driver,
     manage_package              => false,
+    manage_kernel               => false,
     use_upstream_package_source => false,
     dns                         => $_docker_dns,
     extra_parameters            => $docker_extra_parameters,
@@ -168,6 +192,11 @@ class sunet::dockerhost(
         mode    => '0755',
         content => template('sunet/dockerhost/check_docker_containers.erb'),
         ;
+      '/usr/local/bin/check_for_updated_docker_image':
+        ensure  => file,
+        mode    => '0755',
+        content => template('sunet/dockerhost/check_for_updated_docker_image.erb'),
+        ;
     }
   }
 
@@ -191,7 +220,7 @@ class sunet::dockerhost(
   }
 
   if $ufw_allow_docker_dns {
-    if $docker_dns =~ /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/ {
+    if is_ipaddr($docker_dns, 4) {
       # Allow Docker containers resolving using caching resolver running on docker host
       sunet::misc::ufw_allow { 'dockerhost_dns':
           from  => '172.16.0.0/12',

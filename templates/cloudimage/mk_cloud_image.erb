@@ -18,6 +18,8 @@ local_size="<%= @local_size %>"
 images_dir="<%= @images_dir %>"
 pool_name="<%= @pool_name %>"
 rng="<%= @rng %>"
+install_options="<%= @install_options %>"
+sb_args="<%= @sb_args %>"
 
 cd "${images_dir}"
 
@@ -49,7 +51,7 @@ if [ -f ${reinst} ]; then
 fi
 
 # solve bootstrapping of new kvm hosts where no vms exist already
-virsh pool-list | grep -qe "^\s*${pool_name}.*active" || { 
+virsh pool-list | grep -qe "^\s*${pool_name}.*active" || {
     virsh pool-create-as --name ${pool_name} --target ${images_dir} --type dir --build
     virsh pool-autostart ${pool_name}
     virsh pool-start ${pool_name}
@@ -72,7 +74,6 @@ if [ "x${local_size}" != 'x0' ]; then
 fi
 
 network="--network bridge=${bridge},model=virtio"
-install_options=""
 
 # Optional settings
 if [ "x${mac}" != "x" ]; then
@@ -86,6 +87,7 @@ if [ "x${rng}" != "x" ]; then
 fi
 
 # destroy and undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
+rm -f "/var/lib/libvirt/qemu/nvram/${hostname}_VARS.fd"  # need to remove UEFI NVRAM file if it exists
 virsh destroy ${hostname} || true
 virsh undefine ${hostname} || true
 
@@ -96,4 +98,5 @@ eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memball
     --disk path=${images_dir}/${seed},bus=virtio \
     ${local_disk_arg} \
     ${network} \
-    ${install_options}
+    ${install_options} \
+    ${sb_args}

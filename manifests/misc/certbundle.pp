@@ -12,9 +12,9 @@ define sunet::misc::certbundle(
       default => $_bundle_key_a[0][4,-1],
     }
 
-    $_keyfile1 = pick($keyfile, $_bundle_key, '')
+    $_keyfile1 = pick_default($keyfile, $_bundle_key)
 
-    if $_keyfile1 != '' {
+    if $_keyfile1 =~ String[1] {
       # Use path /etc/ssl/private/ if keyfile was specified without directory
       $_keyfile = dirname($_keyfile1) ? {
         '.'     => sprintf('/etc/ssl/private/%s', $_keyfile1),
@@ -50,7 +50,7 @@ define sunet::misc::certbundle(
       })
 
     $bundle_args = join($bundle, ' ')
-    #notice("Creating ${outfile} with command /usr/local/sbin/cert-bundler --syslog $bundle_args")
+    #notice("Creating file with command /usr/local/sbin/cert-bundler --syslog --group ${group} $bundle_args")
     ensure_resource('exec', "create_${name}", {
       'command' => "/usr/local/sbin/cert-bundler --syslog --group ${group} ${bundle_args}",
       'unless'  => "/usr/local/sbin/cert-bundler --unless --group ${group} ${bundle_args}",

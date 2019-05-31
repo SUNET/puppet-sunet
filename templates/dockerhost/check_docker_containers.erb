@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
-# Copyright (c) 2016, SUNET
+# Copyright (c) 2016, 2018 SUNET
 # All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or
@@ -48,7 +48,7 @@ import subprocess
 
 default_debug = False
 default_init_d = False
-default_systemd = False
+default_systemd = True
 default_runtime_ok = 120
 default_runtime_warn = 60
 
@@ -173,7 +173,7 @@ def _collect_compose_service(compose_file, service_name, logger):
     res = []
     with open(compose_file) as fd:
         data = yaml.load(fd)
-        if data.get('version') not in ['2', '2.1']:
+        if data.get('version') not in ['2', '2.1', '3']:
             logger.debug('Skipping {!s}, unknown version'.format(compose_file))
             return []
         for service in data.get('services', []):
@@ -190,7 +190,7 @@ def docker_inspect(container, logger):
                             )
     (stdout, _stderr) = proc.communicate()
     try:
-        data = json.loads(stdout)
+        data = json.loads(stdout.decode('utf-8'))
     except ValueError as exc:
         logger.error('Failed parsing output of {!s}: {!s}'.format(' '.join(cmd), exc))
         logger.debug('Unparsable output was:\n{!r}'.format(stdout))
@@ -239,6 +239,13 @@ def check_containers(expect, args, logger):
     for this in expect:
         logger.debug('Docker inspect {!r}'.format(this))
         data = docker_inspect(this, logger)
+        if not data:
+            # try to find containers started with docker-compose run too
+            if this.endswith('_1'):
+                data = docker_inspect(this[:-2] + '_run_1', logger)
+                if data:
+                    # update 'this' for logging below
+                    this = this[:-2] + '_run_1'
         if not data:
             critical.append('{!s} not found'.format(this))
             continue

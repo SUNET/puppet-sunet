@@ -3,12 +3,18 @@ define sunet::rrsync(
   $manage_user  = false,
   $dir          = undef,
   $ssh_key      = undef,
-  $ssh_key_type = undef
+  $ssh_key_type = undef,
+  $ro           = true,
 ) {
   $safe_name = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G')
   $directory = $dir ? {
      undef   => $name,
      default => $dir
+  }
+  $_flags = $ro ? {
+     false   => '',
+     true    => '-ro',
+     default => '-ro'
   }
   ensure_resource('exec','rrsync_unpack',{
     onlyif      => "test ! -f /usr/bin/rrsync",
@@ -19,6 +25,6 @@ define sunet::rrsync(
     manage_user  => $manage_user,
     ssh_key      => $ssh_key,
     ssh_key_type => $ssh_key_type,
-    command      => "/usr/bin/rrsync -ro ${directory}"
+    command      => "/usr/bin/rrsync $_flags ${directory}"
   }
 }

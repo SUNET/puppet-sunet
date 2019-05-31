@@ -2,6 +2,7 @@ class sunet::dehydrated(
   Boolean $staging=false,
   Boolean $httpd=false,
   Boolean $apache=false,
+  Boolean $cron=true,
   String  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated",
   Array   $allow_clients = [],
   Integer $server_port = 80,
@@ -61,16 +62,19 @@ class sunet::dehydrated(
       ;
   }
   exec { 'dehydrated-runonce':
-    # Run dehydrated once every time domains.txt changes
-    command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh',
+    # Run dehydrated once every time domains.txt changes; UPDATE 2018-02, since we're using the wrapper now Nagios stuff will break if we run the old command
+    # command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /usr/sbin/dehydrated -c && /usr/bin/le-ssl-compat.sh',
+    command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh',
     refreshonly => true
   }
 
-  sunet::scriptherder::cronjob { 'dehydrated':
-    cmd           => '/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh',
-    special       => 'daily',
-    ok_criteria   => ['exit_status=0','max_age=4d'],
-    warn_criteria => ['exit_status=1','max_age=8d'],
+  if ($cron) {
+    sunet::scriptherder::cronjob { 'dehydrated':
+      cmd           => '/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh',
+      special       => 'daily',
+      ok_criteria   => ['exit_status=0','max_age=4d'],
+      warn_criteria => ['exit_status=1','max_age=8d'],
+    }
   }
   cron {'dehydrated-cron': ensure => absent }
   cron {'letsencrypt-cron': ensure => absent }
@@ -218,18 +222,22 @@ class sunet::dehydrated::client(
   String  $server='acme-c.sunet.se',
   String  $user='root',
   Boolean $ssl_links=false,
-  Boolean $check_cert=false,
+  Boolean $check_cert=true,
+  String  $check_cert_port='443',
+  Boolean $manage_ssh_key=true,
   Optional[String] $ssh_id=undef,
   Boolean $single_domain=true,
 ) {
   sunet::dehydrated::client_define { "domain_${domain}":
-    domain        => $domain,
-    server        => $server,
-    user          => $user,
-    ssl_links     => $ssl_links,
-    check_cert    => $check_cert,
-    ssh_id        => $ssh_id,
-    single_domain => $single_domain,
+    domain          => $domain,
+    server          => $server,
+    user            => $user,
+    ssl_links       => $ssl_links,
+    check_cert      => $check_cert,
+    check_cert_port => $check_cert_port,
+    manage_ssh_key  => $manage_ssh_key,
+    ssh_id          => $ssh_id,
+    single_domain   => $single_domain,
   }
 }
 
@@ -239,7 +247,9 @@ define sunet::dehydrated::client_define(
   String  $server='acme-c.sunet.se',
   String  $user='root',
   Boolean $ssl_links=false,
-  Boolean $check_cert=false,
+  Boolean $check_cert=true,
+  String  $check_cert_port='443',
+  Boolean $manage_ssh_key=true,
   Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
   Boolean $single_domain=true,
 ) {
@@ -263,9 +273,11 @@ define sunet::dehydrated::client_define(
     undef   => $domain,
     default => $ssh_id,
   }
-  ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
-    hiera_key => "${_ssh_id}_ssh_key",
-    })
+  if $manage_ssh_key {
+    ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
+      hiera_key => "${_ssh_id}_ssh_key",
+      })
+  }
   if $single_domain {
     cron { "rsync_dehydrated_${domain}":
       command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
@@ -304,12 +316,12 @@ define sunet::dehydrated::client_define(
        content => template('sunet/dehydrated/check_cert.erb'),
        })
      sunet::scriptherder::cronjob { "check_cert_${domain}":
-       cmd           => "/usr/bin/check_cert.sh ${domain}",
-       minute        => '30',
-       hour          => '9',
-       weekday       => '1',
-       ok_criteria   => ['exit_status=0','max_age=8d'],
-       warn_criteria => ['exit_status=1','max_age=15d'],
+       cmd           => "/usr/bin/check_cert.sh ${domain} ${check_cert_port}",
+       minute        => '18',
+       hour          => '*',
+       weekday       => '*',
+       ok_criteria   => ['exit_status=0','max_age=2h'],
+       warn_criteria => ['exit_status=1','max_age=1d'],
      }
   }
 }

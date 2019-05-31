@@ -101,7 +101,7 @@ define sunet::etcd_node(
      false => []
    }
 
-   sunet::docker_run { "etcd_${name}":
+   sunet::docker_run { "etcd-${name}":
       image    => $etcd_image,
       imagetag => $etcd_version,
       volumes  => ["/data/${name}:/data",
@@ -115,7 +115,7 @@ define sunet::etcd_node(
    }
    if ! $proxy {
      if $browser {
-       sunet::docker_run { "etcd_browser_${name}":
+       sunet::docker_run { "etcd-browser-${name}":
          image   => 'docker.sunet.se/etcd-browser',
          ports   => [ "8000:8000" ],  # XXX listening on all interfaces now
          depends => ["etcd_${name}"],

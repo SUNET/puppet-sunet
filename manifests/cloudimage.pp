@@ -1,30 +1,39 @@
 include stdlib
 
 define sunet::cloudimage (
-  $image_url   = "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img",
-  $dhcp        = true,
-  $mac         = undef,
-  $size        = "10G",
-  $bridge      = "br0",
-  $memory      = "1024",
-  $cpus        = "1",
-  $resolver    = undef,
-  $ip          = undef,
-  $netmask     = undef,
-  $gateway     = undef,
-  $ip6         = undef,
-  $netmask6    = "64",
-  $gateway6    = undef,
-  $tagpattern  = undef,
-  $repo        = undef,
-  $ssh_keys    = undef,
-  $description = '',
-  $apt_dir     = '/etc/cosmos/apt',
-  $apt_proxy   = undef,
-  $images_dir  = '/var/lib/libvirt/images',
-  $pool_name   = 'default',
-  $local_size  = '0',
-  $rng         = '/dev/random',
+  String           $image_url   = "https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img",
+  Boolean          $dhcp        = true,
+  Optional[String] $mac         = undef,
+  String           $size        = '10G',
+  String           $bridge      = 'br0',
+  String           $memory      = '1024',
+  String           $cpus        = '1',
+  Optional[Array]  $resolver    = undef,
+  Array[String]    $search      = [],
+  Optional[String] $ip          = undef,
+  Optional[String] $netmask     = undef,
+  Optional[String] $gateway     = undef,
+  Optional[String] $ip6         = undef,
+  String           $netmask6    = '64',
+  Optional[String] $gateway6    = undef,
+  Optional[String] $tagpattern  = undef,
+  Optional[String] $repo        = undef,
+  Optional[Array]  $ssh_keys    = undef,
+  String           $description = '',
+  String           $apt_dir     = '/etc/cosmos/apt',
+  Optional[String] $apt_proxy   = undef,
+  String           $images_dir  = '/var/lib/libvirt/images',
+  String           $pool_name   = 'default',
+  String           $local_size  = '0',
+  String           $rng         = '/dev/random',
+  Boolean          $disable_ec2 = false,  # set to true to disable fetching of metadata from 169.254.169.254
+  String           $network_ver = '1',
+  # Parameters for network_ver 2
+  Array[String]    $addresses   = [],
+  Boolean          $dhcp4       = true,
+  Boolean          $dhcp6       = false,
+  String           $install_options = '',  # for passing arbitrary parameters to virt-install
+  Boolean          $secure_boot = false,
 )
 {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
@@ -32,13 +41,22 @@ define sunet::cloudimage (
   } else {
     $kvm_package = 'kvm'  # old name
   }
-  ensure_resource('package', ['cpu-checker',
-                              'mtools',
-                              'dosfstools',
-                              $kvm_package,
-                              'libvirt-bin',
-                              'virtinst',
-                              ], {ensure => 'installed'})
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 and $::hostname != 'kvm-dev-1' {
+    # Manages CPU affinity for virtual CPUs. Seems to be required on new KVM hosts in eduid,
+    # to keep the VMs from crashing.
+    $numad_package = 'numad'
+  } else {
+    $numad_package = []
+  }
+  ensure_resource('package', flatten(['cpu-checker',
+                                      'mtools',
+                                      'dosfstools',
+                                      $kvm_package,
+                                      'libvirt-bin',
+                                      'virtinst',
+                                      'ovmf',  # for UEFI booting virtual machines
+                                      $numad_package,
+                                      ]), {ensure => 'installed'})
 
   $image_url_a = split($image_url, "/")
   $image_name = $image_url_a[-1]
@@ -49,11 +67,29 @@ define sunet::cloudimage (
   $user_data = "${script_dir}/${name}/${name}_user-data"
   $network_config = "${script_dir}/${name}/${name}_network-config"
 
+  if $secure_boot {
+    if str2bool($::sunet_kvmhost_can_secureboot) {
+      $sb_args = '--boot=uefi,loader_secure=yes,loader=/usr/share/OVMF/OVMF_CODE.secboot.fd,nvram_template=/usr/share/OVMF/OVMF_VARS.ms.fd --machine=q35 --features smm=on'
+    } else {
+      # The ovmf package in Ubuntu 18.04 did not include the boot loader and NVRAM content to
+      # do secure boot. It needs to be installed from a newer distribution.
+      #
+      # XXX an alternative here would be to set sb_args to just '--boot=uefi,loader_secure=yes'
+      # which would make it possible to install VMs and _then_ install the secure boot loader
+      # (and virsh editing all the already installed VMs).
+      fail("Secure boot of VM ${name} was requested, but it seems the `ovmf' package on this host is too old")
+    }
+  }
+
   ensure_resource('file', $script_dir, {
     ensure => 'directory',
     mode   => '0755',
   })
 
+  $network_template = $network_ver ? {
+    '1' => 'sunet/cloudimage/network_config.erb',
+    '2' => 'sunet/cloudimage/network_config-v2.erb',
+  }
   file {
     "${script_dir}/${name}":
       ensure => 'directory',
@@ -75,7 +111,7 @@ define sunet::cloudimage (
       mode    => "0750",
       ;
     $network_config:
-      content => template("sunet/cloudimage/network_config.erb"),
+      content => template($network_template),
       require => File[$script_dir],
       mode    => "0750",
       ;
