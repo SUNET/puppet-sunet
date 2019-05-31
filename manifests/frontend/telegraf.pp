@@ -26,7 +26,7 @@ define sunet::frontend::telegraf(
       mode    => '0640',
       group   => $group,
       require => Sunet::System_user[$username],
-      content => template('sunet/frontend/load_balancer_telegraf.conf.erb')
+      content => template('sunet/frontend/load_balancer_telegraf.conf.erb'),
       notify  => [Sunet::Docker_run['sunetfrontend_telegraf']],
       ;
   }
