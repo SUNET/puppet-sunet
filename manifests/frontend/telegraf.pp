@@ -2,6 +2,7 @@
 define sunet::frontend::telegraf(
   String           $docker_image          = 'docker.sunet.se/eduid/telegraf',
   String           $docker_imagetag       = 'stable',
+  Array[String]    $docker_volumes        = [],
   String           $basedir               = '/opt/frontend/telegraf',
   String           $username              = 'sunetfrontend',
   String           $group                 = 'sunetfrontend',
@@ -37,9 +38,9 @@ define sunet::frontend::telegraf(
     imagetag => $docker_imagetag,
     expose   => ["${statsd_listen_port}/udp"],
     net      => 'host',  # listening on localhost with --net host is better than exposing ports that will sneak past ufw rules
-    volumes  => ["${basedir}/telegraf.conf:/etc/telegraf/telegraf.conf:ro",
-                 '/etc/ssl/certs/infra.crt:/etc/telegraf/ca.pem:ro',
-                 ]
+    volumes  => flatten(["${basedir}/telegraf.conf:/etc/telegraf/telegraf.conf:ro",
+                         $docker_volumes,
+                         ]),
   }
 
   sunet::misc::ufw_allow { 'allow_telegraf_statsd':
