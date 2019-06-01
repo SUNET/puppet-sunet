@@ -12,11 +12,9 @@ define sunet::frontend::api::instance(
 
   # Create backend directory for this website so that the sunetfrontend-api will
   # accept register requests from the servers
-  file {
-    "${basedir}/backends/${site_name}":
+  ensure_resource('file', "${basedir}/backends/${site_name}", {
       ensure => 'directory',
       group  => 'sunetfrontend',
       mode   => '0770',
-      ;
-  }
+  })
 }
