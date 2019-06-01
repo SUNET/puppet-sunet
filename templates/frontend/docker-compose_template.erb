@@ -62,7 +62,7 @@ services:
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
       - haproxy_data:/etc/haproxy
-    command: /opt/frontend/scripts/generate-haproxy-config --debug --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
+    command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
 
   monitor:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
