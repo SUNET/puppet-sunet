@@ -89,6 +89,7 @@ class sunet::frontend::load_balancer(
     sunet::frontend::telegraf { 'frontend_telegraf':
       docker_image          => pick($config['load_balancer']['telegraf_image'], 'docker.sunet.se/eduid/telegraf'),
       docker_imagetag       => pick($config['load_balancer']['telegraf_imagetag'], 'stable'),
+      docker_volumes        => pick($config['load_balancer']['telegraf_volumes'], []),
       forward_url           => $config['load_balancer']['telegraf_forward_url'],
       statsd_listen_address => pick($::ipaddress_docker0, ''),
     }
