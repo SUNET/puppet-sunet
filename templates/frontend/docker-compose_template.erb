@@ -62,6 +62,7 @@ services:
 <% @frontendtools_volumes.each do |this| -%>
       - '<%= this %>'
 <% end -%>
+<% end -%>
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
@@ -76,6 +77,7 @@ services:
       # frontendtools_volumes :
 <% @frontendtools_volumes.each do |this| -%>
       - '<%= this %>'
+<% end -%>
 <% end -%>
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
