@@ -9,9 +9,10 @@ class sunet::frontend::load_balancer(
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
     $confdir = "${basedir}/config"
+    $scriptdir = "${basedir}/scripts"
     $apidir = "${basedir}/api"
 
-    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, "${basedir}/scripts"],
+    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
                     { owner => 'root', group => 'root', mode => '0755' })
 
     if has_key($config['load_balancer'], 'websites') and has_key($config['load_balancer'], 'websites2') {
@@ -64,9 +65,10 @@ class sunet::frontend::load_balancer(
       configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
 
       configure_websites2 { 'websites':
-        websites => $config['load_balancer']['websites2'],
-        basedir  => $basedir,
-        confdir  => $confdir,
+        websites  => $config['load_balancer']['websites2'],
+        basedir   => $basedir,
+        confdir   => $confdir,
+        scriptdir => $scriptdir,
       }
     }
 

@@ -2,6 +2,7 @@
 define sunet::frontend::load_balancer::website2(
   String  $basedir,
   String  $confdir,
+  String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
 ) {
@@ -88,7 +89,7 @@ define sunet::frontend::load_balancer::website2(
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
   # TODO: change this default to false, like haproxy_volumes above, when production systems have been verified
   # to work with the scripts in the frontendtools container
-  $frontendtools_volumes  = pick($config['frontendtools_volumes'], ['/opt/frontend/scripts:/opt/frontend/scripts:ro'])
+  $frontendtools_volumes  = pick($config['frontendtools_volumes'], ["${scriptdir}:/opt/frontend/scripts:ro"])
   $statsd_enabled         = pick($config['statsd_enabled'], false)
   $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
 
@@ -98,10 +99,16 @@ define sunet::frontend::load_balancer::website2(
     content => template('sunet/frontend/start-frontend.erb'),
   })
 
-  ensure_resource('file', "${basedir}/scripts/haproxy-start.sh", {
+  ensure_resource('file', "${scriptdir}/haproxy-start.sh", {
     ensure  => 'file',
     mode    => '0755',
     content => template('sunet/frontend/haproxy-start.sh.erb'),
+  })
+
+  ensure_resource('file', "${scriptdir}/configure-container-network", {
+    ensure  => 'file',
+    mode    => '0755',
+    content => template('sunet/frontend/configure-container-network.erb'),
   })
 
   sunet::docker_compose { "frontend-${instance}":
