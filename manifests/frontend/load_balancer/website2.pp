@@ -86,6 +86,9 @@ define sunet::frontend::load_balancer::website2(
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
+  # TODO: change this default to false, like haproxy_volumes above, when production systems have been verified
+  # to work with the scripts in the frontendtools container
+  $frontendtools_volumes  = pick($config['frontendtools_volumes'], ['/opt/frontend/scripts:/opt/frontend/scripts:ro'])
   $statsd_enabled         = pick($config['statsd_enabled'], false)
   $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
 
@@ -93,6 +96,12 @@ define sunet::frontend::load_balancer::website2(
     ensure  => 'file',
     mode    => '0755',
     content => template('sunet/frontend/start-frontend.erb'),
+  })
+
+  ensure_resource('file', "${basedir}/scripts/haproxy-start.sh", {
+    ensure  => 'file',
+    mode    => '0755',
+    content => template('sunet/frontend/haproxy-start.sh.erb'),
   })
 
   sunet::docker_compose { "frontend-${instance}":

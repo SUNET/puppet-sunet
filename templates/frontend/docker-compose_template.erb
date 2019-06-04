@@ -57,7 +57,11 @@ services:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
     restart: always
     volumes:
-      - /opt/frontend/scripts:/opt/frontend/scripts:ro
+<% if @frontendtools_volumes.is_a? Array -%>
+      # frontendtools_volumes :
+<% @frontendtools_volumes.each do |this| -%>
+      - '<%= this %>'
+<% end -%>
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
@@ -68,7 +72,11 @@ services:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
     restart: always
     volumes:
-      - /opt/frontend/scripts:/opt/frontend/scripts:ro
+<% if @frontendtools_volumes.is_a? Array -%>
+      # frontendtools_volumes :
+<% @frontendtools_volumes.each do |this| -%>
+      - '<%= this %>'
+<% end -%>
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/monitor/<%= @instance %>:/opt/frontend/monitor/<%= @instance %>:rw
