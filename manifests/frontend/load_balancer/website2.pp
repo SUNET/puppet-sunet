@@ -111,6 +111,12 @@ define sunet::frontend::load_balancer::website2(
     content => template('sunet/frontend/configure-container-network.erb'),
   })
 
+  ensure_resource('file', "${scriptdir}/frontend-config", {
+    ensure  => 'file',
+    mode    => '0755',
+    content => template('sunet/frontend/frontend-config.erb'),
+  })
+
   sunet::docker_compose { "frontend-${instance}":
     content          => template('sunet/frontend/docker-compose_template.erb'),
     service_prefix   => 'frontend',
