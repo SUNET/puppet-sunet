@@ -73,7 +73,6 @@ Ideas for further improvement:
 import fcntl
 import logging
 import os
-import signal
 import sys
 from fcntl import LOCK_EX, LOCK_NB
 from logging.handlers import SysLogHandler
@@ -213,6 +212,8 @@ def manager_process(script, args, q, logger):
         logger.debug('Network configuration script result: {}'.format(res))
         q.put('exit')
     logger.info('Releasing lock and exiting (frontend instance {!r} finished)'.format(args.name))
+    # avoid becoming a zombie process in case the parent process has execv:d docker-compose
+    os.setsid()
 
 
 def main(myname='start-frontend', args=None, logger_in=None):
@@ -230,9 +231,6 @@ def main(myname='start-frontend', args=None, logger_in=None):
     p = Process(target=manager_process, args=(script, args, q, logger.getChild('manager'),))
     p.start()
     logger.debug('Started process {}'.format(p))
-
-    # Ignore the SIGCHLD signal when the manager process terminates, to not get a zombie process entry...
-    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
     while True:
         logger.debug('Waiting for commands from the manager process...')
