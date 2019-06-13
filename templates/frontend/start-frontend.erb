@@ -64,10 +64,16 @@ initalisation before releasing the lock again.
                                          release lock
                                                |
                                              exit
+
+Ideas for further improvement:
+
+  - Start the network initialisation when the haproxy container is present
+  - Hang around watching the containers. If they malfunction, kill the service.
 """
 import fcntl
 import logging
 import os
+import signal
 import sys
 from fcntl import LOCK_EX, LOCK_NB
 from logging.handlers import SysLogHandler
@@ -184,7 +190,7 @@ def manager_process(script, args, q, logger):
                 retry -= 1
                 #logger.debug('Did not get a lock (retry {})'.format(retry))
                 time.sleep(1)
-                if retry % 10 == 0:
+                if retry and (retry % 10 == 0):
                     logger.info('Frontend instance {!r} still waiting for lock ({} seconds left)'.format(
                         args.name, retry
                     ))
@@ -202,7 +208,7 @@ def manager_process(script, args, q, logger):
         t1 = datetime.datetime.now()
         res = subprocess.run([script, args.name])
         t2 = datetime.datetime.now()
-        logger.info('Frontend instance {!r} network configured in {:2f} seconds'.format(
+        logger.info('Frontend instance {!r} network configured in {:.2f} seconds'.format(
             args.name, (t2 - t1).total_seconds()))
         logger.debug('Network configuration script result: {}'.format(res))
         q.put('exit')
@@ -224,6 +230,9 @@ def main(myname='start-frontend', args=None, logger_in=None):
     p = Process(target=manager_process, args=(script, args, q, logger.getChild('manager'),))
     p.start()
     logger.debug('Started process {}'.format(p))
+
+    # Ignore the SIGCHLD signal when the manager process terminates, to not get a zombie process entry...
+    signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 
     while True:
         logger.debug('Waiting for commands from the manager process...')
