@@ -214,6 +214,7 @@ def manager_process(script, args, q, logger):
     logger.info('Releasing lock and exiting (frontend instance {!r} finished)'.format(args.name))
     # avoid becoming a zombie process in case the parent process has execv:d docker-compose
     os.setsid()
+    sys.exit(0)
 
 
 def main(myname='start-frontend', args=None, logger_in=None):
