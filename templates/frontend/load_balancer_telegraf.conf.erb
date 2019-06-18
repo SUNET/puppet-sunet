@@ -1,3 +1,9 @@
+[agent]
+  interval = "10s"
+  round_interval = true
+  flush_interval = "10s"
+  precision = "10s"
+
 # Statsd UDP/TCP Server
 [[inputs.statsd]]
     # Protocol, must be "tcp", "udp", "udp4" or "udp6" (default=udp)
