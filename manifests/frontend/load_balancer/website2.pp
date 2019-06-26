@@ -2,6 +2,7 @@
 define sunet::frontend::load_balancer::website2(
   String  $basedir,
   String  $confdir,
+  String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
 ) {
@@ -86,13 +87,32 @@ define sunet::frontend::load_balancer::website2(
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
-  $statsd_enabled         = pick($config['statsd_enabled'], false)
+  $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
+  $statsd_enabled         = pick($config['statsd_enabled'], true)
   $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
 
   ensure_resource('file', '/usr/local/bin/start-frontend', {
     ensure  => 'file',
     mode    => '0755',
     content => template('sunet/frontend/start-frontend.erb'),
+  })
+
+  ensure_resource('file', "${scriptdir}/haproxy-start.sh", {
+    ensure  => 'file',
+    mode    => '0755',
+    content => template('sunet/frontend/haproxy-start.sh.erb'),
+  })
+
+  ensure_resource('file', "${scriptdir}/configure-container-network", {
+    ensure  => 'file',
+    mode    => '0755',
+    content => template('sunet/frontend/configure-container-network.erb'),
+  })
+
+  ensure_resource('file', "${scriptdir}/frontend-config", {
+    ensure  => 'file',
+    mode    => '0755',
+    content => template('sunet/frontend/frontend-config.erb'),
   })
 
   sunet::docker_compose { "frontend-${instance}":

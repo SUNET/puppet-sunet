@@ -9,9 +9,11 @@ class sunet::frontend::load_balancer(
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
     $confdir = "${basedir}/config"
+    $scriptdir = "${basedir}/scripts"
     $apidir = "${basedir}/api"
 
-    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir], { owner => 'root', group => 'root', mode => '0755' })
+    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
+                    { owner => 'root', group => 'root', mode => '0755' })
 
     if has_key($config['load_balancer'], 'websites') and has_key($config['load_balancer'], 'websites2') {
       fail("Can't configure websites and websites2 at the same time unfortunately")
@@ -63,9 +65,10 @@ class sunet::frontend::load_balancer(
       configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
 
       configure_websites2 { 'websites':
-        websites => $config['load_balancer']['websites2'],
-        basedir  => $basedir,
-        confdir  => $confdir,
+        websites  => $config['load_balancer']['websites2'],
+        basedir   => $basedir,
+        confdir   => $confdir,
+        scriptdir => $scriptdir,
       }
     }
 
@@ -149,13 +152,14 @@ define configure_websites($websites, $basedir, $confdir)
     })
 }
 
-define configure_websites2($websites, $basedir, $confdir)
+define configure_websites2($websites, $basedir, $confdir, $scriptdir)
 {
   each($websites) | $site, $config | {
     create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
-      'basedir' => $basedir,
-      'confdir' => $confdir,
-      'config'  => $config,
+      'basedir'   => $basedir,
+      'confdir'   => $confdir,
+      'scriptdir' => $scriptdir,
+      'config'    => $config,
       })
   }
 }

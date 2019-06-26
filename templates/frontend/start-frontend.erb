@@ -64,6 +64,11 @@ initalisation before releasing the lock again.
                                          release lock
                                                |
                                              exit
+
+Ideas for further improvement:
+
+  - Start the network initialisation when the haproxy container is present
+  - Hang around watching the containers. If they malfunction, kill the service.
 """
 import fcntl
 import logging
@@ -184,7 +189,7 @@ def manager_process(script, args, q, logger):
                 retry -= 1
                 #logger.debug('Did not get a lock (retry {})'.format(retry))
                 time.sleep(1)
-                if retry % 10 == 0:
+                if retry and (retry % 10 == 0):
                     logger.info('Frontend instance {!r} still waiting for lock ({} seconds left)'.format(
                         args.name, retry
                     ))
@@ -202,11 +207,14 @@ def manager_process(script, args, q, logger):
         t1 = datetime.datetime.now()
         res = subprocess.run([script, args.name])
         t2 = datetime.datetime.now()
-        logger.info('Frontend instance {!r} network configured in {:2f} seconds'.format(
+        logger.info('Frontend instance {!r} network configured in {:.2f} seconds'.format(
             args.name, (t2 - t1).total_seconds()))
         logger.debug('Network configuration script result: {}'.format(res))
         q.put('exit')
     logger.info('Releasing lock and exiting (frontend instance {!r} finished)'.format(args.name))
+    # avoid becoming a zombie process in case the parent process has execv:d docker-compose
+    os.setsid()
+    sys.exit(0)
 
 
 def main(myname='start-frontend', args=None, logger_in=None):

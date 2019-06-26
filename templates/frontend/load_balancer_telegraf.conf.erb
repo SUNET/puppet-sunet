@@ -1,11 +1,15 @@
+[agent]
+  interval = "10s"
+  round_interval = true
+  flush_interval = "10s"
+  precision = "10s"
+
 # Statsd UDP/TCP Server
 [[inputs.statsd]]
     # Protocol, must be "tcp", "udp", "udp4" or "udp6" (default=udp)
     protocol = "udp"
     # Address and port to host UDP listener on
     service_address = "<%= @statsd_listen_address %>:<%= @statsd_listen_port %>"
-    # Reset gauges every interval (default=true)
-    delete_gauges = false
     # Percentiles to calculate for timing & histogram stats
     percentiles = [99,95,90,75]
     # separator to use between elements of a statsd metric
@@ -80,4 +84,8 @@
   ## integer values.  Enabling this option will result in field type errors if
   ## existing data has been written.
   # influx_uint_support = false
+<% else %>
+# Send metrics to nowhere at all
+[[outputs.discard]]
+  # no configuration
 <% end -%>
