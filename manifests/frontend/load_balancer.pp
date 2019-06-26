@@ -23,32 +23,7 @@ class sunet::frontend::load_balancer(
       #
       # Old style config
       #
-      sunet::exabgp::config { 'exabgp_config': }
-      configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
-
-      sunet::frontend::haproxy { 'load-balancer':
-        basedir               => "${basedir}/haproxy",
-        confdir               => $confdir,
-        apidir                => $apidir,
-        haproxy_image         => $config['load_balancer']['haproxy_image'],
-        haproxy_imagetag      => $config['load_balancer']['haproxy_imagetag'],
-        port80_acme_c_backend => $config['load_balancer']['port80_acme_c_backend'],
-        static_backends       => $config['load_balancer']['static_backends'],
-      }
-
-      configure_websites { 'websites':
-        websites => $config['load_balancer']['websites'],
-        basedir  => $basedir,
-        confdir  => $confdir,
-      }
-
-      concat::fragment { "${name}_haproxy-pre-start_end":
-        target  => "${basedir}/haproxy/scripts/haproxy-pre-start.sh",
-        order   => '99',
-        content => "exit 0\n",
-      }
-
-      sysctl_ip_nonlocal_bind { 'load_balancer': }
+      fail("Migrate your frontend config from 'websites' to 'websites2'")
     }
     if has_key($config['load_balancer'], 'websites2') {
       #
