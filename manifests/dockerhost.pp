@@ -197,17 +197,8 @@ class sunet::dockerhost(
 
   if $run_docker_cleanup {
     # Cron job to remove old unused docker images
-    file {
-      '/usr/local/bin/docker-cleanup':
-        ensure  => 'file',
-        mode    => '0755',
-        owner   => 'root',
-        group   => 'root',
-        content => template('sunet/dockerhost/docker-cleanup.erb'),
-        ;
-    } ->
     sunet::scriptherder::cronjob { 'dockerhost_cleanup':
-      cmd           => '/usr/local/bin/docker-cleanup',
+      cmd           => '/usr/bin/docker system prune -af',
       special       => 'daily',
       ok_criteria   => ['exit_status=0', 'max_age=25h'],
       warn_criteria => ['exit_status=0', 'max_age=49h'],
