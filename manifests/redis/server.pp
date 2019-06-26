@@ -2,6 +2,7 @@
 define sunet::redis::server(
   String            $port            = '6379',
   String            $bind            = '0.0.0.0',
+  Enum['yes', 'no'] $protected_mode  = 'yes',
   Enum['yes', 'no'] $daemonize       = 'no',
   String            $username        = 'redis',
   String            $group           = 'redis',
@@ -15,7 +16,7 @@ define sunet::redis::server(
   Optional[String]  $docker_image    = 'docker.sunet.se/eduid/redis',
   String            $docker_tag      = 'latest',
   String            $basedir         = "/opt/redis/${name}"
-  ) {
+) {
 
   $env = $sentinel_config ? {
     'yes'   => ['extra_args=--sentinel'],
