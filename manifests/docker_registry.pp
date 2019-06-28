@@ -83,4 +83,13 @@ class sunet::docker_registry (
         warn_criteria => ['max_age=9d']
     }
 
+    sunet::scriptherder::cronjob { 'clean_registry_test':
+        cmd           => "${registry_cleanup_basedir}/clean_registry_cron",
+        weekday       => 'Friday',
+        hour          => '18',
+        minute        => '20',
+        ok_criteria   => ['exit_status=0'],
+        warn_criteria => ['max_age=9d']
+    }
+
 }
