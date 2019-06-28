@@ -2,38 +2,49 @@
 
 # If cosmos is disabled we should avoid running
 if [[ -f /etc/no-automatic-cosmos ]]; then
+    echo "Exiting since Cosmos is disabled"
     exit 1
 fi
 
 # We don't want to run cosmos during the cleanup
 # to avoid that e.g. apache starts again and clients
 # starts pulling and pushing.
+echo "Disabling Cosmos while running the script"
 touch /etc/no-automatic-cosmos
 
 # Stop the Apache container so that no new requests
 # are made during the cleanup.
+echo "Stopping the container registry-auth ..."
 docker stop registry-auth
 exit_status="${?}"
 
 if [[ "${exit_status}" = "0" ]]; then
-    # Start the actual cleanup
+    echo "Starting the cleanup ..."
     /usr/local/bin/clean-registry/clean_registry.py /usr/local/bin/clean-registry/config_file.yaml
     exit_status="${?}"
+else
+    echo "Not proceeding with cleanup, since docker stop registry-auth did not exit correctly"
 fi
 
 if [[ "${exit_status}" = "0" ]]; then
     # A sleep before we start again might be good
+    echo "Sleeping for 10s ..."
     sleep 10
 
     # Run the garbage collection after removing layers
+    echo "Running garbage collection ..."
     docker exec registry /bin/registry garbage-collect /etc/docker/registry/config.yml
     exit_status="${?}"
+else
+    echo "Not running garbage collection since the cleanup did not exit correctly"
 fi
 
 # Start all the containers again.
+echo "Restarting the service sunet-docker-registry ..."
 systemctl restart sunet-docker-registry
 
 # Enable cosmos again
+echo "Enabling Cosmos again by removing /etc/no-automatic-cosmos"
 rm /etc/no-automatic-cosmos
 
 # Use the exit status from the commands we care about
