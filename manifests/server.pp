@@ -36,7 +36,7 @@ class sunet::server(
         port => '22',
     }
     if $mgmt_addresses != [] {
-        sunet::misc::ufw_allow { 'allow-ssh-from':
+        sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
             from => $mgmt_addresses,
             port => '22',
         }
