@@ -11,6 +11,7 @@ class sunet::server(
   $disable_ipv6_privacy = false,
   $disable_all_local_users = false,
   Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
+  Optional[Boolean] $ssh_allow_from_anywhere = true,
 ) {
 
   if $fail2ban {
@@ -31,9 +32,12 @@ class sunet::server(
   if $sshd_config {
     class { 'sunet::security::configure_sshd': }
     include ufw
-    ufw::allow { 'allow-ssh-from-all':
-        ip   => 'any',
-        port => '22',
+    if $ssh_allow_from_anywhere {
+        sunet::misc::ufw_allow { 'allow-ssh-from-all':
+            from  => 'any',
+            port  => '22',
+            proto => 'tcp',
+        }
     }
     if $mgmt_addresses != [] {
         sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
