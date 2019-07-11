@@ -35,10 +35,15 @@ class sunet::ni(
       creates => '/var/lib/neo4j/data/dbms/auth.ini',
       notify  => Service['neo4j'],
       }
+  -> file { '/etc/security/limits.conf':
+      ensure => present,
+      content => template('sunet/ni/limits.conf.erb'),
+     }
   -> user {'ni':
       ensure   => present,
       password => '*',
       home     => '/var/opt/norduni',
+      shell    => '/bin/bash',
       }
   -> file { '/var/opt/norduni':
       ensure => directory,
@@ -57,19 +62,26 @@ class sunet::ni(
       refreshonly => true,
       }
   vcsrepo {'/var/opt/norduni/norduni':
-      ensure   => present,
+      ensure   => latest,
       provider => git,
       owner    => ni,
       group    => ni,
-      source   => 'git://code.nordu.net/norduni.git',
+      source   => 'https://github.com/NORDUnet/ni.git',
       require  => User['ni'],
       }
-  -> python::virtualenv {'/var/opt/norduni/norduni_environment':
-      ensure       => present,
-      requirements => '/var/opt/norduni/norduni/requirements/prod.txt',
-      owner        => 'ni',
-      group        =>'ni',
-      cwd          => '/var/opt/norduni/norduni_environment',
+  -> file { '/var/opt/norduni/virtenv.sh':
+      ensure  => present,
+      content => template('sunet/ni/virtenv.sh.erb'),
+      owner   => 'ni',
+      group   => 'ni',
+      mode    => '0744',
+      }
+ -> exec {'setup_virtenv':
+      command => '/var/opt/norduni/virtenv.sh',
+      creates => '/var/opt/norduni/norduni_environment',
+      user    => 'ni',
+      group   => 'ni',
+      notify  => Service['uwsgi'],
       }
   -> file { '/var/opt/norduni/norduni/src/niweb/.env':
       ensure  => present,
@@ -112,10 +124,6 @@ class sunet::ni(
       group   => 'www-data',
       mode    => '0775',
       recurse => true,
-      }
-  -> exec { 'create_dhparam_pem':
-      command => 'openssl dhparam -out /etc/ssl/dhparams.pem 2048',
-      unless  => '/usr/bin/test -s /etc/ssl/dhparams.pem',
       }
   -> file { '/etc/nginx/sites-available/default':
       ensure  => file,

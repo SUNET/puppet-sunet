@@ -1,13 +1,9 @@
 class sunet::ni_packages {
 
-  apt::ppa {'ppa:webupd8team/java':}
-  -> exec { 'accept_oracle_licence':
-      command => '/bin/echo debconf shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections',
-      }
-  -> apt::key {'neo4j_gpg_key1':
-      id     => '66D34E951A8C53D90242132B26C95CF201182252',
-      source => 'https://debian.neo4j.org/neotechnology.gpg.key',
-      }
+  apt::key {'neo4j_gpg_key1':
+    id     => '66D34E951A8C53D90242132B26C95CF201182252',
+    source => 'https://debian.neo4j.org/neotechnology.gpg.key',
+  }
   -> apt::key {'neo4j_gpg_key2':
       id     => '1EEFB8767D4924B86EAD08A459D700E4D37F5F19',
       source => 'https://debian.neo4j.org/neotechnology.gpg.key',
@@ -21,8 +17,19 @@ class sunet::ni_packages {
       },
       notify_update => true,
       }
-  -> package {['oracle-java8-installer', 'postgresql', 'git', 'libpq-dev', 'nginx-full', 'uwsgi', 'uwsgi-plugin-python']:
-      ensure => latest
+  -> package { ['openjdk-8-jre',
+                'python3-pip',
+                'postgresql',
+                'git',
+                'libpq-dev',
+                'nginx-full',
+                'uwsgi',
+                'uwsgi-plugin-python3']:
+      ensure => latest,
+      }
+  -> exec {'install_virtualenv':
+      command     => 'pip3 install -U pip && pip3 install virtualenv',
+      require => Package['python3-pip'],
       }
   -> package {'neo4j':
       ensure => '3.2.2',
@@ -32,11 +39,4 @@ class sunet::ni_packages {
       version  => '>=3.2.2 < 4.0.0',
       priority => '600',
       }
-
-  class { 'python':
-    version    => 'system',
-    dev        => true,
-    virtualenv => true,
-    pip        => true,
-  }
 }
