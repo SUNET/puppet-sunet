@@ -29,7 +29,7 @@ class sunet::ni_packages {
       }
   -> exec {'install_virtualenv':
       command     => 'pip3 install -U pip && pip3 install virtualenv',
-      require => Package['python3-pip'],
+      creates     => '/usr/bin/pip3',
       }
   -> package {'neo4j':
       ensure => '3.2.2',
