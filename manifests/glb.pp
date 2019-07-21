@@ -2,6 +2,7 @@ class sunet::glb(
           $zone = undef,
           $geodns_version = 'latest',
           $dnslb_version  = 'latest'
+)
 {
    file { '/etc/geodns':
       ensure => 'directory'
