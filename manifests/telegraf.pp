@@ -29,8 +29,13 @@ class sunet::telegraf($repo = 'stable') {
      subscribe   => [Apt::Key['telegraf']],
      refreshonly => true,
   }
+  $_provider = $::init_type ? {
+     'upstart'      => 'upstart',
+     'systemd-sysv' => 'systemd',
+     default        => 'debian'
+  }
   package { 'telegraf':
      ensure => latest,
      require => Exec['telegraf_apt_get_update'],
-  } -> service {'telegraf': ensure => running }
+  } -> service {'telegraf': ensure => running, provider => $_provider }
 }
