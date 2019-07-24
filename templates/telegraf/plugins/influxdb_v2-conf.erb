@@ -1,0 +1,19 @@
+
+# Configuration for sending metrics to InfluxDB
+[[outputs.influxdb]]
+  <% if @params.url %>
+  urls = ["<%= @params.url %>"]
+  <% elsif @parmas.urls %>
+  urls = [<%- @params.urls.each do |url| %>"<%= url %>",<%- end -%>]
+  <% end -%>
+  
+  token = "<%= @params.token %>"
+  organization = "<%= @params.organization %>"
+  bucket = "<%= @params.bucket %>"
+
+  ## Optional TLS Config for use on HTTP connections.
+  # tls_ca = "/etc/telegraf/ca.pem"
+  # tls_cert = "/etc/telegraf/cert.pem"
+  # tls_key = "/etc/telegraf/key.pem"
+  ## Use TLS but skip chain & host verification
+  # insecure_skip_verify = false
