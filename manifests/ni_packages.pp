@@ -1,4 +1,4 @@
-class sunet::ni_packages {
+class sunet::ni_packages{
 
   apt::key {'neo4j_gpg_key1':
     id     => '66D34E951A8C53D90242132B26C95CF201182252',
@@ -27,16 +27,21 @@ class sunet::ni_packages {
                 'uwsgi-plugin-python3']:
       ensure => latest,
       }
-  -> exec {'install_virtualenv':
-      command     => 'pip3 install -U pip && pip3 install virtualenv',
-      creates     => '/usr/bin/pip3',
-      }
+  #-> exec {'install_virtualenv':
+  #    command     => 'pip3 install -U pip && pip3 install virtualenv',
+  #    }
   -> package {'neo4j':
-      ensure => '3.2.2',
+      ensure => present,
       }
   -> apt::pin { 'neo4j':
       packages => 'neo4j',
       version  => '>=3.2.2 < 4.0.0',
       priority => '600',
       }
+  if $production_server {
+    package { ['libffi-dev',
+               'xmlsec1']:
+      ensure => latest,
+      }
+  }
 }
