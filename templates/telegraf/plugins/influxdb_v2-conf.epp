@@ -1,11 +1,11 @@
 
 # Configuration for sending metrics to InfluxDB
 [[outputs.influxdb]]
-  <% if $url %>
+  <% if $url { %>
   urls = ["<%= $url %>"]
-  <% elsif $urls %>
+  <% } elsif $urls { %>
   urls = [<%- $urls.each do |url| %>"<%= url %>",<%- end -%>]
-  <% end -%>
+  <% } -%>
   
   token = "<%= $token %>"
   organization = "<%= $organization %>"
