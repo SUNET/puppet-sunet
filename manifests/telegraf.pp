@@ -1,7 +1,7 @@
 class sunet::telegraf($repo = 'stable') {
   $token = safe_hiera('influxdb_v2_token','NOT_SET_IN_HIERA');
   if ($token == 'NOT_SET_IN_HIERA') {
-     warning("Waiting to get influxdb_v2_token from hiera before configuring telegraf");
+     warning("Waiting to get influxdb_v2_token from hiera before configuring telegraf")
   } else {
      sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'} ->
      file {'/etc/cosmos/apt/keys/influxdb-05CE15085FC09D18E99EFB22684A14CF2582E0C5.pub':
