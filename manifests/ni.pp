@@ -140,7 +140,7 @@ class sunet::ni{
       notify  => Service['nginx'],
       }
   -> vcsrepo {'/var/opt/norduni/sunet-nistore':
-      ensure   => latest,
+      ensure   => present,
       provider => git,
       owner    => ni,
       group    => ni,
