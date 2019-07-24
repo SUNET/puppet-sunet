@@ -4,7 +4,7 @@
   <% if $url { %>
   urls = ["<%= $url %>"]
   <% } elsif $urls { %>
-  urls = [<%- $urls.each do |url| %>"<%= url %>",<%- end -%>]
+  urls = [<% $urls.each do |$url| { %>"<%= $url %>",<% } %>]
   <% } -%>
   
   token = "<%= $token %>"
