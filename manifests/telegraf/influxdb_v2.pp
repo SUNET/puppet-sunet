@@ -15,9 +15,5 @@ class sunet::telegraf::influxdb_v2($url=undef,$bucket=undef,$organization=undef)
    if $token == 'NOT_SET_IN_HIERA' {
       fail('influxdb_v2 token nees to be set in hiera');
    }
-   file {'/etc/telegraf/telegraf.d/influxdb_v2.conf':
-      ensure  => file,
-      content => template('sunet/telegraf/plugins/influxdb_v2.conf'),
-      notify  => Service['telegraf']
-   }
+   sunet::telegraf::plugin {'influxdb_v2': }
 }
