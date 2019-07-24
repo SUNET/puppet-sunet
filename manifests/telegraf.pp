@@ -38,4 +38,9 @@ class sunet::telegraf($repo = 'stable') {
      ensure => latest,
      require => Exec['telegraf_apt_get_update'],
   } -> service {'telegraf': ensure => running, provider => $_provider }
+  file {'/etc/telegraf/telegraf.conf': 
+     ensure        => file, 
+     content       => template('sunet/telegraf/telegraf-conf.erb'),
+     notify        => Service['telegraf']
+  }
 }
