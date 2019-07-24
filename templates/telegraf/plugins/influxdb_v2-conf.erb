@@ -1,15 +1,15 @@
 
 # Configuration for sending metrics to InfluxDB
 [[outputs.influxdb]]
-  <% if @params.url %>
-  urls = ["<%= @params.url %>"]
-  <% elsif @parmas.urls %>
-  urls = [<%- @params.urls.each do |url| %>"<%= url %>",<%- end -%>]
+  <% if @url %>
+  urls = ["<%= @url %>"]
+  <% elsif @urls %>
+  urls = [<%- @urls.each do |url| %>"<%= url %>",<%- end -%>]
   <% end -%>
   
-  token = "<%= @params.token %>"
-  organization = "<%= @params.organization %>"
-  bucket = "<%= @params.bucket %>"
+  token = "<%= @token %>"
+  organization = "<%= @organization %>"
+  bucket = "<%= @bucket %>"
 
   ## Optional TLS Config for use on HTTP connections.
   # tls_ca = "/etc/telegraf/ca.pem"
