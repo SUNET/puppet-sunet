@@ -1,12 +1,12 @@
-class sunet::telegraph($repo = 'stable') {
+class sunet::telegraf($repo = 'stable') {
   sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'} ->
   file {
     '/etc/cosmos/apt/keys/influxdb-05CE15085FC09D18E99EFB22684A14CF2582E0C5.pub':
       ensure  => file,
       mode    => '0644',
-      content => template('sunet/telegraph/influxdb-05CE15085FC09D18E99EFB22684A14CF2582E0C5.pub.erb'),
+      content => template('sunet/telegraf/influxdb-05CE15085FC09D18E99EFB22684A14CF2582E0C5.pub.erb'),
   } ->
-  apt::key { 'telegraph':
+  apt::key { 'telegraf':
     id        => '05CE15085FC09D18E99EFB22684A14CF2582E0C5',
     source    => '/etc/cosmos/apt/keys/influxdb-05CE15085FC09D18E99EFB22684A14CF2582E0C5.pub'
   }
@@ -15,22 +15,22 @@ class sunet::telegraph($repo = 'stable') {
   } else {
     $architecture = undef
   }
-  apt::source {'telegraph':
+  apt::source {'telegraf':
     location  => 'https://repos.influxdata.com/ubuntu',
     release   => $::lsbdistcodename,
     repos        => $repo,
     key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
     architecture => $architecture
   }
-  exec { 'telegraph_apt_get_update':
+  exec { 'telegraf_apt_get_update':
      command     => '/usr/bin/apt-get update',
      cwd         => '/tmp',
-     require     => [Apt::Key['telegraph']],
-     subscribe   => [Apt::Key['telegraph']],
+     require     => [Apt::Key['telegraf']],
+     subscribe   => [Apt::Key['telegraf']],
      refreshonly => true,
   }
-  package { 'telegraph':
+  package { 'telegraf':
      ensure => latest,
-     require => Exec['telegraph_apt_get_update'],
-  } -> service {'telegraph': ensure => running }
+     require => Exec['telegraf_apt_get_update'],
+  } -> service {'telegraf': ensure => running }
 }
