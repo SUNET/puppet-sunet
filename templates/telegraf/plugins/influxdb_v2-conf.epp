@@ -7,7 +7,7 @@
   urls = [<% $urls.each |$url| { %>"<%= $url %>",<% } %>]
   <% } -%>
   
-  token = "<%= $token %>"
+  token = "$INFLUXDB_V2_TOKEN"
   organization = "<%= $organization %>"
   bucket = "<%= $bucket %>"
 

@@ -34,10 +34,15 @@ class sunet::telegraf($repo = 'stable') {
      'systemd-sysv' => 'systemd',
      default        => 'debian'
   }
+  $token = hiera('influxdb_v2_token');
   package { 'telegraf':
      ensure => latest,
      require => Exec['telegraf_apt_get_update'],
-  } -> service {'telegraf': ensure => running, provider => $_provider }
+  } -> file {'/etc/default/telegraf':
+     ensure        => file,
+     content       => inline_template("INFLUXDB_V2_TOKEN=$token\n")
+  } ->
+  service {'telegraf': ensure => running, provider => $_provider }
   file {'/etc/telegraf/telegraf.conf': 
      ensure        => file, 
      content       => template('sunet/telegraf/telegraf-conf.erb'),
