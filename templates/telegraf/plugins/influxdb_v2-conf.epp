@@ -1,6 +1,6 @@
 
 # Configuration for sending metrics to InfluxDB
-[[outputs.influxdb]]
+[[outputs.influxdb_v2]]
   <% if $url { %>
   urls = ["<%= $url %>"]
   <% } elsif $urls { %>
