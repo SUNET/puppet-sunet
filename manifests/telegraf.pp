@@ -45,8 +45,8 @@ class sunet::telegraf($repo = 'stable') {
         content       => inline_template("INFLUXDB_V2_TOKEN=$token\n")
      } ->
      service {'telegraf': ensure => running, provider => $_provider }
-     file {'/etc/telegraf/telegraf.conf': 
-        ensure        => file, 
+     file {'/etc/telegraf/telegraf.conf':
+        ensure        => file,
         content       => template('sunet/telegraf/telegraf-conf.erb'),
         notify        => Service['telegraf']
      }
