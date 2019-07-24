@@ -40,7 +40,9 @@ class sunet::telegraf($repo = 'stable') {
      package { 'telegraf':
         ensure => latest,
         require => Exec['telegraf_apt_get_update'],
-     } -> file {'/etc/default/telegraf':
+     } -> 
+     file {'/etc/default': ensure => directory } -> 
+     file {'/etc/default/telegraf':
         ensure        => file,
         content       => inline_template("INFLUXDB_V2_TOKEN=$token\n")
      } ->
