@@ -5,7 +5,7 @@ define sunet::telegraf::plugin($config=undef) {
    }
    file { "/etc/telegraf/telegraf.d/$title.conf": 
       ensure  => file,
-      content => epp("sunet/telegraf/plugins/$title-conf.erb",$params),
+      content => epp("sunet/telegraf/plugins/$title-conf.epp",$params),
       notify  => Service['telegraf']
    }
 }
