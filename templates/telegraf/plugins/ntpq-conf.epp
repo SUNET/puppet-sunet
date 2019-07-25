@@ -1,0 +1,3 @@
+# # Get standard NTP query metrics, requires ntpq executable.
+[[inputs.ntpq]]
+   dns_lookup = true

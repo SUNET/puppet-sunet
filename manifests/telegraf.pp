@@ -52,5 +52,6 @@ class sunet::telegraf($repo = 'stable') {
         content       => template('sunet/telegraf/telegraf-conf.erb'),
         notify        => Service['telegraf']
      }
+     sunet::telegraf::plugin {'basic': }
   }
 }
