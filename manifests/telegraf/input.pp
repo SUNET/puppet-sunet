@@ -8,7 +8,7 @@ class sunet::telegraf::input::docker {
   sunet::snippets::add_user_to_group {'add_telegraf_to_docker_group':
      username   => 'telegraf',
      group      => 'docker'
-  }
+  } ->
   sunet::telegraf::plugin {'docker': }
 }
 
