@@ -1,12 +1,16 @@
-define sunet::telegraf::plugin($config=undef) {
+define sunet::telegraf::plugin($plugin=undef,$config=undef) {
    if (defined(Service['telegraf'])) {
+      $_plugin = $plugin ? {
+         undef   => $title,
+         default => $plugin
+      }
       $params = $config ? {
          undef   => hiera("telegraf_plugin_$title",{}),
          default => $config
       }
       file { "/etc/telegraf/telegraf.d/$title.conf": 
          ensure  => file,
-         content => epp("sunet/telegraf/plugins/$title-conf.epp",$params),
+         content => epp("sunet/telegraf/plugins/${_plugin}-conf.epp",$params),
          notify  => Service['telegraf']
       }
    }
