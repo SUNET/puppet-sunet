@@ -39,7 +39,7 @@ class sunet::telegraf::input::varnish(
         owner    => root,
         group    => root,
         mode     => '0755',
-        content  => inline_template("#!/bin/sh\ndocker run -ti <%= @container %> <%= @binary %> $*")
+        content  => inline_template("#!/bin/sh\ndocker exec -ti <%= @container %> <%= @binary %> $*\n")
      }
   }
   $_cmd = $container ? {
