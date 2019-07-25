@@ -24,3 +24,33 @@ class sunet::telegraf::input::ipmi {
   }
   sunet::telegraf::plugin {'ipmi': config => {ipmitool_path => '/usr/bin/ipmitool_telegraf', timeout => "300s"}}
 }
+
+class sunet::telegraf::input::varnish(
+  $use_sudo=false,
+  $binary="/usr/bin/varnishstat",
+  $stats=["MAIN.cache_hit", "MAIN.cache_miss", "MAIN.uptime"],
+  instance_name=undef,
+  timeout="1s",
+  container=undef) 
+{
+  if ($container) {
+     file {"/usr/bin/telegraf_varnishstat_in_$container": 
+        ensure   => file,
+        owner    => root,
+        group    => root,
+        mode     => '0755',
+        content  => inline_template("#!/bin/sh\ndocker run -ti <%= @container %> <%= @binary %> $*")
+     }
+  }
+  $_cmd = $container ? {
+     undef   => $binary,
+     default => "/usr/bin/telegraf_varnishstat_in_$container"
+  }
+  sunet::telegraf::plugin {'varnish': config => {
+      use_sudo      => $use_sudo,
+      binary        => $_cmd,
+      stats         => $stats,
+      instance_name => $instance_name,
+      timeout       => $timeout}
+  }
+}
