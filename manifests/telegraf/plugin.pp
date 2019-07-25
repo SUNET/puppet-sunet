@@ -8,7 +8,7 @@ define sunet::telegraf::plugin($plugin=undef,$config=undef) {
          undef   => hiera("telegraf_plugin_$title",{}),
          default => $config
       }
-      file { "/etc/telegraf/telegraf.d/$title.conf": 
+      file { "/etc/telegraf/telegraf.d/$_plugin.conf": 
          ensure  => file,
          content => epp("sunet/telegraf/plugins/${_plugin}-conf.epp",$params),
          notify  => Service['telegraf']
