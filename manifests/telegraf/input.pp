@@ -5,6 +5,10 @@ class sunet::telegraf::input::bind {
 }
 
 class sunet::telegraf::input::docker {
+  sunet::snippets::add_user_to_group {'add_telegraf_to_docker_group':
+     user   => 'telegraf',
+     group  => 'docker'
+  }
   sunet::telegraf::plugin {'docker': }
 }
 
