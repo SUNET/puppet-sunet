@@ -78,3 +78,5 @@
   ## Uncomment to remove deprecated metrics.
   # fielddrop = ["uptime_format"]
 
+# Get kernel statistics from /proc/vmstat
+[[inputs.kernel_vmstat]]
