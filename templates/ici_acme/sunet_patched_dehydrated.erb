@@ -862,7 +862,7 @@ sign_csr() {
     local waited_seconds=0
     local order_timeout=1
     while [[ "${reqstatus}" = "processing" ]]; do
-      if [[ $waited_seconds == 128 ]]; then
+      if [[ $waited_seconds -gt 128 ]]; then
         _exiterr "Giving up after waiting ${waited_seconds} seconds"
       fi
       echo " + Waiting for certificate processing..."
