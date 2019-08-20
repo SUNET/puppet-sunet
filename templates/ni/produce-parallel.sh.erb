@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+/usr/local/bin/scriptherder --mode wrap --name ni_produce_nunoc -- $SCRIPT_DIR/produce-nunocops.sh &
+/usr/local/bin/scriptherder --mode wrap --name ni_produce_juniper -- $SCRIPT_DIR/produce-juniper.sh &
+
+wait

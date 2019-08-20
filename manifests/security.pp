@@ -24,6 +24,12 @@ class sunet::security::configure_sshd(
   } else {
     $set_hostkey = ['set HostKey[1] /etc/ssh/ssh_host_rsa_key']
   }
+  
+  if $::has_ssh_host_ed25519_cert == 'yes' {
+     $set_hostcert = ["set HostCertificate[1] /etc/ssh/ssh_host_ed25519_key-cert"] 
+  } else {
+     $set_hostcert = ["rm HostCertificate"]
+  }
 
   include augeas
   augeas { "sshd_config":
@@ -35,6 +41,7 @@ class sunet::security::configure_sshd(
                         "set LogLevel VERBOSE",  # log pubkey used for root login
                         "rm HostKey",
                         $set_hostkey,
+                        $set_hostcert,
                         ]),
     notify  => Service['ssh'],
     require => Package['openssh-server'],

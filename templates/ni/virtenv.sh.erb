@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+cd /var/opt/norduni
+if [ ! -d "norduni_environment" ]; then
+  virtualenv -p python3 norduni_environment
+fi
+. norduni_environment/bin/activate
+pip install -U pip
+pip install -U -r norduni/requirements/prod.txt
