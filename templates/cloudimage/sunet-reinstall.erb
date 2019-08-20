@@ -49,6 +49,7 @@ umask 077
       test -d /etc/hiera/gpg && echo /etc/hiera/gpg;
       test -d /etc/hiera/eyaml && echo /etc/hiera/eyaml;
       test -d /etc/dehydrated && echo /etc/dehydrated;
+      test -d /etc/ici_acme && echo /etc/ici_acme;
       find /etc/ssl -name '*_infra.key' -type f;
 ) | xargs tar zcvf "${reinst}.new"
 mv "${reinst}.new" "${reinst}"
