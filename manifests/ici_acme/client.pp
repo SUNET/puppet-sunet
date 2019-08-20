@@ -1,3 +1,4 @@
+# Acquire a certificate from an ICI ACME server
 class sunet::ici_acme::client(
   String $ca_url = 'http://ca-test-1.sunet.se/',
 ) {
@@ -36,4 +37,6 @@ class sunet::ici_acme::client(
     ok_criteria   => ['exit_status=0', 'max_age=25h'],
     warn_criteria => ['exit_status=0', 'max_age=49h'],
   }
+
+  sunet::snippets::reinstall::keep { '/etc/ici_acme/': }
 }
