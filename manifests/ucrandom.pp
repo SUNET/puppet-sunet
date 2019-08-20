@@ -1,16 +1,23 @@
+# Random entropy client
 define sunet::ucrandom(
-   $port="4711",
-   $device="/dev/random") {
-
+  $ensure = 'present',
+  $port   = '4711',
+  $device = '/dev/random',
+) {
+   $ensure_file = $ensure ? {
+     'present' => 'file',
+     'absent'  => 'absent',
+   }
    file {'/usr/bin/ucrandom':
+      ensure  => $ensure_file,
       owner   => root,
       group   => root,
       mode    => '0755',
       content => template("sunet/ucrandom/ucrandom.erb")
-   } ->
-   file {'/etc/default': ensure => directory } ->
+   }
+   file {'/etc/default': ensure => directory }
    file {'/etc/default/ucrandom':
-      ensure  => file,
+      ensure  => $ensure_file,
       owner   => root,
       group   => root,
       mode    => '0660',
@@ -19,7 +26,7 @@ define sunet::ucrandom(
    case $::init_type {
       'upstart': {
          file {'/etc/init/ucrandom.conf':
-           ensure  => file,
+           ensure  => $ensure_file,
            owner   => root,
            group   => root,
            mode    => '0660',
@@ -28,7 +35,7 @@ define sunet::ucrandom(
       }
       'systemd-sysv': {
          file {'/lib/systemd/system/ucrandom.service':
-           ensure  => file,
+           ensure  => $ensure_file,
            owner   => root,
            group   => root,
            mode    => '0600',
@@ -41,5 +48,12 @@ define sunet::ucrandom(
       'systemd-sysv' => 'systemd',
       default        => 'debian'
    }
-   service {'ucrandom': ensure => running, provider => $_provider }
+   $ensure_service = $ensure ? {
+     'present' => 'running',
+     'absent'  => 'stopped',
+   }
+   service {'ucrandom':
+     ensure   => $ensure_service,
+     provider => $_provider,
+   }
 }
