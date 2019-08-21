@@ -34,6 +34,7 @@ define sunet::cloudimage (
   Boolean          $dhcp6       = false,
   String           $install_options = '',  # for passing arbitrary parameters to virt-install
   Boolean          $secure_boot = false,
+  String           $apt_mirror  = 'http://se.archive.ubuntu.com',
 )
 {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
