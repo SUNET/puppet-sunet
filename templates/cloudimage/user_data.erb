@@ -30,8 +30,10 @@ write_files:
     content: |
       # Enable grub on serial console
       GRUB_TERMINAL=serial
+<% if @local_size -%>
 mounts:
-  - [ "LABEL=local", "/local", "auto", "defaults,nofail" ]
+  - [ "LABEL=local", "/local", "auto", "defaults,nofail,nosuid,noexec,nodev" ]
+<% end -%>
 <% if @apt_mirror -%>
 apt:
   primary:
