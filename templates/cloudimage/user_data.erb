@@ -41,7 +41,7 @@ write_files:
             accept-ra: false
         version: 2
 <% end -%>
-<% if @local_size -%>
+<% if @local_size and @local_size != "0" -%>
 mounts:
   - [ "LABEL=local", "/local", "auto", "defaults,nofail,nosuid,noexec,nodev" ]
 <% end -%>
