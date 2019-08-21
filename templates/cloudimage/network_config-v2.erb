@@ -20,9 +20,8 @@ ethernets:
 <% if @gateway -%>
     gateway4: '<%= @gateway %>'
 <% end -%>
-<% if @gateway6 -%>
+<% if @network_ver == '2' and @gateway6 -%>
     gateway6: '<%= @gateway6 %>'
-    accept_ra: false
 <% end -%>
 <% if @resolver -%>
     nameservers:
