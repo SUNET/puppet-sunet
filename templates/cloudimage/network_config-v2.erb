@@ -22,6 +22,7 @@ ethernets:
 <% end -%>
 <% if @gateway6 -%>
     gateway6: '<%= @gateway6 %>'
+    accept_ra: false
 <% end -%>
 <% if @resolver -%>
     nameservers:
