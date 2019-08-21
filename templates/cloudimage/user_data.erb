@@ -30,9 +30,30 @@ write_files:
     content: |
       # Enable grub on serial console
       GRUB_TERMINAL=serial
+<% if @gateway6 -%>
+  - path: "/etc/netplan/60-disable_ra.yaml"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      network:
+        ethernets:
+          eth0:
+            accept-ra: false
+        version: 2
+<% end -%>
+<% if @local_size -%>
 mounts:
-  - [ "LABEL=local", "/local", "auto", "defaults,nofail" ]
-package_upgrade: true
+  - [ "LABEL=local", "/local", "auto", "defaults,nofail,nosuid,noexec,nodev" ]
+<% end -%>
+<% if @apt_mirror -%>
+apt:
+  primary:
+    - arches: [default]
+      search:
+        - <%= @apt_mirror %>
+        - http://archive.ubuntu.com
+<% end -%>
+package_update: true
 runcmd:
    - "echo '*** debug: interfaces:'"
    - "ifconfig -a"

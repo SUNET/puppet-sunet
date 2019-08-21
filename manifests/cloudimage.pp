@@ -34,6 +34,7 @@ define sunet::cloudimage (
   Boolean          $dhcp6       = false,
   String           $install_options = '',  # for passing arbitrary parameters to virt-install
   Boolean          $secure_boot = false,
+  String           $apt_mirror  = 'http://se.archive.ubuntu.com/ubuntu',
 )
 {
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
@@ -41,7 +42,7 @@ define sunet::cloudimage (
   } else {
     $kvm_package = 'kvm'  # old name
   }
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 and $::hostname != 'kvm-dev-1' {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 {
     # Manages CPU affinity for virtual CPUs. Seems to be required on new KVM hosts in eduid,
     # to keep the VMs from crashing.
     $numad_package = 'numad'
