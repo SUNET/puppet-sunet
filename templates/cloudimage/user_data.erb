@@ -31,13 +31,15 @@ write_files:
       # Enable grub on serial console
       GRUB_TERMINAL=serial
 <% if @gateway6 -%>
-  - path: "/etc/sysctl.d/10-ipv6-disable-autoconf.cfg"
+  - path: "/etc/netplan/60-disable_ra.yaml"
     permissions: "0644"
     owner: "root"
     content: |
-      # SLAAC disabled since an IPv6 gateway was specified in SUNET cloudimage config
-      net.ipv6.conf.all.autoconf = 0
-      net.ipv6.conf.all.accept_ra = 0
+      network:
+        ethernets:
+          eth0:
+            accept-ra: false
+        version: 2
 <% end -%>
 <% if @local_size -%>
 mounts:
