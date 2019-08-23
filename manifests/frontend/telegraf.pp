@@ -7,7 +7,7 @@ define sunet::frontend::telegraf(
   String           $username              = 'sunetfrontend',
   String           $group                 = 'sunetfrontend',
   Optional[String] $forward_url           = undef,
-  String           $statsd_listen_address = '',  # empty for all addressse
+  String           $statsd_listen_address = '',  # empty for all addresses
   Integer          $statsd_listen_port    = 8125,
   Array[String]    $allow_clients         = ['172.16.0.0/12'],
 )
