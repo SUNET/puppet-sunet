@@ -50,5 +50,7 @@ fi
 
 /usr/local/sbin/dehydrated --cron -a prime256v1 --force --config ${DEHYDRATED_CONFIG} --domain ${FQDN}
 
+/usr/local/sbin/dehydrated --cleanup --config ${DEHYDRATED_CONFIG}
+
 echo "$0: All done"
 exit 0
