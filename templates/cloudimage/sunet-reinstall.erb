@@ -48,8 +48,10 @@ umask 077
       echo /etc/ssh/*key*;
       test -d /etc/hiera/gpg && echo /etc/hiera/gpg;
       test -d /etc/hiera/eyaml && echo /etc/hiera/eyaml;
-      test -d /etc/dehydrated && echo /etc/dehydrated;
-      test -d /etc/ici_acme && echo /etc/ici_acme;
+      test -d /etc/dehydrated/accounts && echo /etc/dehydrated/accounts;
+      test -d /etc/dehydrated/certs && echo /etc/dehydrated/certs;
+      test -d /etc/ici_acme/dehydrated/accounts && echo /etc/ici_acme/dehydrated/accounts;
+      test -d /etc/ici_acme/dehydrated/certs && echo /etc/ici_acme/dehydrated/certs;
       find /etc/ssl -name '*_infra.key' -type f;
 ) | xargs tar zcvf "${reinst}.new"
 mv "${reinst}.new" "${reinst}"
