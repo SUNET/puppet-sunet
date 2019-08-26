@@ -73,9 +73,9 @@ class sunet::dehydrated(
 
   if ($cron) {
     if ($cleanup) {
-      $cmd = '/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/sbin/dehydrated --cleanup && /usr/bin/le-ssl-compat.sh'
+      $cmd = 'bash -c \'/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/sbin/dehydrated --cleanup && /usr/bin/le-ssl-compat.sh\''
     } else {
-      $cmd = '/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh'
+      $cmd = 'bash -c \'/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh\''
     }
     sunet::scriptherder::cronjob { 'dehydrated':
       cmd           => $cmd,
