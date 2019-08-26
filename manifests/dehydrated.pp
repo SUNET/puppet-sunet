@@ -3,6 +3,7 @@ class sunet::dehydrated(
   Boolean $httpd = false,
   Boolean $apache = false,
   Boolean $cron = true,
+  Boolean $cleanup = false,
   String  $src_url = 'https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated',
   Array   $allow_clients = [],
   Integer $server_port = 80,
@@ -71,8 +72,13 @@ class sunet::dehydrated(
   }
 
   if ($cron) {
+    if ($cleanup) {
+      $cmd = '/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/sbin/dehydrated --cleanup && /usr/bin/le-ssl-compat.sh'
+    } else {
+      $cmd = '/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh'
+    }
     sunet::scriptherder::cronjob { 'dehydrated':
-      cmd           => '/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh',
+      cmd           => $cmd,
       special       => 'daily',
       ok_criteria   => ['exit_status=0','max_age=4d'],
       warn_criteria => ['exit_status=1','max_age=8d'],
