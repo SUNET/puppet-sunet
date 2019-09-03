@@ -1,6 +1,5 @@
 # Set up SSH authorized keys
-class sunet::ssh_keys(
-  String $acl_name,
+define sunet::ssh_keys(
   Hash[String, Array[String]] $config,  # mapping of host username (e.g. 'root') to a list of ssh keys
   String $key_database_name = 'sunet_ssh_keys',
   String $order             = '100',
@@ -67,10 +66,10 @@ class sunet::ssh_keys(
           content => "# This file is generated using Puppet. Any changes will be lost.\n#\n#\n",
         }
 
-        concat::fragment { "${ssh_fn}_${acl_name}_header":
+        concat::fragment { "${ssh_fn}_${name}_header":
           target  => $ssh_fn,
           order   => $order,
-          content => "# Keys from ${acl_name}:\n#\n${sorted_keys}\n",
+          content => "# Keys from ${yname}:\n#\n${sorted_keys}\n",
         }
       } else {
         warning("Not writing an empty fragment to ${ssh_fn}")
