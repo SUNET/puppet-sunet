@@ -45,28 +45,26 @@ define sunet::ssh_keys(
           default => "/home/${username}",
         }
         $ssh_fn = "${homedir}/.ssh/authorized_keys.test"
-        file {
-          "${homedir}/.ssh":
-            ensure => 'directory',
-            owner  => 'root',  # puppet runs as root, so root owns this now.
-            group  => 'root',
-            mode   => '0700',
-            ;
-        }
+        ensure_resource('file', "${homedir}/.ssh", {
+          ensure => 'directory',
+          owner  => 'root',  # puppet runs as root, so root owns this now.
+          group  => 'root',
+          mode   => '0700',
+          })
 
-        concat { $ssh_fn:
+        ensure_resource('concat', $ssh_fn, {
           owner => 'root',  # puppet runs as root, so root owns this now.
           group => 'root',
           mode  => '0400',
-        }
+          })
 
-        concat::fragment { "${ssh_fn}_header":
+        ensure_resource('concat::fragment', "${ssh_fn}_header", {
           target  => $ssh_fn,
           order   => '01',
           content => "# This file is generated using Puppet. Any changes will be lost.\n#\n#\n",
-        }
+          })
 
-        concat::fragment { "${ssh_fn}_${name}_header":
+        concat::fragment { "${ssh_fn}_${name}_keys":
           target  => $ssh_fn,
           order   => $order,
           content => "# Keys from ${name}:\n#\n${sorted_keys}\n",
