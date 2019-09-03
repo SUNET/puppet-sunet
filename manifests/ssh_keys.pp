@@ -3,6 +3,7 @@ class sunet::ssh_keys(
   String $acl_name,
   Hash[String, Array[String]] $config,  # mapping of host username (e.g. 'root') to a list of ssh keys
   String $key_database_name = 'sunet_ssh_keys',
+  String $order             = '100',
 ) {
   # This class loads a big database of SSH keys from one place in Hiera, and then a list of keys to add to
   # users on a host from another place. Example:
@@ -63,11 +64,12 @@ class sunet::ssh_keys(
         concat::fragment { "${ssh_fn}_header":
           target  => $ssh_fn,
           order   => '01',
-          content => "# This file is generated using Puppet. Any changes will be lost.\n#\n#\n${sorted_keys}\n",
+          content => "# This file is generated using Puppet. Any changes will be lost.\n#\n#\n",
         }
 
         concat::fragment { "${ssh_fn}_${acl_name}_header":
           target  => $ssh_fn,
+          order   => $order,
           content => "# Keys from ${acl_name}:\n#\n${sorted_keys}\n",
         }
       } else {
