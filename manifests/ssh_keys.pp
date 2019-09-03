@@ -69,7 +69,7 @@ define sunet::ssh_keys(
         concat::fragment { "${ssh_fn}_${name}_header":
           target  => $ssh_fn,
           order   => $order,
-          content => "# Keys from ${yname}:\n#\n${sorted_keys}\n",
+          content => "# Keys from ${name}:\n#\n${sorted_keys}\n",
         }
       } else {
         warning("Not writing an empty fragment to ${ssh_fn}")
