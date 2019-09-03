@@ -61,13 +61,13 @@ define sunet::ssh_keys(
         ensure_resource('concat::fragment', "${ssh_fn}_header", {
           target  => $ssh_fn,
           order   => '01',
-          content => "# This file is generated using Puppet. Any changes will be lost.\n#\n#\n",
+          content => "# This file is generated using Puppet. Any changes will be lost.\n#\n",
           })
 
         concat::fragment { "${ssh_fn}_${name}_keys":
           target  => $ssh_fn,
           order   => $order,
-          content => "# Keys from ${name}:\n#\n${sorted_keys}\n",
+          content => "#\n# Keys from ${name}:\n#\n${sorted_keys}\n",
         }
       } else {
         warning("Not writing an empty fragment to ${ssh_fn}")
