@@ -1,5 +1,6 @@
 # Set up SSH authorized keys
 class sunet::ssh_keys(
+  String $acl_name,
   Hash[String, Array[String]] $config,  # mapping of host username (e.g. 'root') to a list of ssh keys
   String $key_database_name = 'sunet_ssh_keys',
 ) {
@@ -59,8 +60,25 @@ class sunet::ssh_keys(
             content => "# This file is generated using Puppet. Any changes will be lost.\n#\n#\n${sorted_keys}\n",
             ;
         }
+
+        concat { $ssh_fn:
+          owner => 'root',  # puppet runs as root, so root owns this now.
+          group => 'root',
+          mode  => '0400',
+        }
+
+        concat::fragment { "${ssh_fn}_header":
+          target  => $ssh_fn,
+          order   => '01',
+          content => "# This file is generated using Puppet. Any changes will be lost.\n#\n#\n${sorted_keys}\n",
+        }
+
+        concat::fragment { "${ssh_fn}_${acl_name}_header":
+          target  => $ssh_fn,
+          content => "# Keys from ${acl_name}:\n#\n${sorted_keys}\n",
+        }
       } else {
-        warning("Not writing an empty ${ssh_fn}")
+        warning("Not writing an empty fragment to ${ssh_fn}")
       }
     }
   } else {
