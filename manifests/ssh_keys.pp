@@ -52,13 +52,6 @@ class sunet::ssh_keys(
             group  => 'root',
             mode   => '0700',
             ;
-          $ssh_fn:
-            ensure  => 'file',
-            owner   => 'root',  # puppet runs as root, so root owns this now.
-            group   => 'root',
-            mode    => '0400',
-            content => "# This file is generated using Puppet. Any changes will be lost.\n#\n#\n${sorted_keys}\n",
-            ;
         }
 
         concat { $ssh_fn:
