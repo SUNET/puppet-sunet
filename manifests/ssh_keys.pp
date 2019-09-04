@@ -44,8 +44,10 @@ define sunet::ssh_keys(
           'root'  => '/root',
           default => "/home/${username}",
         }
-        $ssh_fn = "${homedir}/.ssh/authorized_keys.test"
+        $ssh_fn = "${homedir}/.ssh/authorized_keys"
         ensure_resource('file', "${homedir}/.ssh", { ensure => 'directory', })
+        # Clean away file used using development of this class. Can be safely removed in a day or so.
+        ensure_resource('file', "${ssh_fn}.test", { ensure => 'absent', })
 
         ensure_resource('concat', $ssh_fn, {
           owner => 'root',  # puppet runs as root, so root owns this now.
