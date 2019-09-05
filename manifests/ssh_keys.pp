@@ -1,7 +1,7 @@
 # Set up SSH authorized keys
 define sunet::ssh_keys(
-  Hash[String, Array[String]] $config,  # mapping of host username (e.g. 'root') to a list of ssh keys
-  Hash[String, Hash] $database = undef,  # can be supplied instead of read from Hiera
+  Hash[String, Array[String]]  $config,  # mapping of host username (e.g. 'root') to a list of ssh keys
+  Optional[Hash[String, Hash]] $database = undef,  # can be supplied instead of read from Hiera
   String $key_database_name = 'sunet_ssh_keys',
   String $order             = '100',
 ) {
