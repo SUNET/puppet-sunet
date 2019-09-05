@@ -137,7 +137,7 @@ class sunet::dehydrated(
       $dirs = join($domain_list, ' ')
 
       # anyone that ssh:s in with this ssh_key will get the certs authorized for this client packaged using tar
-      sunet::snippets::ssh_command { "dehydrated_${client}" :
+      sunet::snippets::ssh_command2 { "dehydrated_${client}" :
         command      => "/bin/tar cf - -C /etc/dehydrated/certs/ ${dirs}",
         ssh_key_type => $clients[$client]['ssh_key_type'],
         ssh_key      => $clients[$client]['ssh_key']
