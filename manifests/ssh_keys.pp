@@ -41,7 +41,8 @@ define sunet::ssh_keys(
             sprintf('%s %s %s', $_type, $_key, $_name)
           }
         } else {
-          warning("No SSH key with name ${keyname} found in key database (${key_database_name})")
+          # Must prefix this warning with # because it will end up being collected by the 'map' and put in the authorized_keys file
+          warning("# No SSH key with name ${keyname} found in key database (${key_database_name})")
         }
       }
 
