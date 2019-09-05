@@ -1,6 +1,7 @@
 # Set up SSH authorized keys
 define sunet::ssh_keys(
   Hash[String, Array[String]] $config,  # mapping of host username (e.g. 'root') to a list of ssh keys
+  Hash[String, Hash] $database = undef,  # can be supplied instead of read from Hiera
   String $key_database_name = 'sunet_ssh_keys',
   String $order             = '100',
 ) {
@@ -22,7 +23,11 @@ define sunet::ssh_keys(
   # 'ft+505152DD'. Some other group of hosts might have another ACL adding both
   # the SSH keys on those machines.
   #
-  $keydb = hiera_hash($key_database_name, undef)
+  if $database {
+    $keydb = $database
+  } else {
+    $keydb = hiera_hash($key_database_name, undef)
+  }
   if $keydb =~ Hash[String, Hash] {
     each ($config) | String $username, Array[String] $keys | {
       $authorized_keys = map(sort($keys)) | String $keyname | {
@@ -30,7 +35,11 @@ define sunet::ssh_keys(
           $_name = pick($keydb[$keyname]['name'], $keyname)
           $_type = pick($keydb[$keyname]['type'], 'ssh-rsa')
           $_key = $keydb[$keyname]['key']
-          sprintf('%s %s %s', $_type, $_key, $_name)
+          if has_key($keydb[$keyname], 'options') {
+            sprintf('%s %s %s %s', $keydb[$keyname]['options'], $_type, $_key, $_name)
+          } else {
+            sprintf('%s %s %s', $_type, $_key, $_name)
+          }
         } else {
           warning("No SSH key with name ${keyname} found in key database (${key_database_name})")
         }
