@@ -112,8 +112,9 @@ class sunet::dehydrated(
       #                  }
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
          sunet::rrsync { "/etc/dehydrated/certs/${domain}":
-           ssh_key_type => $info['ssh_key_type'],
-           ssh_key      => $info['ssh_key']
+           ssh_key_type       => $info['ssh_key_type'],
+           ssh_key            => $info['ssh_key'],
+           use_sunet_ssh_keys => true,
          }
       }
     }

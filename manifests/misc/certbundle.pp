@@ -22,10 +22,10 @@ define sunet::misc::certbundle(
       }
 
       #notice("Creating keyfile ${keyfile}")
-      sunet::misc::create_key_file { $_keyfile:
+      ensure_resource('sunet::misc::create_key_file', $_keyfile, {
         hiera_key => $hiera_key,
         group     => $group,
-      }
+      })
       $req = [Sunet::Misc::Create_key_file[$_keyfile]]
       if $group != 'root' {
         # /etc/ssl/private is owned by group ssl-cert and not world-accessible
