@@ -6,6 +6,10 @@ class sunet::ni{
   $ni_database_pwd = safe_hiera ('ni_database_password',[])
   $noclook_secret_key = safe_hiera ('noclook_secret_key',[])
   $google_api_key = safe_hiera ('google_api_key',[])
+  $sentry_dsn = safe_hiera ('sentry_dsn',[])
+  $sp_key = safe_hiera ('sp_key',[])
+  $sp_cert = safe_hiera ('sp_cert',[])
+
 
   $ni_home ="/var/opt/norduni"
   $norduni_path =  "${ni_home}/norduni"
@@ -217,20 +221,22 @@ class sunet::ni{
       group   => 'ni',
       content => template('sunet/ni/config.py.erb'),
     }
+    -> sunet::snippets::secret_file { "${norduni_path}/src/niweb/apps/saml2auth/sp-cert.pem": hiera_key => "sp_cert", mode => '0644',}
+    -> sunet::snippets::secret_file { "${norduni_path}/src/niweb/apps/saml2auth/sp-key.pem": hiera_key => "sp_key", mode => '0644', }
     -> vcsrepo {"${ni_home}/nerds":
-      ensure   => present,
-      provider => git,
-      owner    => ni,
-      group    => ni,
-      source   => 'https://github.com/fredrikt/nerds.git',
-      }
+        ensure   => present,
+        provider => git,
+        owner    => ni,
+        group    => ni,
+        source   => 'https://github.com/fredrikt/nerds.git',
+        }
     -> vcsrepo {"${ni_home}/nunoc-ops":
-      ensure   => present,
-      provider => git,
-      owner    => ni,
-      group    => ni,
-      source   => 'git://gitops.sunet.se/nunoc-ops.git',
-      }
+        ensure   => present,
+        provider => git,
+        owner    => ni,
+        group    => ni,
+        source   => 'git://gitops.sunet.se/nunoc-ops.git',
+        }
 
     $scripts = ['backup.sh', 'produce-parallel.sh', 'git-gc.sh']
 
