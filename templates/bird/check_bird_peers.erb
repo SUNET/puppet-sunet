@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (c) 2017, SUNET
+# Copyright (c) 2017, 2019, SUNET
 # All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or
@@ -83,6 +83,13 @@ def parse_args():
                         default=default_min_peers,
                         help='Minimum number of established peers considered acceptable',
     )
+    parser.add_argument('--ignore_peers',
+                        dest='ignore_peers',
+                        type=str,
+                        nargs='+',
+                        default=[],
+                        help='Ignore problems with these peers',
+    )
 
     return parser.parse_args()
 
@@ -108,6 +115,7 @@ def check_peers(args, logger):
     critical = []
     warning = []
     ok = []
+    ignored = []
 
     peers = parse_peers(birdc(args.socket_fn, logger))
     logger.debug('Peers:\n{}'.format(peers))
@@ -115,22 +123,24 @@ def check_peers(args, logger):
         peername = this.split(' ')[0]
         if this.endswith('Established'):
             ok.extend([peername])
+        elif peername in args.ignore_peers:
+            ignored.extend([peername])
         else:
             # add peer name to critical list
             critical.extend([peername])
 
     crit_str = ', '.join(sorted(critical))
     warn_str = ', '.join(sorted(warning))
-    ok_str = ', '.join(sorted(ok))
+    ignored_str = ', '.join(sorted(ignored))
 
     if not critical:
         if len(ok) < args.min_peers:
             crit_str = 'Only {} (less than {}) peers up'.format(len(ok), args.min_peers)
 
-    if ok_str:
-        ok_str = 'Peers in state \'Established\': {}'.format(ok_str)
+    if ok:
+        ok_str = '{} peers in state \'Established\''.format(len(ok))
 
-    return crit_str, warn_str, ok_str
+    return crit_str, warn_str, ok_str, ignored_str
 
 
 def parse_peers(data):
@@ -149,7 +159,7 @@ def parse_peers(data):
 
 
 def main(args, logger):
-    critical, warning, ok = check_peers(args, logger)
+    critical, warning, ok, ignored = check_peers(args, logger)
 
     res = []
     if critical:
@@ -159,7 +169,11 @@ def main(args, logger):
     if ok:
         res.append('OK: {!s}'.format(ok))
 
-    print('{!s}'.format(', '.join(res)))
+    res_str = ', '.join(res)
+    if ignored:
+        res_str += ' (ignored problems with peer(s): {})'.format(ignored)
+
+    print(res_str)
 
     if critical:
         return STATUS['CRITICAL']

@@ -6,6 +6,7 @@ class sunet::bird(
   Integer $uid       = 501,
   Integer $gid       = 501,
   String $router_id  = $::ipaddress_default,
+  String $check_args = '',
 ) {
   $my_router_id = $router_id ? {
     undef   => $::ipaddress_eth0,
@@ -74,8 +75,8 @@ class sunet::bird(
     content => template('sunet/bird/check_bird_peers.erb'),
   }
 
-    command_line => '/usr/lib/nagios/plugins/check_bird_peers',
   sunet::nagios::nrpe_command { 'check_bird_peers':
+    command_line => "/usr/lib/nagios/plugins/check_bird_peers ${check_args}",
   }
 
   each(['', '6']) |$ipver| {
@@ -86,7 +87,7 @@ class sunet::bird(
     }
   }
 
-    command_line => '/usr/lib/nagios/plugins/check_bird_peers -s /var/run/bird/bird6.ctl',
   sunet::nagios::nrpe_command { 'check_bird_peers6':
+    command_line => "/usr/lib/nagios/plugins/check_bird_peers -s /var/run/bird/bird6.ctl ${check_args}",
   }
 }
