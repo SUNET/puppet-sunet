@@ -8,7 +8,7 @@ class sunet::frontend::route_reflector(
       has_key($params, 'monitor') and $params['monitor'] != false
     }
 
-    notify("Peers without monitoring: ${ignore_peers}")
+    notice("Peers without monitoring: ${ignore_peers}")
 
     class {'sunet::bird': router_id => $router_id }
 
