@@ -4,15 +4,21 @@ class sunet::frontend::route_reflector(
 ) {
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
-    $ignore_peers = $config['route_reflector']['peers'].filter | $peer, $params | {
-      if has_key($params, 'monitor') and $params['monitor'] != false {
-        $peer
-      }
+    $ignore_peers_h = $config['route_reflector']['peers'].filter | $peer, $params | {
+      has_key($params, 'monitor') and $params['monitor'] == false
     }
 
+    $ignore_peers = join(keys($ignore_peers_h), ' ')
     notice("Peers without monitoring: ${ignore_peers}")
+    $check_args = $ignore_peers ? {
+      ''      => '',
+      default => sprintf('--ignore_peers %s', $ignore_peers)
+    }
 
-    class {'sunet::bird': router_id => $router_id }
+    class {'sunet::bird':
+      router_id  => $router_id,
+      check_args => $check_args,
+    }
 
     create_resources('sunet::bird::peer', $config['route_reflector']['peers'])
   } else {
