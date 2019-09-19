@@ -32,6 +32,8 @@ define sunet::redis::server(
 
   if $slave_node == 'yes' {
     notice("Configuring Redis node slaveof ${master_ip} port ${master_port}")
+  } else {
+    notice("Configuring as Redis master with IP ${master_ip} on eth0/bond0/default")
   }
 
   if $sentinel_config == 'yes' {
