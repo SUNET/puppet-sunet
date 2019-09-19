@@ -1,6 +1,6 @@
 # Set up and run Redis
 define sunet::redis::server(
-  String            $port            = '6379',
+  Integer           $port            = 6379,
   String            $bind            = '0.0.0.0',
   Enum['yes', 'no'] $daemonize       = 'no',
   String            $username        = 'redis',
@@ -11,7 +11,7 @@ define sunet::redis::server(
   String            $cluster_name    = 'redis-cluster',
   Enum['yes', 'no'] $sentinel_config = 'no',
   String            $master_ip       = pick($cluster_nodes[0], $::ipaddress_default),
-  String            $master_port     = '6379',
+  Integer           $master_port     = 6379,
   Optional[String]  $docker_image    = 'docker.sunet.se/eduid/redis',
   String            $docker_tag      = 'latest',
   String            $basedir         = "/opt/redis/${name}"
@@ -39,7 +39,7 @@ define sunet::redis::server(
 
   sunet::misc::ufw_allow { "${name}_allow_cluster_speak":
     from => $cluster_nodes,
-    port => sprintf('%s', $port + 10000),
+    port => $port + 10000,
   }
 
   ensure_resource('sunet::system_user', $username, {
@@ -62,7 +62,7 @@ define sunet::redis::server(
       ;
     "${basedir}/etc/redis.conf":
       ensure  => 'file',
-      mode    => '640',
+      mode    => '0640',
       group   => $group,
       content => template('sunet/redis/redis.conf.erb'),
       require => Sunet::System_user[$username],
