@@ -30,6 +30,14 @@ define sunet::redis::server(
     default              => 'yes',
   }
 
+  if $slave_node == 'yes' {
+    notice("Configuring Redis node slaveof ${master_ip} port ${master_port}")
+  }
+
+  if $sentinel_config == 'yes' {
+    notice("Configuring Redis Sentinel to monitor ${master_ip} port ${master_port}")
+  }
+
   sunet::misc::ufw_allow { "${name}_allow_clients":
     from => [$allow_clients,
              $cluster_nodes,
