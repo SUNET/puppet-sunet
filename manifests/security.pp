@@ -1,6 +1,7 @@
 # Install OpenSSH and configure it to a secure baseline.
 class sunet::security::configure_sshd(
-    $configure_sftp = true,
+  $configure_sftp = true,
+  $port = hiera('sunet_ssh_daemon_port', 22)
 ) {
   ensure_resource('package', 'openssh-server', {
     ensure => 'installed'
@@ -14,7 +15,7 @@ class sunet::security::configure_sshd(
   if $::operatingsystemrelease != '12.04' {
     # Generate an ed25519 ssh host key. Ubuntu 12.04 does not support that, but hopefully
     # everything running !ubuntu does so we only exclude 12.04.
-    exec { "ed25519-ssh-host-key":
+    exec { 'ed25519-ssh-host-key':
       command => 'ssh-keygen -t ed25519 -N "" -f /etc/ssh/ssh_host_ed25519_key',
       onlyif  => 'test ! -s /etc/ssh/ssh_host_ed25519_key.pub -o ! -s /etc/ssh/ssh_host_ed25519_key'
     }
@@ -24,22 +25,23 @@ class sunet::security::configure_sshd(
   } else {
     $set_hostkey = ['set HostKey[1] /etc/ssh/ssh_host_rsa_key']
   }
-  
+
   if $::has_ssh_host_ed25519_cert == 'yes' {
-     $set_hostcert = ["set HostCertificate[1] /etc/ssh/ssh_host_ed25519_key-cert"] 
+    $set_hostcert = ['set HostCertificate[1] /etc/ssh/ssh_host_ed25519_key-cert']
   } else {
-     $set_hostcert = ["rm HostCertificate"]
+    $set_hostcert = ['rm HostCertificate']
   }
 
   include augeas
-  augeas { "sshd_config":
-    context => "/files/etc/ssh/sshd_config",
+  augeas { 'sshd_config':
+    context => '/files/etc/ssh/sshd_config',
     changes => flatten([
-                        "set PasswordAuthentication no",
-                        "set X11Forwarding no",
-                        "set AllowAgentForwarding no",
-                        "set LogLevel VERBOSE",  # log pubkey used for root login
-                        "rm HostKey",
+                        'set PasswordAuthentication no',
+                        'set X11Forwarding no',
+                        'set AllowAgentForwarding no',
+                        'set LogLevel VERBOSE',  # log pubkey used for root login
+                        "set Port ${port}",
+                        'rm HostKey',
                         $set_hostkey,
                         $set_hostcert,
                         ]),
