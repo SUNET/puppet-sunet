@@ -1,7 +1,7 @@
 # Install OpenSSH and configure it to a secure baseline.
 class sunet::security::configure_sshd(
-  $configure_sftp = true,
-  $port = hiera('sunet_ssh_daemon_port', 22)
+  Boolean $configure_sftp = true,
+  Integer $port           = undef,
 ) {
   ensure_resource('package', 'openssh-server', {
     ensure => 'installed'
@@ -32,6 +32,12 @@ class sunet::security::configure_sshd(
     $set_hostcert = ['rm HostCertificate']
   }
 
+  if $port {
+    $set_port = "set Port ${port}"
+  } else {
+    $set_port = undef
+  }
+
   include augeas
   augeas { 'sshd_config':
     context => '/files/etc/ssh/sshd_config',
@@ -44,7 +50,8 @@ class sunet::security::configure_sshd(
                         'rm HostKey',
                         $set_hostkey,
                         $set_hostcert,
-                        ]),
+                        $set_port,
+                        ]).filter |$this| { $this != undef },
     notify  => Service['ssh'],
     require => Package['openssh-server'],
   }
