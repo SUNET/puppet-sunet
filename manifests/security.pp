@@ -32,7 +32,7 @@ class sunet::security::configure_sshd(
     $set_hostcert = ['rm HostCertificate']
   }
 
-  if $port {
+  if $port != undef {
     $set_port = "set Port ${port}"
   } else {
     $set_port = undef
@@ -46,7 +46,6 @@ class sunet::security::configure_sshd(
                         'set X11Forwarding no',
                         'set AllowAgentForwarding no',
                         'set LogLevel VERBOSE',  # log pubkey used for root login
-                        "set Port ${port}",
                         'rm HostKey',
                         $set_hostkey,
                         $set_hostcert,
