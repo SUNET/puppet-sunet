@@ -30,7 +30,7 @@ class sunet::server(
   }
 
   if $sshd_config {
-    $ssh_port = hiera('sunet_ssh_daemon_port', 22)
+    $ssh_port = hiera('sunet_ssh_daemon_port')
     class { 'sunet::security::configure_sshd':
       port => $ssh_port,
     }
