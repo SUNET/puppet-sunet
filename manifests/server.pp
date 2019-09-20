@@ -38,12 +38,12 @@ class sunet::server(
     if $ssh_allow_from_anywhere {
       sunet::misc::ufw_allow { 'allow-ssh-from-all':
         from => 'any',
-        port => $ssh_port,
+        port => pick($ssh_port, 22),
       }
     } elsif $mgmt_addresses != [] {
       sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
         from => $mgmt_addresses,
-        port => $ssh_port,
+        port => pick($ssh_port, 22),
       }
     }
   }
