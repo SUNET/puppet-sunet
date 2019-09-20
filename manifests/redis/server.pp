@@ -1,6 +1,6 @@
 # Set up and run Redis
 define sunet::redis::server(
-  Integer           $port            = 6379,
+  String            $port            = '6379',
   String            $bind            = '0.0.0.0',
   Enum['yes', 'no'] $daemonize       = 'no',
   String            $username        = 'redis',
@@ -11,7 +11,7 @@ define sunet::redis::server(
   String            $cluster_name    = 'redis-cluster',
   Enum['yes', 'no'] $sentinel_config = 'no',
   String            $master_ip       = pick($cluster_nodes[0], $::ipaddress_default),
-  Integer           $master_port     = 6379,
+  String            $master_port     = '6379',
   Optional[String]  $docker_image    = 'docker.sunet.se/eduid/redis',
   String            $docker_tag      = 'latest',
   String            $basedir         = "/opt/redis/${name}"
