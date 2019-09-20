@@ -52,6 +52,7 @@ umask 077
       test -d /etc/dehydrated/certs && echo /etc/dehydrated/certs;
       test -d /etc/ici_acme/dehydrated/accounts && echo /etc/ici_acme/dehydrated/accounts;
       test -d /etc/ici_acme/dehydrated/certs && echo /etc/ici_acme/dehydrated/certs;
+      find /etc/ssl -name '*_infra.pem' -type f;
       find /etc/ssl -name '*_infra.key' -type f;
 ) | xargs tar zcvf "${reinst}.new"
 mv "${reinst}.new" "${reinst}"
