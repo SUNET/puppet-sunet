@@ -1,9 +1,10 @@
 define sunet::misc::system_user(
-  $group,
-  $username = undef,
-  $system = true,
-  $shell = '/bin/false'
-  ) {
+  String           $group,
+  Optional[String] $username = undef,
+  Boolean          $system = true,
+  Boolean          $managehome = false,
+  String           $shell = '/bin/false'
+) {
 
   $_username = $username ? {
     undef => $name,
@@ -22,5 +23,6 @@ define sunet::misc::system_user(
     system     => $system,
     require    => Group[ $group ],
     shell      => $shell,
+    managehome => $managehome,
   })
 }
