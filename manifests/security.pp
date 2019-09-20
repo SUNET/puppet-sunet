@@ -1,7 +1,7 @@
 # Install OpenSSH and configure it to a secure baseline.
 class sunet::security::configure_sshd(
   Boolean $configure_sftp = true,
-  Integer $port           = undef,
+  Optional[Integer] $port = undef,
 ) {
   ensure_resource('package', 'openssh-server', {
     ensure => 'installed'
