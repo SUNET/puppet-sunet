@@ -61,8 +61,8 @@ define sunet::ssh_keys(
 
         ensure_resource('concat', $ssh_fn, {
           owner => 'root',  # puppet runs as root, so root owns this now.
-          group => 'root',
-          mode  => '0400',
+          group => $username,
+          mode  => '0440',
           })
 
         ensure_resource('concat::fragment', "${ssh_fn}_header", {
