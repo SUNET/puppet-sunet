@@ -30,20 +30,21 @@ class sunet::server(
   }
 
   if $sshd_config {
-    class { 'sunet::security::configure_sshd': }
+    $ssh_port = hiera('sunet_ssh_daemon_port', undef)
+    class { 'sunet::security::configure_sshd':
+      port => $ssh_port,
+    }
     include ufw
     if $ssh_allow_from_anywhere {
-        sunet::misc::ufw_allow { 'allow-ssh-from-all':
-            from  => 'any',
-            port  => '22',
-            proto => 'tcp',
-        }
-    }
-    if $mgmt_addresses != [] {
-        sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
-            from => $mgmt_addresses,
-            port => '22',
-        }
+      sunet::misc::ufw_allow { 'allow-ssh-from-all':
+        from => 'any',
+        port => pick($ssh_port, 22),
+      }
+    } elsif $mgmt_addresses != [] {
+      sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
+        from => $mgmt_addresses,
+        port => pick($ssh_port, 22),
+      }
     }
   }
 
