@@ -28,7 +28,7 @@ if [[ $WAIT_FOR_INTERFACE ]]; then
     ip addr list "$WAIT_FOR_INTERFACE"
 fi
 
-for i in $(seq ${HAPROXYWAITCFG}); do
+for i in $(seq "${HAPROXYWAITCFG}"); do
     test -f "${HAPROXYCFG}" && break
     echo "$0: Waiting for haproxy config file ${HAPROXYCFG} (${i}/${HAPROXYWAITCFG})"
     sleep 1
@@ -66,9 +66,11 @@ fi
 
 echo "$0: Config ${HAPROXYCFG} checked OK, starting haproxy"
 if [ -x /usr/sbin/haproxy-systemd-wrapper ]; then
+    # haproxy 1.7
     /usr/sbin/haproxy-systemd-wrapper -p /run/haproxy.pid -f "${HAPROXYCFG}" &
     pid=$!
 else
+    # haproxy 1.8+
     /usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" &
     pid=$!
 fi
