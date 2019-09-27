@@ -73,4 +73,18 @@ class sunet::server(
   if $disable_all_local_users {
     class { 'sunet::security::disable_all_local_users': }
   }
+
+  if $::is_virtual == true {
+    file { '/usr/local/bin/sunet-reinstall':
+      ensure  => file,
+      mode    => '0755',
+      content => template('sunet/cloudimage/sunet-reinstall.erb'),
+    }
+    sunet::scriptherder::cronjob { 'sunet_reinstall':
+      cmd           => '/usr/local/bin/sunet-reinstall -f',
+      ok_criteria   => ['exit_status=0', 'max_age=25h'],
+      warn_criteria => ['exit_status=0', 'max_age=49h'],
+      special       => 'daily',
+    }
+  }
 }
