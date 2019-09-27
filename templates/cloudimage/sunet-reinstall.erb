@@ -18,7 +18,7 @@ if [ $vdb_fail -ne 0 ]; then
     rmdir /mnt/seed
     if [ $force -eq 1 ]; then
 	echo "$0: mounting /dev/vdb failed, aborting since force-mode is in effect"
-	exit 1
+	exit 0
     fi
     reinst="/root/`hostname -f`_sunet-reinstall.tgz"
     echo "$0: mounting /dev/vdb failed, output to local file ${reinst} instead?"
