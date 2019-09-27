@@ -86,5 +86,9 @@ class sunet::server(
       warn_criteria => ['exit_status=0', 'max_age=49h'],
       special       => 'daily',
     }
+
+    exec { 'run_sunet_reinstall_to_clear_alarms':
+      command => '/usr/local/bin/scriptherder --mode wrap --syslog --name sunet_reinstall -- /usr/local/bin/sunet-reinstall -f',
+    }
   }
 }
