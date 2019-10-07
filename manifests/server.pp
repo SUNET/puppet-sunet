@@ -81,7 +81,8 @@ class sunet::server(
       content => template('sunet/cloudimage/sunet-reinstall.erb'),
     }
     sunet::scriptherder::cronjob { 'sunet_reinstall':
-      cmd           => '/usr/local/bin/sunet-reinstall -f',
+      # sleep 150 to avoid running at the same time as the cronjob fetching new certificates
+      cmd           => "sh -c 'sleep 150; /usr/local/bin/sunet-reinstall -f'",
       ok_criteria   => ['exit_status=0', 'max_age=25h'],
       warn_criteria => ['exit_status=0', 'max_age=49h'],
       special       => 'daily',
