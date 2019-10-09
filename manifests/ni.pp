@@ -138,7 +138,7 @@ class sunet::ni{
       provider => git,
       owner    => ni,
       group    => ni,
-      source   => 'git://code.nordu.net/sunet-nistore.git',
+      source   => 'git://git.sunet.se/sunet-nistore.git',
       }
   }
   -> file {"${script_path}/python_commands":
