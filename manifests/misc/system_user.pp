@@ -3,7 +3,7 @@ define sunet::misc::system_user(
   Optional[String]        $username = undef,
   Boolean                 $system = true,
   Boolean                 $managehome = false,
-  String                  $shell = '/bin/false'
+  String                  $shell = '/bin/false',
   Optional[String]        $home = undef,
   Optional[Integer]       $uid = undef,
   Optional[Integer]       $gid = undef,
