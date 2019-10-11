@@ -859,9 +859,16 @@ sign_csr() {
     result="$(signed_request "${finalize}" '{"csr": "'"${csr64}"'"}' | clean_json)"
     reqstatus="$(printf '%s\n' "${result}" | get_json_string_value status)"
 
+    local waited_seconds=0
+    local order_timeout=1
     while [[ "${reqstatus}" = "processing" ]]; do
+      if [[ $waited_seconds -gt 128 ]]; then
+        _exiterr "Giving up after waiting ${waited_seconds} seconds"
+      fi
       echo " + Waiting for certificate processing..."
-      sleep 1
+      sleep $order_timeout
+      waited_seconds=$(($waited_seconds + $order_timeout))
+      order_timeout=$(($order_timeout * 2))
       result="$(signed_request "${order}" '{}' | clean_json)"
       reqstatus="$(printf '%s\n' "${result}" | get_json_string_value status)"
     done

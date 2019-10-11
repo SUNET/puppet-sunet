@@ -1,3 +1,4 @@
+# Acquire a certificate from an ICI ACME server
 class sunet::ici_acme::client(
   String $ca_url = 'http://ca-test-1.sunet.se/',
 ) {

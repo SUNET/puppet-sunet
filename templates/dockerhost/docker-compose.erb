@@ -17,7 +17,6 @@ set -e
 
 IMAGE="<%= @compose_image %>:<%= @compose_version %>"
 
-
 # Setup options for connecting to docker host
 if [ -z "$DOCKER_HOST" ]; then
     DOCKER_HOST="/var/run/docker.sock"
@@ -34,7 +33,11 @@ if [ "$(pwd)" != '/' ]; then
     VOLUMES="-v $(pwd):$(pwd)"
 fi
 if [ -n "$COMPOSE_FILE" ]; then
-    compose_dir=$(dirname $COMPOSE_FILE)
+    if [ ! -s "${COMPOSE_FILE}" ]; then
+	echo "$0: Compose-file ${COMPOSE_FILE} does not exist, or is empty"
+	exit 1
+    fi
+    compose_dir=$(dirname "${COMPOSE_FILE}")
 fi
 # TODO: also check --file argument
 if [ -n "$compose_dir" ]; then
@@ -48,9 +51,17 @@ fi
 for arg in $*; do
     case $arg in
 	"/"*".yml")
+	    if [ ! -f "${arg}" ]; then
+		echo "$0: YAML file argument ${arg} is not a file"
+		exit 1
+	    fi
 	    VOLUMES="$VOLUMES -v ${arg}:${arg}:ro"
 	    ;;
 	*".yml")
+	    if [ ! -f "${PWD}/${arg}" ]; then
+		echo "$0: YAML file argument ${arg} in ${PWD} is not a file"
+		exit 1
+	    fi
 	    VOLUMES="$VOLUMES -v ${PWD}/${arg}:${PWD}/${arg}:ro"
 	    ;;
 	*)

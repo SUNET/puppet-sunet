@@ -21,8 +21,9 @@ if [[ $1 == '--random-sleep' ]]; then
 fi
 
 # Check for existing account
-/usr/local/sbin/ici-acme-pre-auth.py --url ${CA} --dehydrated_account_dir ${ACCOUNTDIR} is_registered
-if [[ $? != 0 ]]; then
+is_registered=0
+/usr/local/sbin/ici-acme-pre-auth.py --url ${CA} --dehydrated_account_dir ${ACCOUNTDIR} is_registered && is_registered=1
+if [[ $is_registered != 1 ]]; then
     /usr/local/sbin/dehydrated --config ${DEHYDRATED_CONFIG} --register --accept-terms
 fi
 
@@ -48,6 +49,8 @@ else
 fi
 
 /usr/local/sbin/dehydrated --cron -a prime256v1 --force --config ${DEHYDRATED_CONFIG} --domain ${FQDN}
+
+/usr/local/sbin/dehydrated --cleanup --config ${DEHYDRATED_CONFIG}
 
 echo "$0: All done"
 exit 0

@@ -27,7 +27,7 @@ define sunet::misc::ufw_allow(
             from  => $_from,
             ip    => $_to,
             proto => $_proto,
-            port  => sprintf("%s", $_port),
+            port  => sprintf('%s', $_port),
             })
         }
       }

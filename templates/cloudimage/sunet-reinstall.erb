@@ -18,7 +18,7 @@ if [ $vdb_fail -ne 0 ]; then
     rmdir /mnt/seed
     if [ $force -eq 1 ]; then
 	echo "$0: mounting /dev/vdb failed, aborting since force-mode is in effect"
-	exit 1
+	exit 0
     fi
     reinst="/root/`hostname -f`_sunet-reinstall.tgz"
     echo "$0: mounting /dev/vdb failed, output to local file ${reinst} instead?"
@@ -48,7 +48,11 @@ umask 077
       echo /etc/ssh/*key*;
       test -d /etc/hiera/gpg && echo /etc/hiera/gpg;
       test -d /etc/hiera/eyaml && echo /etc/hiera/eyaml;
-      test -d /etc/dehydrated && echo /etc/dehydrated;
+      test -d /etc/dehydrated/accounts && echo /etc/dehydrated/accounts;
+      test -d /etc/dehydrated/certs && echo /etc/dehydrated/certs;
+      test -d /etc/ici_acme/dehydrated/accounts && echo /etc/ici_acme/dehydrated/accounts;
+      test -d /etc/ici_acme/dehydrated/certs && echo /etc/ici_acme/dehydrated/certs;
+      find /etc/ssl -name '*_infra.pem' -type f;
       find /etc/ssl -name '*_infra.key' -type f;
 ) | xargs tar zcvf "${reinst}.new"
 mv "${reinst}.new" "${reinst}"

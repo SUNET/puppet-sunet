@@ -1,9 +1,10 @@
 class sunet::dehydrated(
-  Boolean $staging=false,
-  Boolean $httpd=false,
-  Boolean $apache=false,
-  Boolean $cron=true,
-  String  $src_url = "https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated",
+  Boolean $staging = false,
+  Boolean $httpd = false,
+  Boolean $apache = false,
+  Boolean $cron = true,
+  Boolean $cleanup = false,
+  String  $src_url = 'https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated',
   Array   $allow_clients = [],
   Integer $server_port = 80,
 ) {
@@ -32,21 +33,23 @@ class sunet::dehydrated(
       mode            => '0755'
     }
   }
-  file { '/usr/sbin/letsencrypt.sh':
-     ensure  => absent
-  } ->
-  file { '/usr/bin/le-ssl-compat.sh':
-     ensure  => 'file',
-     owner   => 'root',
-     group   => 'root',
-     mode    => '0755',
-     content => template('sunet/dehydrated/le-ssl-compat.erb')
-  } ->
+
   exec {'rename-etc-letsencrypt.sh':
      command => 'mv /etc/letsencrypt.sh /etc/dehydrated',
      onlyif  => 'test -d /etc/letsencrypt.sh'
-  } ->
+  }
+
   file {
+    '/usr/sbin/letsencrypt.sh':
+      ensure => absent
+      ;
+    '/usr/bin/le-ssl-compat.sh':
+      ensure  => 'file',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0755',
+      content => template('sunet/dehydrated/le-ssl-compat.erb')
+      ;
     '/etc/dehydrated':
       ensure  => 'directory',
       mode    => '0600',
@@ -69,8 +72,13 @@ class sunet::dehydrated(
   }
 
   if ($cron) {
+    if ($cleanup) {
+      $cmd = 'bash -c \'/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/sbin/dehydrated --cleanup && /usr/bin/le-ssl-compat.sh\''
+    } else {
+      $cmd = 'bash -c \'/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh\''
+    }
     sunet::scriptherder::cronjob { 'dehydrated':
-      cmd           => '/usr/sbin/dehydrated --keep-going --no-lock -c; /usr/bin/le-ssl-compat.sh',
+      cmd           => $cmd,
       special       => 'daily',
       ok_criteria   => ['exit_status=0','max_age=4d'],
       warn_criteria => ['exit_status=1','max_age=8d'],
@@ -103,9 +111,10 @@ class sunet::dehydrated(
       #                   clients => [frontend1.sunet.se, frontend2.sunet.se]
       #                  }
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
-         sunet::rrsync { "/etc/dehydrated/certs/$domain":
-            ssh_key_type => $info['ssh_key_type'],
-            ssh_key      => $info['ssh_key']
+         sunet::rrsync { "/etc/dehydrated/certs/${domain}":
+           ssh_key_type       => $info['ssh_key_type'],
+           ssh_key            => $info['ssh_key'],
+           use_sunet_ssh_keys => true,
          }
       }
     }
@@ -129,7 +138,7 @@ class sunet::dehydrated(
       $dirs = join($domain_list, ' ')
 
       # anyone that ssh:s in with this ssh_key will get the certs authorized for this client packaged using tar
-      sunet::snippets::ssh_command { "dehydrated_${client}" :
+      sunet::snippets::ssh_command2 { "dehydrated_${client}" :
         command      => "/bin/tar cf - -C /etc/dehydrated/certs/ ${dirs}",
         ssh_key_type => $clients[$client]['ssh_key_type'],
         ssh_key      => $clients[$client]['ssh_key']
@@ -146,11 +155,11 @@ define sunet::dehydrated::lighttpd_server(
   Integer $server_port = 80,
 ) {
   package {'lighttpd':
-    ensure  => latest
-  } ->
+    ensure => latest
+  }
   service {'lighttpd':
-    ensure  => running
-  } ->
+    ensure => running
+  }
   sunet::misc::ufw_allow { 'allow-lighthttp':
     from => $allow_clients,
     port => $server_port,
@@ -164,13 +173,13 @@ define sunet::dehydrated::lighttpd_server(
   exec {'rename-var-www-letsencrypt':
     command => 'mv /var/www/letsencrypt /var/www/dehydrated',
     onlyif  => 'test -d /var/www/letsencrypt'
-  } ->
+  }
   file {
     '/var/www/dehydrated':
-      ensure  => 'directory',
-      owner   => 'www-data',
-      group   => 'www-data',
-      mode    => '0750',
+      ensure => 'directory',
+      owner  => 'www-data',
+      group  => 'www-data',
+      mode   => '0750',
       ;
     '/var/www/dehydrated/index.html':
       ensure  => file,
@@ -191,9 +200,9 @@ define sunet::dehydrated::apache_server(
 ) {
   ensure_resource('service','apache2',{})
   exec { 'enable-dehydrated-conf':
-    refreshonly  => true,
-    command      => 'a2enconf dehydrated',
-    notify       => Service['apache2']
+    refreshonly => true,
+    command     => 'a2enconf dehydrated',
+    notify      => Service['apache2']
   }
   file {
     '/var/www/dehydrated':
@@ -257,7 +266,7 @@ define sunet::dehydrated::client_define(
     'root'  => '/root',
     default => "/home/${user}"
   }
-  ensure_resource('file', "$home/.ssh", { ensure => 'directory' })
+  ensure_resource('file', "${home}/.ssh", { ensure => 'directory' })
   ensure_resource('file', '/etc/dehydrated', { ensure => directory })
   ensure_resource('file', '/etc/dehydrated/certs', { ensure => directory })
   ensure_resource('file', '/usr/bin/le-ssl-compat.sh', {
@@ -274,7 +283,7 @@ define sunet::dehydrated::client_define(
     default => $ssh_id,
   }
   if $manage_ssh_key {
-    ensure_resource('sunet::snippets::secret_file', "$home/.ssh/id_${_ssh_id}", {
+    ensure_resource('sunet::snippets::secret_file', "${home}/.ssh/id_${_ssh_id}", {
       hiera_key => "${_ssh_id}_ssh_key",
       })
   }
@@ -295,9 +304,9 @@ define sunet::dehydrated::client_define(
     })
   }
   if ($ssl_links) {
-     file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }
-     file { "/etc/ssl/certs/${domain}.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}.crt" }
-     file { "/etc/ssl/certs/${domain}-chain.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}-chain.crt" }
+    file { "/etc/ssl/private/${domain}.key": ensure => link, target => "/etc/dehydrated/certs/${domain}.key" }
+    file { "/etc/ssl/certs/${domain}.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}.crt" }
+    file { "/etc/ssl/certs/${domain}-chain.crt": ensure => link, target => "/etc/dehydrated/certs/${domain}-chain.crt" }
   }
   # old name check_cert, should be removed on all systems by now
   #ensure_resource ('sunet::scriptherder::cronjob', 'check_cert', {ensure => 'absent', cmd => "/usr/bin/check_cert.sh ${domain}",
@@ -308,20 +317,20 @@ define sunet::dehydrated::client_define(
   #     warn_criteria => ['exit_status=1'],
   #   })
   if ($check_cert) {
-     ensure_resource('file', '/usr/bin/check_cert.sh', {
-       ensure  => 'file',
-       owner   => 'root',
-       group   => 'root',
-       mode    => '0755',
-       content => template('sunet/dehydrated/check_cert.erb'),
-       })
-     sunet::scriptherder::cronjob { "check_cert_${domain}":
-       cmd           => "/usr/bin/check_cert.sh ${domain} ${check_cert_port}",
-       minute        => '18',
-       hour          => '*',
-       weekday       => '*',
-       ok_criteria   => ['exit_status=0','max_age=2h'],
-       warn_criteria => ['exit_status=1','max_age=1d'],
-     }
+    ensure_resource('file', '/usr/bin/check_cert.sh', {
+      ensure  => 'file',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0755',
+      content => template('sunet/dehydrated/check_cert.erb'),
+      })
+    sunet::scriptherder::cronjob { "check_cert_${domain}":
+      cmd           => "/usr/bin/check_cert.sh ${domain} ${check_cert_port}",
+      minute        => '18',
+      hour          => '*',
+      weekday       => '*',
+      ok_criteria   => ['exit_status=0','max_age=2h'],
+      warn_criteria => ['exit_status=1','max_age=1d'],
+    }
   }
 }
