@@ -1,18 +1,18 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  $docker_version,
-  $docker_package_name       = 'docker-engine',  # facilitate transition to new docker-ce package
+  String $docker_version,
+  String $docker_package_name                 = 'docker-engine',  # facilitate transition to new docker-ce package
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
-  $storage_driver            = undef,
-  $docker_extra_parameters   = undef,
-  $run_docker_cleanup        = true,
-  Variant[String, Boolean] $docker_network = hiera('dockerhost_docker_network', '172.18.0.0/22'),
-  $docker_dns                = $::ipaddress_default,
-  $ufw_allow_docker_dns      = true,
-  $manage_dockerhost_unbound = false,
-  $compose_image             = 'docker.sunet.se/library/docker-compose',
-  $compose_version           = '1.24.0',
-  Boolean $write_daemon_json = false,
+  $storage_driver                             = undef,
+  $docker_extra_parameters                    = undef,
+  Boolean $run_docker_cleanup                 = true,
+  Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
+  $docker_dns                                 = $::ipaddress_default,
+  Boolean $ufw_allow_docker_dns               = true,
+  Boolean $manage_dockerhost_unbound          = false,
+  String $compose_image                       = 'docker.sunet.se/library/docker-compose',
+  String $compose_version                     = '1.24.0',
+  Boolean $write_daemon_json                  = false,
 ) {
 
   # Remove old versions, if installed
