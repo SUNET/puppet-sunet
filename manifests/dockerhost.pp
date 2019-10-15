@@ -12,7 +12,7 @@ class sunet::dockerhost(
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
   String $compose_version                     = '1.24.0',
-  Boolean $write_daemon_json                  = false,
+  Boolean $write_daemon_config                = false,
 ) {
 
   # Remove old versions, if installed
@@ -231,6 +231,21 @@ class sunet::dockerhost(
         content => template('sunet/dockerhost/unbound.conf.erb'),
         require => Package['unbound'],
         notify  => Service['unbound'],
+        ;
+    }
+  }
+
+  if $write_daemon_config {
+    if $docker_network =~ String[1] {
+      $default_address_pools = $docker_network
+    } else {
+      $default_address_pools = '172.16.0.0/12'
+    }
+    file {
+      '/etc/docker/daemon.json':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/dockerhost/daemon.json.erb'),
         ;
     }
   }
