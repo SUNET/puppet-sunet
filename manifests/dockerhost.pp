@@ -1,7 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
   String $docker_version,
-  String $docker_package_name                 = 'docker-ce',  # facilitate transition to new docker-ce package
+  String $docker_package_name                 = 'docker-engine',  # facilitate transition to new docker-ce package
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
@@ -54,11 +54,6 @@ class sunet::dockerhost(
     $architecture = 'amd64'
   } else {
     $architecture = undef
-  }
-
-  # old source
-  apt::source {'docker_official':
-    ensure   => 'absent',
   }
 
   # new source
