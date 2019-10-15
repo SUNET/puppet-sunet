@@ -12,15 +12,16 @@ class sunet::dockerhost(
   $manage_dockerhost_unbound = false,
   $compose_image             = 'docker.sunet.se/library/docker-compose',
   $compose_version           = '1.24.0',
+  Boolean $write_daemon_json = false,
 ) {
 
   # Remove old versions, if installed
   package { ['lxc-docker-1.6.2', 'lxc-docker'] :
-     ensure => 'purged',
-  } ->
+    ensure => 'purged',
+  }
 
   file {'/etc/apt/sources.list.d/docker.list':
-     ensure => 'absent',
+    ensure => 'absent',
   }
 
   if $docker_package_name != 'docker-engine' {
@@ -36,17 +37,17 @@ class sunet::dockerhost(
   # Add the dockerproject repository, then force an apt-get update before
   # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
   #
-  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'} ->
+  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'}
   file {
     '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
       ensure  => file,
       mode    => '0644',
       content => template('sunet/dockerhost/docker_ce-8D81803C0EBFCD88.pub.erb'),
       ;
-    } ->
+    }
   apt::key { 'docker_ce':
-    id      => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
-    source  => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
+    id     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
+    source => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
   }
 
   if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
@@ -76,22 +77,22 @@ class sunet::dockerhost(
   }
 
   exec { 'dockerhost_apt_get_update':
-     command     => '/usr/bin/apt-get update',
-     cwd         => '/tmp',
-     require     => [Apt::Key['docker_ce']],
-     subscribe   => [Apt::Key['docker_ce']],
-     refreshonly => true,
+    command     => '/usr/bin/apt-get update',
+    cwd         => '/tmp',
+    require     => [Apt::Key['docker_ce']],
+    subscribe   => [Apt::Key['docker_ce']],
+    refreshonly => true,
   }
 
   package { $docker_package_name :
-     ensure => $docker_version,
-     require => Exec['dockerhost_apt_get_update'],
+    ensure  => $docker_version,
+    require => Exec['dockerhost_apt_get_update'],
   }
 
   package { [
              'python3-yaml',  # check_docker_containers requirement
              ] :
-     ensure => 'installed',
+    ensure => 'installed',
   }
 
   $docker_command = $docker_package_name ? {
@@ -120,7 +121,7 @@ class sunet::dockerhost(
     docker_command              => $docker_command,
     daemon_subcommand           => $daemon_subcommand,
     require                     => Package[$docker_package_name],
-  } ->
+  }
 
   if $docker_network =~ String {
     # Create a useful default network bridge for containers.
@@ -142,9 +143,9 @@ class sunet::dockerhost(
   }
 
   file {
-     '/etc/logrotate.d':
-      ensure  => 'directory',
-      mode    => '0755',
+    '/etc/logrotate.d':
+      ensure => 'directory',
+      mode   => '0755',
       ;
     '/etc/logrotate.d/docker-containers':
       ensure  => file,
@@ -153,17 +154,17 @@ class sunet::dockerhost(
       content => template('sunet/dockerhost/logrotate_docker-containers.erb'),
       ;
     '/usr/local/bin/docker-compose':
-      mode    => '755',
+      mode    => '0755',
       content => template('sunet/dockerhost/docker-compose.erb'),
       ;
     '/usr/bin/docker-compose':
       # workaround: docker_compose won't find the binary in /usr/local/bin :(
-      ensure  => 'link',
-      target  => '/usr/local/bin/docker-compose',
+      ensure => 'link',
+      target => '/usr/local/bin/docker-compose',
       ;
     }
 
-  if $::sunet_has_nrpe_d == "yes" {
+  if $::sunet_has_nrpe_d == 'yes' {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
     if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
       $check_docker_containers_args = '--systemd'
@@ -215,7 +216,7 @@ class sunet::dockerhost(
           proto => ['tcp', 'udp'],
       }
     } else {
-      notice("Can't set up firewall rules to allow v4-docker DNS to a v6 nameserver ($docker_dns)")
+      notice("Can't set up firewall rules to allow v4-docker DNS to a v6 nameserver (${docker_dns})")
     }
   }
 
@@ -233,5 +234,4 @@ class sunet::dockerhost(
         ;
     }
   }
-
 }
