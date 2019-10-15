@@ -11,7 +11,7 @@ class sunet::dockerhost(
   $ufw_allow_docker_dns      = true,
   $manage_dockerhost_unbound = false,
   $compose_image             = 'docker.sunet.se/library/docker-compose',
-  $compose_version           = '1.15.0',
+  $compose_version           = '1.24.0',
 ) {
 
   # Remove old versions, if installed
