@@ -28,14 +28,14 @@ define sunet::scriptherder::cronjob(
 
   file { "/etc/scriptherder/check/${safe_name}.ini" :
     ensure  => $_file_ensure,
-    mode    => '644', # to allow NRPE to read it
+    mode    => '0644', # to allow NRPE to read it
     group   => 'root',
     content => template('sunet/scriptherder/scriptherder_check.ini.erb'),
-  } ->
+  }
 
   cron { $safe_name:
-    command  => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${safe_name} -- ${cmd}",
     ensure   => $ensure,
+    command  => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${safe_name} -- ${cmd}",
     user     => $user,
     hour     => $hour,
     minute   => $minute,
