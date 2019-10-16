@@ -1,23 +1,24 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
   $docker_version,
-  $docker_package_name       = 'docker-engine',  # facilitate transition to new docker-ce package
+  $docker_package_name                        = 'docker-engine',  # facilitate transition to new docker-ce package
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
-  $storage_driver            = undef,
-  $docker_extra_parameters   = undef,
-  $run_docker_cleanup        = true,
-  Variant[String, Boolean] $docker_network = hiera('dockerhost_docker_network', '172.18.0.0/22'),
-  $docker_dns                = $::ipaddress_default,
-  $ufw_allow_docker_dns      = true,
-  $manage_dockerhost_unbound = false,
-  $compose_image             = 'docker.sunet.se/library/docker-compose',
-  $compose_version           = '1.15.0',
+  $storage_driver                             = undef,
+  $docker_extra_parameters                    = undef,
+  $run_docker_cleanup                         = true,
+  Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
+  $docker_dns                                 = $::ipaddress_default,
+  $ufw_allow_docker_dns                       = true,
+  $manage_dockerhost_unbound                  = false,
+  $compose_image                              = 'docker.sunet.se/library/docker-compose',
+  $compose_version                            = '1.15.0',
+  Optional[Array[String]] $tcp_bind           = undef,
 ) {
 
   # Remove old versions, if installed
   package { ['lxc-docker-1.6.2', 'lxc-docker'] :
      ensure => 'purged',
-  } ->
+  }
 
   file {'/etc/apt/sources.list.d/docker.list':
      ensure => 'absent',
@@ -36,14 +37,14 @@ class sunet::dockerhost(
   # Add the dockerproject repository, then force an apt-get update before
   # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
   #
-  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'} ->
+  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'}
   file {
     '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
       ensure  => file,
       mode    => '0644',
       content => template('sunet/dockerhost/docker_ce-8D81803C0EBFCD88.pub.erb'),
       ;
-    } ->
+    }
   apt::key { 'docker_ce':
     id      => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
     source  => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
@@ -110,6 +111,20 @@ class sunet::dockerhost(
     default => $docker_dns,
   }
 
+  if $tcp_bind and has_key($::tls_certificates, $::fqdn) and has_key($::tls_certificates[$::fqdn], 'infra_cert') {
+    $_tcp_bind = $tcp_bind
+    $tls_enable = true
+    $tls_cacert = '/etc/ssl/certs/infra.crt'
+    $tls_cert   = $::tls_certificates[$::fqdn]['infra_cert']
+    $tls_key    = $::tls_certificates[$::fqdn]['infra_key']
+  } else {
+    $_tcp_bind = undef
+    $tls_enable = undef
+    $tls_cacert = undef
+    $tls_cert = undef
+    $tls_key = undef
+  }
+
   class {'docker':
     storage_driver              => $storage_driver,
     manage_package              => false,
@@ -119,8 +134,13 @@ class sunet::dockerhost(
     extra_parameters            => $docker_extra_parameters,
     docker_command              => $docker_command,
     daemon_subcommand           => $daemon_subcommand,
+    tcp_bind                    => $_tcp_bind,
+    tls_enable                  => $tls_enable,
+    tls_cacert                  => $tls_cacert,
+    tls_cert                    => $tls_cert,
+    tls_key                     => $tls_key,
     require                     => Package[$docker_package_name],
-  } ->
+  }
 
   if $docker_network =~ String {
     # Create a useful default network bridge for containers.
