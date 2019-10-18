@@ -89,6 +89,14 @@ class sunet::dockerhost(
      require => Exec['dockerhost_apt_get_update'],
   }
 
+  if $docker_package_name == 'docker-ce' {
+    # also need to hold the docker-ce-cli package at the same version
+    package { 'docker-ce-cli' :
+      ensure  => $docker_version,
+      require => Exec['dockerhost_apt_get_update'],
+    }
+  }
+
   package { [
              'python3-yaml',  # check_docker_containers requirement
              ] :
