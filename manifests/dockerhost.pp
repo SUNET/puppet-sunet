@@ -96,7 +96,7 @@ class sunet::dockerhost(
       require => Exec['dockerhost_apt_get_update'],
     }
 
-    if versioncmp($docker_version, "5:18.09.0~3-0~ubuntu-${::lsbdistcodename}") >= 0 {
+    if $docker_version !~ /^1[78]/ and $docker_version !~ /5:18.0[12345678]/ {
       notice("Docker version ${docker_version} has a docker-ce-cli package, pinning it")
       apt::pin { 'docker-ce-cli':
         packages => 'docker-ce-cli',
