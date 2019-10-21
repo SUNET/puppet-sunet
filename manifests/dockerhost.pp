@@ -97,6 +97,21 @@ class sunet::dockerhost(
     }
   }
 
+  if $docker_package_name == 'docker-ce' {
+    # also need to hold the docker-ce-cli package at the same version
+    if $docker_version =~ /^\d.*/ and $docker_version !~ /^1[78]/ and $docker_version !~ /5:18.0[12345678]/ {
+      notice("Docker version ${docker_version} has a docker-ce-cli package, pinning it")
+      apt::pin { 'docker-ce-cli':
+        packages => 'docker-ce-cli',
+        version  => $docker_version,
+        priority => 920,  # upgrade, but do not downgrade
+        notify   => Exec['dockerhost_apt_get_update'],
+      }
+    } else {
+      notice("Docker version ${docker_version} does not have a docker-ce-cli package")
+    }
+  }
+
   package { [
              'python3-yaml',  # check_docker_containers requirement
              ] :
@@ -119,6 +134,20 @@ class sunet::dockerhost(
     default => $docker_dns,
   }
 
+  if $tcp_bind and has_key($::tls_certificates, $::fqdn) and has_key($::tls_certificates[$::fqdn], 'infra_cert') {
+    $_tcp_bind = $tcp_bind
+    $tls_enable = true
+    $tls_cacert = '/etc/ssl/certs/infra.crt'
+    $tls_cert   = $::tls_certificates[$::fqdn]['infra_cert']
+    $tls_key    = $::tls_certificates[$::fqdn]['infra_key']
+  } else {
+    $_tcp_bind = undef
+    $tls_enable = undef
+    $tls_cacert = undef
+    $tls_cert = undef
+    $tls_key = undef
+  }
+
   class {'docker':
     storage_driver              => $storage_driver,
     manage_package              => false,
@@ -128,6 +157,11 @@ class sunet::dockerhost(
     extra_parameters            => $docker_extra_parameters,
     docker_command              => $docker_command,
     daemon_subcommand           => $daemon_subcommand,
+    tcp_bind                    => $_tcp_bind,
+    tls_enable                  => $tls_enable,
+    tls_cacert                  => $tls_cacert,
+    tls_cert                    => $tls_cert,
+    tls_key                     => $tls_key,
     require                     => Package[$docker_package_name],
   }
 

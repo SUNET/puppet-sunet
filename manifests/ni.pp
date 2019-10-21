@@ -250,14 +250,6 @@ class sunet::ni{
         require => User['ni'],
       }
     }
-    file { '/usr/local/bin/ni-pull.sh':
-      ensure  => file,
-      content => template("sunet/ni/ni-pull.sh.erb"),
-      owner   => 'ni',
-      group   => 'ni',
-      mode    => '0744',
-      require => User['ni'],
-    }
     -> sunet::scriptherder::cronjob { 'run_backup_script':
         cmd           => '/var/opt/norduni/scripts/backup.sh',
         user          => 'ni',
@@ -302,6 +294,14 @@ class sunet::ni{
       group   => 'ni',
       content => template('sunet/ni/sunet.conf.erb'),
       require => User['ni'],
+    }
+    -> file { '/usr/local/bin/ni-pull.sh':
+        ensure  => file,
+        content => template("sunet/ni/ni-pull.sh.erb"),
+        owner   => 'ni',
+        group   => 'ni',
+        mode    => '0744',
+        require => User['ni'],
     }
     -> file {"${script_path}/consume.sh/":
         ensure  => file,
