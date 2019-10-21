@@ -95,13 +95,18 @@ class sunet::dockerhost(
       ensure  => $docker_version,
       require => Exec['dockerhost_apt_get_update'],
     }
-    apt::pin { 'docker-ce-cli':
-      packages => 'docker-ce-cli',
-      version  => $docker_version,
-      priority => 920,  # upgrade, but do not downgrade
-      notify   => Exec['dockerhost_apt_get_update'],
-    }
 
+    if versioncmp($docker_version, "5:18.09.0~3-0~ubuntu-${::lsbdistcodename}") >= 0 {
+      notice("Docker version ${docker_version} has a docker-ce-cli package, pinning it")
+      apt::pin { 'docker-ce-cli':
+        packages => 'docker-ce-cli',
+        version  => $docker_version,
+        priority => 920,  # upgrade, but do not downgrade
+        notify   => Exec['dockerhost_apt_get_update'],
+      }
+    } else {
+      notice("Docker version ${docker_version} does not have a docker-ce-cli package")
+    }
   }
 
   package { [
