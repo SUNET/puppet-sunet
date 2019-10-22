@@ -77,7 +77,8 @@ else
 	if [[ $HAPROXYMASTERSOCK ]]; then
 	    sock_args=(-S "${HAPROXYMASTERSOCK}")
 	fi
-	/usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" -W "${sock_args[@]}" &
+	# -db is essential for haproxy to not pipe stdout,stderr to /dev/null
+	/usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" -W "${sock_args[@]}" -db &
 	main_pid=$!
     else
 	# haproxy 1.8 or 1.9
@@ -88,7 +89,7 @@ fi
 wait_pid=0
 
 term_handler() {
-    echo "$0: Received SIGTERM, shutting down PIDs $(xargs echo < /run/haproxy.pid) (haproxy) + ${wait_pid} (wait)"
+    echo "$0: Received SIGTERM, shutting down PIDs $(xargs echo < /run/haproxy.pid) (main: ${main_pid}) (haproxy) + ${wait_pid} (wait)"
     if [ $main_pid -ne 0 ]; then
 	kill -SIGTERM "$main_pid"
 	wait "$main_pid"
