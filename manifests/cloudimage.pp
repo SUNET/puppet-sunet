@@ -50,16 +50,15 @@ define sunet::cloudimage (
     $numad_package = []
   }
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '19.10') >= 0 {
-    # No libvirt-bin in Ubuntu 19.10
-    $libvirtbin_package = []
+    $libvirt_package = 'libvirt-clients'
   } else {
-    $libvirtbin_package = 'libvirt-bin'
+    $libvirt_package = 'libvirt-bin'
   }
   ensure_resource('package', flatten(['cpu-checker',
                                       'mtools',
                                       'dosfstools',
                                       $kvm_package,
-                                      $libvirtbin_package,
+                                      $libvirt_package,
                                       'virtinst',
                                       'ovmf',  # for UEFI booting virtual machines
                                       $numad_package,
