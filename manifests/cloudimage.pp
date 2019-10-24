@@ -50,7 +50,7 @@ define sunet::cloudimage (
     $numad_package = []
   }
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '19.10') >= 0 {
-    $libvirt_package = 'libvirt-clients'
+    $libvirt_package = 'libvirt-daemon-system'
   } else {
     $libvirt_package = 'libvirt-bin'
   }
