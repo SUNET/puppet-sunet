@@ -36,4 +36,6 @@ if [ -f $key -a -f $cert -a ! -f $full ]; then
    wget -qO$tmp "${url}/ca.crt"
    cat $key $cert $tmp > $full
    rm -f $tmp
+   chown root:ssl-cert $full
+   chmod 640 $full
 fi
