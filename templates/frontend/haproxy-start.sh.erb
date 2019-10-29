@@ -55,6 +55,8 @@ if [[ $WAIT_FOR_CONTAINER ]]; then
     fi
 fi
 
+# Show haproxy version
+/usr/sbin/haproxy -v
 
 echo "$0: Checking config: ${HAPROXYCFG}"
 
