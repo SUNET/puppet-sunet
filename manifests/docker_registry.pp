@@ -34,11 +34,7 @@ class sunet::docker_registry (
     }
 
     file { "${apache_conf_basedir}/sites-available/registry-auth-ssl.conf":
-        ensure  => file,
-        mode    => '0640',
-        group   => 'www-data',
-        require => Sunet::System_user['www-data'],
-        content => template('sunet/docker_registry/registry-auth-ssl.erb')
+        ensure  => absent,
     }
 
     file { "/etc/ssl/certs/${registry_public_hostname}-client-ca.crt":
