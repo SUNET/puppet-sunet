@@ -38,11 +38,7 @@ class sunet::docker_registry (
     }
 
     file { "/etc/ssl/certs/${registry_public_hostname}-client-ca.crt":
-        ensure  => file,
-        mode    => '0444',
-        group   => 'www-data',
-        require => Sunet::System_user['www-data'],
-        content => template('sunet/docker_registry/ca.crt.erb')
+        ensure  => absent,
     }
 
     sunet::docker_compose {'docker-registry':
