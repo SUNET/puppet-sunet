@@ -21,7 +21,7 @@ services:
             - <%= @apache_conf_basedir %>/sites-available/registry-auth-ssl.conf:/etc/apache2/sites-available/registry-auth-ssl.conf:ro
             - /etc/dehydrated/certs/<%= @fqdn %>.key:/etc/ssl/private/<%= @fqdn %>.key:ro
             - /etc/dehydrated/certs/<%= @fqdn %>.crt:/etc/ssl/certs/<%= @fqdn %>.crt:ro
-            - /etc/dehydrated/certs/<%= @fqdn %>-chain.crt:/etc/ssl/certs/<%= @fqdn %>-chain.crt
+            - /etc/dehydrated/certs/<%= @fqdn %>-chain.crt:/etc/ssl/certs/<%= @fqdn %>-chain.crt:ro
             - /etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt:/etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt:ro
 
     always-https:
