@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2016, 2018 SUNET
+# Copyright (c) 2016, 2018, 2019 SUNET
 # All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or
@@ -13,7 +13,7 @@
 #        copyright notice, this list of conditions and the following
 #        disclaimer in the documentation and/or other materials provided
 #        with the distribution.
-#     3. Neither the name of the NORDUnet nor the names of its
+#     3. Neither the name of the SUNET nor the names of its
 #        contributors may be used to endorse or promote products derived
 #        from this software without specific prior written permission.
 #
@@ -96,6 +96,12 @@ def parse_args():
                         default=default_runtime_warn,
                         help='Number of seconds a container should have been running to be considered non-critical',
                         )
+    parser.add_argument('--service',
+                        dest='service',
+                        type=str,
+                        default=None,
+                        help='Name of specific service to check',
+                        )
 
     return parser.parse_args()
 
@@ -107,7 +113,27 @@ def collect_init_d(args, logger):
     :returns: Docker container names
     :rtype: [str | unicode]
     """
-    return _collect_files('/etc/init.d', '^docker-(.+)$', logger)
+    if args.service:
+        regex = '^({})$'.format(args.service)
+    else:
+        regex = '^docker-(.+)$'
+
+    path = '/etc/init.d'
+
+    logger.debug('Looking for files in {!r} matching {!r}'.format(path, regex))
+    res = []
+    files = [this for this in os.listdir(path) if os.path.isfile(os.path.join(path, this))]
+    for this in files:
+        match = re.match(regex, this)
+        if match:
+            logger.debug('File {!s} matched regexp {!r}'.format(this, regex))
+            name = match.group(1)
+            if name.startswith('docker-'):
+                # strip the docker- prefix that will be part of the regexp if a service name was given as argument
+                name = name[8:]
+            res.append(name)
+    return res
+
 
 def collect_systemd(args, logger):
     """
@@ -116,45 +142,50 @@ def collect_systemd(args, logger):
     :returns: Docker container names
     :rtype: [str | unicode]
     """
-    return _collect_files('/etc/systemd/system', '^docker-(.+)\.service$', logger)
-
-def _collect_files(path, regex, logger):
-    logger.debug('Looking for files in {!r} matching {!r}'.format(path, regex))
     res = []
+    path = '/etc/systemd/system'
+    logger.debug('Looking for files in {!r}'.format(path))
     files = [this for this in os.listdir(path) if os.path.isfile(os.path.join(path, this))]
     for this in files:
-        match = re.match(regex, this)
-        if match:
-            logger.debug('File {!s} matched regexp {!s}'.format(this, regex))
-            res.append(match.group(1))
+        if not this.endswith('.service'):
+            continue
+        if args.service and this != '{}.service'.format(args.service):
+            continue
+
+        compose = collect_compose_services(os.path.join(path, this), logger)
+
+        if compose:
+            res += compose
+        else:
+            if this.startswith('docker-'):
+                this = this[8:]
+                res.append(this)
     return res
 
-def collect_compose_services(args, logger):
+def collect_compose_services(fn, logger):
     """
     Look for systemd services that start containers using Docker compose.
     The services should be created using sunet::docker_compose_service in order to have
     COMPOSE_FILE and SERVICE_NAME metadata in the top comment.
 
+    :type fn: str
+    :type logger: logging.Logger
+
     :returns: Docker container names
     :rtype: [str | unicode]
     """
     res = []
-    path = '/etc/systemd/system'
-    files = [os.path.join(path, this) for this in os.listdir(path) if this.endswith('.service') and os.path.isfile(os.path.join(path, this))]
-    if not files:
-        return []
-    re_compose_file = re.compile('^#\s*COMPOSE_FILE=(.+?)\s*$')
-    for this in files:
-        compose_file = _get_compose_metadata(this, re_compose_file, logger)
-        if compose_file:
-            # docker-compose uses directory of file as service-name
-            # e.g. for file /path/to/something/docker-compose.yml the service-name is 'something'
-            service_name = os.path.basename(os.path.dirname(compose_file))
-            res += _collect_compose_service(compose_file, service_name, logger)
+    re_compose_file = re.compile(r'^#\s*COMPOSE_FILE=(.+?)\s*$')
+    compose_file = _get_compose_metadata(fn, re_compose_file, logger)
+    if compose_file:
+        # docker-compose uses directory of file as service-name
+        # e.g. for file /path/to/something/docker-compose.yml the service-name is 'something'
+        service_name = os.path.basename(os.path.dirname(compose_file))
+        res += _collect_compose_service(compose_file, service_name, logger)
     return res
 
 def _get_compose_metadata(filename, re_compose_file, logger):
-    logger.debug('Inspecting systemd service file {!s}'.format(filename))
+    logger.debug('Trying to find compose-file reference in file {!s}'.format(filename))
     with open(filename) as fd:
         for line in fd.readlines():
             if not line.startswith('#'):
@@ -178,6 +209,8 @@ def _collect_compose_service(compose_file, service_name, logger):
             return []
         for service in data.get('services', []):
             res.append('{!s}_{!s}_1'.format(service_name, service))
+    if res:
+        logger.debug('Compose containers: {}'.format(res))
     return res
 
 def docker_inspect(container, logger):
@@ -309,7 +342,6 @@ def main(args, logger):
 
     if args.systemd:
         expect += collect_systemd(args, logger)
-        expect += collect_compose_services(args, logger)
 
     logger.debug('Expecting the following Docker containers to be running: {!r}'.format(expect))
 
