@@ -235,7 +235,10 @@ class sunet::dockerhost(
     sunet::scriptherder::cronjob { 'dockerhost_cleanup':
       cmd           => join([
         'docker run -v /var/run/docker.sock:/var/run/docker.sock docker.sunet.se/sunet/docker-custodian dcgc ',
-        '--exclude-image \'*:latest\' --exclude-image \'*:stable\' --dry-run --max-image-age 24h',
+        '--exclude-image \'*:latest\' ',
+        '--exclude-image \'*:staging\' ',
+        '--exclude-image \'*:stable\' ',
+        '--max-image-age 24h',
       ], ' '),
       special       => 'daily',
       ok_criteria   => ['exit_status=0', 'max_age=25h'],
