@@ -7,26 +7,6 @@ class sunet::docker_registry (
     String $registry_cleanup_basedir = '/usr/local/bin/clean-registry',
     String $registry_tag             = '2',
 ) {
-    ensure_resource('sunet::system_user', 'www-data', {
-        username => 'www-data',
-        group    => 'www-data',
-    })
-
-    exec { 'registry_images_basedir_mkdir':
-        command => "/bin/mkdir -p ${registry_images_basedir}",
-        unless  => "/usr/bin/test -d ${registry_images_basedir}",
-    } ->
-
-    exec { 'registry_conf_basedir':
-        command => "/bin/mkdir -p ${registry_conf_basedir}",
-        unless  => "/usr/bin/test -d ${registry_conf_basedir}",
-    } ->
-
-    exec { 'apache_conf_basedir':
-        command => "/bin/mkdir -p ${apache_conf_basedir}/sites-available",
-        unless  => "/usr/bin/test -d ${apache_conf_basedir}/sites-available",
-    } ->
-
     file { "${registry_conf_basedir}/config.yml":
         ensure  => file,
         mode    => '0640',
@@ -34,19 +14,11 @@ class sunet::docker_registry (
     }
 
     file { "${apache_conf_basedir}/sites-available/registry-auth-ssl.conf":
-        ensure  => file,
-        mode    => '0640',
-        group   => 'www-data',
-        require => Sunet::System_user['www-data'],
-        content => template('sunet/docker_registry/registry-auth-ssl.erb')
+        ensure  => absent,
     }
 
     file { "/etc/ssl/certs/${registry_public_hostname}-client-ca.crt":
-        ensure  => file,
-        mode    => '0444',
-        group   => 'www-data',
-        require => Sunet::System_user['www-data'],
-        content => template('sunet/docker_registry/ca.crt.erb')
+        ensure  => absent,
     }
 
     sunet::docker_compose {'docker-registry':

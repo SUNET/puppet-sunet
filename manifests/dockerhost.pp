@@ -105,8 +105,8 @@ class sunet::dockerhost(
   }
 
   package { [
-             'python3-yaml',  # check_docker_containers requirement
-             ] :
+    'python3-yaml',  # check_docker_containers requirement
+  ] :
     ensure => 'installed',
   }
 
@@ -233,7 +233,7 @@ class sunet::dockerhost(
   if $run_docker_cleanup {
     # Cron job to remove old unused docker images
     sunet::scriptherder::cronjob { 'dockerhost_cleanup':
-      cmd           => '/usr/bin/docker system prune -af',
+      cmd           => '/bin/echo \'Running \"/usr/bin/docker system prune -af\" disabled since it removes too many tags\"',
       special       => 'daily',
       ok_criteria   => ['exit_status=0', 'max_age=25h'],
       warn_criteria => ['exit_status=0', 'max_age=49h'],
