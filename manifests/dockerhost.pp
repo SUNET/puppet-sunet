@@ -234,10 +234,11 @@ class sunet::dockerhost(
     # Cron job to remove old unused docker images
     sunet::scriptherder::cronjob { 'dockerhost_cleanup':
       cmd           => join([
-        'docker run -v /var/run/docker.sock:/var/run/docker.sock docker.sunet.se/sunet/docker-custodian dcgc ',
-        '--exclude-image \'*:latest\' ',
-        '--exclude-image \'*:staging\' ',
-        '--exclude-image \'*:stable\' ',
+        'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock',
+        'docker.sunet.se/sunet/docker-custodian dcgc',
+        '--exclude-image \'*:latest\'',
+        '--exclude-image \'*:staging\'',
+        '--exclude-image \'*:stable\'',
         '--max-image-age 24h',
       ], ' '),
       special       => 'daily',
