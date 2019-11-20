@@ -34,7 +34,7 @@ define sunet::scriptherder::cronjob(
   }
 
   if $special == 'daily' and hiera('scriptherder_daily_hour', undef) =~ Integer {
-    $_special = undef
+    $_special = 'absent'
     $_hour    = hiera('scriptherder_daily_hour')
     $_minute  = fqdn_rand(60, $safe_name)
   } else {
