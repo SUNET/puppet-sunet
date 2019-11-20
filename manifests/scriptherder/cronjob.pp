@@ -33,7 +33,7 @@ define sunet::scriptherder::cronjob(
     content => template('sunet/scriptherder/scriptherder_check.ini.erb'),
   }
 
-  if $special == '@daily' and hiera('scriptherder_daily_hour') =~ Integer {
+  if $special == 'daily' and hiera('scriptherder_daily_hour') =~ Integer {
     $_special = undef
     $_hour    = hiera('scriptherder_daily_hour')
     $_minute  = fqdn_rand(60, $safe_name)
