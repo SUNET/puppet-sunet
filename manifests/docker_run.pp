@@ -21,10 +21,18 @@ define sunet::docker_run(
   String $ensure             = 'present',
   $extra_parameters          = [],  # should be array of strings, but need to fix usage first
   Hash[String, String] $extra_systemd_parameters = {},
+  Boolean $uid_gid_consistency = true,
 ) {
   if $use_unbound {
     warning('docker-unbound is deprecated, container name resolution should continue to work using docker network with DNS')
   }
+
+  if $uid_gid_consistency {
+    $_uid_gid = [
+      '/etc/passwd:/etc/passwd:ro',  # uid consistency
+      '/etc/group:/etc/group:ro',    # gid consistency
+    ]
+  } else { $_uid_gid = [] }
 
   # Use start_on for docker::run $depends, unless the new argument 'depends' is given
   $_depends = $depends ? {
@@ -47,11 +55,7 @@ define sunet::docker_run(
 
   docker::run { $name :
     ensure                   => $ensure,
-    image                    => $image_tag,
-    volumes                  => flatten([$volumes,
-      '/etc/passwd:/etc/passwd:ro',  # uid consistency
-      '/etc/group:/etc/group:ro',    # gid consistency
-    ]),
+    volumes                  => flatten([$_uid_gid, $volumes]),
     hostname                 => $hostname,
     ports                    => $ports,
     expose                   => $expose,
@@ -66,6 +70,7 @@ define sunet::docker_run(
     after_start              => $after_start,
     after_stop               => $after_stop,
     docker_service           => true,  # the service 'docker' is maintainer by puppet, so depend on it
+    image                    => $image_tag,
     extra_parameters         => flatten([$extra_parameters]),
     extra_systemd_parameters => $extra_systemd_parameters,
   }
