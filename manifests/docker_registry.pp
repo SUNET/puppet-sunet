@@ -51,6 +51,7 @@ class sunet::docker_registry (
         cmd           => "${registry_cleanup_basedir}/clean_registry_cron",
         weekday       => 'Saturday',
         hour          => '9',
+        minute        => '3',
         ok_criteria   => ['exit_status=0'],
         warn_criteria => ['max_age=9d']
     }
