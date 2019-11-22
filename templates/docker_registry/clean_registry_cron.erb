@@ -12,10 +12,11 @@ fi
 echo "Disabling Cosmos while running the script"
 touch /etc/no-automatic-cosmos
 
-# Stop the Apache container so that no new requests
-# are made during the cleanup.
-echo "Stopping the container registry-auth ..."
-docker stop registry-auth
+# Place the registry auth container in read-only mode,
+# so no new write requests gets thrue to the registry container
+# during the cleanup.
+echo "Set read-only on the container registry-auth ..."
+docker exec registry-auth bash -c 'touch /read-only ; apache2ctl -k graceful'
 exit_status="${?}"
 
 if [ "${exit_status}" = "0" ]; then
@@ -23,7 +24,7 @@ if [ "${exit_status}" = "0" ]; then
     /usr/local/bin/clean-registry/clean_registry.py /usr/local/bin/clean-registry/config_file.yaml
     exit_status="${?}"
 else
-    echo "Not proceeding with cleanup, since docker stop registry-auth did not exit correctly"
+    echo "Not proceeding with cleanup, since docker exec registry-auth did not exit correctly"
 fi
 
 if [ "${exit_status}" = "0" ]; then
@@ -39,11 +40,9 @@ else
     echo "Not running garbage collection since the cleanup did not exit correctly"
 fi
 
-# Start all the containers again.
-echo "Restarting the service sunet-docker-registry ..."
-systemctl restart sunet-docker-registry
+echo "Set rw mode on the container registry-auth ..."
+docker exec registry-auth bash -c 'rm -f /read-only ; apache2ctl -k graceful'
 
-# Enable cosmos again
 echo "Enabling Cosmos again by removing /etc/no-automatic-cosmos"
 rm /etc/no-automatic-cosmos
 
