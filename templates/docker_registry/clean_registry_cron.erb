@@ -40,6 +40,9 @@ else
     echo "Not running garbage collection since the cleanup did not exit correctly"
 fi
 
+echo "Restart registry to have it drop its blobdescriptorcache"
+docker restart registry
+
 echo "Set rw mode on the container registry-auth ..."
 docker exec registry-auth bash -c 'rm -f /read-only ; apache2ctl -k graceful'
 
