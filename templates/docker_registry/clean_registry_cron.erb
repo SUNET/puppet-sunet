@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # If cosmos is disabled we should avoid running
-if [[ -f /etc/no-automatic-cosmos ]]; then
+if [ -f /etc/no-automatic-cosmos ]; then
     echo "Exiting since Cosmos is disabled"
     exit 1
 fi
@@ -18,7 +18,7 @@ echo "Stopping the container registry-auth ..."
 docker stop registry-auth
 exit_status="${?}"
 
-if [[ "${exit_status}" = "0" ]]; then
+if [ "${exit_status}" = "0" ]; then
     echo "Starting the cleanup ..."
     /usr/local/bin/clean-registry/clean_registry.py /usr/local/bin/clean-registry/config_file.yaml
     exit_status="${?}"
@@ -26,7 +26,7 @@ else
     echo "Not proceeding with cleanup, since docker stop registry-auth did not exit correctly"
 fi
 
-if [[ "${exit_status}" = "0" ]]; then
+if [ "${exit_status}" = "0" ]; then
     # A sleep before we start again might be good
     echo "Sleeping for 10s ..."
     sleep 10
