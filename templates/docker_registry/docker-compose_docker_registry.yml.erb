@@ -10,6 +10,8 @@ services:
             - 5000
         volumes:
             - /var/lib/registry:/var/lib/registry:rw
+        environment:
+            REGISTRY_STORAGE_DELETE_ENABLED: "true"
 
     registry-auth:
         image: docker.sunet.se/sunet/docker-registry-auth:stable
