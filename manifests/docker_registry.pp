@@ -7,10 +7,9 @@ class sunet::docker_registry (
     String $registry_cleanup_basedir = '/usr/local/bin/clean-registry',
     String $registry_tag             = '2',
 ) {
+    # remove now unused config file
     file { "${registry_conf_basedir}/config.yml":
-        ensure  => file,
-        mode    => '0640',
-        content => template('sunet/docker_registry/config.erb')
+        ensure  => absent,
     }
 
     file { "${apache_conf_basedir}/sites-available/registry-auth-ssl.conf":
