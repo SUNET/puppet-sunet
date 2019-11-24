@@ -169,6 +169,19 @@ define sunet::snippets::no_icmp_redirects($order=10) {
    }
 }
 
+define sunet::snippets::somaxconn($maxconn=512) {
+   $cfg = "/etc/sysctl.d/${title}_somaxconn.conf";
+   file { "${cfg}":
+      ensure      => file,
+      content     => "net.core.somaxconn=${maxconn}",
+      notify      => Exec["refresh-sysctl-${title}"]
+   }
+   exec {"refresh-sysctl-${title}":
+      command     => "sysctl -p ${cfg}",
+      refreshonly => true
+   }
+}
+
 define sunet::snippets::secret_file(
   $hiera_key = undef,
   $path      = undef,
