@@ -24,7 +24,7 @@ class sunet::docker_registry (
     sunet::docker_compose {'docker-registry':
         content          => template('sunet/docker_registry/docker-compose_docker_registry.yml.erb'),
         service_name     => 'docker-registry',
-        compose_dir      => "${registry_conf_basedir}",
+        compose_dir      => $registry_conf_basedir,
         compose_filename => 'docker-compose_docker_registry.yml',
         description      => 'docker-registry service',
     }
