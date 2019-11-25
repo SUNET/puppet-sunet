@@ -69,6 +69,7 @@ class sunet::docker_registry (
       # Pull this from the "back-door" via the registry, so we can always get it
       image               => 'localhost:5000/sunet/docker-registry-auth',
       imagetag            => 'stable',
+      fetch_docker_image  => false,
       uid_gid_consistency => false,
       ports               => ['443:443'],
       volumes             => [
@@ -85,6 +86,7 @@ class sunet::docker_registry (
 
     sunet::docker_run { 'always-https':
       image               => 'docker.sunet.se/always-https',
+      fetch_docker_image  => false,
       uid_gid_consistency => false,
       ports               => ['80:80'],
       env                 => ['ACME_URL=http://acme-c.sunet.se'],

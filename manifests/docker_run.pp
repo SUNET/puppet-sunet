@@ -22,6 +22,7 @@ define sunet::docker_run(
   $extra_parameters          = [],  # should be array of strings, but need to fix usage first
   Hash[String, String] $extra_systemd_parameters = {},
   Boolean $uid_gid_consistency = true,
+  Boolean $fetch_docker_image  = true,
 ) {
   if $use_unbound {
     warning('docker-unbound is deprecated, container name resolution should continue to work using docker network with DNS')
@@ -48,9 +49,11 @@ define sunet::docker_run(
   }
 
   $image_tag = "${image}:${imagetag}"
-  docker::image { "${name}_${image_tag}" :  # make it possible to use the same docker image more than once on a node
-    image   => $image_tag,
-    require => Class['sunet::dockerhost'],
+  if $fetch_docker_image {
+    docker::image { "${name}_${image_tag}" :  # make it possible to use the same docker image more than once on a node
+      image   => $image_tag,
+      require => Class['sunet::dockerhost'],
+    }
   }
 
   docker::run { $name :
