@@ -9,8 +9,9 @@ services:
         expose:
             - 5000
         volumes:
-            - /etc/docker/registry/config.yml:/etc/docker/registry/config.yml:ro
             - /var/lib/registry:/var/lib/registry:rw
+        environment:
+            REGISTRY_STORAGE_DELETE_ENABLED: "true"
 
     registry-auth:
         image: docker.sunet.se/sunet/docker-registry-auth:stable

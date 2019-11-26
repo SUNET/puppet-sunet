@@ -23,7 +23,7 @@ define sunet::docker_run(
   Hash[String, String] $extra_systemd_parameters = {},
 ) {
   if $use_unbound {
-    warning("docker-unbound is deprecated, container name resolution should continue to work using docker network with DNS")
+    warning('docker-unbound is deprecated, container name resolution should continue to work using docker network with DNS')
   }
 
   # Use start_on for docker::run $depends, unless the new argument 'depends' is given
@@ -43,30 +43,30 @@ define sunet::docker_run(
   docker::image { "${name}_${image_tag}" :  # make it possible to use the same docker image more than once on a node
     image   => $image_tag,
     require => Class['sunet::dockerhost'],
-  } ->
+  }
 
   docker::run { $name :
-    image              => $image_tag,
-    volumes            => flatten([$volumes,
-                                   '/etc/passwd:/etc/passwd:ro',  # uid consistency
-                                   '/etc/group:/etc/group:ro',    # gid consistency
-                                   ]),
-    hostname           => $hostname,
-    ports              => $ports,
-    expose             => $expose,
-    env                => $env,
-    net                => $net,
-    command            => $command,
-    dns                => $dns,
-    depends            => $_depends,
-    require            => flatten([$req]),
-    before_start       => $before_start,
-    before_stop        => $before_stop,
-    after_start        => $after_start,
-    after_stop         => $after_stop,
-    docker_service     => true,  # the service 'docker' is maintainer by puppet, so depend on it
-    ensure             => $ensure,
-    extra_parameters   => flatten([$extra_parameters]),
+    ensure                   => $ensure,
+    image                    => $image_tag,
+    volumes                  => flatten([$volumes,
+      '/etc/passwd:/etc/passwd:ro',  # uid consistency
+      '/etc/group:/etc/group:ro',    # gid consistency
+    ]),
+    hostname                 => $hostname,
+    ports                    => $ports,
+    expose                   => $expose,
+    env                      => $env,
+    net                      => $net,
+    command                  => $command,
+    dns                      => $dns,
+    depends                  => $_depends,
+    require                  => flatten([$req]),
+    before_start             => $before_start,
+    before_stop              => $before_stop,
+    after_start              => $after_start,
+    after_stop               => $after_stop,
+    docker_service           => true,  # the service 'docker' is maintainer by puppet, so depend on it
+    extra_parameters         => flatten([$extra_parameters]),
     extra_systemd_parameters => $extra_systemd_parameters,
   }
 
