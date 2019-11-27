@@ -157,9 +157,9 @@ def collect_systemd(args, logger):
         if compose:
             res += compose
         else:
-            if this.startswith('docker-'):
-                this = this[8:]
-                res.append(this)
+            match = re.match('docker-(.+)\.service$', this)
+            if match:
+                res.append(match.group(1))
     return res
 
 def collect_compose_services(fn, logger):
