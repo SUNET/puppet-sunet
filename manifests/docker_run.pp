@@ -58,7 +58,7 @@ define sunet::docker_run(
 
   docker::run { $name :
     ensure                   => $ensure,
-    volumes                  => flatten([$_uid_gid, $volumes]),
+    volumes                  => flatten([$volumes, $_uid_gid]),
     hostname                 => $hostname,
     ports                    => $ports,
     expose                   => $expose,
