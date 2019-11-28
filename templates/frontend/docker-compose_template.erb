@@ -1,5 +1,5 @@
 ---
-version: '3'
+version: '3.4'
 
 services:
 
@@ -92,6 +92,10 @@ services:
       - 'HOSTFQDN=<%= @fqdn %>'
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
+    healthcheck:
+      test: 'head -1 /var/run/haproxy-status | grep -q ^UP'
+      interval: 2s
+      start_period: 1m
 
 volumes:
   haproxy_data:
