@@ -1,18 +1,19 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  $docker_version,
-  $docker_package_name                        = 'docker-engine',  # facilitate transition to new docker-ce package
+  String $docker_version,
+  String $docker_package_name                 = 'docker-engine',  # facilitate transition to new docker-ce package
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
-  $run_docker_cleanup                         = true,
+  Boolean $run_docker_cleanup                 = true,
   Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
   $docker_dns                                 = $::ipaddress_default,
-  $ufw_allow_docker_dns                       = true,
-  $manage_dockerhost_unbound                  = false,
-  $compose_image                              = 'docker.sunet.se/library/docker-compose',
-  $compose_version                            = '1.15.0',
+  Boolean $ufw_allow_docker_dns               = true,
+  Boolean $manage_dockerhost_unbound          = false,
+  String $compose_image                       = 'docker.sunet.se/library/docker-compose',
+  String $compose_version                     = '1.24.0',
   Optional[Array[String]] $tcp_bind           = undef,
+  Boolean $write_daemon_config                = false,
 ) {
 
   # Remove old versions, if installed
@@ -269,4 +270,18 @@ class sunet::dockerhost(
     }
   }
 
+  if $write_daemon_config {
+    if $docker_network =~ String[1] {
+      $default_address_pools = $docker_network
+    } else {
+      $default_address_pools = '172.16.0.0/12'
+    }
+    file {
+      '/etc/docker/daemon.json':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/dockerhost/daemon.json.erb'),
+        ;
+    }
+  }
 }
