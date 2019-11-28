@@ -1,5 +1,5 @@
 ---
-version: '3'
+version: '3.4'
 
 services:
 
@@ -87,11 +87,15 @@ services:
         /opt/frontend/scripts/monitor-haproxy
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
             --stats_url /var/run/haproxy-control/stats
-            'site=<%= @site_name %>;group=default'
+            'site=<%= @site_name %>;group=<%= @monitor_group %>'
     environment:
       - 'HOSTFQDN=<%= @fqdn %>'
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
+    healthcheck:
+      test: 'head -1 /var/run/haproxy-status | grep -q ^UP'
+      interval: 2s
+      start_period: 1m
 
 volumes:
   haproxy_data:

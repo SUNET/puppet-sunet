@@ -8,6 +8,7 @@ define sunet::frontend::load_balancer::website2(
 ) {
   $instance  = $name
   $site_name = pick($config['site_name'], $instance)
+  $monitor_group = pick($config['monitor_group'], 'default')
 
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
@@ -28,7 +29,10 @@ define sunet::frontend::load_balancer::website2(
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
         $_site_certs = $::tls_certificates[$site_name]
-        notice("None of the certificates for site ${site_name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): $_site_certs")
+        notice(join([
+          "None of the certificates for site ${site_name} matched my list ",
+          "(haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): ${_site_certs}"
+        ], ''))
         if $snakeoil {
           $tls_certificate_bundle = $snakeoil
         }
