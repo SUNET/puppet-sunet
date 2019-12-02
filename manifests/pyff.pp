@@ -10,6 +10,7 @@ define sunet::pyff(
    $volumes = [],
    $docker_run_extra_parameters = [],
    $pipeline = "mdx.fd",
+   $port = "80",
    $ip = undef) {
    $ip_addr = $ip ? {
       undef   => "",
@@ -33,7 +34,7 @@ define sunet::pyff(
       sunet::docker_run {"varnish-${sanitised_title}":
          image    => 'docker.sunet.se/varnish',
          env      => flatten([["BACKEND_PORT=tcp://pyff-${sanitised_title}.docker:8080"],$acme_env]),
-         ports    => ["${ip_addr}80:80"],
+         ports    => ["${ip_addr}${port}:80"],
          depends  => ["pyff-${sanitised_title}"]
       }
    }
