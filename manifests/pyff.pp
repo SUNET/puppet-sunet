@@ -22,7 +22,7 @@ define sunet::pyff(
          image    => "docker.sunet.se/pound",
          imagetag => "latest",
          volumes  => ["${ssl_dir}:/etc/ssl"],
-         env      => ["BACKEND_PORT=tcp://varnish-${sanitised_title}.docker:80"],
+         env      => ["BACKEND_PORT=tcp://varnish-${sanitised_title}.docker:${port}"],
          ports    => ["${ip_addr}443:443"],
          depends  => ["varnish-${sanitised_title}"],
          extra_parameters => $docker_run_extra_parameters
@@ -40,7 +40,7 @@ define sunet::pyff(
    }
    $pyff_ports = $pound_and_varnish ? {
       true        => [],
-      false       => ["${ip_addr}80:8080"]
+      false       => ["${ip_addr}${port}:8080"]
    }
    sunet::docker_run {"pyff-${sanitised_title}":
       image       => $image,
