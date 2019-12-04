@@ -18,10 +18,12 @@ services:
     restart: always
     volumes:
      - <%= @dir %>:<%= @dir %>
-    env:
+    environment:
      - "DATADIR=<%= @dir %>"
      - "PIPELINE=<%= @pipeline %>"
+<% if @pyffd_args %>
      - "EXTRA_ARGS=<%= @pyffd_args %>"
+<% endif %>
      - "LOGLEVEL=<%= @pyffd_loglevel %>"
 
 volumes:
