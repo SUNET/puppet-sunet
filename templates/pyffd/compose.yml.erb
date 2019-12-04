@@ -9,7 +9,7 @@ services:
      - 443:443
     volumes:
      - /opt/haproxy/:/etc/haproxy/:ro
-     - <%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>:<%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>:ro
+     - /etc/ssl:/etc/ssl:ro
      - /dev/log:/dev/log
      - 'haproxy_control:/var/run/haproxy-control'
 
