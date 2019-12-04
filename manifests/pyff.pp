@@ -41,8 +41,8 @@ define sunet::pyff(
          depends  => ["pyff-${sanitised_title}"]
       }
    } else {
-      sunet::docker_run{"pound-${sanitised_title}": ensure => absent }
-      sunet::docker_run {"varnish-${sanitised_title}": ensure => absent }
+      sunet::docker_run{"pound-${sanitised_title}": image => "docker.sunet.se/pound", ensure => absent }
+      sunet::docker_run {"varnish-${sanitised_title}": image => 'docker.sunet.se/varnish', ensure => absent }
    }
    $pyff_ports = $pound_and_varnish ? {
       true        => [],
