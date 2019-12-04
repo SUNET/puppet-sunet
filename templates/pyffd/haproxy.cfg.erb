@@ -37,7 +37,7 @@ defaults
     balance roundrobin
 
 frontend haproxy_pyffd
-    bind *:443 ssl crt <%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>
+    bind *:443 ssl crt /etc/ssl/private/<%= @fqdn %>_infra.pem
     default_backend mdq_servers
 
 
