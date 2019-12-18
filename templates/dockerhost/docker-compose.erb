@@ -49,8 +49,8 @@ if [ -n "$HOME" ]; then
 fi
 
 # Make volumes of all 'yml' files passed as arguments
-for arg in $*; do
-    case $arg in
+for arg in "$@"; do
+    case "$arg" in
         "/"*".yml")
             if [ ! -f "${arg}" ]; then
                 echo "$0: YAML file argument ${arg} is not a file"
