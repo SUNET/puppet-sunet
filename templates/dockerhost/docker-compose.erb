@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # Run docker-compose in a container
 #
@@ -37,14 +37,15 @@ if [ -n "$COMPOSE_FILE" ]; then
         echo "$0: Compose-file ${COMPOSE_FILE} does not exist, or is empty"
         exit 1
     fi
-    compose_dir=$(dirname "${COMPOSE_FILE}")
+    COMPOSE_OPTIONS="$COMPOSE_OPTIONS -e COMPOSE_FILE=$COMPOSE_FILE"
+    compose_dir=$(realpath "$(dirname "$COMPOSE_FILE")")
 fi
 # TODO: also check --file argument
 if [ -n "$compose_dir" ]; then
     VOLUMES="$VOLUMES -v $compose_dir:$compose_dir"
 fi
 if [ -n "$HOME" ]; then
-    VOLUMES="$VOLUMES -v $HOME:$HOME -v $HOME:/root" # mount $HOME in /root to share docker.config
+    VOLUMES="$VOLUMES -v $HOME:$HOME -e HOME" # Pass in HOME to share docker.config and allow ~/-relative paths to work.
 fi
 
 # Make volumes of all 'yml' files passed as arguments
@@ -70,11 +71,18 @@ for arg in $*; do
 done
 
 # Only allocate tty if we detect one
-if [ -t 1 ]; then
-    DOCKER_RUN_OPTIONS="-t"
-fi
-if [ -t 0 ]; then
-    DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -i"
+if [ -t 0 ] && [ -t 1 ]; then
+    DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -t"
 fi
 
+# Always set -i to support piped and terminal input in run/exec
+DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS -i"
+
+
+# Handle userns security
+if docker info --format '{{json .SecurityOptions}}' 2>/dev/null | grep -q 'name=userns'; then
+    DOCKER_RUN_OPTIONS="$DOCKER_RUN_OPTIONS --userns=host"
+fi
+
+# shellcheck disable=SC2086
 exec docker run --rm $DOCKER_RUN_OPTIONS $DOCKER_ADDR $COMPOSE_OPTIONS $VOLUMES -w "$(pwd)" $IMAGE "$@"
