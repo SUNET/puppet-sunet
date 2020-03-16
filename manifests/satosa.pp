@@ -1,7 +1,7 @@
 require stdlib
 
 class sunet::satosa($dehydrated_name=undef,
-                    $image='docker.sunet.se/satosa',
+                    $image='docker.sunet.se/satosa',  # NOTE: this image appears abandoned, you probably want docker.sunet.se/docker-satosa
                     $tag='3.4-stable',
 ) {
   $proxy_conf = hiera('satosa_proxy_conf')
