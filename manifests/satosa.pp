@@ -14,7 +14,6 @@ class sunet::satosa($dehydrated_name=undef,
   $merged_conf = merge($proxy_conf,$default_conf)
   ensure_resource('file','/etc', { ensure => directory } )
   ensure_resource('file','/etc/satosa', { ensure => directory } )
-  ensure_resource('file','/etc/satosa/', { ensure => directory } )
   ensure_resource('file','/etc/satosa/run', { ensure => directory } )
   ensure_resource('file','/etc/satosa/plugins', { ensure => directory } )
   ensure_resource('file','/etc/satosa/metadata', { ensure => directory } )
