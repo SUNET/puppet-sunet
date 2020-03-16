@@ -38,7 +38,7 @@ class sunet::satosa($dehydrated_name=undef,
     env      => ['METADATA_DIR=/etc/satosa/metadata']
   }
   file {'/etc/satosa/proxy_conf.yaml':
-    content => inline_template('<%= @merged_conf.to_yaml %>\n'),
+    content => inline_template("<%= @merged_conf.to_yaml %>\n"),
     notify  => Sunet::Docker_run['satosa']
   }
   $plugins = hiera('satosa_config')
@@ -46,7 +46,7 @@ class sunet::satosa($dehydrated_name=undef,
     $conf = hiera($n)
     $fn = $plugins[$n]
     file { $fn:
-      content => inline_template('<%= @conf.to_yaml %>\n'),
+      content => inline_template("<%= @conf.to_yaml %>\n"),
       notify  => Sunet::Docker_run['satosa']
     }
   }
