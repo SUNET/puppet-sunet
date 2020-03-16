@@ -35,7 +35,10 @@ class sunet::satosa($dehydrated_name=undef,
     imagetag => $tag,
     volumes  => ['/etc/satosa:/etc/satosa','/etc/dehydrated:/etc/dehydrated'],
     ports    => ['443:8000'],
-    env      => ['METADATA_DIR=/etc/satosa/metadata']
+    env      => [
+      'DATA_DIR=/etc/satosa',
+      'METADATA_DIR=/etc/satosa/metadata',
+    ]
   }
   file {'/etc/satosa/proxy_conf.yaml':
     content => inline_template("<%= @merged_conf.to_yaml %>\n"),
