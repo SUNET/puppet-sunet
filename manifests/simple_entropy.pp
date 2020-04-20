@@ -7,5 +7,5 @@ class sunet::simple_entropy {
       hour    => '*/2',
       minute  => 10
    }
-   sunet::pollinate { 'https://random.nordu.net/': }
+   sunet::pollinate { 'https://random.sunet.se/': }
 }
