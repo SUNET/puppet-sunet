@@ -1,7 +1,0 @@
-dn: olcDatabase={2}mdb,cn=config
-changetype: modify
-replace: olcAccess
-olcAccess: {0}to dn.base="cn=admin,dc=sunet,dc=se" by sockname.regex=/var/run/slapd/ldapi auth by users none by * none
-olcAccess: {1}to dn.subtree="ou=system,dc=sunet,dc=se" by self auth by anonymous auth by * none
-olcAccess: {2}to dn.subtree="o=CO,dc=sunet,dc=se" by dn="uid=syncrepl,ou=system,dc=sunet,dc=se" read by dn="uid=samlproxy,ou=system,dc=sunet,dc=se" read by "dn=uid=registry,ou=system,dc=sunet,dc=se" write by * none
-olcAccess: {3}to * by * none
