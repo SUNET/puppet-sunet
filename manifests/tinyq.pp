@@ -17,9 +17,9 @@ define sunet::tinyq::component($config = {}, $template = undef, $order = '99', $
 }
 
 class sunet::tinyq::library($ensure = 'file') {
-   sunet::tinyq::component { 'library': $order => "10", $ensure => $ensure }
+   sunet::tinyq::component { 'library': order => "10", ensure => $ensure }
 }
 
 class sunet::tinyq::daily_facter($ensure = 'file') {
-   sunet::tinyq::component { 'daily_facter': $ensure => $ensure }
+   sunet::tinyq::component { 'daily_facter': ensure => $ensure }
 }
