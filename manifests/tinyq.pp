@@ -4,7 +4,7 @@ class sunet::tinyq() {
    service { 'tinyq': ensure => running }
 }
 
-define sunet::tinyq::component($config = {}, $template = undef, $order = '10', $ensure = 'file') {
+define sunet::tinyq::component($config = {}, $template = undef, $order = '99', $ensure = 'file') {
    $_template = $template ? {
       undef   => $name,
       default => $template
