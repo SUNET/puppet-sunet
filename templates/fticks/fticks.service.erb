@@ -3,7 +3,7 @@ Description=fticks
 After=rsyslog.service
 
 [Service]
-ExecStart=/usr/sbin/fticks -f @args -u @url -p @pipe
+ExecStart=/usr/sbin/fticks -f <%= @args %> -u <%= @url %> -p <%= @pipe %>
 
 [Install]
 WantedBy=multi-user.target

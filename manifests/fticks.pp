@@ -7,6 +7,9 @@ class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
        'present'   => 'running',
        'absent'    => 'absent'
    }
+   package {['python3-dateutil','python3-daemon']:
+       ensure      => 'latest'
+   }
    sunet::remote_file{'/usr/sbin/fticks':
        mode            => '0755',
        ensure          => $_ensure_file,
