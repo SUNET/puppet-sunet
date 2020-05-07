@@ -1,12 +1,12 @@
 class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
    ensure_resource(service,'rsyslog',{ensure=>running})
    $_ensure_file = $ensure ? {
-       present   => 'file',
-       absent    => 'absent'
+       'present'   => 'file',
+       'absent'    => 'absent'
    }
    $_ensure_service = $ensure ? {
-       present   => running
-       absent    => absent
+       'present'   => 'running',
+       'absent'    => 'absent'
    }
    sunet::remote_file{'/usr/sbin/fticks':
        mode            => '0755',
