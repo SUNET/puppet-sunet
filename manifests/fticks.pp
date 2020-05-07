@@ -7,6 +7,10 @@ class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
        'present'   => 'running',
        'absent'    => 'absent'
    }
+   $_ensure_fifo = $ensure ? {
+       'present'   => 'fifo',
+       'absent'    => 'absent'
+   }
    package {['python3-dateutil','python3-daemon']:
        ensure      => 'latest'
    }
@@ -14,6 +18,9 @@ class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
        mode            => '0755',
        ensure          => $_ensure_file,
        remote_location => 'https://raw.githubusercontent.com/SUNET/flog/master/scripts/fticks.py'
+   }
+   file {$pipe:
+       ensure          => $_ensure_fifo,
    }
    file {'/etc/systemd/system/fticks.service':
        ensure          => $_ensure_file,
