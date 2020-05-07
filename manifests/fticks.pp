@@ -19,10 +19,9 @@ class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
        ensure          => $_ensure_file,
        remote_location => 'https://raw.githubusercontent.com/SUNET/flog/master/scripts/fticks.py'
    }
-   file {$pipe:
-       owner           => 'syslog',
-       ensure          => $_ensure_fifo,
-       backup          => false
+   exec {"create $pipe":
+       command         => "mkfifo $pipe && chown $pipe",
+       onlyif          => "test ! -f $pipe"
    }
    file {'/etc/systemd/system/fticks.service':
        ensure          => $_ensure_file,
