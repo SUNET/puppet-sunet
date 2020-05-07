@@ -7,7 +7,7 @@ define sunet::remote_file($ensure=file, $remote_location=undef, $mode='0644'){
   }
 
   file{$title:
-    ensure  => ensure,
+    ensure  => $ensure,
     mode    => $mode,
     require => Exec["retrieve_${title}"],
   }
