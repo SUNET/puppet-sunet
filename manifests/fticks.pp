@@ -21,6 +21,7 @@ class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
    }
    file {$pipe:
        ensure          => $_ensure_fifo,
+       backup          => false
    }
    file {'/etc/systemd/system/fticks.service':
        ensure          => $_ensure_file,
