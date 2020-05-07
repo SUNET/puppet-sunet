@@ -21,7 +21,7 @@ class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
    }
    file {'/etc/rsyslog.d/70-sunet-fticks-pipe.conf':
        ensure          => $_ensure_file,
-       content         => inline_template(":rawmsg,contains,\"F-TICKS\" |$pipe"),
+       content         => inline_template(":rawmsg,contains,\"F-TICKS\" |$pipe\n"),
    }
    service {'fticks':
       ensure           => $_ensure_service
