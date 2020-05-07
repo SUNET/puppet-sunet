@@ -1,5 +1,4 @@
 class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
-   ensure_resource(service,'rsyslog',{ensure=>running})
    $_ensure_file = $ensure ? {
        'present'   => 'file',
        'absent'    => 'absent'
