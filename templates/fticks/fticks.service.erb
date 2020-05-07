@@ -3,7 +3,17 @@ Description=fticks
 After=rsyslog.service
 
 [Service]
-ExecStart=/usr/sbin/fticks -f <%= @args %> -u <%= @url %> -p <%= @pipe %>
+Type=forking
+Restart=always
+StartLimitInterval=20
+StartLimitBurst=5
+TimeoutStartSec=0
+RestartSec=5
+IgnoreSIGPIPE=no
+KillMode=process
+GuessMainPID=yes
+ExecStart=/usr/sbin/fticks -d <%= @args %> -u <%= @url %> -p <%= @pipe %>
+
 
 [Install]
 WantedBy=multi-user.target
