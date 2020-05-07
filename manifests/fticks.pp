@@ -20,6 +20,7 @@ class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
        remote_location => 'https://raw.githubusercontent.com/SUNET/flog/master/scripts/fticks.py'
    }
    file {$pipe:
+       owner           => 'syslog',
        ensure          => $_ensure_fifo,
        backup          => false
    }
