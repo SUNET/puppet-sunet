@@ -21,7 +21,7 @@ class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
    }
    exec {"create $pipe":
        command         => "mkfifo $pipe && chown $pipe",
-       onlyif          => "test ! -f $pipe"
+       onlyif          => "test ! -p $pipe"
    }
    file {'/etc/systemd/system/fticks.service':
        ensure          => $_ensure_file,
