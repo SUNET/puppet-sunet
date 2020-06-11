@@ -4,7 +4,7 @@ class sunet::dehydrated(
   Boolean $apache = false,
   Boolean $cron = true,
   Boolean $cleanup = false,
-  String  $src_url = 'https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated',
+  String  $src_url = 'https://raw.githubusercontent.com/dehydrated-io/dehydrated/master/dehydrated',
   Array   $allow_clients = [],
   Integer $server_port = 80,
 ) {
