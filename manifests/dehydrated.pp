@@ -23,7 +23,7 @@ class sunet::dehydrated(
   }
 
   $ca = $staging ? {
-     false => 'https://acme-v01.api.letsencrypt.org/directory',
+     false => 'https://acme-v02.api.letsencrypt.org/directory',
      true  => 'https://acme-staging.api.letsencrypt.org/directory'
   }
   ensure_resource('package','openssl',{ensure=>'latest'})
