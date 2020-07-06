@@ -22,7 +22,7 @@ class sunet::updater(
 
        status=1
        apt-get -y update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade && status=0
-       if [[ \$? != 0 && "\$1" == "--random-sleep" ]]; then
+       if [[ \$status != 0 && "\$1" == "--random-sleep" ]]; then
            echo "$0: apt failed, sleeping for 10 minutes before retrying"
            sleep 600
            apt-get -qq -y update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade && status=0
