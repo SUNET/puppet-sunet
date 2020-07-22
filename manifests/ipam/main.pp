@@ -103,4 +103,11 @@ class sunet::ipam::main {
       path   => '/etc/default/autopostgresqlbackup',
       match  => 'DBNAMES="all"',
       }
+  #allow NagiosXI and abuseio.cert.sunet.se for listening to XML-RPC port
+  $xml_rpc_allow_servers = hiera_array('xml_rpc_allow_servers',[])
+  sunet::misc::ufw_allow { 'allow_xml_rpc':
+    from  => $xml_rpc_allow_servers,
+    port  => '1337',
+    proto => tcp,
+  }
 }
