@@ -8,27 +8,7 @@ class sunet::updater(
      mode    => '0755',
      owner   => 'root',
      group   => 'root',
-     content => @("END"/$n)
-       #!/bin/bash
-       #
-       # Script created by Puppet (sunet::updater)
-       #
-
-       export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
-
-       if [[ "\$1" == "--random-sleep" ]]; then
-           sleep \$(( \$RANDOM % 120))
-       fi
-
-       status=1
-       apt-get -y update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade && status=0
-       if [[ \$status != 0 && "\$1" == "--random-sleep" ]]; then
-           echo "$0: apt failed, sleeping for 10 minutes before retrying"
-           sleep 600
-           apt-get -qq -y update && env DEBIAN_FRONTEND='noninteractive' apt-get -y -o Dpkg::Options::='--force-confnew' upgrade && status=0
-       fi
-       exit \$status
-       |END
+     content => template('sunet/updater/silent-update-and-upgrade.erb'),
    }
    if ($cosmos_automatic_reboot) {
       file {'/etc/cosmos-automatic-reboot':
