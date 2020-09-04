@@ -51,6 +51,7 @@ define sunet::docker_run(
   $image_tag = "${image}:${imagetag}"
   if $fetch_docker_image {
     docker::image { "${name}_${image_tag}" :  # make it possible to use the same docker image more than once on a node
+      ensure  => $ensure,
       image   => $image_tag,
       require => Class['sunet::dockerhost'],
     }
