@@ -106,6 +106,23 @@ define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096,$days
    }
 }
 
+define sunet::snippets::disable_bridge_nf() {
+  augeas { 'server_bridge_nf_config':
+    context => '/files/etc/sysctl.d/10-bridge-nf.conf',
+    changes => [
+                'set net.bridge.bridge-nf-call-arptables 0',
+                'set net.bridge.bridge-nf-call-ip6tables 0',
+                'set net.bridge.bridge-nf-call-iptables 0'
+                ],
+    notify => Exec['reload_sysctl_10_bridge_nf_conf'],
+  }
+
+  exec { 'reload_sysctl_10_bridge_nf_conf':
+    command     => '/sbin/sysctl -p /etc/sysctl.d/10-bridge-nf.conf',
+    refreshonly => true,
+  }
+}
+
 # Disable IPv6 privacy extensions on servers. Complicates troubleshooting.
 define sunet::snippets::disable_ipv6_privacy() {
   augeas { 'server_ipv6_privacy_config':
