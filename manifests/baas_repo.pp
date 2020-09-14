@@ -13,8 +13,8 @@
 class sunet::baas_repo(
    String $nodename,
    $extra="-subdir=yes",
-   $repo="https://repo.cloud.ipnett.com/debtest/",
-   $gpg_key="https://repo.cloud.ipnett.com/debtest/pubkey.gpg",
+   $repo="https://repo.service.safedc.net/debian",
+   $gpg_key="https://repo.service.safedc.net/repokey/PACKAGES-GPG-KEY-Safespring",
    $gpg_file="/root/safespring_pubkey.gpg",
    $cron=false,
 ) {
@@ -47,7 +47,7 @@ class sunet::baas_repo(
 
     # Time to install the stuff from Safesprings repository!
     exec {"Install TSM stuff from Safespring":
-       command => "apt-get install safespring-baas-setup expect && touch $control_file",
+       command => "apt-get install -fy safespring-backup-setup expect && touch $control_file",
     }
 
     # These will probably never change but you never know so outside the chain :P
