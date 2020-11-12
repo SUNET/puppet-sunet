@@ -26,7 +26,7 @@ class sunet::metadata::publisher(
    }
    $ssh_key = safe_hiera('publisher_ssh_key',undef), 
    $ssh_key_type = safe_hiera('publisher_ssh_key_type',undef)
-   if ($ssh_key && $ssh_key_type) {
+   if ($ssh_key and $ssh_key_type) {
       sunet::rrsync {$dir:
          ro                => false,
          ssh_key           => $ssh_key,
