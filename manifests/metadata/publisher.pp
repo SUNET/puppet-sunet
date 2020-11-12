@@ -8,9 +8,6 @@ class sunet::metadata::publisher(
       undef   => $::fqdn,
       default => $keyname
    }
-   # this allows fileage check to work wo sudo
-   file { '/var/www': ensure => directory, mode => '0755' } ->
-   file { '/var/www/html': ensure => directory, mode => '0755', owner => 'www-data', group =>'www-data' } ->
    if ($src) {
       file {'/usr/local/bin/mirror-mdq.sh':
          ensure      => file,
@@ -33,6 +30,8 @@ class sunet::metadata::publisher(
          ssh_key_type      => $ssh_key_type
       }
    }
+   file { '/var/www': ensure => directory, mode => '0755' } ->
+   file { '/var/www/html': ensure => directory, mode => '0755', owner => 'www-data', group =>'www-data' } ->
    package {['lighttpd','attr']: ensure => latest } ->
    exec {'enable-ssl': 
       command => "/usr/sbin/lighttpd-enable-mod ssl",
