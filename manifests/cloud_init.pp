@@ -14,3 +14,12 @@ define sunet::cloud_init::config ($prio = "99", $config = {}) {
       notify  => Exec['update-cloud-init']
    }
 }
+
+class sunet::cloud_init::iaas_defaults {
+   sunet::cloud_init::config { 'disable_datasources':
+      config => { datasource_list => [ 'None' ] }
+   }
+   sunet::cloud_init::config { 'keep_root_enabled':
+      config => { disable_root => 'false' }
+   }
+}
