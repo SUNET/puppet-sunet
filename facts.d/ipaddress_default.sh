@@ -3,7 +3,7 @@
 # FIXME: Might have to handle hosts with more than one IP-address on the "outside"
 # 	 interface, this script *should* pick one and still work, but ...
 
-INT=$(route | grep default | head -1 | awk '{print $NF}')
+INT=$(ip route list default | head -1 | sed -e 's/.* dev //' | awk '{print $1}')
 
 if [ "x${INT}" != "x" ]; then
     # This command works on Ubuntu 16.04 and earlier (?)
