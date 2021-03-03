@@ -3,14 +3,14 @@
 # FIXME: Might have to handle hosts with more than one IP-address on the "outside"
 # 	 interface, this script *should* pick one and still work, but ...
 
-INT=$(route | grep default | head -1 | awk '{print $NF}')
+INT=$(ip route list default | head -1 | sed -e 's/.* dev //' | awk '{print $1}')
 
 if [ "x${INT}" != "x" ]; then
-    # This command works on Ubuntu 16.04 and earlier (?)
-    ipaddr4=$(ifconfig $INT | grep "inet addr" | head -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)
+    # This command works on Ubuntu 16.10 and later (?)
+    ipaddr4=$(ip -4 addr show dev "${INT}" up scope global | grep inet | head -1 | awk '{print $2}' | cut -d / -f 1)
     if [ "x$ipaddr4" = "x" ]; then
-	# Try again with command that works on Ubuntu 16.10 and later (?)
-	ipaddr4=$(ip -4 addr show dev "${INT}" up scope global | grep inet | head -1 | awk '{print $2}' | cut -d / -f 1)
+	# This command works on Ubuntu 16.04 and earlier (?)
+	ipaddr4=$(ifconfig $INT | grep "inet addr" | head -1 | cut -d ':' -f 2 | cut -d ' ' -f 1)
     fi
 
     if [ "x$ipaddr4" != "x" ]; then
