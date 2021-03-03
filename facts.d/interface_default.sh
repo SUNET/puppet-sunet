@@ -2,7 +2,7 @@
 #
 # This finds (hopefully) the public interface based on default route
 
-INT=$(route | grep default | head -1 | awk '{print $NF}')
+INT=$(ip route | grep default | sed -e 's/.*dev //' | awk '{print $1}')
 
 # Try to handle IPv6 only hosts too
 if [ "x${INT}" = "x" ]; then
