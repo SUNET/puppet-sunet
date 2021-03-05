@@ -106,6 +106,11 @@ class sunet::pypi (
         unless  => '/usr/bin/test -s /opt/pypi/nginx/dhparam.pem',
     }
 
+    sunet::scriptherder::cronjob { 'set_packages_immutable':
+      cmd           => "/usr/bin/chattr +i ${home}/packages/*",
+      minute        => '*/1',
+    }
+
     $content = template('sunet/pypi/docker-compose_pypi.yml.erb')
     sunet::docker_compose {'pypi_docker_compose':
         service_name => 'pypi',
