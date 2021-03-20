@@ -99,6 +99,10 @@ class sunet::dockerhost(
         priority => 920,  # upgrade, but do not downgrade
         notify   => Exec['dockerhost_apt_get_update'],
       }
+      package { 'docker-ce-cli' :
+        ensure  => $docker_version,
+        require => Exec['dockerhost_apt_get_update'],
+      }
     } else {
       notice("Docker version ${docker_version} does not have a docker-ce-cli package")
     }
