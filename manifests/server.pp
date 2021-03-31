@@ -40,7 +40,17 @@ class sunet::server(
         from => 'any',
         port => pick($ssh_port, 22),
       }
-    } elsif $mgmt_addresses != [] {
+    } else {
+      # Remove any existing rule from when ssh_allow_from_anywhere was true as default
+      ensure_resource('ufw::allow', 'remove_ufw_allow_all_ssh', {
+        ensure => 'absent',
+        from   => 'any',
+        ip     => 'any',
+        proto  => 'tcp',
+        port   => sprintf('%s', pick($ssh_port, 22)),
+      })
+    }
+    if $mgmt_addresses != [] {
       sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
         from => $mgmt_addresses,
         port => pick($ssh_port, 22),
