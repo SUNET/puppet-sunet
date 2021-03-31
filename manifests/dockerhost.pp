@@ -243,6 +243,7 @@ class sunet::dockerhost(
         '--exclude-image \'*:latest\'',
         '--exclude-image \'*:staging\'',
         '--exclude-image \'*:stable\'',
+        '--exclude-image \'*:*-staging\'',
         '--exclude-image \'*:*-production\'',
         '--max-image-age 24h',
       ], ' '),
