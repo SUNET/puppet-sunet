@@ -20,7 +20,7 @@ for cid in $(docker ps -q); do
 	echo "Container ${cid} (${name}) has a failing streak of ${streak}, greater than ${max_fails_before_restart}"
 	docker inspect --format='{{json .State.Health}}' "${cid}" | jq
 	echo "Restarting ${cid} (${name})"
-	#docker restart "${cid}"
+	docker restart "${cid}"
 	echo ""
 	echo ""
     fi
