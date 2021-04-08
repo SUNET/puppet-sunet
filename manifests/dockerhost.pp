@@ -110,6 +110,7 @@ class sunet::dockerhost(
 
   package { [
     'python3-yaml',  # check_docker_containers requirement
+    'jq',            # restart_unhealthy_containers requirement
   ] :
     ensure => 'installed',
   }
@@ -225,6 +226,11 @@ class sunet::dockerhost(
         ensure  => file,
         mode    => '0755',
         content => template('sunet/dockerhost/check_docker_containers.erb'),
+        ;
+      '/usr/local/bin/restart_unhealthy_containers':
+        ensure  => file,
+        mode    => '0755',
+        content => template('sunet/dockerhost/restart_unhealthy_containers.erb'),
         ;
       '/usr/local/bin/check_for_updated_docker_image':
         ensure  => file,
