@@ -47,8 +47,9 @@ define sunet::auth_server(
         force   => true,
         notify  => [Sunet::Docker_compose["$service_name-docker-compose"]],
     }
+    $keystore = safe_hiera("${service_name}_jwks")
     sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etc/keystore.jwks":
-        content => safe_hiera("${service_name}_jwks"),
+        content => inline_template("<%= @keystore.to_json %>"),
         group   => $group,
         force   => true,
         notify  => [Sunet::Docker_compose["$service_name-docker-compose"]],
