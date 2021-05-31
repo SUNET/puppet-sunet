@@ -2,7 +2,7 @@
 define sunet::haproxy::simple_setup(
   String $content,
   String $cert,
-  Strung $key,
+  String $key,
   String $server_name    = $::fqdn,
   String $port           = '443',
   Array  $allow_clients  = [$facts['cosmos']['frontend_server_addrs'],
