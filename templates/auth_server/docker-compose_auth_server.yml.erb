@@ -14,8 +14,8 @@ services:
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
     environment:
-      - "app_name=auth_server"
-      - "CONFIG_YAML=/opt/sunet/etc/config.yaml"
+      - "app_name=auth-server"
+      - "config_file=/opt/sunet/etc/config.yaml"
       - "app_entrypoint=auth_server.run:app"
 
   haproxy:
