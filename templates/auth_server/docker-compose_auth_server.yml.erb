@@ -16,6 +16,7 @@ services:
     environment:
       - "app_name=auth_server"
       - "CONFIG_YAML=/opt/sunet/etc/config.yaml"
+      - "app_entrypoint=auth_server.run:app"
 
   haproxy:
     image: 'docker.sunet.se/eduid/haproxy:<%= scope.function_safe_hiera(["haproxy_tag"]) %>'
