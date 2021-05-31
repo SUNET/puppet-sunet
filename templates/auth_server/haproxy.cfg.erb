@@ -1,0 +1,13 @@
+# source for this part: sunet/auth_server/haproxy.cfg.erb
+frontend auth-server-https
+    # frontends use HTTP/2.0, monitoring etc. use HTTP/1.1
+    bind *:443  ssl  crt <%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>  alpn h2,http/1.1
+    default_backend auth_server
+
+<% @facts['cosmos']['frontend_server_addrs'].each do | addr | -%>
+    acl frontend_server src <%= addr %>
+<% end -%>
+    tcp-request connection expect-proxy layer4 if frontend_server
+
+backend auth_server
+    server auth_server1 auth_server_auth_server_1:8080  check  resolvers docker_dns  init-addr none
