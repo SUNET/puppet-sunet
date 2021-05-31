@@ -15,16 +15,6 @@ define sunet::auth_server(
         group    => $group,
     })
 
-    # Pre setup for haproxy
-    ensure_resource(sunet::misc::system_user, 'haproxy', {group => 'haproxy' })
-    sunet::misc::certbundle {"${::fqdn}_haproxy":
-        group     => 'haproxy',
-        bundle    => ["cert=${cert_file}",
-          "key=${key_file}",
-          "out=private/${::fqdn}_haproxy.crt",
-        ],
-    }
-
     sunet::haproxy::simple_setup { "${service_name}-haproxy":
         server_name   => $server_name,
         cert          => $cert_file,
@@ -36,10 +26,9 @@ define sunet::auth_server(
         port          => $port,
     }
 
-    sunet::misc::create_dir { "${base_dir}/${service_name}/etc":
-        owner => $user,
+    sunet::misc::create_root_dir { "${base_dir}/${service_name}/etc":
         group => $group,
-        mode => '0700',
+        mode => '0750',
     }
     sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etc/config.yaml":
         content => $config,
