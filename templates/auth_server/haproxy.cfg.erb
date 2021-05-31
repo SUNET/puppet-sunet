@@ -5,4 +5,4 @@ frontend auth-server-https
     default_backend auth_server
 
 backend auth_server
-    server auth_server1 auth_server_auth_server_1:8080  check  resolvers docker_dns  init-addr none
+    server auth_server1 <%= @service_name %>_auth_server_1:8080  check  resolvers docker_dns  init-addr none
