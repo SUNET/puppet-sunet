@@ -32,7 +32,6 @@ define sunet::auth_server(
         content       => template('sunet/auth_server/haproxy.cfg.erb'),
         allow_clients => [
             $facts['cosmos']['frontend_server_addrs'],
-            $facts['cosmos']['monitor_server_addrs'],
             ],
         port          => $port,
     }

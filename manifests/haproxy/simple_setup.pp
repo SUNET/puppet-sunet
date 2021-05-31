@@ -5,9 +5,7 @@ define sunet::haproxy::simple_setup(
   String $key,
   String $server_name    = $::fqdn,
   String $port           = '443',
-  Array  $allow_clients  = [$facts['cosmos']['frontend_server_addrs'],
-                            $facts['cosmos']['monitor_server_addrs'],
-                            ],
+  Array  $allow_clients  = [],
 ) {
   ensure_resource(sunet::misc::system_user, 'haproxy', {group => 'haproxy' })
 
