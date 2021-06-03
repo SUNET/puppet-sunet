@@ -26,6 +26,7 @@ services:
     volumes:
       - /opt/sunet/<%= @service_name %>-haproxy/etc:/etc/haproxy:ro
       - <%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>:<%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>:ro
+      - /etc/ssl:/etc/ssl
     links:
      - auth_server
     depends_on:

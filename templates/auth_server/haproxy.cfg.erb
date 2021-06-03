@@ -1,7 +1,8 @@
 # source for this part: sunet/auth_server/haproxy.cfg.erb
 frontend auth-server-https
     # frontends use HTTP/2.0, monitoring etc. use HTTP/1.1
-    bind *:443  ssl  crt <%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>  alpn h2,http/1.1
+    # setup tls check using infra certs
+    bind *:443  ssl  crt <%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>  ca-file /etc/ssl/certs/infra.pem  verify required  alpn h2,http/1.1
     default_backend auth_server
 
 backend auth_server
