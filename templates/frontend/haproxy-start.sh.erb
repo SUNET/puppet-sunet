@@ -124,7 +124,7 @@ while true; do
 	echo "$0: Config ${HAPROXYCFG} checked OK, gracefully restarting haproxy"
 	# -sf is "send finish", sends a signal to all PIDs in the PID file asking them to finish up and terminate
 	$haproxy_cmd -sf "$(cat /run/haproxy.pid)" &
-	main_pid=$1
+	main_pid=$!
 	echo "$0: haproxy gracefully reloaded"
     else
 	echo "$0: Config ${HAPROXYCFG} NOT OK, not reloading"
