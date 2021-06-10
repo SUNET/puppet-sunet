@@ -58,7 +58,7 @@ rule default
 
 rule scp-to
   command ^scp (-v )?-t( --)? /incoming/?
-  uid >= 1000
+  user == "<%= scope.lookupvar('sunet::backuphost::user') %>"
   set[0] /usr/bin/scp
   match[$] ! /\.\.
   transform[$] s,^/backups/,/incoming/,
