@@ -106,11 +106,12 @@ class sunet::pypi (
         unless  => '/usr/bin/test -s /opt/pypi/nginx/dhparam.pem',
     }
 
-    sunet::scriptherder::cronjob { 'set_packages_immutable':
-      ensure        => absent,
-      cmd           => "/usr/bin/chattr +i ${home}/packages/*",
-      minute        => '*/1',
-      purge_results => true,
+    # Use plain cron as to not bog down other scriptherder checks with many many logs
+    cron { 'set_packages_immutable':
+        ensure  => present,
+        command => "/usr/bin/chattr +i ${home}/packages/*",
+        user    => 'pypi',
+        minute  => '*/1',
     }
 
     $content = template('sunet/pypi/docker-compose_pypi.yml.erb')
