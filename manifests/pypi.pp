@@ -107,8 +107,10 @@ class sunet::pypi (
     }
 
     sunet::scriptherder::cronjob { 'set_packages_immutable':
+      ensure        => absent,
       cmd           => "/usr/bin/chattr +i ${home}/packages/*",
       minute        => '*/1',
+      purge_results => true,
     }
 
     $content = template('sunet/pypi/docker-compose_pypi.yml.erb')
