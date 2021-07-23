@@ -170,7 +170,7 @@ if len(errors) > 0:
         message += "{} \nError: {}".format(zone, error)
 
     sender = "root@ipam.<%= @domain %>"
-    receiver = "npe@nordu.net"
+    receiver = "noc@sunet.se"
     subject = "[ipam.<%= @domain %>] Some zones did not validate"
     server = smtplib.SMTP('localhost')
     msg = MIMEMultipart()

@@ -49,17 +49,22 @@ define sunet::cloudimage (
   } else {
     $numad_package = []
   }
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '19.10') >= 0 {
+    $libvirt_package = 'libvirt-daemon-system'
+  } else {
+    $libvirt_package = 'libvirt-bin'
+  }
   ensure_resource('package', flatten(['cpu-checker',
                                       'mtools',
                                       'dosfstools',
                                       $kvm_package,
-                                      'libvirt-bin',
+                                      $libvirt_package,
                                       'virtinst',
                                       'ovmf',  # for UEFI booting virtual machines
                                       $numad_package,
                                       ]), {ensure => 'installed'})
 
-  $image_url_a = split($image_url, "/")
+  $image_url_a = split($image_url, '/')
   $image_name = $image_url_a[-1]
   $image_src = "${images_dir}/${image_name}"
   $script_dir = "${images_dir}/../sunet-files"

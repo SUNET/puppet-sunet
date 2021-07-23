@@ -48,10 +48,19 @@ Facter.add('tls_certificates') do
       end
     end
     if parts.count == 1 and fn.end_with? '.pem'
-      # turn 'infra' into 'infra_cert'
-      rest = rest + '_cert'
+      if full_fn.start_with? '/etc/ssl/private/' and full_fn.end_with? '_infra.pem'
+          # Handle known bundle created by cronjob script dl_ici_cert
+          # turn 'infra' into 'infra_bundle'
+          rest = rest + '_bundle'
+      else
+          # turn 'infra' into 'infra_cert'
+          rest = rest + '_cert'
+      end
     end
     res[hostpart] ||= {}
+    if ! res[hostpart][rest].nil?
+        warn("#{rest}: #{res[hostpart][rest]} overwritten by #{full_fn}")
+    end
     res[hostpart][rest] = full_fn
   end
 

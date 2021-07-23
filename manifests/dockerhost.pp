@@ -92,14 +92,6 @@ class sunet::dockerhost(
 
   if $docker_package_name == 'docker-ce' {
     # also need to hold the docker-ce-cli package at the same version
-    package { 'docker-ce-cli' :
-      ensure  => $docker_version,
-      require => Exec['dockerhost_apt_get_update'],
-    }
-  }
-
-  if $docker_package_name == 'docker-ce' {
-    # also need to hold the docker-ce-cli package at the same version
     if $docker_version =~ /^\d.*/ and $docker_version !~ /^1[78]/ and $docker_version !~ /5:18.0[12345678]/ {
       notice("Docker version ${docker_version} has a docker-ce-cli package, pinning it")
       apt::pin { 'docker-ce-cli':
@@ -108,14 +100,19 @@ class sunet::dockerhost(
         priority => 920,  # upgrade, but do not downgrade
         notify   => Exec['dockerhost_apt_get_update'],
       }
+      package { 'docker-ce-cli' :
+        ensure  => $docker_version,
+        require => Exec['dockerhost_apt_get_update'],
+      }
     } else {
       notice("Docker version ${docker_version} does not have a docker-ce-cli package")
     }
   }
 
   package { [
-             'python3-yaml',  # check_docker_containers requirement
-             ] :
+    'python3-yaml',  # check_docker_containers requirement
+    'jq',            # restart_unhealthy_containers requirement
+  ] :
     ensure => 'installed',
   }
 
@@ -231,6 +228,11 @@ class sunet::dockerhost(
         mode    => '0755',
         content => template('sunet/dockerhost/check_docker_containers.erb'),
         ;
+      '/usr/local/bin/restart_unhealthy_containers':
+        ensure  => file,
+        mode    => '0755',
+        content => template('sunet/dockerhost/restart_unhealthy_containers.erb'),
+        ;
       '/usr/local/bin/check_for_updated_docker_image':
         ensure  => file,
         mode    => '0755',
@@ -242,7 +244,16 @@ class sunet::dockerhost(
   if $run_docker_cleanup {
     # Cron job to remove old unused docker images
     sunet::scriptherder::cronjob { 'dockerhost_cleanup':
-      cmd           => '/usr/bin/docker system prune -af',
+      cmd           => join([
+        'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock',
+        'docker.sunet.se/sunet/docker-custodian dcgc',
+        '--exclude-image \'*:latest\'',
+        '--exclude-image \'*:staging\'',
+        '--exclude-image \'*:stable\'',
+        '--exclude-image \'*:*-staging\'',
+        '--exclude-image \'*:*-production\'',
+        '--max-image-age 24h',
+      ], ' '),
       special       => 'daily',
       ok_criteria   => ['exit_status=0', 'max_age=25h'],
       warn_criteria => ['exit_status=0', 'max_age=49h'],

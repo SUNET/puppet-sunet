@@ -55,6 +55,8 @@ if [[ $WAIT_FOR_CONTAINER ]]; then
     fi
 fi
 
+# Show haproxy version
+/usr/sbin/haproxy -v
 
 echo "$0: Checking config: ${HAPROXYCFG}"
 
@@ -65,26 +67,29 @@ if [ $config_ok != 1 ]; then
     exit 1
 fi
 
+# haproxy 1.8 or 1.9
+haproxy_cmd=$(echo /usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}")
+
+if /usr/sbin/haproxy -v | grep -q 'HA-Proxy version 2'; then
+    # haproxy 2.0+
+    sock_args=''
+    if [[ $HAPROXYMASTERSOCK ]]; then
+	sock_args=(-S "${HAPROXYMASTERSOCK}")
+    fi
+    # -db is essential for haproxy to not pipe stdout,stderr to /dev/null
+    haproxy_cmd=$(echo /usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" -W "${sock_args[@]}" -db)
+fi
+
+echo "$0: HA-Proxy command: ${haproxy_cmd}"
+
 echo "$0: Config ${HAPROXYCFG} checked OK, starting haproxy"
 if [ -x /usr/sbin/haproxy-systemd-wrapper ]; then
     # haproxy 1.7
     /usr/sbin/haproxy-systemd-wrapper -p /run/haproxy.pid -f "${HAPROXYCFG}" &
     main_pid=$!
 else
-    if /usr/sbin/haproxy -v | grep -q 'HA-Proxy version 2'; then
-	# haproxy 2.0+
-	sock_args=''
-	if [[ $HAPROXYMASTERSOCK ]]; then
-	    sock_args=(-S "${HAPROXYMASTERSOCK}")
-	fi
-	# -db is essential for haproxy to not pipe stdout,stderr to /dev/null
-	/usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" -W "${sock_args[@]}" -db &
-	main_pid=$!
-    else
-	# haproxy 1.8 or 1.9
-	/usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" &
-	main_pid=$!
-    fi
+    $haproxy_cmd &
+    main_pid=$!
 fi
 wait_pid=0
 
@@ -117,10 +122,12 @@ while true; do
     /usr/sbin/haproxy -c -f "${HAPROXYCFG}" && config_ok=1
     if [ $config_ok = 1 ]; then
 	echo "$0: Config ${HAPROXYCFG} checked OK, gracefully restarting haproxy"
-	/usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" -sf "$(cat /run/haproxy.pid)"
+	# -sf is "send finish", sends a signal to all PIDs in the PID file asking them to finish up and terminate
+	$haproxy_cmd -sf "$(cat /run/haproxy.pid)" &
+	main_pid=$!
 	echo "$0: haproxy gracefully reloaded"
     else
-	echo "$0: Config ${HAPROXYCFG} NOT OK"
+	echo "$0: Config ${HAPROXYCFG} NOT OK, not reloading"
     fi
     sleep 1  # spin control
 done

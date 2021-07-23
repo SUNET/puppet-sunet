@@ -4,9 +4,10 @@ class sunet::dehydrated(
   Boolean $apache = false,
   Boolean $cron = true,
   Boolean $cleanup = false,
-  String  $src_url = 'https://raw.githubusercontent.com/lukas2511/dehydrated/master/dehydrated',
+  String  $src_url = 'https://raw.githubusercontent.com/dehydrated-io/dehydrated/master/dehydrated',
   Array   $allow_clients = [],
   Integer $server_port = 80,
+  Integer $ssh_port = 22,
 ) {
   $conf = hiera_hash('dehydrated')
   if $conf !~ Hash {
@@ -23,7 +24,7 @@ class sunet::dehydrated(
   }
 
   $ca = $staging ? {
-     false => 'https://acme-v01.api.letsencrypt.org/directory',
+     false => 'https://acme-v02.api.letsencrypt.org/directory',
      true  => 'https://acme-staging.api.letsencrypt.org/directory'
   }
   ensure_resource('package','openssl',{ensure=>'latest'})
@@ -146,6 +147,11 @@ class sunet::dehydrated(
     }
   } elsif $clients != undef {
     warning("Unknown format of 'clients' - ignoring")
+  }
+
+  sunet::misc::ufw_allow { 'allow-dehydrated-ssh':
+    from => $allow_clients,
+    port => $ssh_port,
   }
 }
 

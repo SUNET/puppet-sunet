@@ -33,15 +33,25 @@ define sunet::scriptherder::cronjob(
     content => template('sunet/scriptherder/scriptherder_check.ini.erb'),
   }
 
+  if $special == 'daily' and hiera('scriptherder_daily_hour', undef) =~ Integer {
+    $_special = 'absent'
+    $_hour    = hiera('scriptherder_daily_hour')
+    $_minute  = fqdn_rand(60, $safe_name)
+  } else {
+    $_special = $special
+    $_hour    = $hour
+    $_minute  = $minute
+  }
+
   cron { $safe_name:
     ensure   => $ensure,
     command  => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${safe_name} -- ${cmd}",
     user     => $user,
-    hour     => $hour,
-    minute   => $minute,
+    hour     => $_hour,
+    minute   => $_minute,
     monthday => $monthday,
     weekday  => $weekday,
-    special  => $special,
+    special  => $_special,
   }
 
   if $ensure == 'absent' and $purge_results {
