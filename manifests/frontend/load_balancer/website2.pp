@@ -84,18 +84,20 @@ define sunet::frontend::load_balancer::website2(
   }
 
   # Parameters used in frontend/docker-compose_template.erb
+  $dns                    = pick_default($config['dns'], undef)
+  $extra_ports            = pick_default($config['extra_ports'], undef)
+  $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
+  $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag       = pick($config['haproxy_imagetag'], 'stable')
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
-  $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
-  $varnish_imagetag       = pick($config['varnish_imagetag'], 'stable')
-  $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
-  $varnish_enabled        = pick($config['varnish_enabled'], false)
-  $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
-  $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
-  $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
   $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
+  $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
+  $varnish_enabled        = pick($config['varnish_enabled'], false)
+  $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
+  $varnish_imagetag       = pick($config['varnish_imagetag'], 'stable')
+  $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
 
   ensure_resource('file', '/usr/local/bin/start-frontend', {
     ensure  => 'file',

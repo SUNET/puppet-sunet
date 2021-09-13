@@ -6,11 +6,7 @@ class sunet::frontend::load_balancer(
   String $router_id = $ipaddress_default,
   String $basedir   = '/opt/frontend',
 ) {
-  $global_config = hiera_hash('sunet_frontend')
-  $local_config = hiera_hash("sunet_frontend_local", undef)
-  # We put the local_config inside the load_balancer hash because otherwise this becomes a foot gun
-  # In the if clause below
-  $config = deep_merge($global_config, { load_balancer => { local_config => $local_config}})
+  $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
     $confdir = "${basedir}/config"
     $scriptdir = "${basedir}/scripts"
