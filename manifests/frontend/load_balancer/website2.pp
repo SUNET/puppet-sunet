@@ -78,6 +78,8 @@ define sunet::frontend::load_balancer::website2(
   }
 
   # Parameters used in frontend/docker-compose_template.erb
+  $dns                    = pick_default($config['dns'], undef)
+  $extra_ports            = pick_default($config['extra_ports'], undef)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag       = pick($config['haproxy_imagetag'], 'stable')
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
