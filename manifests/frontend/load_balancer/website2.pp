@@ -58,6 +58,8 @@ define sunet::frontend::load_balancer::website2(
     'frontend_fqdn' => $::fqdn,
   })
 
+  $local_config = hiera_hash("sunet_frontend_local", undef)
+  $config4 = deep_merge($config3, $local_config)
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
                                               "${confdir}/${instance}/certs",
                                               ], { owner => 'root', group => 'root', mode => '0700' })
@@ -77,7 +79,7 @@ define sunet::frontend::load_balancer::website2(
       group   => 'sunetfrontend',
       mode    => '0640',
       force   => true,
-      content => inline_template("# File created from Hiera by Puppet\n<%= @config3.to_yaml %>\n"),
+      content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
       ;
   }
 
