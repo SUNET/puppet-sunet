@@ -16,6 +16,7 @@ services:
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
     # nothing will work anyways until the whole service is restarted
     restart: 'no'
+    tty: true
     volumes:
       - '/dev/log:/dev/log'
       - '/opt/frontend/scripts/haproxy-start.sh:/haproxy-start.sh:ro'
