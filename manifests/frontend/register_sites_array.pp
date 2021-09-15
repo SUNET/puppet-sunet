@@ -18,8 +18,8 @@ class sunet::frontend::register_sites_array(
       content => template('sunet/frontend/sunetfrontend-register.erb')
       ;
   }
-  notice($sites)
   $sites.each | $site | {
+    notice($site)
     $fe_str = join($site['frontends'], ' ')
     $port = $site['port']
     $extra_args = pick($site['extra_args'], ' ')
