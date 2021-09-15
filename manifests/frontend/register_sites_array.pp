@@ -18,7 +18,7 @@ class sunet::frontend::register_sites_array(
       content => template('sunet/frontend/sunetfrontend-register.erb')
       ;
   }
-
+  notice($sites)
   $sites.each | $site | {
     $fe_str = join($site['frontends'], ' ')
     $port = $site['port']
