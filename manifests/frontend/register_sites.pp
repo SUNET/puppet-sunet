@@ -32,3 +32,4 @@ class sunet::frontend::register_sites(
     }
   }
 }
+
