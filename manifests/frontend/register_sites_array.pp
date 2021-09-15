@@ -25,7 +25,7 @@ class sunet::frontend::register_sites_array(
       $extra_args = pick($site[$key]['extra_args'], ' ')
       $site_name = $key
 
-      cron { "sunetfronted_register_sites_array_${site_name}":
+      cron { "sunetfronted_register_sites_${site_name}_${port}":
         ensure  => present,
         command => "/usr/local/bin/sunetfrontend-register ${extra_args} ${site_name} ${port} ${fe_str} > /dev/null 2>&1",
         minute  => '*/3',
