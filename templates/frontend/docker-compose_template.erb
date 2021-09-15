@@ -33,7 +33,7 @@ services:
       - '<%= this %>'
 <% end -%>
 <% end -%>
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array && @dns.length > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
@@ -61,7 +61,7 @@ services:
     restart: always
     depends_on:
       - haproxy
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array && @dns.length > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
@@ -106,7 +106,7 @@ services:
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
             --stats_url /var/run/haproxy-control/stats
             'site=<%= @site_name %>;group=default'
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array && @dns.length > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
