@@ -16,6 +16,7 @@ services:
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
     # nothing will work anyways until the whole service is restarted
     restart: 'no'
+    tty: true
     volumes:
       - '/dev/log:/dev/log'
       - '/opt/frontend/scripts/haproxy-start.sh:/haproxy-start.sh:ro'
@@ -32,7 +33,7 @@ services:
       - '<%= this %>'
 <% end -%>
 <% end -%>
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
@@ -60,7 +61,7 @@ services:
     restart: always
     depends_on:
       - haproxy
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
@@ -105,7 +106,7 @@ services:
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
             --stats_url /var/run/haproxy-control/stats
             'site=<%= @site_name %>;group=default'
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
