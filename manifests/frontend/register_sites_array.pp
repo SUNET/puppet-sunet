@@ -19,17 +19,18 @@ class sunet::frontend::register_sites_array(
       ;
   }
   $sites.each | $site | {
-    notice($site)
-    $fe_str = join($site['frontends'], ' ')
-    $port = $site['port']
-    $extra_args = pick($site['extra_args'], ' ')
-    $site_name = keys($site)[0]
+    keys($site).each | $key | {
+      $fe_str = join($site[$key]['frontends'], ' ')
+      $port = $site[$key]['port']
+      $extra_args = pick($site[$key]['extra_args'], ' ')
+      $site_name = $key
 
-    cron { "sunetfronted_register_sites_${site_name}":
-      ensure  => present,
-      command => "/usr/local/bin/sunetfrontend-register ${extra_args} ${site_name} ${port} ${fe_str} > /dev/null 2>&1",
-      minute  => '*/3',
-      require => File['/usr/local/bin/sunetfrontend-register'],
+      cron { "sunetfronted_register_sites_${site_name}":
+        ensure  => present,
+        command => "/usr/local/bin/sunetfrontend-register ${extra_args} ${site_name} ${port} ${fe_str} > /dev/null 2>&1",
+        minute  => '*/3',
+        require => File['/usr/local/bin/sunetfrontend-register'],
+      }
     }
   }
 }
