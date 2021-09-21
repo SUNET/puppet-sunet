@@ -19,6 +19,10 @@ class sunet::routinator_ng() {
 	   unless => "test -d /var/lib/routinator/tals"
       }
 
+      exec {"Change addresses to listen to":
+           command => "sed -i 's/127.0.0.1/0.0.0.0/g' /etc/routinator/routinator.conf"
+      }
+
       service { "routinator": ensure => 'running', enable => true, }
 
       sunet::misc::ufw_allow { 'rpki-rtr-fw':
