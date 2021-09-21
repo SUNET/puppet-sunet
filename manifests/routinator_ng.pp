@@ -20,4 +20,10 @@ class sunet::routinator_ng() {
       }
 
       service { "routinator": ensure => 'running', enable => true, }
+
+      sunet::misc::ufw_allow { 'rpki-rtr-fw':
+         from  => '130.242.1.0/24',
+         port  => '3323',
+         proto => 'tcp',
+  }
 }
