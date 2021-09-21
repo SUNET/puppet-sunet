@@ -25,5 +25,5 @@ class sunet::routinator_ng() {
          from  => '130.242.1.0/24',
          port  => '3323',
          proto => 'tcp',
-  }
+      }
 }
