@@ -1,7 +1,7 @@
 ---
 version: '3'
 
-<% if defined?(@multinode_port) -%>
+<% if @multinode_port -%>
   <% @haproxy_template = "common/haproxy_base.j2" -%>
 <% else -%>
   <% @haproxy_template = @instance + "/haproxy.j2" -%>
