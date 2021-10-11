@@ -83,10 +83,10 @@ services:
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
       - haproxy_data:/etc/haproxy
-<% if @multinode_port -%>
-    command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template common/haproxy_base.j2
-<% else -%>
+<% if has_key(@sunet_frontend['load_balancer']['websites2'][@instance], 'multinode_port') -%>
     command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
+<% else -%>
+    command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template common/haproxy_base.j2
 <% end -%>
 
 
