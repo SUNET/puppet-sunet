@@ -87,6 +87,7 @@ define sunet::frontend::load_balancer::website2(
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag       = pick($config['haproxy_imagetag'], 'stable')
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
+  $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
   $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
