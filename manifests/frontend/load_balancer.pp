@@ -130,9 +130,6 @@ define configure_websites($websites, $basedir, $confdir)
 define configure_websites2($websites, $basedir, $confdir, $scriptdir)
 {
   each($websites) | $site, $config | {
-    if has_key($config, 'multinode_port') {
-      $multinode_port = $config['multinode_port']
-    }
     create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
       'basedir'   => $basedir,
       'confdir'   => $confdir,
