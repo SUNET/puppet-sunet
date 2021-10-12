@@ -8,6 +8,7 @@ define sunet::frontend::load_balancer::website2(
 ) {
   $instance  = $name
   $site_name = pick($config['site_name'], $instance)
+  $networkname = $instance[0,8]
 
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
