@@ -6,7 +6,10 @@ define sunet::frontend::load_balancer::website2(
   Hash    $config,
   Integer $api_port = 8080,
 ) {
-  $instance  = $name[0,11]
+  $instance  = $name
+  if length($instance) > 12 {
+    notice("Instance name: ${instance} is longer than 12 characters and will not work in docker bridge networking, please rename instance.")
+  }
   $site_name = pick($config['site_name'], $instance)
 
   if ! has_key($config, 'tls_certificate_bundle') {
