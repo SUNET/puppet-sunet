@@ -14,6 +14,7 @@
 #
 
 INSTANCE=$1
+BRNAME=${INSTANCE:0:12}
 
 if [[ ! $INSTANCE ]]; then
     echo "Syntax: ${0} instance"
@@ -71,14 +72,14 @@ set -x
 # Add a pair of virtual ethernet interfaces (think of them as a virtual cross-over ethernet cable)
 ip link del ${VETHHOST}
 ip link add name ${VETHHOST} mtu 1500 type veth peer name ${VETHCONTAINER} mtu 1500
-ip link set ${VETHHOST} master br-${INSTANCE}
+ip link set ${VETHHOST} master br-${BRNAME}
 ip link set ${VETHHOST} up
 
 echo "$0: Network namespace and process diagnostics:"
 pgrep -a --ns "${DOCKERPID}"
 ip link show "${VETHHOST}"
 ip link show "${VETHCONTAINER}"
-ip link show "br-${INSTANCE}"
+ip link show "br-${BRNAME}"
 
 # Move one end of the virtual ethernet cable inside the network namespace of the docker container
 ip link set "${VETHCONTAINER}" netns "${INSTANCE}" || {
@@ -97,11 +98,19 @@ ip netns exec "${INSTANCE}" sysctl net.ipv6.conf.sarimner0.accept_dad=0
 # ip netns exec ${INSTANCE} sysctl net.ipv4.ip_nonlocal_bind=1
 # ip netns exec ${INSTANCE} sysctl net.ipv6.ip_nonlocal_bind=1
 
+# Add IPv6 default gateway
+#sysctl net.ipv6.conf.${VETHHOST}.accept_dad=0
+v6gw=$(ip -6 addr list br-${BRNAME} | awk '/inet6/{print $2}' | head -1 | awk -F / '{print $1}')
+if [[ $v6gw ]]; then
+    ip netns exec ${INSTANCE} ip -6 route add default via ${v6gw} dev sarimner0
+else
+    echo "Can't set up IPv6 routing from container, device ${VETHHOST} has no IPv6 address"
+fi
 
 # Add IP addresses to the network namespace of the docker container
-for IP in $("${SCRIPTSDIR}"/frontend-config --instance "${INSTANCE}" print_ips); do
-    ip netns exec "${INSTANCE}" ip addr add "${IP}" dev sarimner0
-    ip route add "${IP}" dev br-"${INSTANCE}"
+for IP in $(${SCRIPTSDIR}/frontend-config --instance ${INSTANCE} print_ips); do
+    ip netns exec ${INSTANCE} ip addr add ${IP} dev sarimner0
+    ip route add ${IP} dev br-${BRNAME}
 done
 
 ip netns exec "${INSTANCE}" ip link set sarimner0 up
