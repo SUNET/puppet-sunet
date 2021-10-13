@@ -10,7 +10,7 @@ define sunet::frontend::load_balancer::website2(
   $site_name = pick($config['site_name'], $instance)
 
   # Name of the network interface can not be longer than 12 chars
-  if len($instance) > 12 {
+  if length($instance) > 12 {
     $networkname = $instance[0,11]
     file {
       "${confdir}/${instance}/.env":
