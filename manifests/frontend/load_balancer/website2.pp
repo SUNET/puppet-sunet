@@ -9,6 +9,23 @@ define sunet::frontend::load_balancer::website2(
   $instance  = $name
   $site_name = pick($config['site_name'], $instance)
 
+  # Name of the network interface can not be longer than 12 chars
+  if len($instance > 12 ) {
+    $networkname = $instance[0,11]
+    file {
+      "${confdir}/${instance}/.env":
+        ensure  => 'file',
+        group   => 'sunetfrontend',
+        mode    => '0640',
+        force   => true,
+        content => inline_template("COMPOSE_PROJECT_NAME=<%= @networkname %>\n"),
+      ;
+    }
+  }
+  else {
+      $networkname = $instance
+  }
+
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
     if has_key($::tls_certificates, 'snakeoil') {
