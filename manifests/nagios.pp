@@ -3,135 +3,158 @@ include concat
 
 class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
 
-   $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
-   $nagios_ip_v6 = hiera('nagios_ip_v6', '2001:948:4:6::111')
-   $nrpe_clients = hiera_array('nrpe_clients',['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
-   #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
-   $allowed_hosts = join($nrpe_clients,",")
+  $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
+  $nagios_ip_v6 = hiera('nagios_ip_v6', '2001:948:4:6::111')
+  $nrpe_clients = hiera_array('nrpe_clients',['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
+  #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
+  $allowed_hosts = join($nrpe_clients,',')
 
-   package {$nrpe_service:
-       ensure => 'installed',
-   } ->
-   service {$nrpe_service:
-       ensure  => 'running',
-       enable  => 'true',
-       require => Package[$nrpe_service],
-   }
-   concat {"/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg":
-       owner   => root,
-       group   => root,
-       mode    => '0644',
-       notify  => Service[$nrpe_service]
-   }
-   concat::fragment {"sunet_nrpe_commands":
-       target  => "/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg",
-       content => "# Do not edit by hand - maintained by puppet",
-       order   => '10',
-       notify  => Service[$nrpe_service]
-   }
-   file { "/etc/nagios/nrpe.cfg" :
-       notify  => Service[$nrpe_service],
-       ensure  => 'file',
-       mode    => '0640',
-       group   => 'nagios',
-       require => Package['nagios-nrpe-server'],
-       content => template('sunet/nagioshost/nrpe.cfg.erb'),
-   }
-   sunet::nagios::nrpe_command {'check_users':
-      command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
-   }
-   sunet::nagios::nrpe_command {'check_load':
-      command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
-   }
-   if $::fqdn == 'docker.sunet.se' {
-      sunet::nagios::nrpe_command {'check_root':
-         command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /'
-      }
-   } else {
-      sunet::nagios::nrpe_command {'check_root':
-         command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -p /'
-      }
-   }
-   sunet::nagios::nrpe_command {'check_boot':
-      command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
-   }
-   if $::fqdn == 'docker.sunet.se' {
-      sunet::nagios::nrpe_command {'check_var':
-         command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /var'
-      }
-   } else {
-      sunet::nagios::nrpe_command {'check_var':
-         command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /var'
-      }
-   }
-   sunet::nagios::nrpe_command {'check_zombie_procs':
-      command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
-   }
-   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '12.04') <= 0 {
+  package {$nrpe_service:
+      ensure => 'installed',
+  }
+  -> service {$nrpe_service:
+      ensure  => 'running',
+      enable  => 'true',
+      require => Package[$nrpe_service],
+  }
+  concat {'/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg':
+      owner  => root,
+      group  => root,
+      mode   => '0644',
+      notify => Service[$nrpe_service]
+  }
+  concat::fragment {'sunet_nrpe_commands':
+      target  => '/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg',
+      content => '# Do not edit by hand - maintained by puppet',
+      order   => '10',
+      notify  => Service[$nrpe_service]
+  }
+  file { '/etc/nagios/nrpe.cfg' :
+      ensure  => 'file',
+      notify  => Service[$nrpe_service],
+      mode    => '0640',
+      group   => 'nagios',
+      require => Package['nagios-nrpe-server'],
+      content => template('sunet/nagioshost/nrpe.cfg.erb'),
+  }
+  package {'mk-livestatus':
+      ensure  => 'installed',
+      require => Exec['apt_update'],
+  }
+  package {'thruk':
+      ensure  => 'installed',
+      require => Exec['apt_update'],
+  }
+  file { 'thruk_repo' :
+      ensure  => 'file',
+      name    => '/etc/apt/sources.list.d/labs-consol-stable.list',
+      mode    => '0640',
+      content => 'deb http://labs.consol.de/repo/stable/ubuntu focal main',
+      require =>  Exec['thruk_gpg_key'],
+  }
+  exec { 'thruk_gpg_key':
+      command => 'curl -s "https://labs.consol.de/repo/stable/RPM-GPG-KEY" | sudo apt-key add -',
+      unless  => 'apt-key list 2> /dev/null | grep "F2F9 7737 B59A CCC9 2C23  F8C7 F8C1 CA08 A57B 9ED7"',
+  }
+  exec { 'apt_update':
+      command => 'apt update',
+      require => File['thruk_repo'],
+  }
+  sunet::nagios::nrpe_command {'check_users':
+    command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
+  }
+  sunet::nagios::nrpe_command {'check_load':
+    command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
+  }
+  if $::fqdn == 'docker.sunet.se' {
+    sunet::nagios::nrpe_command {'check_root':
+        command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /'
+    }
+  } else {
+    sunet::nagios::nrpe_command {'check_root':
+        command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -p /'
+    }
+  }
+  sunet::nagios::nrpe_command {'check_boot':
+    command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
+  }
+  if $::fqdn == 'docker.sunet.se' {
+    sunet::nagios::nrpe_command {'check_var':
+        command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /var'
+    }
+  } else {
+    sunet::nagios::nrpe_command {'check_var':
+        command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /var'
+    }
+  }
+  sunet::nagios::nrpe_command {'check_zombie_procs':
+    command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
+  }
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '12.04') <= 0 {
+    sunet::nagios::nrpe_command {'check_total_procs_lax':
+        command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
+    }
+  } else {
+    if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
+      # There are more processes than normal on frontend hosts
       sunet::nagios::nrpe_command {'check_total_procs_lax':
-         command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
+        command_line => '/usr/lib/nagios/plugins/check_procs -k -w 500 -c 750'
       }
-   } else {
-     if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
-       # There are more processes than normal on frontend hosts
-       sunet::nagios::nrpe_command {'check_total_procs_lax':
-         command_line => '/usr/lib/nagios/plugins/check_procs -k -w 500 -c 750'
-       }
-     } else {
-       sunet::nagios::nrpe_command {'check_total_procs_lax':
-         command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
-       }
-     }
-   }
-   sunet::nagios::nrpe_command {'check_uptime':
-      command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
-   }
-   sunet::nagios::nrpe_command {'check_reboot':
-      command_line => '/usr/lib/nagios/plugins/check_reboot'
-   }
-   sunet::nagios::nrpe_command {'check_status':
-      command_line => '/usr/local/bin/check_status'
-   }
-   sunet::nagios::nrpe_command {'check_mailq':
-      command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
-   }
-   file { "/usr/lib/nagios/plugins/check_uptime.pl" :
-       ensure  => 'file',
-       mode    => '0751',
-       group   => 'nagios',
-       require => Package['nagios-nrpe-server'],
-       content => template('sunet/nagioshost/check_uptime.pl.erb'),
-   }
-   file { "/usr/lib/nagios/plugins/check_reboot" :
-       ensure  => 'file',
-       mode    => '0751',
-       group   => 'nagios',
-       require => Package['nagios-nrpe-server'],
-       content => template('sunet/nagioshost/check_reboot.erb'),
-   }
-   file { "/usr/lib/nagios/plugins/check_process" :
-       ensure  => 'file',
-       mode    => '0751',
-       group   => 'nagios',
-       require => Package['nagios-nrpe-server'],
-       content => template('sunet/nagioshost/check_process.erb'),
-   }
-   if ($::operatingsystem == 'Ubuntu' and $::operatingsystemmajrelease == '16.04') {
-      file { "/usr/lib/nagios/plugins/check_memory":
-          ensure  => 'file',
-          mode    => '0751',
-          group   => 'nagios',
-          require => Package['nagios-nrpe-server'],
-          content => template('sunet/nagioshost/check_memory_patched_806598.erb'),
+    } else {
+      sunet::nagios::nrpe_command {'check_total_procs_lax':
+        command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
       }
-   }
-   $nrpe_clients.each |$client| {
-      $client_name = regsubst($client,'([.:]+)','_','G')
-      ufw::allow { "allow-nrpe-${client_name}":
-         from  => "${client}",
-         ip    => 'any',
-         proto => 'tcp',
-         port  => '5666',
-      }
-   }
+    }
+  }
+  sunet::nagios::nrpe_command {'check_uptime':
+    command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
+  }
+  sunet::nagios::nrpe_command {'check_reboot':
+    command_line => '/usr/lib/nagios/plugins/check_reboot'
+  }
+  sunet::nagios::nrpe_command {'check_status':
+    command_line => '/usr/local/bin/check_status'
+  }
+  sunet::nagios::nrpe_command {'check_mailq':
+    command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
+  }
+  file { '/usr/lib/nagios/plugins/check_uptime.pl' :
+      ensure  => 'file',
+      mode    => '0751',
+      group   => 'nagios',
+      require => Package['nagios-nrpe-server'],
+      content => template('sunet/nagioshost/check_uptime.pl.erb'),
+  }
+  file { '/usr/lib/nagios/plugins/check_reboot' :
+      ensure  => 'file',
+      mode    => '0751',
+      group   => 'nagios',
+      require => Package['nagios-nrpe-server'],
+      content => template('sunet/nagioshost/check_reboot.erb'),
+  }
+  file { '/usr/lib/nagios/plugins/check_process' :
+      ensure  => 'file',
+      mode    => '0751',
+      group   => 'nagios',
+      require => Package['nagios-nrpe-server'],
+      content => template('sunet/nagioshost/check_process.erb'),
+  }
+  if ($::operatingsystem == 'Ubuntu' and $::operatingsystemmajrelease == '16.04') {
+    file { '/usr/lib/nagios/plugins/check_memory':
+        ensure  => 'file',
+        mode    => '0751',
+        group   => 'nagios',
+        require => Package['nagios-nrpe-server'],
+        content => template('sunet/nagioshost/check_memory_patched_806598.erb'),
+    }
+  }
+  $nrpe_clients.each |$client| {
+    $client_name = regsubst($client,'([.:]+)','_','G')
+    ufw::allow { "allow-nrpe-${client_name}":
+        from  => "${client}",
+        ip    => 'any',
+        proto => 'tcp',
+        port  => '5666',
+    }
+  }
 }
