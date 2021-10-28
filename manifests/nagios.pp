@@ -56,10 +56,6 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
       command => 'curl -s "https://labs.consol.de/repo/stable/RPM-GPG-KEY" | sudo apt-key add -',
       unless  => 'apt-key list 2> /dev/null | grep "F2F9 7737 B59A CCC9 2C23  F8C7 F8C1 CA08 A57B 9ED7"',
   }
-  exec { 'apt_update':
-      command => 'apt update',
-      require => File['thruk_repo'],
-  }
   sunet::nagios::nrpe_command {'check_users':
     command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
   }
