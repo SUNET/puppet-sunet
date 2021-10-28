@@ -7,7 +7,28 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
   $nagios_ip_v6 = hiera('nagios_ip_v6', '2001:948:4:6::111')
   $nrpe_clients = hiera_array('nrpe_clients',['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
   #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
+
+
   $allowed_hosts = join($nrpe_clients,',')
+
+  $thruk_local_config = '# File managed by puppet
+  <Component Thruk::Backend>
+    <peer>
+        name   = Core
+        type   = livestatus
+        <options>
+            peer          = /var/cache/thruk/live.sock
+            resource_file = /etc/nagios4/resource.cfg
+       </options>
+       <configtool>
+            core_conf      = /etc/nagios4/nagios.cfg
+            obj_check_cmd  = /usr/sbin/nagios4 -v /etc/nagios4/nagios.cfg
+           obj_reload_cmd  = systemctl reload nagios4.service
+       </configtool>
+    </peer>
+</Component>
+cookie_auth_restricted_url = https://monitor.drive.sunet.se/thruk/cgi-bin/restricted.cgi
+'
 
   package {$nrpe_service:
       ensure => 'installed',
@@ -23,6 +44,10 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
       mode   => '0644',
       notify => Service[$nrpe_service]
   }
+  file_line {'nagios_livestatus_conf':
+    line => 'broker_module=/usr/local/lib/mk-livestatus/livestatus.o /var/cache/thruk/live.sock',
+    path => '/etc/nagios4/nagios.cfg'
+  }
   concat::fragment {'sunet_nrpe_commands':
       target  => '/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg',
       content => '# Do not edit by hand - maintained by puppet',
@@ -37,13 +62,27 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
       require => Package['nagios-nrpe-server'],
       content => template('sunet/nagioshost/nrpe.cfg.erb'),
   }
-  package {'naemon-livestatus':
-      ensure  => 'installed',
-      require => [Exec['apt_update'],File['thruk_repo']]
+  exec {'mk-livestatus-src':
+      command => 'curl -s https://download.checkmk.com/checkmk/1.5.0p24/mk-livestatus-1.5.0p24.tar.gz --output /opt/mk-livestatus-1.5.0p24.tar.gz',
+      unless  => 'ls /usr/local/lib/mk-livestatus/livestatus.o',
+  }
+  exec {'mk-livestatus-tar':
+    command => 'cd /opt && tar xfv mk-livestatus-1.5.0p24.tar.gz',
+    require => Exec['mk-livestatus-src'],
+    unless  => 'ls /usr/local/lib/mk-livestatus/livestatus.o',
+  }
+  exec {'mk-livestatus-build':
+    command => 'apt update && apt install -y make libboost-system1.71.0 clang librrd-dev libboost-dev libasio-dev libboost-system-dev && cd /opt/mk-livestatus-1.5.0p24 && ./configure --with-nagios4 && make && make install && apt -y remove clang librrd-dev libboost-dev libasio-dev libboost-system-dev make && apt autoremove -y',
+    require => [Exec['mk-livestatus-tar'], File_line['nagios_livestatus_conf'], Exec['www-data_in_nagios_group']],
+    unless  => 'ls /usr/local/lib/mk-livestatus/livestatus.o',
+  }
+  exec {'www-data_in_nagios_group':
+    command => 'usermod -a -G nagios www-data',
+    unless  => 'id www-data | grep nagios',
   }
   package {'thruk':
       ensure  => 'installed',
-      require => Package['naemon-livestatus'],
+      require => Exec['mk-livestatus-build'],
   }
   package {'thruk-plugin-reporting':
       ensure  => 'installed',
@@ -55,6 +94,15 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
       mode    => '0640',
       content => 'deb http://labs.consol.de/repo/stable/ubuntu focal main',
       require =>  Exec['thruk_gpg_key'],
+  }
+  file { 'thruk_conf' :
+      ensure  => 'file',
+      name    => '/etc/thruk/thruk_local.conf',
+      mode    => '0640',
+      user    => 'www-data',
+      group   => 'www-data',
+      content => $thruk_local_config,
+      require => Package['thruk'],
   }
   exec { 'thruk_gpg_key':
       command => 'curl -s "https://labs.consol.de/repo/stable/RPM-GPG-KEY" | sudo apt-key add -',
