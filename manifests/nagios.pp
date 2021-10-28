@@ -48,6 +48,13 @@ cookie_auth_restricted_url = https://monitor.drive.sunet.se/thruk/cgi-bin/restri
     line => 'broker_module=/usr/local/lib/mk-livestatus/livestatus.o /var/cache/thruk/live.sock',
     path => '/etc/nagios4/nagios.cfg'
   }
+  file_line {'nagiosadmin_cgi_conf':
+    line               => 'authorized_for_admin=nagiosadmin',
+    match              => '^authorized_for_admin=thrukadmin',
+    path               => '/etc/thruk/cgi.cfg',
+    append_on_no_match => false,
+    require            => Package['thruk'],
+  }
   concat::fragment {'sunet_nrpe_commands':
       target  => '/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg',
       content => '# Do not edit by hand - maintained by puppet',
