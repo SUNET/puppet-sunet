@@ -77,7 +77,7 @@ cookie_auth_restricted_url = https://monitor.drive.sunet.se/thruk/cgi-bin/restri
     unless  => 'ls /usr/local/lib/mk-livestatus/livestatus.o',
   }
   exec {'www-data_in_nagios_group':
-    command => 'usermod -a -G nagios www-data',
+    command => 'usermod -a -G nagios www-data && usermod -a -G www-data nagios',
     unless  => 'id www-data | grep nagios',
   }
   package {'thruk':
