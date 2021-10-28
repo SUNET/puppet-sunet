@@ -37,13 +37,17 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
       require => Package['nagios-nrpe-server'],
       content => template('sunet/nagioshost/nrpe.cfg.erb'),
   }
-  package {'mk-livestatus':
+  package {'naemon-livestatus':
       ensure  => 'installed',
       require => [Exec['apt_update'],File['thruk_repo']]
   }
   package {'thruk':
       ensure  => 'installed',
-      require => Package['mk-livestatus'],
+      require => Package['naemon-livestatus'],
+  }
+  package {'thruk-plugin-reporting':
+      ensure  => 'installed',
+      require => Package['thruk'],
   }
   file { 'thruk_repo' :
       ensure  => 'file',
