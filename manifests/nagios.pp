@@ -148,3 +148,4 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
     }
   }
 }
+
