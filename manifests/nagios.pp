@@ -39,11 +39,11 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
   }
   package {'mk-livestatus':
       ensure  => 'installed',
-      require => Exec['apt_update'],
+      require => [Exec['apt_update'],File['thruk_repo']]
   }
   package {'thruk':
       ensure  => 'installed',
-      require => Exec['apt_update'],
+      require => Package['mk-livestatus'],
   }
   file { 'thruk_repo' :
       ensure  => 'file',
