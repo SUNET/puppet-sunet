@@ -74,7 +74,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
         command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
     }
   } else {
-    if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
+    if match($::fqdn,'^lb[1-4]'){
       # There are more processes than normal on frontend hosts
       sunet::nagios::nrpe_command {'check_total_procs_lax':
         command_line => '/usr/lib/nagios/plugins/check_procs -k -w 1000 -c 1200'
