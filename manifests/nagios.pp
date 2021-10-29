@@ -44,7 +44,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
   }
   if match($::fqdn,'^(multinode|lb[1-4])'){
     sunet::nagios::nrpe_command {'check_load':
-      command_line => '/usr/lib/nagios/plugins/check_load -w 30,25,20 -c 50,40,30'
+      command_line => '/usr/lib/nagios/plugins/check_load -w 40,30,25 -c 50,40,30'
     }
   } else {
     sunet::nagios::nrpe_command {'check_load':
