@@ -42,8 +42,14 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
   sunet::nagios::nrpe_command {'check_users':
     command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
   }
-  sunet::nagios::nrpe_command {'check_load':
-    command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
+  if match($::fqdn,'^(multinode|lb[1-4])'){
+    sunet::nagios::nrpe_command {'check_load':
+      command_line => '/usr/lib/nagios/plugins/check_load -w 30,25,20 -c 50,40,30'
+    }
+  } else {
+    sunet::nagios::nrpe_command {'check_load':
+      command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
+    }
   }
   if $::fqdn == 'docker.sunet.se' {
     sunet::nagios::nrpe_command {'check_root':
