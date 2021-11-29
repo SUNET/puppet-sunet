@@ -106,11 +106,19 @@ class sunet::pypi (
         unless  => '/usr/bin/test -s /opt/pypi/nginx/dhparam.pem',
     }
 
+    # change user to root as pypi no longer have permission to chattr
+    cron { 'set_packages_immutable':
+        ensure  => absent,
+        command => "/usr/bin/chattr +i ${home}/packages/*",
+        user    => 'pypi',
+        minute  => '*/1',
+    }
+
     # Use plain cron as to not bog down other scriptherder checks with many many logs
     cron { 'set_packages_immutable':
         ensure  => present,
         command => "/usr/bin/chattr +i ${home}/packages/*",
-        user    => 'pypi',
+        user    => 'root',
         minute  => '*/1',
     }
 
