@@ -20,6 +20,10 @@ define sunet::onlyoffice::docs(
      default => ["JWT_ENABLED=yes","JWT_SECRET=$jwt_secret"]
   }
 
+  exec {"${name}_mkdir_basedir":
+     command => "mkdir -p ${basedir}",
+     unless  => "/usr/bin/test -d ${basedir}"
+  } ->
   file {[$basedir,"$basedir/logs","$basedir/data","$basedir/data/certs",
          "$basedir/lib","$basedir/db"]: ensure => directory } ->
 
