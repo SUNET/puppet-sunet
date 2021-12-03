@@ -14,7 +14,7 @@ define sunet::onlyoffice::docs(
  
   $le_env = $letsencrypt ? {
      'no'    => [],
-     default => ["LETS_ENCRYPT_DOMAIN=$hostname,"LETS_ENCRYPT_MAIL=$contact_mail"]
+     default => ["LETS_ENCRYPT_DOMAIN=$hostname","LETS_ENCRYPT_MAIL=$contact_mail"]
   }
 
   $jwt_secret = safe_hiera('onlyoffice_jwt_secret',undef)
