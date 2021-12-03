@@ -18,7 +18,7 @@ define sunet::onlyoffice::docs(
   }
 
   $jwt_secret = safe_hiera('onlyoffice_jwt_secret',undef)
-  $jwt_env = $jwt_secret = {
+  $jwt_env = $jwt_secret ? {
      undef   => [],
      default => ["JWT_ENABLED=yes","JWT_SECRET=$jwt_secret"]
   }
