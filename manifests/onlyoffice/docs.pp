@@ -9,9 +9,6 @@ define sunet::onlyoffice::docs(
   Optional[String]  $contact_mail = "noc@sunet.se",
   ) {
 
-  file {[$basedir,"$basedir/logs","$basedir/data","$basedir/data/certs",
-         "$basedir/lib","$basedir/db"]: ensure => directory }
- 
   $le_env = $letsencrypt ? {
      'no'    => [],
      default => ["LETS_ENCRYPT_DOMAIN=$hostname","LETS_ENCRYPT_MAIL=$contact_mail"]
@@ -22,6 +19,9 @@ define sunet::onlyoffice::docs(
      undef   => [],
      default => ["JWT_ENABLED=yes","JWT_SECRET=$jwt_secret"]
   }
+
+  file {[$basedir,"$basedir/logs","$basedir/data","$basedir/data/certs",
+         "$basedir/lib","$basedir/db"]: ensure => directory } ->
 
   exec {"${name}_create_dhparam":
      command => "/usr/bin/openssl dhparam -out $basedir/data/certs/dhparam.pem 2048",
