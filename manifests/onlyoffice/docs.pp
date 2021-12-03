@@ -5,6 +5,9 @@ define sunet::onlyoffice::docs(
   String            $docker_tag   = 'latest',
   String            $basedir      = "/opt/onlyoffice/docs/${name}",
   String            $hostname     = $::fqdn,
+  String            $db_host      = undef
+  String            $db_name      = "onlyoffice",
+  String            $db_user      = "onlyoffice",
   Enum['yes', 'no'] $letsencrypt  = 'no',
   Optional[String]  $contact_mail = "noc@sunet.se",
   ) {
@@ -18,6 +21,14 @@ define sunet::onlyoffice::docs(
   $jwt_env = $jwt_secret ? {
      undef   => [],
      default => ["JWT_ENABLED=yes","JWT_SECRET=$jwt_secret"]
+  }
+
+  $db_pwd = safe_hiera('onlyoffice_db_pwd',undef)
+
+  $db_env = ["DB_HOST=$db_host","DB_NAME=$db_name","DB_USER=$db_user"]
+  $db_pwd_env = $db_pwd ? {
+     undef   => [],
+     default => ["DB_PWD=$db_pwd"]
   }
 
   exec {"${name}_mkdir_basedir":
@@ -42,6 +53,6 @@ define sunet::onlyoffice::docs(
                    "$basedir/db:/var/lib/postgresql"
                   ],
       ports    => ["$port:80","$tls_port:443"],
-      env      => flatten([$le_env,$jwt_env]),
+      env      => flatten([$le_env,$jwt_env,$db_env,$db_pwd_env]),
   }
 }
