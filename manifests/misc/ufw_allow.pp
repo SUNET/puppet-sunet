@@ -23,6 +23,7 @@ define sunet::misc::ufw_allow(
       }
       each(flatten([$port])) |$_port| {
         each(flatten([$proto])) |$_proto| {
+          include ufw
           ensure_resource('ufw::allow', "_ufw_allow__from_${_from}__to_${_to}__${_port}/${_proto}", {
             from  => $_from,
             ip    => $_to,
