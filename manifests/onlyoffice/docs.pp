@@ -1,7 +1,7 @@
 define sunet::onlyoffice::docs(
   Integer           $port         = 80,
   Integer           $tls_port     = 443,
-  Optional[String]  $docker_image = "onlyoffice/documentserver"
+  Optional[String]  $docker_image = "onlyoffice/documentserver",
   String            $docker_tag   = 'latest',
   String            $basedir      = "/opt/onlyoffice/docs/${name}",
   String            $hostname     = $::fqdn,
@@ -11,7 +11,7 @@ define sunet::onlyoffice::docs(
 
   file {[$basedir,"$basedir/logs","$basedir/data","$basedir/data/certs",
          "$basedir/lib","$basedir/db"]: ensure => directory }
-  
+ 
   $le_env = $letsencrypt ? {
      'no'    => [],
      default => ["LETS_ENCRYPT_DOMAIN=$hostname,"LETS_ENCRYPT_MAIL=$contact_mail"]
@@ -26,7 +26,7 @@ define sunet::onlyoffice::docs(
   exec {"${name}_create_dhparam":
      command => "/usr/bin/openssl dhparam -out $basedir/data/certs/dhparam.pem 2048",
      unless  => "/usr/bin/test -s $basedir/data/certs/dhparam.pem"
-  } -> 
+  } ->
 
   sunet::docker_run { $name:
       image    => $docker_image,
