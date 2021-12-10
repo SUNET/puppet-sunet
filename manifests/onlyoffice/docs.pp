@@ -49,7 +49,6 @@ define sunet::onlyoffice::docs(
                     "${basedir}/logs:/var/log/onlyoffice",
                     "${basedir}/data:/var/www/onlyoffice/Data",
                     "${basedir}/lib:/var/lib/onlyoffice",
-                    "${basedir}/db:/var/lib/postgresql"
                   ],
       ports    => ["${port}:80","${tls_port}:443"],
       env      => flatten([$le_env,$jwt_env,$db_env,$db_pwd_env]),
