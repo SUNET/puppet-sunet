@@ -25,7 +25,7 @@ define sunet::onlyoffice::docs(
   $amqp_secret = safe_hiera('amqp_password',undef)
   $amqp_env = $amqp_secret ? {
     undef   => [],
-    default => ["AMQP_TYPE=${amqp_type}","AMQP_URI=amqp://${amqp_user}:${amqp_secret}@${amqp_server}"]
+    default => ["AMQP_TYPE=${amqp_type}","AMQP_URI=amqp://${amqp_user}:${amqp_secret}@${amqp_server}:5672"]
   }
 
   $db_pwd = safe_hiera('mysql_user_password',undef)
