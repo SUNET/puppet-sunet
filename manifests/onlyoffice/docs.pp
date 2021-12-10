@@ -1,23 +1,24 @@
 # OnlyOffice document server
 define sunet::onlyoffice::docs(
-  Tuple             $amqp_servers = [],
-  Optional[String]  $amqp_type    = 'rabbitmq',
-  Optional[String]  $amqp_user    = 'sunet',
-  String            $basedir      = "/opt/onlyoffice/docs/${name}",
-  Optional[String]  $contact_mail = 'noc@sunet.se',
-  String            $db_host      = undef,
-  String            $db_name      = 'onlyoffice',
-  Optional[String]  $db_type      = 'mariadb',
-  String            $db_user      = 'onlyoffice',
-  Optional[String]  $docker_image = 'onlyoffice/documentserver',
-  String            $docker_tag   = 'latest',
-  Tuple             $dns          = [],
-  String            $hostname     = $::fqdn,
-  Enum['yes', 'no'] $letsencrypt  = 'no',
-  Integer           $port         = 80,
-  String            $redis_host   = undef,
-  Optional[Integer] $redis_port   = 6379,
-  Integer           $tls_port     = 443,
+  Array[String]     $amqp_servers     = [],
+  Optional[String]  $amqp_type        = 'rabbitmq',
+  Optional[String]  $amqp_user        = 'sunet',
+  String            $basedir          = "/opt/onlyoffice/docs/${name}",
+  Optional[String]  $contact_mail     = 'noc@sunet.se',
+  String            $db_host          = undef,
+  String            $db_name          = 'onlyoffice',
+  Optional[String]  $db_type          = 'mariadb',
+  String            $db_user          = 'onlyoffice',
+  Optional[String]  $docker_image     = 'onlyoffice/documentserver',
+  String            $docker_tag       = 'latest',
+  Array[String]     $dns              = [],
+  String            $external_network = undef,
+  String            $hostname         = $::fqdn,
+  Enum['yes', 'no'] $letsencrypt      = 'no',
+  Integer           $port             = 80,
+  String            $redis_host       = undef,
+  Optional[Integer] $redis_port       = 6379,
+  Integer           $tls_port         = 443,
   ) {
 
   sunet::system_user {'ds': username => 'ds', group => 'ds' }
@@ -68,5 +69,5 @@ define sunet::onlyoffice::docs(
     description      => 'OnlyOffice Document Server',
   }
   -> file {[$basedir,"${basedir}/logs","${basedir}/data","${basedir}/data/certs",
-  "${basedir}/lib","${basedir}/db"]: ensure => directory }
+  "${basedir}/lib"]: ensure => directory }
 }
