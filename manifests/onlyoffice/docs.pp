@@ -22,7 +22,7 @@ define sunet::onlyoffice::docs(
   $amqp_secret = safe_hiera('amqp_password',undef)
   $amqp_env = $amqp_secret ? {
     undef   => [],
-    default => ["AMQP_TYPE=${amqp_type}","AMQP_URI=amqp://${amqp_user}:${amqp_secret}@${amqp_servers}[0],amqp://${amqp_user}:${amqp_secret}@${amqp_servers}[1],amqp://${amqp_user}:${amqp_secret}@${amqp_servers}[2]"]
+    default => ["AMQP_TYPE=${amqp_type}","AMQP_URI=amqp://${amqp_user}:${amqp_secret}@${amqp_servers[0]},amqp://${amqp_user}:${amqp_secret}@${amqp_servers[1]},amqp://${amqp_user}:${amqp_secret}@${amqp_servers[2]}"]
   }
 
   $db_pwd = safe_hiera('mysql_user_password',undef)
