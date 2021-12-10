@@ -20,6 +20,7 @@ define sunet::onlyoffice::docs(
   Integer           $tls_port     = 443,
   ) {
 
+  sunet::system_user {'ds': username => 'ds', group => 'ds' }
   $amqp_secret = safe_hiera('amqp_password',undef)
   $amqp_env = $amqp_secret ? {
     undef   => [],
@@ -61,6 +62,7 @@ define sunet::onlyoffice::docs(
     unless  => "/usr/bin/test -s ${basedir}/data/certs/dhparam.pem"
   }
   -> sunet::docker_run { $name:
+      dns      => $dns,
       image    => $docker_image,
       imagetag => $docker_tag,
       volumes  => [
