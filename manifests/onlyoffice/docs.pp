@@ -1,6 +1,6 @@
 # OnlyOffice document server
 define sunet::onlyoffice::docs(
-  String            $amqp_server  = undef,
+  String            $amqp_servers = [],
   Optional[String]  $amqp_type    = 'rabbitmq',
   Optional[String]  $amqp_user    = 'sunet',
   String            $basedir      = "/opt/onlyoffice/docs/${name}",
@@ -19,13 +19,13 @@ define sunet::onlyoffice::docs(
   Integer           $tls_port     = 443,
   ) {
 
-  $amqp_secret = safe_hiera('amqp_secret',undef)
+  $amqp_secret = safe_hiera('amqp_password',undef)
   $amqp_env = $amqp_secret ? {
     undef   => [],
-    default => ["AMQP_TYPE=${amqp_type}","AMQP_URI=amqp://${amqp_user}:${amqp_secret}@${amqp_server}"]
+    default => ["AMQP_TYPE=${amqp_type}","AMQP_URI=amqp://${amqp_user}:${amqp_secret}@${amqp_servers}[0],amqp://${amqp_user}:${amqp_secret}@${amqp_servers}[1],amqp://${amqp_user}:${amqp_secret}@${amqp_servers}[2]"]
   }
 
-  $db_pwd = safe_hiera('onlyoffice_db_pwd',undef)
+  $db_pwd = safe_hiera('mysql_user_password',undef)
 
   $db_env = ["DB_HOST=${db_host}","DB_NAME=${db_name}","DB_USER=${db_user}","DB_TYPE=${db_type}"]
   $db_pwd_env = $db_pwd ? {
@@ -33,7 +33,7 @@ define sunet::onlyoffice::docs(
     default => ["DB_PWD=${db_pwd}"]
   }
 
-  $jwt_secret = safe_hiera('onlyoffice_jwt_secret',undef)
+  $jwt_secret = safe_hiera('document_jwt_key',undef)
   $jwt_env = $jwt_secret ? {
     undef   => [],
     default => ['JWT_ENABLED=yes',"JWT_SECRET=${jwt_secret}"]
@@ -44,7 +44,7 @@ define sunet::onlyoffice::docs(
     default => ["LETS_ENCRYPT_DOMAIN=${hostname}","LETS_ENCRYPT_MAIL=${contact_mail}"]
   }
 
-  $redis_secret = safe_hiera('redis_secret',undef)
+  $redis_secret = safe_hiera('redis_host_password',undef)
   $redis_env = $redis_secret ? {
     undef   => [],
     default => ["REDIS_SERVER_HOST=${redis_host}","REDIS_SERVER_PASSWORD=${redis_secret}","REDIS_SERVER_PORT=${redis_port}"]
