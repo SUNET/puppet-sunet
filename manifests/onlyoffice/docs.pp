@@ -11,6 +11,7 @@ define sunet::onlyoffice::docs(
   String            $db_user      = 'onlyoffice',
   Optional[String]  $docker_image = 'onlyoffice/documentserver',
   String            $docker_tag   = 'latest',
+  Tuple             $dns          = [],
   String            $hostname     = $::fqdn,
   Enum['yes', 'no'] $letsencrypt  = 'no',
   Integer           $port         = 80,
