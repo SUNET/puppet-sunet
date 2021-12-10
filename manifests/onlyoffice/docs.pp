@@ -1,21 +1,36 @@
 # OnlyOffice document server
 define sunet::onlyoffice::docs(
-  Integer           $port         = 80,
-  Integer           $tls_port     = 443,
-  Optional[String]  $docker_image = 'onlyoffice/documentserver',
-  String            $docker_tag   = 'latest',
+  String            $amqp_server  = undef,
+  Optional[String]  $amqp_type    = 'rabbitmq',
+  Optional[String]  $amqp_user    = 'sunet',
   String            $basedir      = "/opt/onlyoffice/docs/${name}",
-  String            $hostname     = $::fqdn,
+  Optional[String]  $contact_mail = 'noc@sunet.se',
   String            $db_host      = undef,
   String            $db_name      = 'onlyoffice',
+  Optional[String]  $db_type      = 'mariadb',
   String            $db_user      = 'onlyoffice',
+  Optional[String]  $docker_image = 'onlyoffice/documentserver',
+  String            $docker_tag   = 'latest',
+  String            $hostname     = $::fqdn,
   Enum['yes', 'no'] $letsencrypt  = 'no',
-  Optional[String]  $contact_mail = 'noc@sunet.se',
+  Integer           $port         = 80,
+  String            $redis_host   = undef,
+  Optional[String]  $redis_port   = 6379,
+  Integer           $tls_port     = 443,
   ) {
 
-  $le_env = $letsencrypt ? {
-    'no'    => [],
-    default => ["LETS_ENCRYPT_DOMAIN=${hostname}","LETS_ENCRYPT_MAIL=${contact_mail}"]
+  $amqp_secret = safe_hiera('amqp_secret',undef)
+  $amqp_env = $amqp_secret ? {
+    undef   => [],
+    default => ["AMQP_TYPE=${amqp_type}","AMQP_URI=amqp://${amqp_user}:${amqp_secret}@${amqp_server}"]
+  }
+
+  $db_pwd = safe_hiera('onlyoffice_db_pwd',undef)
+
+  $db_env = ["DB_HOST=${db_host}","DB_NAME=${db_name}","DB_USER=${db_user}","DB_TYPE=${db_type}"]
+  $db_pwd_env = $db_pwd ? {
+    undef   => [],
+    default => ["DB_PWD=${db_pwd}"]
   }
 
   $jwt_secret = safe_hiera('onlyoffice_jwt_secret',undef)
@@ -24,14 +39,16 @@ define sunet::onlyoffice::docs(
     default => ['JWT_ENABLED=yes',"JWT_SECRET=${jwt_secret}"]
   }
 
-  $db_pwd = safe_hiera('onlyoffice_db_pwd',undef)
-
-  $db_env = ["DB_HOST=${db_host}","DB_NAME=${db_name}","DB_USER=${db_user}"]
-  $db_pwd_env = $db_pwd ? {
-    undef   => [],
-    default => ["DB_PWD=${db_pwd}"]
+  $le_env = $letsencrypt ? {
+    'no'    => [],
+    default => ["LETS_ENCRYPT_DOMAIN=${hostname}","LETS_ENCRYPT_MAIL=${contact_mail}"]
   }
 
+  $redis_secret = safe_hiera('redis_secret',undef)
+  $redis_env = $redis_secret ? {
+    undef   => [],
+    default => ["REDIS_SERVER_HOST=${redis_host}","REDIS_SERVER_PASSWORD=${redis_secret}","REDIS_SERVER_PORT=${redis_port}"]
+  }
   exec {"${name}_mkdir_basedir":
     command => "mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}"
@@ -51,6 +68,6 @@ define sunet::onlyoffice::docs(
                     "${basedir}/lib:/var/lib/onlyoffice",
                   ],
       ports    => ["${port}:80","${tls_port}:443"],
-      env      => flatten([$le_env,$jwt_env,$db_env,$db_pwd_env]),
+      env      => flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env]),
   }
 }
