@@ -56,8 +56,6 @@ define sunet::onlyoffice::docs(
     command => "mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}"
   }
-  -> file {[$basedir,"${basedir}/logs","${basedir}/data","${basedir}/data/certs",
-  "${basedir}/lib","${basedir}/db"]: ensure => directory }
   -> exec {"${name}_create_dhparam":
     command => "/usr/bin/openssl dhparam -out ${basedir}/data/certs/dhparam.pem 2048",
     unless  => "/usr/bin/test -s ${basedir}/data/certs/dhparam.pem"
@@ -69,4 +67,6 @@ define sunet::onlyoffice::docs(
     compose_filename => 'docker-compose.yml',
     description      => 'OnlyOffice Document Server',
   }
+  -> file {[$basedir,"${basedir}/logs","${basedir}/data","${basedir}/data/certs",
+  "${basedir}/lib","${basedir}/db"]: ensure => directory }
 }
