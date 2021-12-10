@@ -4,6 +4,11 @@ services:
 
     document-server:
       image: <%= @docker_image %>:<%= @docker_tag %>
+      networks:
+        - default
+<% if @external_network -%>
+        - <%= @external_network %>
+<% end -%>
       dns:
         - 89.32.32.32
       ports:
@@ -18,3 +23,8 @@ services:
         - "<%= environ %>"
         <%- end -%>
       restart: always
+<% if @external_network -%>
+networks:
+  <%= @external_network %>:
+    external: true
+<% end -%>
