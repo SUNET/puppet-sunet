@@ -1,6 +1,6 @@
 # OnlyOffice document server
 define sunet::onlyoffice::docs(
-  String            $amqp_servers = [],
+  Tuple             $amqp_servers = [],
   Optional[String]  $amqp_type    = 'rabbitmq',
   Optional[String]  $amqp_user    = 'sunet',
   String            $basedir      = "/opt/onlyoffice/docs/${name}",
@@ -15,7 +15,7 @@ define sunet::onlyoffice::docs(
   Enum['yes', 'no'] $letsencrypt  = 'no',
   Integer           $port         = 80,
   String            $redis_host   = undef,
-  Optional[String]  $redis_port   = 6379,
+  Optional[Integer] $redis_port   = 6379,
   Integer           $tls_port     = 443,
   ) {
 
