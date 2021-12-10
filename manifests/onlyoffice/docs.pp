@@ -51,6 +51,7 @@ define sunet::onlyoffice::docs(
     undef   => [],
     default => ["REDIS_SERVER_HOST=${redis_host}","REDIS_SERVER_PASSWORD=${redis_secret}","REDIS_SERVER_PORT=${redis_port}"]
   }
+  $ds_environment = flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env])
   exec {"${name}_mkdir_basedir":
     command => "mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}"
@@ -61,16 +62,11 @@ define sunet::onlyoffice::docs(
     command => "/usr/bin/openssl dhparam -out ${basedir}/data/certs/dhparam.pem 2048",
     unless  => "/usr/bin/test -s ${basedir}/data/certs/dhparam.pem"
   }
-  -> sunet::docker_run { $name:
-      dns      => $dns,
-      image    => $docker_image,
-      imagetag => $docker_tag,
-      volumes  => [
-                    "${basedir}/logs:/var/log/onlyoffice",
-                    "${basedir}/data:/var/www/onlyoffice/Data",
-                    "${basedir}/lib:/var/lib/onlyoffice",
-                  ],
-      ports    => ["${port}:80","${tls_port}:443"],
-      env      => flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env]),
+  -> sunet::docker_compose { $name:
+    content          => template('sunet/onlyoffice/docker-compose.yml.erb'),
+    service_name     => 'onlyoffice',
+    compose_dir      => '/opt/',
+    compose_filename => 'docker-compose.yml',
+    description      => 'OnlyOffice Document Server',
   }
 }
