@@ -15,6 +15,7 @@ services:
         - "<%= @port %>:80"
         - "<%= @tls_port %>:443"
       volumes:
+        - "<%= @basedir %>/run-document-server.sh:/app/ds/run-document-server.sh"
         - "<%= @basedir %>/logs:/var/log/onlyoffice"
         - "<%= @basedir %>/data:/var/www/onlyoffice/Data"
         - "<%= @basedir %>/lib:/var/lib/onlyoffice"
