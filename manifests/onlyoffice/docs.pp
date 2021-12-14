@@ -70,7 +70,7 @@ define sunet::onlyoffice::docs(
   }
   -> file { "${basedir}/run-document-server.sh":
     ensure  => file,
-    mode    => 0755,
+    mode    => '0755',
     content => template('sunet/onlyoffice/run-document-server.sh.erb'),
   }
   -> file {[$basedir,"${basedir}/logs","${basedir}/data","${basedir}/data/certs",
