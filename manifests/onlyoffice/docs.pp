@@ -43,7 +43,7 @@ define sunet::onlyoffice::docs(
   $jwt_secret = safe_hiera('document_jwt_key',undef)
   $jwt_env = $jwt_secret ? {
     undef   => [],
-    default => ['JWT_ENABLED=yes',"JWT_SECRET=${jwt_secret}"]
+    default => ['JWT_ENABLED=true',"JWT_SECRET=${jwt_secret}"]
   }
 
   $le_env = $letsencrypt ? {
