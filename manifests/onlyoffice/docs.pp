@@ -66,7 +66,7 @@ define sunet::onlyoffice::docs(
     unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.key"
   }
   -> exec {"${name}_create_csr":
-    command => "/usr/bin/openssl req -new -key ${basedir}/data/certs/onlyoffice.key -out ${basedir}/data/certs/onlyoffice.csr -subj "/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Drive Team/CN=document.drive.sunet.se"",
+    command => "/usr/bin/openssl req -new -key ${basedir}/data/certs/onlyoffice.key -out ${basedir}/data/certs/onlyoffice.csr -subj '/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Drive Team/CN=document.drive.sunet.se'",
     unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.csr"
   }
   -> exec {"${name}_create_crt":
