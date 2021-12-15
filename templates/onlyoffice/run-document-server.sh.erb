@@ -144,6 +144,7 @@ read_setting(){
 
   REDIS_SERVER_HOST=${REDIS_SERVER_HOST:-$(${JSON} services.CoAuthoring.redis.host)}
   REDIS_SERVER_PORT=${REDIS_SERVER_PORT:-6379}
+  REDIS_SERVER_PASSWORD=${REDIS_SERVER_PASSWORD}
 
   DS_LOG_LEVEL=${DS_LOG_LEVEL:-$(${JSON_LOG} categories.default.level)}
 }
@@ -283,6 +284,7 @@ update_redis_settings(){
   ${JSON} -I -e "this.services.CoAuthoring.redis = {}"
   ${JSON} -I -e "this.services.CoAuthoring.redis.host = '${REDIS_SERVER_HOST}'"
   ${JSON} -I -e "this.services.CoAuthoring.redis.port = '${REDIS_SERVER_PORT}'"
+  ${JSON} -I -e "this.services.CoAuthoring.redis.password = '${REDIS_SERVER_PASSWORD}'"
 }
 
 update_ds_settings(){
