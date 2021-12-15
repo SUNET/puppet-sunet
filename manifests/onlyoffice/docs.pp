@@ -23,7 +23,7 @@ define sunet::onlyoffice::docs(
 
   sunet::misc::ufw_allow { 'web_ports':
     from => 'any',
-    port => $tls_port,
+    port => [$port, $tls_port, 8000],
   }
   sunet::system_user {'ds': username => 'ds', group => 'ds' }
   $amqp_secret = safe_hiera('amqp_password',undef)
