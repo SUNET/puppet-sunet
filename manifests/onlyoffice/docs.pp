@@ -70,7 +70,7 @@ define sunet::onlyoffice::docs(
     unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.csr"
   }
   -> exec {"${name}_create_crt":
-    command => "/usr/bin/openssl x509 req -days 3650 -signkey ${basedir}/data/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/data/certs/onlyoffice.crt",
+    command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/data/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/data/certs/onlyoffice.crt",
     unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.crt"
   }
   -> exec {"${name}_create_dhparam":
