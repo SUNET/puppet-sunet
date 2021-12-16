@@ -62,7 +62,7 @@ define sunet::onlyoffice::docs(
 
   exec {"${name}_s3plugin_install":
     command => "docker plugin install mochoa/s3fs-volume-plugin --alias s3fs --grant-all-permissions --disable && docker plugin set s3fs AWSACCESSKEYID=${s3_key} && docker plugin set s3fs AWSSECRETACCESSKEY=${s3_secret} && docker plugin set s3fs DEFAULT_S3FSOPTS='nomultipart,use_path_request_style,url=https://${s3_endpoint}/' && docker plugin enable s3fs && docker volume create -d s3fs s3_vol && touch ${basedir}/.vol_created",
-    unless  => "/usr/bin/test -d ${basedir}/.vol_created"
+    unless  => "/usr/bin/test -f ${basedir}/.vol_created"
   }
 
   $ds_environment = flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env])
