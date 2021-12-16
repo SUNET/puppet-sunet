@@ -59,10 +59,11 @@ define sunet::onlyoffice::docs(
   $s3_secret = safe_hiera('s3_secret',undef)
   $s3_key = safe_hiera('s3_key',undef)
   $s3_endpoint = safe_hiera('s3_host','s3.sto4.safedc.net')
+  $s3_conf = base64('encode',"[document-share]\ntype = s3\nprovider = Ceph\naccess_key_id = ${s3_key}\nsecret_access_key = ${s3_secret}\nendpoint = ${s3_endpoint}\nacl = private")
 
   exec {"${name}_s3plugin_install":
-    command => "docker plugin install mochoa/s3fs-volume-plugin --alias s3fs --grant-all-permissions --disable && docker plugin set s3fs AWSACCESSKEYID=${s3_key} && docker plugin set s3fs AWSSECRETACCESSKEY=${s3_secret} && docker plugin set s3fs DEFAULT_S3FSOPTS='nomultipart,use_path_request_style,url=https://${s3_endpoint}/' && docker plugin enable s3fs && docker volume create -d s3fs s3_vol && touch ${basedir}/.vol_created",
-    unless  => "/usr/bin/test -f ${basedir}/.vol_created"
+    command => '/usr/bin/docker plugin install sapk/plugin-rclone --grant-all-permissions',
+    unless  => '/usr/bin/docker plugin ls | grep sapk/plugin-rclone'
   }
 
   $ds_environment = flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env])

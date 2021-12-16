@@ -1,9 +1,10 @@
 version: '3.2'
-
 volumes:
     s3_vol:
-      driver: s3fs
-
+      driver: sapk/plugin-rclone
+      driver_opts:
+        config: "<%= @s3_config %>"
+        remote: "document-share:onlyoffice/data"
 services:
     document-server:
       image: <%= @docker_image %>:<%= @docker_tag %>
