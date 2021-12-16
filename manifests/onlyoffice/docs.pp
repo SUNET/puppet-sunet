@@ -59,10 +59,6 @@ define sunet::onlyoffice::docs(
   $s3_secret = safe_hiera('s3_secret',undef)
   $s3_key = safe_hiera('s3_key',undef)
   $s3_endpoint = safe_hiera('s3_host','s3.sto4.safedc.net')
-  $s3_env = $s3_secret ? {
-    undef   => [],
-    default => ["AWS_ACCESS_KEY_ID=${s3_key}","AWS_SECRET_ACCESS_KEY=${s3_secret}","ENDPOINT_URL=${s3_endpoint}"]
-  }
   $ds_environment = flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env])
   exec {"${name}_mkdir_basedir":
     command => "mkdir -p ${basedir}",
