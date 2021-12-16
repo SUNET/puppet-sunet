@@ -59,7 +59,7 @@ define sunet::onlyoffice::docs(
   $s3_secret = safe_hiera('s3_secret',undef)
   $s3_key = safe_hiera('s3_key',undef)
   $s3_endpoint = safe_hiera('s3_host','s3.sto4.safedc.net')
-  $s3_conf = base64('encode',"[document-share]\ntype = s3\nprovider = Ceph\naccess_key_id = ${s3_key}\nsecret_access_key = ${s3_secret}\nendpoint = ${s3_endpoint}\nacl = private")
+  $s3_config = base64('encode',"[document-share]\ntype = s3\nprovider = Ceph\naccess_key_id = ${s3_key}\nsecret_access_key = ${s3_secret}\nendpoint = ${s3_endpoint}\nacl = private")
 
   exec {"${name}_s3plugin_install":
     command => '/usr/bin/docker plugin install sapk/plugin-rclone --grant-all-permissions',
