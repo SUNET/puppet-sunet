@@ -54,7 +54,14 @@ define sunet::onlyoffice::docs(
   $redis_secret = safe_hiera('redis_host_password',undef)
   $redis_env = $redis_secret ? {
     undef   => [],
-    default => ["REDIS_SERVER_HOST=${redis_host}","REDIS_SERVER_PASSWORD=${redis_secret}","REDIS_SERVER_PORT=${redis_port}"]
+    default => ["REDIS_ENABLED=true","REDIS_SERVER_HOST=${redis_host}","REDIS_SERVER_PASSWORD=${redis_secret}","REDIS_SERVER_PORT=${redis_port}"]
+  }
+  $s3_secret = safe_hiera('s3_secret',undef)
+  $s3_key = safe_hiera('s3_key',undef)
+  $s3_endpoint = safe_hiera('s3_endpoint',undef)
+  $s3_env = $s3_secret ? {
+    undef   => [],
+    default => ["AWS_ACCESS_KEY_ID=${s3_key}","AWS_SECRET_ACCESS_KEY=${s3_secret}","ENDPOINT_URL=${s3_endpoint}"]
   }
   $ds_environment = flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env])
   exec {"${name}_mkdir_basedir":

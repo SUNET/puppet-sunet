@@ -1,7 +1,15 @@
 version: '3.2'
 
-services:
+volumes:
+    s3data:
+      driver: local
 
+services:
+    s3vol:
+      image: elementar/s3-volume
+      command: /data s3://onlyoffice/data
+      volumes:
+	- s3data:/data
     document-server:
       image: <%= @docker_image %>:<%= @docker_tag %>
       networks:
@@ -18,7 +26,7 @@ services:
       volumes:
         - "<%= @basedir %>/run-document-server.sh:/app/ds/run-document-server.sh"
         - "<%= @basedir %>/logs:/var/log/onlyoffice"
-        - "<%= @basedir %>/data:/var/www/onlyoffice/Data"
+        - "s3data:/var/www/onlyoffice/Data"
         - "<%= @basedir %>/lib:/var/lib/onlyoffice"
       environment:
         <%- @ds_environment.each do |environ| -%>
