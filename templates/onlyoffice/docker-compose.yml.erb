@@ -13,7 +13,7 @@ services:
       environment:
         - "AWS_ACCESS_KEY_ID=<%= @s3_key %>"
         - "AWS_SECRET_ACCESS_KEY=<%= @s3_secret %>"
-        - "ENDPOINT_URL=<%= @s3_endpoint %>"
+        - "ENDPOINT_URL=https://<%= @s3_endpoint %>"
     document-server:
       image: <%= @docker_image %>:<%= @docker_tag %>
       networks:
