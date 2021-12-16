@@ -5,6 +5,11 @@ volumes:
       driver_opts:
         config: "<%= @s3_config %>"
         remote: "document-share:onlyoffice/data"
+    s3_lib:
+      driver: 'sapk/plugin-rclone:latest'
+      driver_opts:
+        config: "<%= @s3_config %>"
+        remote: "document-share:onlyoffice/lib"
 services:
     document-server:
       image: <%= @docker_image %>:<%= @docker_tag %>
@@ -23,7 +28,7 @@ services:
         - "<%= @basedir %>/run-document-server.sh:/app/ds/run-document-server.sh"
         - "<%= @basedir %>/logs:/var/log/onlyoffice"
         - "s3_vol:/var/www/onlyoffice/Data"
-        - "<%= @basedir %>/lib:/var/lib/onlyoffice"
+        - "s3_appdata: /var/lib/onlyoffice"
       environment:
         <%- @ds_environment.each do |environ| -%>
         - "<%= environ %>"
