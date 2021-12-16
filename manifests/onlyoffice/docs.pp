@@ -70,22 +70,22 @@ define sunet::onlyoffice::docs(
     command => "mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}"
   }
-  -> exec {"${name}_create_key":
-    command => "/usr/bin/openssl genrsa -out ${basedir}/data/certs/onlyoffice.key 2048",
-    unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.key"
-  }
-  -> exec {"${name}_create_csr":
-    command => "/usr/bin/openssl req -new -key ${basedir}/data/certs/onlyoffice.key -out ${basedir}/data/certs/onlyoffice.csr -subj '/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Drive Team/CN=document.drive.sunet.se'",
-    unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.csr"
-  }
-  -> exec {"${name}_create_crt":
-    command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/data/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/data/certs/onlyoffice.crt",
-    unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.crt"
-  }
-  -> exec {"${name}_create_dhparam":
-    command => "/usr/bin/openssl dhparam -out ${basedir}/data/certs/dhparam.pem 2048",
-    unless  => "/usr/bin/test -s ${basedir}/data/certs/dhparam.pem"
-  }
+  #  -> exec {"${name}_create_key":
+  #  command => "/usr/bin/openssl genrsa -out ${basedir}/data/certs/onlyoffice.key 2048",
+  #  unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.key"
+  # }
+  #  -> exec {"${name}_create_csr":
+  #  command => "/usr/bin/openssl req -new -key ${basedir}/data/certs/onlyoffice.key -out ${basedir}/data/certs/onlyoffice.csr -subj '/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Drive Team/CN=document.drive.sunet.se'",
+  #  unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.csr"
+  #}
+  #  -> exec {"${name}_create_crt":
+  #  command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/data/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/data/certs/onlyoffice.crt",
+  #   unless  => "/usr/bin/test -s ${basedir}/data/certs/onlyoffice.crt"
+  # }
+  # -> exec {"${name}_create_dhparam":
+  #  command => "/usr/bin/openssl dhparam -out ${basedir}/data/certs/dhparam.pem 2048",
+  #  unless  => "/usr/bin/test -s ${basedir}/data/certs/dhparam.pem"
+  #}
   -> sunet::docker_compose { $name:
     content          => template('sunet/onlyoffice/docker-compose.yml.erb'),
     service_name     => 'onlyoffice',
