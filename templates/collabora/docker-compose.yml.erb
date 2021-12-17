@@ -9,6 +9,8 @@ services:
 <% end -%>
       dns:
         - 89.32.32.32
+      volumes:
+        - "<%= @certdir%>:/certs"
       ports:
         - "<%= @tls_port %>:9980"
       environment:
