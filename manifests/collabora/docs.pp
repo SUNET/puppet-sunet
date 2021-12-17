@@ -1,5 +1,5 @@
 # OnlyOffice document server
-define sunet::onlyoffice::docs(
+define sunet::collabora::docs(
   String            $basedir          = "/opt/collabora/docs/${name}",
   String            $contact_mail     = 'noc@sunet.se',
   String            $docker_image     = 'collabora/code',
