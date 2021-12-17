@@ -1,6 +1,7 @@
 # OnlyOffice document server
 define sunet::collabora::docs(
   String            $basedir          = "/opt/collabora/docs/${name}",
+  String            $certdir          = "/opt/collabora/docs/${name}/certs",
   String            $contact_mail     = 'noc@sunet.se',
   String            $docker_image     = 'collabora/code',
   String            $docker_tag       = 'latest',
@@ -11,8 +12,8 @@ define sunet::collabora::docs(
   ) {
 
   $admin_password = safe_hiera('collabora_admin_password')
-  $collabora_conf = ["username=admin","password=${admin_password}","cert_domain=${hostname}", "servername=${hostname}","dictionaries=sv_SE de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru"]
-  $collabora_extra_params = ["extra_params=--o:num_prespawn_children=10"]
+  $collabora_conf = ["username=admin","password=${admin_password}","DONT_GEN_SSL_CERT=''", "servername=${hostname}","dictionaries=sv_SE de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru"]
+  $collabora_extra_params = ["extra_params=--o:num_prespawn_children=10 --o:ssl.cert_file_path=/cert/collabora.crt --o:ssl.key_file_path=/cert/collabora.key"]
   $collabora_env = flatten([$collabora_conf,$collabora_extra_params])
   sunet::misc::ufw_allow { 'web_ports':
     from => 'any',
@@ -29,4 +30,5 @@ define sunet::collabora::docs(
     compose_filename => 'docker-compose.yml',
     description      => 'Collabora CODE Server',
   }
+  -> file {[$basedir, $certdir]: ensure => directory }
 }
