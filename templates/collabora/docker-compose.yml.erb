@@ -11,8 +11,6 @@ services:
         - 89.32.32.32
       ports:
         - "<%= @tls_port %>:9980"
-      volumes:
-        - "<%= @basedir %>/conf/coolwsd.xml:/etc/coolwsd/coolwsd.xml"
       environment:
         <%- @collabora_env.each do |environ| -%>
         - "<%= environ %>"
