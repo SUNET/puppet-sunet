@@ -10,7 +10,7 @@ define sunet::onlyoffice::docs(
   Integer           $tls_port         = 443,
   ) {
 
-  admin_password = safe_hiera('collabora_admin_password')
+  $admin_password = safe_hiera('collabora_admin_password')
   $collabora_conf = ["username=admin","password=${admin_password}","cert_domain=${hostname}", "servername=${hostname}","dictionaries=sv_SE de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru"]
   $collabora_extra_params = ["extra_params=--o:num_prespawn_children=10"]
   $collabora_env = flatten([$collabora_conf,$collabora_extra_params])
