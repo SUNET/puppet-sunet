@@ -5,6 +5,7 @@ define sunet::collabora::docs(
   String            $contact_mail     = 'noc@sunet.se',
   String            $docker_image     = 'collabora/code',
   String            $docker_tag       = 'latest',
+  String            $domain           = 'sunet.se',
   Array[String]     $dns              = [],
   Optional[String]  $external_network = undef,
   String            $hostname         = $::fqdn,
@@ -12,7 +13,7 @@ define sunet::collabora::docs(
   ) {
 
   $admin_password = safe_hiera('collabora_admin_password')
-  $collabora_conf = ["username=admin","password=${admin_password}","DONT_GEN_SSL_CERT=''", "servername=${hostname}","dictionaries=sv_SE de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru"]
+  $collabora_conf = ["username=admin","password=${admin_password}","DONT_GEN_SSL_CERT=''", "servername=${hostname}","dictionaries=sv_SE de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru","domain=.*${domain}" ]
   $collabora_extra_params = ["extra_params=--o:num_prespawn_children=10 --o:ssl.cert_file_path=/certs/collabora.crt --o:ssl.key_file_path=/certs/collabora.key --o:ssl.ca_file_path=/certs/ca-certificates.crt"]
   $collabora_env = flatten([$collabora_conf,$collabora_extra_params])
   sunet::misc::ufw_allow { 'web_ports':
