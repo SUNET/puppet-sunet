@@ -50,7 +50,7 @@ define sunet::onlyoffice::docs(
     'no'    => [],
     default => ["LETS_ENCRYPT_DOMAIN=${hostname}","LETS_ENCRYPT_MAIL=${contact_mail}"]
   }
-
+  $misc_env = ["WOPI_ENABLED=true"]
   $redis_secret = safe_hiera('redis_host_password',undef)
   $redis_env = $redis_secret ? {
     undef   => [],
@@ -66,7 +66,7 @@ define sunet::onlyoffice::docs(
     unless  => '/usr/bin/docker plugin ls | grep sapk/plugin-rclone'
   }
 
-  $ds_environment = flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env])
+  $ds_environment = flatten([$amqp_env,$db_env,$db_pwd_env,$jwt_env,$le_env,$redis_env,$misc_env])
   exec {"${name}_mkdir_basedir":
     command => "mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}"
