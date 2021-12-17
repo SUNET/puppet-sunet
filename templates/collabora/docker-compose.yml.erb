@@ -1,0 +1,25 @@
+version: '3.2'
+services:
+    document-server:
+      image: <%= @docker_image %>:<%= @docker_tag %>
+      networks:
+        - default
+<% if @external_network -%>
+        - <%= @external_network %>
+<% end -%>
+      dns:
+        - 89.32.32.32
+      ports:
+        - "<%= @tls_port %>:9980"
+      volumes:
+        - "<%= @basedir %>/conf/coolwsd.xml:/etc/coolwsd/coolwsd.xml"
+      environment:
+        <%- @collabora_env.each do |environ| -%>
+        - "<%= environ %>"
+        <%- end -%>
+      restart: always
+<% if @external_network -%>
+networks:
+  <%= @external_network %>:
+    external: true
+<% end -%>
