@@ -38,8 +38,8 @@ define sunet::onlyoffice::docs(
 
   $ds_environment = flatten([$db_env,$db_pwd_env,$jwt_env,$le_env])
   exec {"${name}_mkdir_basedir":
-    command => "mkdir -p ${basedir}",
-    unless  => "/usr/bin/test -d ${basedir}"
+    command => "mkdir -p ${basedir}/data/certs",
+    unless  => "/usr/bin/test -d ${basedir}/data/certs"
   }
   -> exec {"${name}_create_key":
     command => "/usr/bin/openssl genrsa -out ${basedir}/data/certs/onlyoffice.key 2048",
