@@ -2,8 +2,7 @@ version: '3.2'
 services:
     document-server:
       image: <%= @docker_image %>:<%= @docker_tag %>
-      networks:
-        - default
+      network_mode: host
       dns:
         - 89.32.32.32
       ports:
