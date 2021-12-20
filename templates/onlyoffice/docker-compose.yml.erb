@@ -1,0 +1,22 @@
+version: '3.2'
+services:
+    document-server:
+      image: <%= @docker_image %>:<%= @docker_tag %>
+      networks:
+        - default
+      dns:
+        - 89.32.32.32
+      ports:
+        - "<%= @port %>:80"
+        - "<%= @tls_port %>:443"
+      volumes:
+        - "<%= @basedir %>/logs:/var/log/onlyoffice"
+        - "<%= @basedir %>/data:/var/www/onlyoffice/Data"
+        - "<%= @basedir %>/lib:/var/lib/onlyoffice"
+      environment:
+        <%- @ds_environment.each do |environ| -%>
+        - "<%= environ %>"
+        <%- end -%>
+      stdin_open: true
+      restart: always
+      stop_grace_period: 60s
