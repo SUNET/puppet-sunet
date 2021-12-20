@@ -36,7 +36,7 @@ define sunet::onlyoffice::docs(
     default => ["LETS_ENCRYPT_DOMAIN=${hostname}","LETS_ENCRYPT_MAIL=${contact_mail}"]
   }
 
-  $ds_environment = flatten([$db_env,$db_pwd_env,$jwt_env,$le_env,$misc_env])
+  $ds_environment = flatten([$db_env,$db_pwd_env,$jwt_env,$le_env])
   exec {"${name}_mkdir_basedir":
     command => "mkdir -p ${basedir}",
     unless  => "/usr/bin/test -d ${basedir}"
