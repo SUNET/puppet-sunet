@@ -46,7 +46,7 @@ define sunet::onlyoffice::docs(
       require => Exec["${name}_create_crt"],
     }
     exec {"${name}_rebuild_cacerts":
-      command => '/usr/bin/dpkg-reconfigure ca-certificates',
+      command => '/usr/sbin/dpkg-reconfigure ca-certificates',
       unless  => "/usr/bin/test -s ${basedir}/certs/linkrun.lock",
       require => File["${name}_cert_link"],
     }
