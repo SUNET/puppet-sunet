@@ -24,30 +24,35 @@ define sunet::onlyoffice::docs(
 
   if $letsencrypt == 'no' {
     file {["${basedir}/certs"]: ensure => directory }
-    -> exec {"${name}_create_key":
-      command => "/usr/bin/openssl genrsa -out ${basedir}/certs/onlyoffice.key 2048",
-      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.key"
+    exec {"${name}_create_key":
+      command  => "/usr/bin/openssl genrsa -out ${basedir}/certs/onlyoffice.key 2048",
+      unless   => "/usr/bin/test -s ${basedir}/certs/onlyoffice.key",
+      requires => File["${basedir}/certs"],
     }
-    -> exec {"${name}_create_csr":
-      command => "/usr/bin/openssl req -new -key ${basedir}/certs/onlyoffice.key -out ${basedir}/certs/onlyoffice.csr -subj '/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Skunk Works/CN=localhost'",
-      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.csr"
+    exec {"${name}_create_csr":
+      command  => "/usr/bin/openssl req -new -key ${basedir}/certs/onlyoffice.key -out ${basedir}/certs/onlyoffice.csr -subj '/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Skunk Works/CN=localhost'",
+      unless   => "/usr/bin/test -s ${basedir}/certs/onlyoffice.csr",
+      requires => Exec["${name}_create_key"],
     }
-    -> exec {"${name}_create_crt":
-      command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/certs/onlyoffice.crt",
-      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.crt"
+    exec {"${name}_create_crt":
+      command  => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/certs/onlyoffice.crt",
+      unless   => "/usr/bin/test -s ${basedir}/certs/onlyoffice.crt",
+      requires => Exec["${name}_create_csr"],
     }
-    -> file { "${name}_cert_link":
-      ensure => link,
-      name   => "${basedir}/certs/onlyoffice.crt",
-      target => '/usr/share/ca-certificates/onlyoffice.crt',
+    file { "${name}_cert_link":
+      ensure   => link,
+      name     => "${basedir}/certs/onlyoffice.crt",
+      target   => '/usr/share/ca-certificates/onlyoffice.crt',
+      requires => Exec["${name}_create_crt"],
     }
-    -> exec {"${name}_rebuild_cacerts":
-      command => '/usr/bin/dpkg-reconfigure ca-certificates',
-      unless  => "/usr/bin/test -s ${basedir}/certs/linkrun.lock"
+    exec {"${name}_rebuild_cacerts":
+      command  => '/usr/bin/dpkg-reconfigure ca-certificates',
+      unless   => "/usr/bin/test -s ${basedir}/certs/linkrun.lock",
+      requires => File["${name}_cert_link"],
     }
     -> exec {"${name}_linking_lock":
       command => "/usr/bin/touch ${basedir}/certs/linkrun.lock",
-      unless  => "/usr/bin/test -s ${basedir}/certs/linkrun.lock"
+      unless  => "/usr/bin/test -s ${basedir}/certs/linkrun.lock",
     }
   }
 
