@@ -35,7 +35,7 @@ define sunet::onlyoffice::docs(
       require => Exec["${name}_create_key"],
     }
     exec {"${name}_create_crt":
-      command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/certs/onlyoffice.crt",
+      command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/certs/onlyoffice.key -in ${basedir}/certs/onlyoffice.csr -out ${basedir}/certs/onlyoffice.crt",
       unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.crt",
       require => Exec["${name}_create_csr"],
     }
