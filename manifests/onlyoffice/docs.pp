@@ -53,17 +53,17 @@ define sunet::onlyoffice::docs(
   -> file {[$basedir,"${basedir}/logs","${basedir}/data","${basedir}/lib"]: ensure => directory }
   if $letsencrypt == 'no' {
     file {["${basedir}/certs"]: ensure => directory }
-    -> exec {"${name}_create_crt":
-      command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/certs/onlyoffice.crt",
-      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.crt"
+    -> exec {"${name}_create_key":
+      command => "/usr/bin/openssl genrsa -out ${basedir}/certs/onlyoffice.key 2048",
+      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.key"
     }
     -> exec {"${name}_create_csr":
       command => "/usr/bin/openssl req -new -key ${basedir}/certs/onlyoffice.key -out ${basedir}/certs/onlyoffice.csr -subj '/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Skunk Works/CN=localhost'",
       unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.csr"
     }
-    -> exec {"${name}_create_key":
-      command => "/usr/bin/openssl genrsa -out ${basedir}/certs/onlyoffice.key 2048",
-      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.key"
+    -> exec {"${name}_create_crt":
+      command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/certs/onlyoffice.crt",
+      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.crt"
     }
     -> file { "${name}_cert_link":
       ensure => link,
