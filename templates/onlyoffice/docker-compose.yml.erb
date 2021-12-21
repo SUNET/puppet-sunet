@@ -7,7 +7,6 @@ services:
         - 89.32.32.32
       ports:
         - "<%= @port %>:80"
-        - "<%= @tls_port %>:443"
       volumes:
         - "<%= @basedir %>/logs:/var/log/onlyoffice"
         - "<%= @basedir %>/data:/var/www/onlyoffice/Data"

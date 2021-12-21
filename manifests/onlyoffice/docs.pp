@@ -22,40 +22,6 @@ define sunet::onlyoffice::docs(
     unless  => "/usr/bin/test -d ${basedir}"
   }
 
-  if $letsencrypt == 'no' {
-    file {["${basedir}/certs"]: ensure => directory }
-    exec {"${name}_create_key":
-      command => "/usr/bin/openssl genrsa -out ${basedir}/certs/onlyoffice.key 2048",
-      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.key",
-      require => File["${basedir}/certs"],
-    }
-    exec {"${name}_create_csr":
-      command => "/usr/bin/openssl req -new -key ${basedir}/certs/onlyoffice.key -out ${basedir}/certs/onlyoffice.csr -subj '/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Skunk Works/CN=localhost'",
-      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.csr",
-      require => Exec["${name}_create_key"],
-    }
-    exec {"${name}_create_crt":
-      command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/certs/onlyoffice.key -in ${basedir}/certs/onlyoffice.csr -out ${basedir}/certs/onlyoffice.crt",
-      unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.crt",
-      require => Exec["${name}_create_csr"],
-    }
-    file { "${name}_cert_link":
-      ensure  => link,
-      name    => "${basedir}/certs/onlyoffice.crt",
-      target  => '/usr/share/ca-certificates/onlyoffice.crt',
-      require => Exec["${name}_create_crt"],
-    }
-    exec {"${name}_rebuild_cacerts":
-      command => '/usr/sbin/dpkg-reconfigure ca-certificates',
-      unless  => "/usr/bin/test -s ${basedir}/certs/linkrun.lock",
-      require => File["${name}_cert_link"],
-    }
-    -> exec {"${name}_linking_lock":
-      command => "/usr/bin/touch ${basedir}/certs/linkrun.lock",
-      unless  => "/usr/bin/test -s ${basedir}/certs/linkrun.lock",
-    }
-  }
-
   $le_env = $letsencrypt ? {
     'no'    => [],
     default => ["LETS_ENCRYPT_DOMAIN=${hostname}","LETS_ENCRYPT_MAIL=${contact_mail}"]
