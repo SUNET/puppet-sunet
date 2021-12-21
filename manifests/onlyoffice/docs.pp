@@ -52,7 +52,8 @@ define sunet::onlyoffice::docs(
   }
   -> file {[$basedir,"${basedir}/logs","${basedir}/data","${basedir}/lib"]: ensure => directory }
   if $letsencrypt == 'no' {
-    exec {"${name}_create_crt":
+    file {["${basedir}/certs"]: ensure => directory }
+    -> exec {"${name}_create_crt":
       command => "/usr/bin/openssl x509 -req -days 3650 -signkey ${basedir}/certs/onlyoffice.key -in ${basedir}/data/certs/onlyoffice.csr -out ${basedir}/certs/onlyoffice.crt",
       unless  => "/usr/bin/test -s ${basedir}/certs/onlyoffice.crt"
     }
@@ -77,6 +78,5 @@ define sunet::onlyoffice::docs(
       command => "/usr/bin/touch ${basedir}/certs/linkrun.lock",
       unless  => "/usr/bin/test -s ${basedir}/certs/linkrun.lock"
     }
-    -> file {["${basedir}/certs"]: ensure => directory }
   }
 }
