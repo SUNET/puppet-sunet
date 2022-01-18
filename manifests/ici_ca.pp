@@ -7,7 +7,7 @@ define sunet::ici_ca($pkcs11_module="/usr/lib/softhsm/libsofthsm.so",
                      $public_repo_url=undef,
                      $public_repo_dir=undef)
 {
-   apt::ppa {'ppa:leifj/ici': } ->
+   #apt::ppa {'ppa:leifj/ici': } ->
    package { 'ici': ensure => latest } ->
    exec { '${name}_setup_ca':
       command => "/usr/bin/ici ${name} init",
