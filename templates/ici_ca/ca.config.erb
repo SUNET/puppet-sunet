@@ -4,5 +4,5 @@ ICI_PKCS11=<%= @pkcs11_module %>
 ICI_PKCS11_PIN=<%= @pkcs11_pin %>
 ICI_MD=sha256
 ICI_PUBLIC_URL=<%= @public_repo_url %>
-SOFTHSM_CONF=/var/lib/ici/<%= @name %>/softhsm.conf
-export SOFTHSM_CONF
+SOFTHSM2_CONF=/var/lib/ici/<%= @name %>/softhsm2.conf
+export SOFTHSM2_CONF
