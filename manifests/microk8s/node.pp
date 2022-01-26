@@ -7,7 +7,7 @@ class sunet::microk8s::node(
     provider => apt,
   }
   -> exec {'install_microk8s':
-    command => 'snap install microk8s --classic',
+    command => 'snap install microk8s --classic --channel=1.20/stable',
     unless  => 'snap list microk8s',
   }
   -> file_line {'microk8s_ha_conf':
