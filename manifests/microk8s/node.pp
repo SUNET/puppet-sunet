@@ -1,5 +1,5 @@
 # microk8s cluster node
-define sunet::microk8s::node(
+class sunet::microk8s::node(
   Integer $failure_domain = 42,
 ) {
   package { 'snapd':
