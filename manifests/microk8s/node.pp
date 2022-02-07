@@ -72,7 +72,7 @@ class sunet::microk8s::node(
   }
   -> exec { 'add_cluster_to_fw':
     command => join($cluster_fw_command),
-    if      => '[[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]]',
+    onlyif  => '[[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]]',
   }
   -> exec { 'enable_plugins':
     command => '/snap/bin/microk8s enable dns:89.32.32.32 traefik openebs',
