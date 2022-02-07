@@ -33,9 +33,9 @@ class sunet::microk8s::node(
     provider => systemd,
   }
   -> file { '/etc/docker/daemon.json':
-    ensure => file,
-    source => template('sunet/microk8s/daemon.json.erb'),
-    mode   => '0644',
+    ensure  => file,
+    content => template('sunet/microk8s/daemon.json.erb'),
+    mode    => '0644',
   }
   -> file { '/var/snap/microk8s/current/args/ha-conf':
     ensure  => file,
