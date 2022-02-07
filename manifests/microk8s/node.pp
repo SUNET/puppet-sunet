@@ -14,7 +14,7 @@ class sunet::microk8s::node(
                         'for j in $(host ${i}.$(hostname -d) | awk "{print $NF}"); do ',
                         'ufw status | grep -Eq "Anywhere.*ALLOW.*${j}" || ',
                         'ufw allow in from ${j}; done; done;']
-  notify(join($cluster_fw_command))
+  notice(join($cluster_fw_command))
 
   $plugin_condition  = ['[ 4 -eq $(/snap/bin/microk8s status --format short | ',
                       'grep -E "(dns: enabled|ha-cluster: enabled|openebs: enabled|traefik: enabled)" | wc -l) ]']
