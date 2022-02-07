@@ -48,34 +48,37 @@ class sunet::microk8s::node(
   }
   # This is how ufw::allow does it, but that lacks support for "on"
   -> exec { 'allow-outgoing-on-calico':
-    path     => '/usr/sbin:/bin:/usr/bin',
-    unless   => 'ufw status | grep -qE "Anywhere (\(v6\) |)on vxlan.calico"',
-    provider => 'posix',
     command  => 'ufw allow in on vxlan.calico',
+    path     => '/usr/sbin:/bin:/usr/bin',
+    provider => 'shell',
+    unless   => 'ufw status | grep -qE "Anywhere (\(v6\) |)on vxlan.calico"',
   }
   -> exec { 'allow-incomming-on-calico':
-    path     => '/usr/sbin:/bin:/usr/bin',
-    unless   => 'ufw status | grep -qE "ALLOW OUT   Anywhere (\(v6\) |)on vxlan.calico"',
-    provider => 'posix',
     command  => 'ufw allow in on vxlan.calico',
+    path     => '/usr/sbin:/bin:/usr/bin',
+    provider => 'shell',
+    unless   => 'ufw status | grep -qE "ALLOW OUT   Anywhere (\(v6\) |)on vxlan.calico"',
   }
   -> exec { 'iptables-allow-forward':
-    path     => '/usr/sbin:/bin:/usr/bin',
-    unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
-    provider => 'posix',
     command  => 'iptables -P FORWARD ACCEPT',
+    path     => '/usr/sbin:/bin:/usr/bin',
+    provider => 'shell',
+    unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
   }
   -> exec { 'fix_etc_hosts':
-    command => join($hosts_command),
-    onlyif  => '[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]',
-    unless  => 'grep kube /etc/hosts | grep -vq "127.0"',
+    command  => join($hosts_command),
+    onlyif   => '[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]',
+    provider => 'shell',
+    unless   => 'grep kube /etc/hosts | grep -vq "127.0"',
   }
   -> exec { 'add_cluster_to_fw':
-    command => join($cluster_fw_command),
-    onlyif  => '[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]',
+    command  => join($cluster_fw_command),
+    onlyif   => '[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]',
+    provider => 'shell',
   }
   -> exec { 'enable_plugins':
-    command => '/snap/bin/microk8s enable dns:89.32.32.32 traefik openebs',
-    unless  => join($plugin_condition),
+    command  => '/snap/bin/microk8s enable dns:89.32.32.32 traefik openebs',
+    provider => 'shell',
+    unless   => join($plugin_condition),
   }
 }
