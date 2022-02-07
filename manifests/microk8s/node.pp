@@ -10,7 +10,7 @@ class sunet::microk8s::node(
                     "' | tail -n +2 | grep -v $(hostname)  >> /etc/hosts"]
 
   $cluster_fw_command = ['for i in $(/snap/bin/microk8s kubectl get nodes -o wide | ',
-                        'awk "{print $1}"| tail -n +2 | grep -v $(hostname)); do ',
+                        'awk \'{print $1}\'| tail -n +2 | grep -v $(hostname)); do ',
                         'for j in $(host ${i}.$(hostname -d) | ',
                         'awk \'{print $NF}\'); do ',
                         'ufw status | grep -Eq "Anywhere.*ALLOW.*${j}" || ',
