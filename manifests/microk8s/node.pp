@@ -1,14 +1,37 @@
 # microk8s cluster node
 class sunet::microk8s::node(
-  Integer $failure_domain = 42,
+  Integer       $failure_domain = 42,
 ) {
+
+  # I admit that this is not the prettiest ever,
+  # but we get all info directly from the cluster, and get zero conf
+  $hosts_command = ["/snap/bin/microk7s kubectl get nodes -o wide | awk '",
+                    '{ print $6 " " $1 }',
+                    "' | tail -n +2 | grep -v $(hostname)  >> /etc/hosts"]
+
+  $cluster_fw_command = ['for i in $(/snap/bin/microk8s kubectl get nodes -o wide | ',
+                        'awk "{print $1}"| tail -n +2 | grep -v $(hostname)); do ',
+                        'for j in $(host ${i}.$(hostname -d) | awk "{print $NF}"); do ',
+                        'ufw status | grep -Eq "Anywhere.*ALLOW.*${j}" || ',
+                        'ufw allow in from ${j}; done; done;']
+
+  $plugin_condition  = ['[[ 4 -eq $(/snap/bin/microk8s status --format short | ',
+                      'grep -E "(dns: enabled|ha-cluster: enabled|openebs: enabled|traefik: enabled)" | wc -l) ]]']
+
   package { 'snapd':
     ensure   =>  latest,
     provider => apt,
   }
   -> exec { 'install_microk8s':
-    command => 'snap install microk8s --classic --channel=1.20/stable',
+    command => 'snap install microk8s --classic --channel=1.21/stable',
     unless  => 'snap list microk8s',
+  }
+  -> service { 'iscsid_enabled_running':
+    ensure   => running,
+    enable   => true,
+    name     => 'iscsid.service',
+    provider => systemd,
+    unless   =>  'systemctl is-enabled isd.service',
   }
   -> file { '/etc/docker/daemon.json':
     ensure => file,
@@ -42,5 +65,18 @@ class sunet::microk8s::node(
     unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
     provider => 'posix',
     command  => 'iptables -P FORWARD ACCEPT',
+  }
+  -> exec { 'fix_etc_hosts':
+    command => join($hosts_command),
+    if      => '[[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]]',
+    unless  => 'grep kube /etc/hosts | grep -vq "127.0"',
+  }
+  -> exec { 'add_cluster_to_fw':
+    command => join($cluster_fw_command),
+    if      => '[[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]]',
+  }
+  -> exec { 'enable_plugins':
+    command => '/snap/bin/microk8s enable dns:89.32.32.32 traefik openebs',
+    unless  => join($plugin_condition),
   }
 }
