@@ -31,7 +31,6 @@ class sunet::microk8s::node(
     enable   => true,
     name     => 'iscsid.service',
     provider => systemd,
-    unless   =>  'systemctl is-enabled isd.service',
   }
   -> file { '/etc/docker/daemon.json':
     ensure => file,
