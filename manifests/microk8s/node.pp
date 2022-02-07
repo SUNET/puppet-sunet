@@ -15,8 +15,8 @@ class sunet::microk8s::node(
                         'ufw status | grep -Eq "Anywhere.*ALLOW.*${j}" || ',
                         'ufw allow in from ${j}; done; done;']
 
-  $plugin_condition  = ['[[ 4 -eq $(/snap/bin/microk8s status --format short | ',
-                      'grep -E "(dns: enabled|ha-cluster: enabled|openebs: enabled|traefik: enabled)" | wc -l) ]]']
+  $plugin_condition  = ['[ 4 -eq $(/snap/bin/microk8s status --format short | ',
+                      'grep -E "(dns: enabled|ha-cluster: enabled|openebs: enabled|traefik: enabled)" | wc -l) ]']
 
   package { 'snapd':
     ensure   =>  latest,
@@ -67,12 +67,12 @@ class sunet::microk8s::node(
   }
   -> exec { 'fix_etc_hosts':
     command => join($hosts_command),
-    onlyif  => '[[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]]',
+    onlyif  => '[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]',
     unless  => 'grep kube /etc/hosts | grep -vq "127.0"',
   }
   -> exec { 'add_cluster_to_fw':
     command => join($cluster_fw_command),
-    onlyif  => '[[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]]',
+    onlyif  => '[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]',
   }
   -> exec { 'enable_plugins':
     command => '/snap/bin/microk8s enable dns:89.32.32.32 traefik openebs',
