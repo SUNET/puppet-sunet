@@ -5,7 +5,7 @@ class sunet::microk8s::node(
 
   # I admit that this is not the prettiest ever,
   # but we get all info directly from the cluster, and get zero conf
-  $hosts_command = ["/snap/bin/microk7s kubectl get nodes -o wide | awk '",
+  $hosts_command = ["/snap/bin/microk8s kubectl get nodes -o wide | awk '",
                     '{ print $6 " " $1 }',
                     "' | tail -n +2 | grep -v $(hostname)  >> /etc/hosts"]
 
@@ -49,13 +49,13 @@ class sunet::microk8s::node(
   # This is how ufw::allow does it, but that lacks support for "on"
   -> exec { 'allow-outgoing-on-calico':
     path     => '/usr/sbin:/bin:/usr/bin',
-    unless   => 'ufw status | grep -qE "Anywhere (\(v6\) |)on vxlan.calico"',
+    unless   => 'ufw status | grep -qE "ALLOW OUT   Anywhere (\(v6\) |)on vxlan.calico"',
     provider => 'posix',
-    command  => 'ufw allow in on vxlan.calico',
+    command  => 'ufw allow out on vxlan.calico',
   }
   -> exec { 'allow-incomming-on-calico':
     path     => '/usr/sbin:/bin:/usr/bin',
-    unless   => 'ufw status | grep -qE "ALLOW OUT   Anywhere (\(v6\) |)on vxlan.calico"',
+    unless   => 'ufw status | grep -qE "Anywhere (\(v6\) |)on vxlan.calico"',
     provider => 'posix',
     command  => 'ufw allow in on vxlan.calico',
   }
