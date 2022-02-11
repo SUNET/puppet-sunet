@@ -13,12 +13,12 @@ if [ -f /snap/bin/microk8s ]; then
   done
   peers="$(/snap/bin/microk8s kubectl get nodes -o json | jq -r '.items[].metadata.name' | grep -v $(hostname -s))"
   if [ "x${peers}" != "x" ]; then
-    output="microk8s_peers=["
+    output="microk8s_peers="
     for peer in $(echo ${peers}); do
         output="${output}\"${peer}\","
     done
     output=$(echo "${output}"| sed 's/,$//')
-    echo "${output}]"
+    echo "${output}"
     /snap/bin/microk8s kubectl get nodes -o json | jq -r '.items[].metadata | "microk8s_peer_\(.name)=\(.annotations."projectcalico.org/IPv4Address")"' | grep -v $(hostname -s) | sed 's_/23__'
   else
     echo 'microk8s_peers=unknown'
