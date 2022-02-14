@@ -4,14 +4,16 @@ class sunet::microk8s::node(
   Boolean $enable_openebs = true,
   Integer $failure_domain = 42,
 ) {
+  # Loop through peers and do things that require their ip:s
   split($facts['microk8s_peers'], ',').each | String $peer| {
+    $peer_ip = $facts[join(['microk8s_peer_', $peer])]
     file_line { "hosts_${peer}":
       path => '/etc/hosts',
-      line => "${facts[join(['microk8s_peer_', $peer])]} ${peer}",
+      line => "${peer_ip} ${peer}",
     }
     -> exec { "ufw_${peer}":
-      command => "ufw allow in from ${facts[join(['microk8s_peer_', $peer])]}",
-      unless  => "ufw status | grep -Eq 'Anywhere.*ALLOW.*${facts[join(['microk8s_peer_', $peer])]}'" ,
+      command => "ufw allow in from ${peer_ip}",
+      unless  => "ufw status | grep -Eq 'Anywhere.*ALLOW.*${peer_ip}'" ,
     }
   }
   package { 'snapd':
