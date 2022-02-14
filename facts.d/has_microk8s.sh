@@ -15,7 +15,7 @@ if [ -f /snap/bin/microk8s ]; then
   if [ "x${peers}" != "x" ]; then
     output="microk8s_peers="
     for peer in $(echo ${peers}); do
-        output="${output}\"${peer}\","
+        output="${output}${peer},"
     done
     output=$(echo "${output}"| sed 's/,$//')
     echo "${output}"
