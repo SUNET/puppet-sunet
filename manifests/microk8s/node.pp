@@ -55,26 +55,26 @@ class sunet::microk8s::node(
     provider => 'shell',
     unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
   }
-  -> unless any2bool($facts['microk8s_dns']) {
+  unless any2bool($facts['microk8s_dns']) {
     exec { 'enable_plugin_dns':
       command  => '/snap/bin/microk8s enable dns:89.32.32.32',
       provider => 'shell',
     }
   }
-  -> unless any2bool($facts['microk8s_traefik']) {
+  unless any2bool($facts['microk8s_traefik']) {
     exec { 'enable_plugin_traefik':
       command  => '/snap/bin/microk8s enable traefik',
       provider => 'shell',
     }
   }
-  -> if $enable_openebs {
+  if $enable_openebs {
     service { 'iscsid_enabled_running':
       ensure   => running,
       enable   => true,
       name     => 'iscsid.service',
       provider => systemd,
     }
-    -> unless any2bool($facts['microk8s_openebs']) {
+    unless any2bool($facts['microk8s_openebs']) {
       exec { 'enable_plugin_openebs':
         command  => '/snap/bin/microk8s enable openebs',
         provider => 'shell',
