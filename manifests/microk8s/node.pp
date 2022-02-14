@@ -55,6 +55,7 @@ class sunet::microk8s::node(
       command => "ufw allow in from ${facts[join(['microk8s_peer_', $peer])]}",
       unless  => "ufw status | grep -Eq 'Anywhere.*ALLOW.*${facts[join(['microk8s_peer_', $peer])]}'" ,
     }
+  }
   -> unless any2bool(facts['microk8s_dns']) {
     exec { 'enable_plugin_dns':
       command  => '/snap/bin/microk8s enable dns:89.32.32.32',
