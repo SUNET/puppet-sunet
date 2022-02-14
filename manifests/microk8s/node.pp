@@ -4,7 +4,16 @@ class sunet::microk8s::node(
   Boolean $enable_openebs = true,
   Integer $failure_domain = 42,
 ) {
-
+  split($facts['microk8s_peers'], ',').each | String $peer| {
+    file_line { "hosts_${peer}":
+      path => '/etc/hosts',
+      line => "${facts[join(['microk8s_peer_', $peer])]} ${peer}",
+    }
+    -> exec { "ufw_${peer}":
+      command => "ufw allow in from ${facts[join(['microk8s_peer_', $peer])]}",
+      unless  => "ufw status | grep -Eq 'Anywhere.*ALLOW.*${facts[join(['microk8s_peer_', $peer])]}'" ,
+    }
+  }
   package { 'snapd':
     ensure   =>  latest,
     provider => apt,
@@ -45,16 +54,6 @@ class sunet::microk8s::node(
     path     => '/usr/sbin:/bin:/usr/bin',
     provider => 'shell',
     unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
-  }
-  -> split($facts['microk8s_peers'], ',').each | String $peer| {
-    file_line { "hosts_${peer}":
-      path => '/etc/hosts',
-      line => "${facts[join(['microk8s_peer_', $peer])]} ${peer}",
-    }
-    -> exec { "ufw_${peer}":
-      command => "ufw allow in from ${facts[join(['microk8s_peer_', $peer])]}",
-      unless  => "ufw status | grep -Eq 'Anywhere.*ALLOW.*${facts[join(['microk8s_peer_', $peer])]}'" ,
-    }
   }
   -> unless any2bool(facts['microk8s_dns']) {
     exec { 'enable_plugin_dns':
