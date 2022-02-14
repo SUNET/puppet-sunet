@@ -1,36 +1,17 @@
 # microk8s cluster node
 class sunet::microk8s::node(
-  Integer       $failure_domain = 42,
+  String  $channel        = '1.21/stable',
+  Boolean $enable_openebs = true,
+  Integer $failure_domain = 42,
 ) {
-
-  # I admit that this is not the prettiest ever,
-  # but we get all info directly from the cluster, and get zero conf
-  $hosts_command = ["/snap/bin/microk8s kubectl get nodes -o wide | awk '",
-                    '{ print $6 " " $1 }',
-                    "' | tail -n +2 | grep -v $(hostname)  >> /etc/hosts"]
-
-  $cluster_fw_command = ['for i in $(/snap/bin/microk8s kubectl get nodes -o wide | ',
-                        'awk "{print $1}"| tail -n +2 | grep -v $(hostname)); do ',
-                        'for j in $(host ${i}.$(hostname -d) | awk "{print $NF}"); do ',
-                        'ufw status | grep -Eq "Anywhere.*ALLOW.*${j}" || ',
-                        'ufw allow in from ${j}; done; done;']
-
-  $plugin_condition  = ['[[ 4 -eq $(/snap/bin/microk8s status --format short | ',
-                      'grep -E "(dns: enabled|ha-cluster: enabled|openebs: enabled|traefik: enabled)" | wc -l) ]]']
 
   package { 'snapd':
     ensure   =>  latest,
     provider => apt,
   }
   -> exec { 'install_microk8s':
-    command => 'snap install microk8s --classic --channel=1.21/stable',
+    command => "snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
-  }
-  -> service { 'iscsid_enabled_running':
-    ensure   => running,
-    enable   => true,
-    name     => 'iscsid.service',
-    provider => systemd,
   }
   -> file { '/etc/docker/daemon.json':
     ensure  => file,
@@ -48,34 +29,57 @@ class sunet::microk8s::node(
   }
   # This is how ufw::allow does it, but that lacks support for "on"
   -> exec { 'allow-outgoing-on-calico':
+    command  => 'ufw allow out on vxlan.calico',
     path     => '/usr/sbin:/bin:/usr/bin',
     unless   => 'ufw status | grep -qE "ALLOW OUT   Anywhere (\(v6\) |)on vxlan.calico"',
     provider => 'posix',
-    command  => 'ufw allow out on vxlan.calico',
   }
   -> exec { 'allow-incomming-on-calico':
+    command  => 'ufw allow in on vxlan.calico',
     path     => '/usr/sbin:/bin:/usr/bin',
     unless   => 'ufw status | grep -qE "Anywhere (\(v6\) |)on vxlan.calico"',
     provider => 'posix',
-    command  => 'ufw allow in on vxlan.calico',
   }
   -> exec { 'iptables-allow-forward':
-    path     => '/usr/sbin:/bin:/usr/bin',
-    unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
-    provider => 'posix',
     command  => 'iptables -P FORWARD ACCEPT',
+    path     => '/usr/sbin:/bin:/usr/bin',
+    provider => 'shell',
+    unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
   }
-  -> exec { 'fix_etc_hosts':
-    command => join($hosts_command),
-    onlyif  => '[[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]]',
-    unless  => 'grep kube /etc/hosts | grep -vq "127.0"',
+
+  -> split($facts['microk8s_peers'], ',').each | String $peer| {
+    file_line { "hosts_${peer}":
+      path => '/etc/hosts',
+      line => "${facts[join(['microk8s_peer_', $peer])]} ${peer}",
+    }
+    -> exec { "ufw_${peer}":
+      command => "ufw allow in from ${facts[join(['microk8s_peer_', $peer])]}",
+      unless  => "ufw status | grep -Eq 'Anywhere.*ALLOW.*${facts[join(['microk8s_peer_', $peer])]}'" ,
+    }
+  -> unless any2bool(facts['microk8s_dns']) {
+    exec { 'enable_plugin_dns':
+      command  => '/snap/bin/microk8s enable dns:89.32.32.32',
+      provider => 'shell',
+    }
   }
-  -> exec { 'add_cluster_to_fw':
-    command => join($cluster_fw_command),
-    onlyif  => '[[ 3 -eq $(/snap/bin/microk8s kubectl get nodes | grep Ready | wc -l) ]]',
+  -> unless any2bool(facts['microk8s_traefik']) {
+    exec { 'enable_plugin_traefik':
+      command  => '/snap/bin/microk8s enable traefik',
+      provider => 'shell',
+    }
   }
-  -> exec { 'enable_plugins':
-    command => '/snap/bin/microk8s enable dns:89.32.32.32 traefik openebs',
-    unless  => join($plugin_condition),
+  -> if $enable_openebs {
+    service { 'iscsid_enabled_running':
+      ensure   => running,
+      enable   => true,
+      name     => 'iscsid.service',
+      provider => systemd,
+    }
+    -> unless any2bool(facts['microk8s_openebs']) {
+      exec { 'enable_plugin_openebs':
+        command  => '/snap/bin/microk8s enable openebs',
+        provider => 'shell',
+      }
+    }
   }
 }
