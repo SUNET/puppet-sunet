@@ -10,6 +10,7 @@ size="<%= @size %>"
 mac="<%= @mac %>"
 hostname="<%= @name %>"
 bridge="<%= @bridge %>"
+network="<%= @network %>"
 cpus="<%= @cpus %>"
 mem="<%= @memory %>"
 description="<%= @description %>"
@@ -73,11 +74,14 @@ if [ "x${local_size}" != 'x0' ]; then
     chmod 600 ${local_disk}
 fi
 
-network="--network bridge=${bridge},model=virtio"
+# Default to bridged
+if [[ ! $network ]]; then
+    network="--network bridge=${bridge},model=virtio"
+fi
 
 # Optional settings
 if [ "x${mac}" != "x" ]; then
-   network="${network},mac=${mac}"
+    network="${network},mac=${mac}"
 fi
 if [ "x${description}" != "x" ]; then
    install_options="${install_options} --description '${description}'"
