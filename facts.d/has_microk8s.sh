@@ -4,7 +4,7 @@ if [ -f /snap/bin/microk8s ]; then
   echo 'microk8s=yes'
   modules=$(/snap/bin/microk8s status --format short)
   for module in dns ha-cluster openebs traefik; do
-    echo ${modules} | grep 'dns: enabled'  >/dev/null 2>&1
+    echo ${modules} | grep "^${module}: enabled"  >/dev/null 2>&1
     if [ ${?} -eq 0 ]; then
       echo "microk8s_${module}=yes"
     else
