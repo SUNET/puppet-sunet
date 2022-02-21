@@ -42,7 +42,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
   sunet::nagios::nrpe_command {'check_users':
     command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
   }
-  if match($::fqdn,'^(multinode|lb[1-4])'){
+  if match($::fqdn,'^(kube|multinode|lb[1-4])'){
     sunet::nagios::nrpe_command {'check_load':
       command_line => '/usr/lib/nagios/plugins/check_load -w 40,30,25 -c 50,40,30'
     }
@@ -85,7 +85,7 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
       sunet::nagios::nrpe_command {'check_total_procs_lax':
         command_line => '/usr/lib/nagios/plugins/check_procs -k -w 1000 -c 1200'
       }
-    } elsif match($::fqdn,'^multinode'){
+    } elsif match($::fqdn,'^(multinode|kube)[1-4]'){
       # There are more processes than normal on multinode hosts
       sunet::nagios::nrpe_command {'check_total_procs_lax':
         command_line => '/usr/lib/nagios/plugins/check_procs -k -w 500 -c 750'
