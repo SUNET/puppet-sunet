@@ -2,6 +2,7 @@
 class sunet::microk8s::node(
   String  $channel        = '1.21/stable',
   Boolean $enable_openebs = true,
+  Boolean $write_docker_conf = true,
   Integer $failure_domain = 42,
 ) {
   # Loop through peers and do things that require their ip:s
@@ -25,11 +26,6 @@ class sunet::microk8s::node(
   -> exec { 'install_microk8s':
     command => "snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
-  }
-  -> file { '/etc/docker/daemon.json':
-    ensure  => file,
-    content => template('sunet/microk8s/daemon.json.erb'),
-    mode    => '0644',
   }
   -> file { '/var/snap/microk8s/current/args/ha-conf':
     ensure  => file,
@@ -71,6 +67,15 @@ class sunet::microk8s::node(
       provider => 'shell',
     }
   }
+
+  if $write_docker_conf {
+    file { '/etc/docker/daemon.json':
+      ensure  => file,
+      content => template('sunet/microk8s/daemon.json.erb'),
+      mode    => '0644',
+    }
+  }
+
   if $enable_openebs {
     service { 'iscsid_enabled_running':
       ensure   => running,
