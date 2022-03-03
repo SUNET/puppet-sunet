@@ -4,7 +4,7 @@ class sunet::microk8s::node(
   Boolean $enable_openebs = true,
   Boolean $write_docker_conf = true,
   Integer $failure_domain = 42,
-  String  $dns_resolver = '89.32.32.32',
+  String  $dns_plugin = 'dns:89.32.32.32',
 ) {
   # Loop through peers and do things that require their ip:s
   split($facts['microk8s_peers'], ',').each | String $peer| {
@@ -57,9 +57,11 @@ class sunet::microk8s::node(
     unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
   }
   unless any2bool($facts['microk8s_dns']) {
-    exec { 'enable_plugin_dns':
-      command  => "/snap/bin/microk8s enable dns:${dns_resolver}",
-      provider => 'shell',
+    if $dns_plugin {
+      exec { 'enable_plugin_dns':
+        command  => "/snap/bin/microk8s enable ${dns_plugin}",
+        provider => 'shell',
+      }
     }
   }
   unless any2bool($facts['microk8s_traefik']) {
