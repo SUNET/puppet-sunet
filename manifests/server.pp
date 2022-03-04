@@ -11,7 +11,7 @@ class sunet::server(
   $disable_ipv6_privacy = false,
   $disable_all_local_users = false,
   Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
-  Optional[Boolean] $ssh_allow_from_anywhere = true,
+  Optional[Boolean] $ssh_allow_from_anywhere = false,
 ) {
 
   if $fail2ban {
