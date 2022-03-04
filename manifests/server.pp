@@ -49,6 +49,18 @@ class sunet::server(
         proto  => 'tcp',
         port   => sprintf('%s', pick($ssh_port, 22)),
       })
+
+      if $::ipaddress_default {
+        # Also remove historical allow-any-to-my-IP rules
+        ensure_resource('ufw::allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
+          ensure => 'absent',
+          from   => 'any',
+          ip     => $::ipaddress_default,
+          proto  => 'tcp',
+          port   => sprintf('%s', pick($ssh_port, 22)),
+        })
+      }
+
     }
     if $mgmt_addresses != [] {
       sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
