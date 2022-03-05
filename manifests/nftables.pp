@@ -22,8 +22,8 @@ class sunet::nftables {
     file { '/etc/nftables.conf':
         ensure  => 'present',
         replace => 'no',
-        mode => "755",
-        source  => file('nftables/nftables.conf'),
+        mode    => "755",
+        source  => file('sunet/nftables/nftables.conf'),
         notify  => Service['nftables'],
     }
 
