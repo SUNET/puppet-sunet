@@ -50,7 +50,7 @@ class sunet::server(
       ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh', {
         ensure => 'absent',
         from   => 'any',
-        ip     => 'any',
+        to     => 'any',
         proto  => 'tcp',
         port   => sprintf('%s', pick($ssh_port, 22)),
       })
@@ -60,7 +60,7 @@ class sunet::server(
         ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
           ensure => 'absent',
           from   => 'any',
-          ip     => $::ipaddress_default,
+          to     => $::ipaddress_default,
           proto  => 'tcp',
           port   => sprintf('%s', pick($ssh_port, 22)),
         })
