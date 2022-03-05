@@ -1,5 +1,6 @@
 # Open host firewall to allow clients to access a service.
 define sunet::misc::ufw_allow(
+  $ensure,
   $from,           # Allow traffic 'from' this IP (or list of IP:s).
   $port,           # Allow traffic to this port (or list of ports).
   $to    = 'any',  # Allow traffic to this IP (or list of IP:s). 'any' means both IPv4 and IPv6.
@@ -26,29 +27,32 @@ define sunet::misc::ufw_allow(
           $unique_name = "_ufw_allow__from_${_from}__to_${_to}__${_port}/${_proto}"
 
           if $::sunet_nftables_opt_in == 'yes' {
-            $src = $_from ? {
-              'any'   => '',
-              default => "saddr { ${_from} }"
-            }
-            $dst = $_to ? {
-              'any'   => '',
-              default => "daddr { ${_to} }"
-            }
-            $rule = "add rule inet filter input ip ${src} ${dst} ${_proto} dport ${_port} counter accept"
-            sunet::snippets::file_line {
-              $unique_name:
-                filename => '/etc/nftables/conf.d/sunet_ufw_allow.nft',
-                line     => $rule,
-                notify   => Service['nftables'],
-                require  => Package['nftables'],
-                ;
+            if $ensure == 'present' {
+              $src = $_from ? {
+                'any'   => '',
+                default => "saddr { ${_from} }"
+              }
+              $dst = $_to ? {
+                'any'   => '',
+                default => "daddr { ${_to} }"
+              }
+              $rule = "add rule inet filter input ip ${src} ${dst} ${_proto} dport ${_port} counter accept"
+              sunet::snippets::file_line {
+                $unique_name:
+                  filename => '/etc/nftables/conf.d/sunet_ufw_allow.nft',
+                  line     => $rule,
+                  notify   => Service['nftables'],
+                  require  => Package['nftables'],
+                  ;
+              }
             }
           } else {
             ensure_resource('ufw::allow', $unique_name, {
-              from  => $_from,
-              ip    => $_to,
-              proto => $_proto,
-              port  => sprintf('%s', $_port),
+              ensure => $ensure,
+              from   => $_from,
+              ip     => $_to,
+              proto  => $_proto,
+              port   => sprintf('%s', $_port),
             })
           }
         }
