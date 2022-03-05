@@ -28,13 +28,17 @@ define sunet::misc::ufw_allow(
 
           if $::sunet_nftables_opt_in == 'yes' {
             if $ensure == 'present' {
+              $_family = 'ip'
+              if is_ipaddr($_from, 6) || is_ipaddr($_to, 6) {
+                $_family = 'ip6'
+              }
               $src = $_from ? {
                 'any'   => '',
-                default => "ip saddr { ${_from} }"
+                default => "${_family} saddr { ${_from} }"
               }
               $dst = $_to ? {
                 'any'   => '',
-                default => "ip daddr { ${_to} }"
+                default => "${_family} daddr { ${_to} }"
               }
               $rule = "add rule inet filter input ${src} ${dst} ${_proto} dport ${_port} counter accept"
               sunet::snippets::file_line {
