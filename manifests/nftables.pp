@@ -23,10 +23,10 @@ class sunet::nftables {
         ensure  => 'present',
         replace => 'no',
         mode => "755",
-        source  => 'puppet:///sunet/nftables/nftables.conf',
+        source  => file('nftables/nftables.conf'),
         notify  => Service['nftables'],
     }
- 
+
     service { 'nftables':
         ensure => 'running',
         enable => true,
