@@ -11,7 +11,7 @@ class sunet::server(
   $disable_ipv6_privacy = false,
   $disable_all_local_users = false,
   Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
-  Optional[Boolean] $ssh_allow_from_anywhere = true,
+  Optional[Boolean] $ssh_allow_from_anywhere = false,
 ) {
 
   if $fail2ban {
@@ -49,6 +49,17 @@ class sunet::server(
         proto  => 'tcp',
         port   => sprintf('%s', pick($ssh_port, 22)),
       })
+
+      if $::ipaddress_default {
+        # Also remove historical allow-any-to-my-IP rules
+        ensure_resource('ufw::allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
+          ensure => 'absent',
+          from   => 'any',
+          ip     => $::ipaddress_default,
+          proto  => 'tcp',
+          port   => sprintf('%s', pick($ssh_port, 22)),
+        })
+      }
     }
     if $mgmt_addresses != [] {
       sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':

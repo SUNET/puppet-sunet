@@ -106,6 +106,14 @@ class sunet::pypi (
         unless  => '/usr/bin/test -s /opt/pypi/nginx/dhparam.pem',
     }
 
+    # Use plain cron as to not bog down other scriptherder checks with many many logs
+    cron { 'set_packages_immutable':
+        ensure  => present,
+        command => "/usr/bin/chattr +i ${home}/packages/*",
+        user    => 'root',
+        minute  => '*/1',
+    }
+
     $content = template('sunet/pypi/docker-compose_pypi.yml.erb')
     sunet::docker_compose {'pypi_docker_compose':
         service_name => 'pypi',

@@ -70,7 +70,9 @@ fi
 # haproxy 1.8 or 1.9
 haproxy_cmd=$(echo /usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}")
 
-if /usr/sbin/haproxy -v | grep -q 'HA-Proxy version 2'; then
+# HA-Proxy version 2.2.9-1 2021/02/06 - https://haproxy.org/
+# HAProxy version 2.4.14-1 2022/02/25 - https://haproxy.org/
+if /usr/sbin/haproxy -v | grep -q 'HA-*Proxy version 2'; then
     # haproxy 2.0+
     sock_args=''
     if [[ $HAPROXYMASTERSOCK ]]; then
