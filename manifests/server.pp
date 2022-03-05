@@ -47,7 +47,7 @@ class sunet::server(
       }
     } else {
       # Remove any existing rule from when ssh_allow_from_anywhere was true as default
-      ensure_resource('ufw::allow', 'remove_ufw_allow_all_ssh', {
+      ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh', {
         ensure => 'absent',
         from   => 'any',
         ip     => 'any',
@@ -57,7 +57,7 @@ class sunet::server(
 
       if $::ipaddress_default {
         # Also remove historical allow-any-to-my-IP rules
-        ensure_resource('ufw::allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
+        ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
           ensure => 'absent',
           from   => 'any',
           ip     => $::ipaddress_default,
