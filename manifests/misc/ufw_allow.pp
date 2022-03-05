@@ -28,10 +28,12 @@ define sunet::misc::ufw_allow(
 
           if $::sunet_nftables_opt_in == 'yes' {
             if $ensure == 'present' {
-              $_family = 'ip'
               if is_ipaddr($_from, 6) or is_ipaddr($_to, 6) {
                 $_family = 'ip6'
+              } else {
+                $_family = 'ip'
               }
+
               $src = $_from ? {
                 'any'   => '',
                 default => "${_family} saddr { ${_from} }"
