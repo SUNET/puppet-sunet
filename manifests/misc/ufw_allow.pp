@@ -30,13 +30,13 @@ define sunet::misc::ufw_allow(
             if $ensure == 'present' {
               $src = $_from ? {
                 'any'   => '',
-                default => "saddr { ${_from} }"
+                default => "ip saddr { ${_from} }"
               }
               $dst = $_to ? {
                 'any'   => '',
-                default => "daddr { ${_to} }"
+                default => "ip daddr { ${_to} }"
               }
-              $rule = "add rule inet filter input ip ${src} ${dst} ${_proto} dport ${_port} counter accept"
+              $rule = "add rule inet filter input ${src} ${dst} ${_proto} dport ${_port} counter accept"
               sunet::snippets::file_line {
                 $unique_name:
                   filename => '/etc/nftables/conf.d/sunet_ufw_allow.nft',
