@@ -27,14 +27,14 @@ define sunet::misc::ufw_allow(
 
           if $::sunet_nftables_opt_in == 'yes' {
             $src = $_from ? {
-              'any'   => '0.0.0.0/0',
-              default => $_from
+              'any'   => '',
+              default => "saddr { ${_from} }"
             }
             $dst = $_to ? {
-              'any'   => '0.0.0.0/0',
-              default => $_to
+              'any'   => '',
+              default => "daddr { ${_to} }"
             }
-            $rule = "add rule inet filter input ip saddr { ${src} } daddr { ${dst} } ${_proto} dport ${_port} counter accept"
+            $rule = "add rule inet filter input ip ${src} ${dst} ${_proto} dport ${_port} counter accept"
             sunet::snippets::file_line {
               $unique_name:
                 filename => '/etc/nftables/conf.d/sunet_ufw_allow.nft',
