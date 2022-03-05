@@ -34,7 +34,12 @@ class sunet::server(
     class { 'sunet::security::configure_sshd':
       port => $ssh_port,
     }
-    include ufw
+    if $::sunet_nftables_opt_in != 'yes' {
+      include ufw
+    } else {
+      warning('Enabling nftables (opt-in)')
+      ensure_resource ('class','sunet::nftables', { })
+    }
     if $ssh_allow_from_anywhere {
       sunet::misc::ufw_allow { 'allow-ssh-from-all':
         from => 'any',
