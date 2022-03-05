@@ -1,10 +1,10 @@
 # Open host firewall to allow clients to access a service.
 define sunet::misc::ufw_allow(
-  $ensure,
   $from,           # Allow traffic 'from' this IP (or list of IP:s).
   $port,           # Allow traffic to this port (or list of ports).
-  $to    = 'any',  # Allow traffic to this IP (or list of IP:s). 'any' means both IPv4 and IPv6.
-  $proto = 'tcp',  # Allow traffic using this protocol (or list of protocols).
+  $to     = 'any',  # Allow traffic to this IP (or list of IP:s). 'any' means both IPv4 and IPv6.
+  $proto  = 'tcp',  # Allow traffic using this protocol (or list of protocols).
+  $ensure = 'present',
   ) {
 
   # if $to is '', turn it into 'any'.
