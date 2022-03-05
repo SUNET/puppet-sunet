@@ -8,21 +8,21 @@ class sunet::nftables {
     }
 
     file { '/etc/nftables/conf.d/':
-        ensure => 'directory',
+        ensure  => 'directory',
         recurse => true, # enable recursive directory management
-        purge => true,   # purge all unmanaged junk
-        force => true,   # also purge subdirs and links etc.
-        owner => "root",
-        group => "root",
-        mode => "0644",
-        source => "puppet:///sunet/nftables/nftables-conf.d-empty",
+        purge   => true,   # purge all unmanaged junk
+        force   => true,   # also purge subdirs and links etc.
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0644',
+        source  => 'puppet:///modules/sunet/nftables/nftables-conf.d-empty',
         notify  => Service['nftables'],
     }
 
     file { '/etc/nftables.conf':
         ensure  => 'present',
         replace => 'no',
-        mode    => "755",
+        mode    => '0755',
         source  => 'puppet:///modules/sunet/nftables/nftables.conf',
         notify  => Service['nftables'],
     }
