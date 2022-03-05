@@ -23,6 +23,8 @@ define sunet::misc::ufw_allow(
       }
       each(flatten([$port])) |$_port| {
         each(flatten([$proto])) |$_proto| {
+          $unique_name = "_ufw_allow__from_${_from}__to_${_to}__${_port}/${_proto}"
+
           if $::sunet_nftables_opt_in == 'yes' {
             $src = $_from ? {
               'any'   => '0.0.0.0/0',
@@ -34,7 +36,7 @@ define sunet::misc::ufw_allow(
             }
             $rule = "add rule inet filter input ip saddr { ${src} } daddr { ${dst} } ${_proto} dport ${_port} counter accept"
             sunet::snippets::file_line {
-              'hiera_gpg':
+              $unique_name:
                 filename => '/etc/nftables/conf.d/sunet_ufw_allow.nft',
                 line     => $rule,
                 notify   => Service['nftables'],
@@ -42,7 +44,7 @@ define sunet::misc::ufw_allow(
                 ;
             }
           } else {
-            ensure_resource('ufw::allow', "_ufw_allow__from_${_from}__to_${_to}__${_port}/${_proto}", {
+            ensure_resource('ufw::allow', $unique_name, {
               from  => $_from,
               ip    => $_to,
               proto => $_proto,
