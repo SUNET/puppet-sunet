@@ -5,7 +5,7 @@ define sunet::misc::ufw_allow(
   $to     = 'any',  # Allow traffic to this IP (or list of IP:s). 'any' means both IPv4 and IPv6.
   $proto  = 'tcp',  # Allow traffic using this protocol (or list of protocols).
   $ensure = 'present',
-  String $ruleset = 'sunet_ufw_allow',
+  String $ruleset = '500-sunet_ufw_allow',
   ) {
   if $::sunet_nftables_opt_in == 'yes' {
     if $ensure == 'present' {
