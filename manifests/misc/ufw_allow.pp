@@ -46,7 +46,6 @@ define sunet::misc::ufw_allow(
             order   => '2000',
             content => $rule_v4,
             notify  => Service['nftables'],
-            require => Service['nftables'],
           }
         }
 
@@ -59,7 +58,6 @@ define sunet::misc::ufw_allow(
             order   => '3000',
             content => $rule_v6,
             notify  => Service['nftables'],
-            require => Service['nftables'],
           }
         }
       }
