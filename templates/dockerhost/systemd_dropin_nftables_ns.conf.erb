@@ -27,7 +27,7 @@ ExecStartPre=/sbin/ip addr add 172.16.0.2/24 dev to_host
 ExecStartPre=/sbin/ip addr add fd00::2/64 dev to_host
 ExecStartPre=/sbin/ip link set to_host up
 ExecStartPre=/sbin/ip route add default via 172.16.0.1 dev to_host
-ExecStartPre=-/sbin/ip -6 route add default via fd00::1 dev to_host
+ExecStartPre=/sbin/ip route add default via fd00::1 dev to_host
 
 # Setup named namespace for easier troubleshooting from the outside.
 ExecStartPost=-/bin/mkdir -p /var/run/netns
