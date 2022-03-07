@@ -71,20 +71,64 @@ set -x
 # Add a pair of virtual ethernet interfaces (think of them as a virtual cross-over ethernet cable)
 ip link del ${VETHHOST}
 ip link add name ${VETHHOST} mtu 1500 type veth peer name ${VETHCONTAINER} mtu 1500
-ip link set ${VETHHOST} master br-${INSTANCE}
+if [ -f /var/run/netns/docker ]; then
+    # move VETHCONTAINER into the docker namespace and attach it to the bridge for this instance
+    ip link set ${VETHCONTAINER} netns docker
+    ip netns exec docker ip link set ${VETHCONTAINER} master br-${INSTANCE}
+else
+    ip link set ${VETHCONTAINER} master br-${INSTANCE}
+fi
 ip link set ${VETHHOST} up
 
+echo ""
+echo ""
+echo ""
 echo "$0: Network namespace and process diagnostics:"
 pgrep -a --ns "${DOCKERPID}"
 ip link show "${VETHHOST}"
-ip link show "${VETHCONTAINER}"
-ip link show "br-${INSTANCE}"
 
-# Move one end of the virtual ethernet cable inside the network namespace of the docker container
-ip link set "${VETHCONTAINER}" netns "${INSTANCE}" || {
-    echo "$0: FAILED to configure namespace, did ${CONTAINER} (pid ${DOCKERPID}) die?"
-    exit 1
-}
+if [ -f /var/run/netns/docker ]; then
+echo ""
+echo ""
+echo ""
+    echo "$0: Inside the docker namespace"
+    ip netns exec docker ip link show "${VETHCONTAINER}"
+    ip netns exec docker ip link show "br-${INSTANCE}"
+else
+echo ""
+echo ""
+echo ""
+    echo "$0: In the host namespace"
+    ip link show "${VETHCONTAINER}"
+    ip link show "br-${INSTANCE}"
+fi
+
+echo ""
+echo ""
+echo ""
+echo "$0: Inside the instance namespace"
+ip netns exec ${INSTANCE} ip link show #"${VETHCONTAINER}"
+#ip netns exec ${INSTANCE} ip link show "br-${INSTANCE}"
+
+if [ -f /var/run/netns/docker ]; then
+    # Move one end of the virtual ethernet cable from the docker namespace into the container namespace
+    ip netns exec docker ip link set "${VETHCONTAINER}" netns "${INSTANCE}" || {
+	echo "$0: FAILED to configure namespace, did ${CONTAINER} (pid ${DOCKERPID}) die?"
+	exit 1
+    }
+else
+    # Move one end of the virtual ethernet cable inside the network namespace of the docker container
+    ip link set "${VETHCONTAINER}" netns "${INSTANCE}" || {
+	echo "$0: FAILED to configure namespace, did ${CONTAINER} (pid ${DOCKERPID}) die?"
+	exit 1
+    }
+fi
+
+echo ""
+echo ""
+echo ""
+echo "$0: Renaming interface ${VETHCONTAINER} in the instance to sarimner0"
+# Rename interface inside container to sarimner0
 ip netns exec "${INSTANCE}" ip link set "${VETHCONTAINER}" name sarimner0
 
 # Docker likes to disable IPv6
@@ -97,20 +141,27 @@ ip netns exec "${INSTANCE}" sysctl net.ipv6.conf.sarimner0.accept_dad=0
 # ip netns exec ${INSTANCE} sysctl net.ipv4.ip_nonlocal_bind=1
 # ip netns exec ${INSTANCE} sysctl net.ipv6.ip_nonlocal_bind=1
 
-
+echo ""
+echo ""
+echo ""
+echo "$0: Adding routing from host to the outside of the veth cable (${VETHHOST})"
 # Add IP addresses to the network namespace of the docker container
 for IP in $("${SCRIPTSDIR}"/frontend-config --instance "${INSTANCE}" print_ips); do
     ip netns exec "${INSTANCE}" ip addr add "${IP}" dev sarimner0
-    ip route add "${IP}" dev br-"${INSTANCE}"
+    ip route add "${IP}" dev "${VETHHOST}"
 done
 
+echo ""
+echo ""
+echo ""
+echo "$0: Bringing sarimner0 online, signalling the haproxy startup to commence"
 ip netns exec "${INSTANCE}" ip link set sarimner0 up
 
 
 # Set up IPv6 routing back out of the container, now that the interface is up.
 
 #sysctl net.ipv6.conf.${VETHHOST}.accept_dad=0
-v6gw=$(ip -6 addr list "br-${INSTANCE}" | awk '/inet6/{print $2}' | head -1 | awk -F / '{print $1}')
+v6gw=$(ip -6 addr list "${VETHHOST}" | awk '/inet6/{print $2}' | head -1 | awk -F / '{print $1}')
 if [[ $v6gw ]]; then
     ip netns exec "${INSTANCE}" ip -6 route add default via "${v6gw}" dev sarimner0
 else
