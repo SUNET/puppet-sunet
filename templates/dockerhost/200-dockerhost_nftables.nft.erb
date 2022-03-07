@@ -1,0 +1,22 @@
+table ip nat {
+        chain postrouting {
+                type nat hook postrouting priority 100; policy accept;
+        }
+}
+table ip6 nat {
+        chain postrouting {
+                type nat hook postrouting priority 100; policy accept;
+        }
+}
+
+#
+# SNAT packages _from_ Docker. Can't use iifname in postrouting rules.
+#
+add rule ip nat postrouting ip saddr { 172.16.0.0/12 } oifname eth0 counter masquerade
+add rule ip6 nat postrouting ip saddr { fd01::/64 } oifname eth0 counter masquerade
+
+#
+# Allow forwarding packages from docker to eth0
+#
+add rule inet filter forward iifname to_docker oifname eth0 counter accept
+add rule inet filter forward ct state established counter accept
