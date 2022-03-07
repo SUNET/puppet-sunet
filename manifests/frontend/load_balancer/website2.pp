@@ -58,7 +58,7 @@ define sunet::frontend::load_balancer::website2(
     'frontend_fqdn' => $::fqdn,
   })
 
-  $local_config = hiera_hash("sunet_frontend_local", undef)
+  $local_config = hiera_hash('sunet_frontend_local', undef)
   $config4 = deep_merge($config3, $local_config)
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
                                               "${confdir}/${instance}/certs",
@@ -146,8 +146,11 @@ define sunet::frontend::load_balancer::website2(
       }
     }
   }
-  exec { "workaround_allow_forwarding_to_${instance}":
-    command => "/usr/sbin/ufw route allow out on br-${instance}",
+
+  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+    exec { "workaround_allow_forwarding_to_${instance}":
+      command => "/usr/sbin/ufw route allow out on br-${instance}",
+    }
   }
 
   if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
