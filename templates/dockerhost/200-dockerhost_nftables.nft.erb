@@ -1,5 +1,5 @@
 table ip nat {
-        prerouting {
+        chain prerouting {
 		type nat hook prerouting priority -100;
 	}
         chain postrouting {
@@ -7,7 +7,7 @@ table ip nat {
         }
 }
 table ip6 nat {
-        prerouting {
+        chain prerouting {
 		type nat hook prerouting priority -100;
 	}
         chain postrouting {
