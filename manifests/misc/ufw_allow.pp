@@ -7,7 +7,7 @@ define sunet::misc::ufw_allow(
   $ensure = 'present',
   String $ruleset = '500-sunet_ufw_allow',
   ) {
-  if $::sunet_nftables_opt_in == 'yes' {
+  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
     if $ensure == 'present' {
       # $safe_name = regsubst($title, '[^0-9A-Za-z_]', '_', 'G')
 
