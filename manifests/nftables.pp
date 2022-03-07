@@ -17,11 +17,10 @@ class sunet::nftables {
     }
 
     file { '/etc/nftables.conf':
-        ensure  => 'present',
-        replace => 'no',
-        mode    => '0755',
-        source  => 'puppet:///modules/sunet/nftables/nftables.conf',
-        notify  => Service['nftables'],
+        ensure => 'present',
+        mode   => '0755',
+        source => 'puppet:///modules/sunet/nftables/nftables.conf',
+        notify => Service['nftables'],
     }
 
     service { 'nftables':
@@ -37,7 +36,7 @@ define nftables::rule(
 
    file { "/etc/nftables/conf.d/${name}.nft":
        ensure  => 'present',
-       content => "$rule\n",
+       content => "${rule}\n",
        notify  => Service['nftables'],
        require => Package['nftables'],
    }
