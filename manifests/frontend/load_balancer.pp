@@ -41,7 +41,7 @@ class sunet::frontend::load_balancer(
 
     configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
 
-    configure_websites2 { 'websites':
+    configure_websites { 'websites':
       websites  => $config['load_balancer']['websites2'],
       basedir   => $basedir,
       confdir   => $confdir,
@@ -118,18 +118,10 @@ define configure_peers($router_id, $peers)
   create_resources('sunet::frontend::load_balancer::peer', $peers, $defaults)
 }
 
-define configure_websites($websites, $basedir, $confdir)
-{
-  create_resources('sunet::frontend::load_balancer::website', $websites, {
-    'basedir' => $basedir,
-    'confdir' => $confdir,
-    })
-}
-
-define configure_websites2($websites, $basedir, $confdir, $scriptdir)
+define configure_websites($websites, $basedir, $confdir, $scriptdir)
 {
   each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
+    create_resources('sunet::frontend::load_balancer::website', {$site => {}}, {
       'basedir'   => $basedir,
       'confdir'   => $confdir,
       'scriptdir' => $scriptdir,

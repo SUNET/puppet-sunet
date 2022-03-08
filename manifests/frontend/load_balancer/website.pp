@@ -148,8 +148,13 @@ define sunet::frontend::load_balancer::website2(
   }
 
   if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+    # old, traffic was routed to "br-foo"
     exec { "workaround_allow_forwarding_to_${instance}":
       command => "/usr/sbin/ufw route allow out on br-${instance}",
+    }
+    # new, traffic is routed into "to_foo" which is connected to the "br-foo" (which resides in another network ns)
+    exec { "workaround_allow_forwarding_to_${instance}_2":
+      command => "/usr/sbin/ufw route allow out on to_${instance}",
     }
   }
 
