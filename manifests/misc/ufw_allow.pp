@@ -14,6 +14,7 @@ define sunet::misc::ufw_allow(
         proto => $proto,
         port  => $port,
       })
+    }
   } else {
     # if $to is '', turn it into 'any'.
     # ufw module behaviour of changing '' to $ipaddress_eth0 or $ipaddress does not make much sense.
