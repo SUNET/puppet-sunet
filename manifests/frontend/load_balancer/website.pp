@@ -1,5 +1,5 @@
 # New kind of website with one docker-compose setup per website
-define sunet::frontend::load_balancer::website2(
+define sunet::frontend::load_balancer::website(
   String  $basedir,
   String  $confdir,
   String  $scriptdir,
