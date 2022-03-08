@@ -22,7 +22,7 @@ class sunet::nftables::init(
     if ($default_log) {
       file { '/etc/nftables/conf.d/999-log.nft':
         ensure => 'present',
-        mode   => '0755',
+        mode   => '0644',
         source => 'puppet:///modules/sunet/nftables/999-log.nft',
         notify => Service['nftables'],
       }
