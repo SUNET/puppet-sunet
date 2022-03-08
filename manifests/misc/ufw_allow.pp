@@ -10,7 +10,7 @@ define sunet::misc::ufw_allow(
     if $ensure == 'present' {
       ensure_resource('sunet::nftables::ufw_allow_compat', $name, {
         from  => $from,
-        ip    => $to,
+        to    => $to,
         proto => $proto,
         port  => $port,
       })
