@@ -1,5 +1,5 @@
 # Setup nftables on a host
-class sunet::nftables(
+class sunet::nftables::init(
   Boolean $default_log = true,
 ) {
     package { 'nftables':
