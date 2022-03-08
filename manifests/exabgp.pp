@@ -6,14 +6,17 @@ define sunet::exabgp(
   String  $version         = 'latest',
   String  $volume          = '/etc/bgp',
   Array   $docker_volumes  = [],
+  Boolean $docker_run      = true,
 ) {
    $safe_title = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G');
-   sunet::docker_run {"${safe_title}_exabgp":
-      image       => 'docker.sunet.se/sunet/docker-sunet-exabgp',
-      imagetag    => $version,
-      volumes     => flatten(["${volume}:${volume}:ro", $docker_volumes]),
-      net         => 'host',
-      command     => join(flatten([$config,$extra_arguments])," ")
+   if $docker_run {
+    sunet::docker_run {"${safe_title}_exabgp":
+        image    => 'docker.sunet.se/sunet/docker-sunet-exabgp',
+        imagetag => $version,
+        volumes  => flatten(["${volume}:${volume}:ro", $docker_volumes]),
+        net      => 'host',
+        command  => join(flatten([$config,$extra_arguments]),' ')
+    }
    }
 
    sunet::snippets::no_icmp_redirects {"no_icmp_redirects_${safe_title}": }

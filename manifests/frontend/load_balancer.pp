@@ -8,12 +8,6 @@ class sunet::frontend::load_balancer(
 ) {
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
-    $confdir = "${basedir}/config"
-    $scriptdir = "${basedir}/scripts"
-    $apidir = "${basedir}/api"
-
-    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
-                    { owner => 'root', group => 'root', mode => '0755' })
 
     if has_key($config['load_balancer'], 'websites') and has_key($config['load_balancer'], 'websites2') {
       fail("Can't configure websites and websites2 at the same time unfortunately")
@@ -28,56 +22,26 @@ class sunet::frontend::load_balancer(
       fail('Load balancer config contains neither "websites" nor "websites2"')
     }
 
-    #
-    # New style config
-    #
-    sunet::exabgp::config { 'exabgp_config': }
-    file { '/etc/bgp/monitor':
-      ensure  => file,
-      mode    => '0755',
-      content => template('sunet/frontend/websites2_monitor.py.erb'),
-      notify  => Sunet::Exabgp['load_balancer'],
-    }
+    $confdir = "${basedir}/config"
+    $scriptdir = "${basedir}/scripts"
 
-    configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
+    ensure_resource('sunet::misc::create_dir', [$confdir, $scriptdir],
+                    { owner => 'root', group => 'root', mode => '0755' })
 
     configure_websites { 'websites':
-      websites  => $config['load_balancer']['websites2'],
+      websites  => $websites,
       basedir   => $basedir,
       confdir   => $confdir,
       scriptdir => $scriptdir,
     }
+
+    class { 'sunet::frontend::load_balancer::services':
+      router_id => $router_id,
+      basedir   => $basedir,
+      config    => $config,
+    }
   }
 
-  $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
-    true  => $config['load_balancer']['exabgp_imagetag'],
-    false => 'latest',
-  }
-  sunet::exabgp { 'load_balancer':
-    docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
-                        '/opt/frontend/monitor:/opt/frontend/monitor:ro',
-                        '/dev/log:/dev/log',
-                        ],
-    version        => $exabgp_imagetag,
-  }
-
-  sunet::frontend::api::server { 'sunetfrontend':
-    basedir    => $apidir,
-    docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
-  }
-
-  sunet::frontend::telegraf { 'frontend_telegraf':
-    docker_image          => pick($config['load_balancer']['telegraf_image'], 'docker.sunet.se/eduid/telegraf'),
-    docker_imagetag       => pick($config['load_balancer']['telegraf_imagetag'], 'stable'),
-    docker_volumes        => pick($config['load_balancer']['telegraf_volumes'], []),
-    forward_url           => $config['load_balancer']['telegraf_forward_url'],
-    statsd_listen_address => pick($::ipaddress_docker0, 'no-address-provided'),
-  }
-
-  sunet::misc::ufw_allow { 'always-https-allow-http':
-    from => 'any',
-    port => '80'
-  }
 
   # Create snakeoil bundle as fallback certificate for haproxy
   $snakeoil_key = '/etc/ssl/private/ssl-cert-snakeoil.key'
@@ -108,14 +72,6 @@ define sysctl_ip_nonlocal_bind() {
     command     => '/sbin/sysctl -p /etc/sysctl.d/10-sunet-frontend-ip-non-local-bind.conf',
     refreshonly => true,
   }
-}
-
-define configure_peers($router_id, $peers)
-{
-  $defaults = {
-    router_id => $router_id,
-  }
-  create_resources('sunet::frontend::load_balancer::peer', $peers, $defaults)
 }
 
 define configure_websites($websites, $basedir, $confdir, $scriptdir)
