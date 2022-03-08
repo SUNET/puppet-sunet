@@ -8,13 +8,12 @@ define sunet::misc::ufw_allow(
   ) {
   if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
     if $ensure == 'present' {
-      sunet::nftables::ufw_allow_compat(
-        from   => $from,
-        ip     => $to,
-        proto  => $proto,
-        port   => $port,
-      )
-    }
+      ensure_resource('sunet::nftables::ufw_allow_compat', $name, {
+        from  => $from,
+        ip    => $to,
+        proto => $proto,
+        port  => $port,
+      })
   } else {
     # if $to is '', turn it into 'any'.
     # ufw module behaviour of changing '' to $ipaddress_eth0 or $ipaddress does not make much sense.
