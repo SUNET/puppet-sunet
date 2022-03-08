@@ -1,5 +1,5 @@
 # Make a nftables { set }
-function sunet::nftables::misc::format_nft_set(String $prefix, Variant[String, Integer, Array, Undef] $arg) >> Variant[String, Undef] {
+function sunet::format_nft_set(String $prefix, Variant[String, Integer, Array, Undef] $arg) >> Variant[String, Undef] {
   if $arg =~ Array {
     $arg ? {
       [] => undef,
