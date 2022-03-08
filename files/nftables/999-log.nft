@@ -1,0 +1,2 @@
+add rule inet filter input log flags all prefix "input_drop: " counter drop
+add rule inet filter forward log flags all prefix "forward_drop: " counter drop
