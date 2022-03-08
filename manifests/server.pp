@@ -35,10 +35,10 @@ class sunet::server(
       port => $ssh_port,
     }
     if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
-      warning('Enabling UFW')
+      notice('Enabling UFW')
       include ufw
     } else {
-      warning('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
+      notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
       ensure_resource ('class','sunet::nftables::init', { })
     }
     if $ssh_allow_from_anywhere {
