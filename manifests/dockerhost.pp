@@ -150,7 +150,7 @@ class sunet::dockerhost(
 
   $enable_ipv6 = $ipv6_opt_in  # re-assigning this allows further logic in this module later on
   $_extra_parameters = $enable_ipv6 ? {
-    true => sprintf('%s --ipv6', $docker_extra_parameters),
+    true => sprintf('%s --ipv6 --fixed-cidr-v6 %s', $docker_extra_parameters, $docker_network_v6),
     false => $docker_extra_parameters
   }
 
@@ -314,7 +314,7 @@ class sunet::dockerhost(
 
   if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
     file {
-      '/etc/nftables/conf.d/200-dockerhost_nftables.nft':
+      '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
         ensure  => file,
         mode    => '0400',
         content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
