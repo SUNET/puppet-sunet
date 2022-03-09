@@ -5,9 +5,12 @@ define sunet::frontend::api::instance(
   Array[String] $backend_ips = [],
   String        $basedir = '/opt/frontend/api',
 ) {
-  sunet::misc::ufw_allow { "allow_backends_${name}":
-    from => $backend_ips,
-    port => $api_port,
+
+  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+    sunet::misc::ufw_allow { "allow_backends_${name}":
+      from => $backend_ips,
+      port => $api_port,
+    }
   }
 
   # Create backend directory for this website so that the sunetfrontend-api will
