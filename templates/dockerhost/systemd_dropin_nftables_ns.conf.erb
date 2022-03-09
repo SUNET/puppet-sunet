@@ -33,7 +33,11 @@ ExecStartPre=/sbin/ip route add default via 172.16.0.1 dev to_host
 ExecStartPre=/sbin/ip route add default via fd00::1 dev to_host
 
 ExecStartPre=-/bin/echo "Configured network namespace for the Docker daemon:"
+ExecStartPre=-/bin/echo "--- Links"
+ExecStartPre=-/sbin/ip link show
+ExecStartPre=-/bin/echo "--- Addresses"
 ExecStartPre=-/sbin/ip addr list
+ExecStartPre=-/bin/echo "--- Routes"
 ExecStartPre=-/sbin/ip route list
 ExecStartPre=-/sbin/ip -6 route list
 
