@@ -1,10 +1,22 @@
 {
     "default-address-pools": [
-	{"base": "<%= @default_address_pools %>", "size": 24}
+        {
+            "base": "<%= @default_address_pools %>",
+            "size": 24
+        }
     ],
+    "dns": "<%= @_docker_dns %>",
+    "fixed-cidr-v6": "<%= @docker_network_v6 -%>",
+    "ip-forward": true,
+    "ip-masq": true,
+    "iptables": true,
+    "ip6tables": true,
+    "ipv6": <%= @enable_ipv6 -%>,
     "log-driver": "json-file",
     "log-opts": {
-	"max-size": "10k",
-	"max-file": "3"
-    }
+        "max-size": "10k",
+        "max-file": "3"
+    },
+    "storage-driver": "<%= @storage_driver -%>",
+    "userland-proxy": false
 }

@@ -7,12 +7,14 @@ class sunet::dockerhost(
   $docker_extra_parameters                    = undef,
   Boolean $run_docker_cleanup                 = true,
   Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
+  String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd01::/15'),
   $docker_dns                                 = $::ipaddress_default,
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
   String $compose_version                     = '1.24.0',
   Boolean $write_daemon_config                = false,
+  Boolean $ipv6_opt_in                        = false,
 ) {
 
   # Remove old versions, if installed
@@ -131,6 +133,7 @@ class sunet::dockerhost(
     default => $docker_dns,
   }
 
+  $tcp_bind = false  # maybe this was once a parameter? now it is just dead code :/
   if $tcp_bind and has_key($::tls_certificates, $::fqdn) and has_key($::tls_certificates[$::fqdn], 'infra_cert') {
     $_tcp_bind = $tcp_bind
     $tls_enable = true
@@ -145,13 +148,19 @@ class sunet::dockerhost(
     $tls_key = undef
   }
 
+  $enable_ipv6 = $ipv6_opt_in  # re-assigning this allows further logic in this module later on
+  $_extra_parameters = $enable_ipv6 ? {
+    true => sprintf('%s --ipv6', $docker_extra_parameters),
+    false => $docker_extra_parameters
+  }
+
   class {'docker':
     storage_driver              => $storage_driver,
     manage_package              => false,
     manage_kernel               => false,
     use_upstream_package_source => false,
     dns                         => $_docker_dns,
-    extra_parameters            => $docker_extra_parameters,
+    extra_parameters            => $_extra_parameters,
     docker_command              => $docker_command,
     daemon_subcommand           => $daemon_subcommand,
     tcp_bind                    => $_tcp_bind,
