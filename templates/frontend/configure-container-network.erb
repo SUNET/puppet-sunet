@@ -147,7 +147,10 @@ echo ""
 echo "$0: Adding routing from host to the outside of the veth cable (${VETHHOST})"
 # Add IP addresses to the network namespace of the docker container
 for IP in $("${SCRIPTSDIR}"/frontend-config --instance "${INSTANCE}" print_ips); do
-    ip netns exec "${INSTANCE}" ip addr add "${IP}" dev sarimner0
+    # The anycasted addresses are not suitable for use for outgoing connections. We can send packets
+    # just fine, but the responses may get routed to another frontend node. Therefore, we 'deprecate'
+    # them by setting preferred_lft to zero.
+    ip netns exec "${INSTANCE}" ip addr add "${IP}" dev sarimner0 preferred_lft 0
     ip route add "${IP}" dev "${VETHHOST}"
 done
 

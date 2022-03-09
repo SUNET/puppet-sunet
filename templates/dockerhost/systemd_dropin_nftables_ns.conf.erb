@@ -7,7 +7,10 @@
 [Service]
 PrivateNetwork=yes
 
+ExecStartPre=-/bin/echo "Setting up a network namespace for the whole Docker daemon"
+
 # cleanup
+ExecStartPre=-/bin/echo "Removing to_docker interface if it exists"
 ExecStartPre=-/usr/bin/nsenter -t 1 -n -- ip link delete to_docker
 
 # Set up a virtual ethernet cable whose ends are called to_docker and to_host.
@@ -28,6 +31,11 @@ ExecStartPre=/sbin/ip addr add fd00::2/64 dev to_host
 ExecStartPre=/sbin/ip link set to_host up
 ExecStartPre=/sbin/ip route add default via 172.16.0.1 dev to_host
 ExecStartPre=/sbin/ip route add default via fd00::1 dev to_host
+
+ExecStartPre=-/bin/echo "Configured network namespace for the Docker daemon:"
+ExecStartPre=-/sbin/ip addr list
+ExecStartPre=-/sbin/ip route list
+ExecStartPre=-/sbin/ip -6 route list
 
 # Docker enables IP forwarding itself, but only in it's namespace of course. We need to enable it
 # in the hosts namespace too.

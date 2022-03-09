@@ -7,7 +7,7 @@ class sunet::dockerhost(
   $docker_extra_parameters                    = undef,
   Boolean $run_docker_cleanup                 = true,
   Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
-  String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd01::/15'),
+  String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd0c::/16'),
   $docker_dns                                 = $::ipaddress_default,
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
@@ -151,6 +151,7 @@ class sunet::dockerhost(
   $enable_ipv6 = $ipv6_opt_in  # re-assigning this allows further logic in this module later on
   $_extra_parameters = $enable_ipv6 ? {
     true => sprintf('%s --ipv6 --fixed-cidr-v6 %s', $docker_extra_parameters, $docker_network_v6),
+    #true => sprintf('%s --ipv6', $docker_extra_parameters),
     false => $docker_extra_parameters
   }
 
