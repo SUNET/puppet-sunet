@@ -164,7 +164,8 @@ define sunet::frontend::load_balancer::website(
       command => "/usr/sbin/ufw route allow out on to_${instance}",
     }
   } else {
-    # NEW way
+    # NEW way, configure forwarding and IPv6 NAT (for haproxy to reach ipv6-only backends) using
+    # an nftables drop-in file.
 
     # Variables used in template
     #
