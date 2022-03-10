@@ -7,9 +7,12 @@ define sunet::nftables::docker_expose(
 ) {
   $safe_name = regsubst($title, '[^0-9A-Za-z_]', '_', 'G')
 
-  # Used in template
-  $allow_clients_v4 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 4) }
-  $allow_clients_v6 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 6) }
+  $allow_clients_v4 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 4) or $this == 'any' }
+  $allow_clients_v6 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 6) or $this == 'any' }
+
+  # Variables used in template
+  $saddr_v4 = sunet::format_nft_set('ip saddr', $allow_clients_v4)
+  $saddr_v6 = sunet::format_nft_set('ip6 saddr', $allow_clients_v6)
   $dport = sunet::format_nft_set('dport', $port)
 
   file {
@@ -17,6 +20,7 @@ define sunet::nftables::docker_expose(
       ensure  => file,
       mode    => '0400',
       content => template('sunet/nftables/docker_expose.nft.erb'),
+      notify  => Service['nftables'],
       ;
   }
 }

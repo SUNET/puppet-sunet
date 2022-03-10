@@ -1,11 +1,19 @@
 #
 # DNAT packets to an exposed service running in a Docker container
 #
+<% if @saddr_v4.is_a? String -%>
 add rule ip nat prerouting iif eth0 tcp <%= @dport %> dnat to 172.16.0.2 comment "<%= @name %>"
+<% end -%>
+<% if @saddr_v6.is_a? String -%>
 add rule ip6 nat prerouting iif eth0 tcp <%= @dport %> dnat to fd00::2 comment "<%= @name %>"
+<% end -%>
 
 #
 # Allow forwarding of the packets to the exposed service
 #
-add rule inet filter forward ip saddr { <%= @allow_clients_v4.join(', ') %> }  tcp <%= @dport %> counter accept comment "<%= @name %>"
-add rule inet filter forward ip6 saddr { <%= @allow_clients_v6.join(', ') %> }  tcp <%= @dport %> counter accept comment "<%= @name %>"
+<% if @saddr_v4.is_a? String -%>
+add rule inet filter forward <%= @saddr_v4 %> tcp <%= @dport %> counter accept comment "<%= @name %>"
+<% end -%>
+<% if @saddr_v6.is_a? String -%>
+add rule inet filter forward <%= @saddr_v6 %> tcp <%= @dport %> counter accept comment "<%= @name %>"
+<% end -%>
