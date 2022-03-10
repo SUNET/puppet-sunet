@@ -269,4 +269,18 @@ class sunet::dockerhost(
     }
   }
 
+  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+    file {
+      '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
+        ensure  => file,
+        mode    => '0400',
+        content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
+        ;
+      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
+        ensure  => file,
+        mode    => '0400',
+        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
+        ;
+    }
+  }
 }
