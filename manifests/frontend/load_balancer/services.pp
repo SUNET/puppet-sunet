@@ -12,6 +12,7 @@ class sunet::frontend::load_balancer::services(
 
   sunet::exabgp::config { 'exabgp_config':
     config         => '/etc/exabgp/exabgp.conf',
+    monitor        => '/etc/exabgp/monitor',
     notify         => Service['exabgp'],
     exabgp_version => '4',
   }
