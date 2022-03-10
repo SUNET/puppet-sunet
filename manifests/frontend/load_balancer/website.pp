@@ -133,21 +133,22 @@ define sunet::frontend::load_balancer::website(
     start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
   }
 
-  if has_key($config, 'allow_ports') {
-    each($config['frontends']) | $k, $v | {
-      # k should be a frontend FQDN and $v a hash with ips in it:
-      #   $v = {ips => [192.0.2.1]}}
-      if is_hash($v) and has_key($v, 'ips') {
-        sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
-          from => 'any',
-          to   => $v['ips'],
-          port => $config['allow_ports'],
+  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+    # OLD way
+    if has_key($config, 'allow_ports') {
+      each($config['frontends']) | $k, $v | {
+        # k should be a frontend FQDN and $v a hash with ips in it:
+        #   $v = {ips => [192.0.2.1]}}
+        if is_hash($v) and has_key($v, 'ips') {
+          sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
+            from => 'any',
+            to   => $v['ips'],
+            port => $config['allow_ports'],
+          }
         }
       }
     }
-  }
 
-  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
     # old, traffic was routed to "br-foo"
     exec { "workaround_allow_forwarding_to_${instance}":
       command => "/usr/sbin/ufw route allow out on br-${instance}",
@@ -156,6 +157,19 @@ define sunet::frontend::load_balancer::website(
     exec { "workaround_allow_forwarding_to_${instance}_2":
       command => "/usr/sbin/ufw route allow out on to_${instance}",
     }
+  } else {
+    # NEW way
+
+    # Variables used in template
+    #
+    $dport = sunet::format_nft_set('dport', pick($config['allow_ports'], []))
+    #
+    ensure_resource('file', "/etc/nftables/conf.d/700-frontend-${instance}.nft", {
+      ensure  => 'file',
+      mode    => '0400',
+      content => template('sunet/frontend/700-frontend-instance_nftables.nft.erb'),
+      notify  => Service['nftables'],
+    })
   }
 
   if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
