@@ -14,7 +14,7 @@ class sunet::dockerhost(
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
   String $compose_version                     = '1.24.0',
   Boolean $write_daemon_config                = false,
-  Boolean $ipv6_opt_in                        = false,
+  Boolean $enable_ipv6                        = false,
 ) {
 
   # Remove old versions, if installed
@@ -148,12 +148,23 @@ class sunet::dockerhost(
     $tls_key = undef
   }
 
-  $enable_ipv6 = $ipv6_opt_in  # re-assigning this allows further logic in this module later on
-  $_extra_parameters = $enable_ipv6 ? {
-    true => sprintf('%s --ipv6 --fixed-cidr-v6 %s', $docker_extra_parameters, $docker_network_v6),
-    #true => sprintf('%s --ipv6', $docker_extra_parameters),
-    false => $docker_extra_parameters
+  # This is an approximation about how to enable IPv6 in Docker, but
+  # BEWARE! IPv6 is currently utterly dysfunctional in docker-compose (version 3 / 1.29.2). Sigh.
+  #
+  $ipv6_parameters = ($enable_ipv6 and ! $write_daemon_config) ? {
+    true => ['--ipv6',
+      $docker_network_v6 ? {
+        true => [],
+        default => ['--fixed-cidr-v6', $docker_network_v6],
+      }
+    ],
+    false => []
   }
+
+  $_extra_parameters = flatten([
+    $docker_extra_parameters,
+    $ipv6_parameters,
+    ]).join(' ')
 
   class {'docker':
     storage_driver              => $storage_driver,
