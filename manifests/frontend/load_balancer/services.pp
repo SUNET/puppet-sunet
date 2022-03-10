@@ -15,7 +15,7 @@ class sunet::frontend::load_balancer::services(
   file { '/etc/bgp/monitor':
     ensure  => file,
     mode    => '0755',
-    content => template('sunet/frontend/websites2_monitor.py.erb'),
+    content => template('sunet/frontend/websites_monitor.py.erb'),
     # TODO notify  => Sunet::Exabgp['load_balancer'],
   }
 
