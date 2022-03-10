@@ -8,7 +8,7 @@ class sunet::dockerhost(
   Boolean $run_docker_cleanup                 = true,
   Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
   String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd0c::/16'),
-  String $docker_dns                          = $::ipaddress_default,
+  Variant[String, Array[String]] $docker_dns  = $::ipaddress_default,
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
