@@ -13,7 +13,13 @@ define sunet::exabgp::neighbor(
     port => '179',
   }
 
+  #
+  # Variables used in template
+  #
   $router_id_config = pick($router_id, $local_address)
+  $is_v4_peer = is_ipaddr($peer_address, 4)
+  $is_v6_peer = is_ipaddr($peer_address, 6)
+
 
   concat::fragment { "exabgp_neighbor_${peer_address}":
     target  => $config,
