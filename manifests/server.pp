@@ -34,7 +34,13 @@ class sunet::server(
     class { 'sunet::security::configure_sshd':
       port => $ssh_port,
     }
-    include ufw
+    if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+      notice('Enabling UFW')
+      include ufw
+    } else {
+      notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
+      ensure_resource ('class','sunet::nftables::init', { })
+    }
     if $ssh_allow_from_anywhere {
       sunet::misc::ufw_allow { 'allow-ssh-from-all':
         from => 'any',
@@ -42,25 +48,24 @@ class sunet::server(
       }
     } else {
       # Remove any existing rule from when ssh_allow_from_anywhere was true as default
-      ensure_resource('ufw::allow', 'remove_ufw_allow_all_ssh', {
+      ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh', {
         ensure => 'absent',
         from   => 'any',
-        ip     => 'any',
+        to     => 'any',
         proto  => 'tcp',
         port   => sprintf('%s', pick($ssh_port, 22)),
       })
 
       if $::ipaddress_default {
         # Also remove historical allow-any-to-my-IP rules
-        ensure_resource('ufw::allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
+        ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
           ensure => 'absent',
           from   => 'any',
-          ip     => $::ipaddress_default,
+          to     => $::ipaddress_default,
           proto  => 'tcp',
           port   => sprintf('%s', pick($ssh_port, 22)),
         })
       }
-
     }
     if $mgmt_addresses != [] {
       sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
