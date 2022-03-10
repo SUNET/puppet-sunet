@@ -5,7 +5,7 @@
             "size": 24
         }
     ],
-    "dns": "<%= scope.function_flatten([@_docker_dns]) %>",
+    "dns": "<%= scope.function_flatten([[@_docker_dns]]) %>",
     "fixed-cidr-v6": "<%= @docker_network_v6 -%>",
     "ip6tables": true,
     "ipv6": <%= @enable_ipv6 -%>,
