@@ -166,21 +166,48 @@ class sunet::dockerhost(
     $ipv6_parameters,
     ]).join(' ')
 
-  class {'docker':
-    storage_driver              => $storage_driver,
-    manage_package              => false,
-    manage_kernel               => false,
-    use_upstream_package_source => false,
-    dns                         => $_docker_dns,
-    extra_parameters            => $_extra_parameters,
-    docker_command              => $docker_command,
-    daemon_subcommand           => $daemon_subcommand,
-    tcp_bind                    => $_tcp_bind,
-    tls_enable                  => $tls_enable,
-    tls_cacert                  => $tls_cacert,
-    tls_cert                    => $tls_cert,
-    tls_key                     => $tls_key,
-    require                     => Package[$docker_package_name],
+
+  if $write_daemon_config {
+    if $docker_network =~ String[1] {
+      $default_address_pools = $docker_network
+    } else {
+      $default_address_pools = '172.16.0.0/12'
+    }
+    file {
+      '/etc/docker/daemon.json':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/dockerhost/daemon.json.erb'),
+        ;
+    }
+
+    # Docker rejects options specified both from command line and in daemon.json
+    class {'docker':
+      manage_package              => false,
+      manage_kernel               => false,
+      use_upstream_package_source => false,
+      extra_parameters            => $_extra_parameters,
+      docker_command              => $docker_command,
+      daemon_subcommand           => $daemon_subcommand,
+      require                     => Package[$docker_package_name],
+    }
+  } else {
+    class {'docker':
+      storage_driver              => $storage_driver,
+      manage_package              => false,
+      manage_kernel               => false,
+      use_upstream_package_source => false,
+      dns                         => $_docker_dns,
+      extra_parameters            => $_extra_parameters,
+      docker_command              => $docker_command,
+      daemon_subcommand           => $daemon_subcommand,
+      tcp_bind                    => $_tcp_bind,
+      tls_enable                  => $tls_enable,
+      tls_cacert                  => $tls_cacert,
+      tls_cert                    => $tls_cert,
+      tls_key                     => $tls_key,
+      require                     => Package[$docker_package_name],
+    }
   }
 
   if $docker_network =~ String {
@@ -305,21 +332,6 @@ class sunet::dockerhost(
         content => template('sunet/dockerhost/unbound.conf.erb'),
         require => Package['unbound'],
         notify  => Service['unbound'],
-        ;
-    }
-  }
-
-  if $write_daemon_config {
-    if $docker_network =~ String[1] {
-      $default_address_pools = $docker_network
-    } else {
-      $default_address_pools = '172.16.0.0/12'
-    }
-    file {
-      '/etc/docker/daemon.json':
-        ensure  => file,
-        mode    => '0644',
-        content => template('sunet/dockerhost/daemon.json.erb'),
         ;
     }
   }
