@@ -83,6 +83,7 @@ class sunet::frontend::load_balancer::services(
   #
   $api_image = get_config($config, 'api_image', 'docker.sunet.se/sunetfrontend-api')
   $api_imagetag = get_config($config, 'api_imagetag', 'latest')
+  $api_basedir = "${basedir}/api"
   #
   $exabgp_image = get_config($config, 'exabgp_image', 'docker.sunet.se/sunet/docker-sunet-exabgp')
   $exabgp_imagetag = get_config($config, 'exabgp_imagetag', 'latest')

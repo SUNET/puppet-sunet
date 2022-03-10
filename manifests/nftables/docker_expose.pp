@@ -20,6 +20,7 @@ define sunet::nftables::docker_expose(
       ensure  => file,
       mode    => '0400',
       content => template('sunet/nftables/docker_expose.nft.erb'),
+      notify  => Service['nftables'],
       ;
   }
 }
