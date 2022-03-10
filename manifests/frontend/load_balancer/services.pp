@@ -25,6 +25,9 @@ class sunet::frontend::load_balancer::services(
 
   configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
 
+  sunet::exabgp::molly_guard { $name :
+    service_name => 'exabgp',
+  }
 
   #
   # Sunet Frontend API (where backends register their availability)
