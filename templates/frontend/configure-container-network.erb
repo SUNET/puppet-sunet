@@ -69,16 +69,16 @@ sysctl net.ipv6.conf.all.forwarding=1
 set -x
 
 # Add a pair of virtual ethernet interfaces (think of them as a virtual cross-over ethernet cable)
-ip link del ${VETHHOST}
-ip link add name ${VETHHOST} mtu 1500 type veth peer name ${VETHCONTAINER} mtu 1500
+ip link del "${VETHHOST}"
+ip link add name "${VETHHOST}" mtu 1500 type veth peer name "${VETHCONTAINER}" mtu 1500
 if [ -f /var/run/netns/docker ]; then
     # move VETHCONTAINER into the docker namespace and attach it to the bridge for this instance
-    ip link set ${VETHCONTAINER} netns docker
-    ip netns exec docker ip link set ${VETHCONTAINER} master br-${INSTANCE}
+    ip link set "${VETHCONTAINER}" netns docker
+    ip -n docker link set "${VETHCONTAINER}" master "br-${INSTANCE}"
 else
-    ip link set ${VETHCONTAINER} master br-${INSTANCE}
+    ip link set "${VETHCONTAINER}" master "br-${INSTANCE}"
 fi
-ip link set ${VETHHOST} up
+ip link set "${VETHHOST}" up
 
 echo ""
 echo ""
@@ -92,8 +92,8 @@ echo ""
 echo ""
 echo ""
     echo "$0: Inside the docker namespace"
-    ip netns exec docker ip link show "${VETHCONTAINER}"
-    ip netns exec docker ip link show "br-${INSTANCE}"
+    ip -n docker link show "${VETHCONTAINER}"
+    ip -n docker link show "br-${INSTANCE}"
 else
 echo ""
 echo ""
@@ -107,12 +107,12 @@ echo ""
 echo ""
 echo ""
 echo "$0: Inside the instance namespace"
-ip netns exec ${INSTANCE} ip link show #"${VETHCONTAINER}"
-#ip netns exec ${INSTANCE} ip link show "br-${INSTANCE}"
+ip -n "${INSTANCE}" link show "${VETHCONTAINER}"
+#ip -n "${INSTANCE}" link show "br-${INSTANCE}"
 
 if [ -f /var/run/netns/docker ]; then
     # Move one end of the virtual ethernet cable from the docker namespace into the container namespace
-    ip netns exec docker ip link set "${VETHCONTAINER}" netns "${INSTANCE}" || {
+    ip -n docker link set "${VETHCONTAINER}" netns "${INSTANCE}" || {
 	echo "$0: FAILED to configure namespace, did ${CONTAINER} (pid ${DOCKERPID}) die?"
 	exit 1
     }
@@ -129,7 +129,7 @@ echo ""
 echo ""
 echo "$0: Renaming interface ${VETHCONTAINER} in the instance to sarimner0"
 # Rename interface inside container to sarimner0
-ip netns exec "${INSTANCE}" ip link set "${VETHCONTAINER}" name sarimner0
+ip -n "${INSTANCE}" link set "${VETHCONTAINER}" name sarimner0
 
 # Docker likes to disable IPv6
 ip netns exec "${INSTANCE}" sysctl net.ipv6.conf.sarimner0.disable_ipv6=0
@@ -150,7 +150,7 @@ for IP in $("${SCRIPTSDIR}"/frontend-config --instance "${INSTANCE}" print_ips);
     # The anycasted addresses are not suitable for use for outgoing connections. We can send packets
     # just fine, but the responses may get routed to another frontend node. Therefore, we 'deprecate'
     # them by setting preferred_lft to zero.
-    ip netns exec "${INSTANCE}" ip addr add "${IP}" dev sarimner0 preferred_lft 0
+    ip -n "${INSTANCE}" addr add "${IP}" dev sarimner0 preferred_lft 0
     ip route add "${IP}" dev "${VETHHOST}"
 done
 
@@ -158,7 +158,7 @@ echo ""
 echo ""
 echo ""
 echo "$0: Bringing sarimner0 online, signalling the haproxy startup to commence"
-ip netns exec "${INSTANCE}" ip link set sarimner0 up
+ip -n "${INSTANCE}" link set sarimner0 up
 
 
 # Set up IPv6 routing back out of the container, now that the interface is up.
@@ -166,7 +166,19 @@ ip netns exec "${INSTANCE}" ip link set sarimner0 up
 #sysctl net.ipv6.conf.${VETHHOST}.accept_dad=0
 v6gw=$(ip -6 addr list "${VETHHOST}" | awk '/inet6/{print $2}' | head -1 | awk -F / '{print $1}')
 if [[ $v6gw ]]; then
-    ip netns exec "${INSTANCE}" ip -6 route add default via "${v6gw}" dev sarimner0
+    ip -n "${INSTANCE}" -6 route add default via "${v6gw}" dev sarimner0
 else
     echo "$0: Can't set up IPv6 routing from container, device ${VETHHOST} has no IPv6 address"
+fi
+
+# Now add one more IPv6 address to sarimner0, within a prefix we can NAT suitably for
+# haproxy to be able to reach backends/acme-c etc. using IPv6
+extra_addr=$(ip -n "${INSTANCE}" -o addr show dev sarimner0 scope link | \
+    awk '{print $4'} | sed -e 's/^....::\(.*\)/fd0c::\1/')
+if [[ $extra_addr ]]; then
+    ip -n "${INSTANCE}" addr add "${extra_addr}" dev sarimner0
+    only_addr=$(echo ${extra_addr} | cut -d / -f 1)  # add host route, not with /64
+    ip route add "${only_addr}" dev "${VETHHOST}"
+else
+    echo "$0: Can't set up a IPv6 address for outgoing traffic from container, no link-local address found"
 fi
