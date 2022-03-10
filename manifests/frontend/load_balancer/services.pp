@@ -6,30 +6,24 @@ class sunet::frontend::load_balancer::services(
   Integer $api_port = 8080,
 ) {
   #
-  # Exabgp
+  # Exabgp, runs as a service - not in Docker (because it needs to run in the hosts network namespace)
   #
-  ensure_resource('sunet::misc::create_dir', ['/etc/bgp'],
-                  { owner => 'root', group => 'root', mode => '0755' })
+  sunet::exabgp::package { 'exabgp': }
 
-  sunet::exabgp::config { 'exabgp_config': }
-  file { '/etc/bgp/monitor':
+  sunet::exabgp::config { 'exabgp_config':
+    config         => '/etc/exabgp/exabgp.conf',
+    notify         => Service['exabgp'],
+    exabgp_version => '4',
+  }
+
+  file { '/etc/exabgp/monitor':
     ensure  => file,
     mode    => '0755',
     content => template('sunet/frontend/websites_monitor.py.erb'),
-    # TODO notify  => Sunet::Exabgp['load_balancer'],
+    notify  => Service['exabgp'],
   }
 
   configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
-
-  # call sunet::exabgp, but since we start exabgp using compose below we set docker_run to false
-  sunet::exabgp { 'load_balancer':
-    docker_run => false,
-    # docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
-    #                     '/opt/frontend/monitor:/opt/frontend/monitor:ro',
-    #                     '/dev/log:/dev/log',
-    #                     ],
-    # version        => $exabgp_imagetag,
-  }
 
 
   #
@@ -98,7 +92,6 @@ class sunet::frontend::load_balancer::services(
   $telegraf_basedir = "${basedir}/telegraf"
   $telegraf_volumes = get_config($config, 'telegraf_volumes', [])
   #
-  #fail("API IMAGE: ${api_image}, ${api_imagetag}")
   sunet::docker_compose {'frontend_compose':
     service_name => 'frontend',
     description  => 'Sunet frontend load_balancer services',

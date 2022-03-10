@@ -6,8 +6,9 @@ define sunet::exabgp::neighbor(
   Optional[String] $router_id     = undef,
   String           $config        = '/etc/bgp/exabgp.conf',
   String           $md5           = '',
+  $notify                         = undef,
 ) {
-  sunet::misc::ufw_allow { "allow_bgp_peer_${peer_address}":
+  sunet::misc::ufw_allow { "exabgp_peer_${peer_address}":
     from => $peer_address,
     port => '179',
   }
@@ -17,7 +18,7 @@ define sunet::exabgp::neighbor(
   concat::fragment { "exabgp_neighbor_${peer_address}":
     target  => $config,
     order   => '100',
-    content => template("sunet/exabgp/exabgp.conf_neighbor.erb"),
-    #notify  => Service['exabgp'],
+    content => template('sunet/exabgp/exabgp.conf_neighbor.erb'),
+    notify  => $notify,
   }
 }

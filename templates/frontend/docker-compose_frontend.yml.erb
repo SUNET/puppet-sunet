@@ -13,21 +13,6 @@ services:
     ports:
       - "<%= scope['sunet::frontend::load_balancer::services::api_port'] -%>:8080"
 
-  exabgp:
-    image: "<%= scope['sunet::frontend::load_balancer::services::exabgp_image'] -%>:<%= scope['sunet::frontend::load_balancer::services::exabgp_imagetag'] -%>"
-    restart: always
-    command:
-      - /etc/bgp/exabgp.conf
-    networks:
-      fake_host_net:
-        ipv4_address: 130.242.131.3
-        ipv6_address: 2001:6b0:54:c4::3
-    volumes:
-      - /etc/bgp:/etc/bgp:ro
-<% scope['sunet::frontend::load_balancer::services::exabgp_volumes'].each do | this | -%>
-      - <%= this %>
-<% end -%>
-
   telegraf:
     image: "<%= scope['sunet::frontend::load_balancer::services::telegraf_image'] -%>:<%= scope['sunet::frontend::load_balancer::services::telegraf_imagetag'] -%>"
     restart: always
@@ -43,10 +28,3 @@ networks:
   default:
     driver_opts:
       com.docker.network.bridge.name: br-frontend
-
-  fake_host_net:
-    ipam:
-      driver: default
-      config:
-        - subnet: "130.242.131.0/28"
-        - subnet: "2001:6b0:54:c4::/64"
