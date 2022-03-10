@@ -37,8 +37,10 @@ services:
 <% @dns.each do |server| -%>
       - '<%= server %>'
 <% end -%>
-<% if scope['sunet::dockerhost::enable_v6'] -%>
     sysctls:
+      - "net.ipv4.ip_nonlocal_bind=1"
+      - "net.ipv6.ip_nonlocal_bind=1"
+<% if scope['sunet::dockerhost::enable_v6'] -%>
       - "net.ipv6.conf.all.disable_ipv6=0"
 <% end -%>
 <% end -%>
