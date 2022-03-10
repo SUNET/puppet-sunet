@@ -83,6 +83,12 @@ define sunet::frontend::load_balancer::website(
       ;
   }
 
+  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+    $_docker_ip = $::ipaddress_docker0
+  } else {
+    $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
+  }
+
   # Parameters used in frontend/docker-compose_template.erb
   $dns                    = pick_default($config['dns'], undef)
   $extra_ports            = pick_default($config['extra_ports'], undef)
@@ -92,7 +98,7 @@ define sunet::frontend::load_balancer::website(
   $haproxy_imagetag       = pick($config['haproxy_imagetag'], 'stable')
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
-  $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
+  $statsd_host            = pick($_docker_ip, $::ipaddress)
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
