@@ -17,6 +17,9 @@ class sunet::frontend::load_balancer::services(
     exabgp_version => '4',
   }
 
+  # inotify used in websites_monitor.py.erb
+  ensure_resource('package', 'python3-pyinotify', {ensure => 'installed'})
+
   file { '/etc/exabgp/monitor':
     ensure  => file,
     mode    => '0755',
