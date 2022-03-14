@@ -7,7 +7,11 @@
         group-updates;
 
 <% if @md5 != '' -%>
+<% if @exabgp_version == '3' -%>
 	md5 "<%= @md5 %>";
+<% else -%>
+	md5-password "<%= @md5 %>";
+<% end -%>
 <% else -%>
 	# authentication not configured
 <% end -%>
