@@ -43,7 +43,7 @@ ExecStartPre=-/sbin/ip -6 route list
 
 # Docker enables IP forwarding itself, but only in it's namespace of course. We need to enable it
 # in the hosts namespace too.
-ExecStartPre=/usr/bin/nsenter -t 1 -n -- /usr/sbin/sysctl -w net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1
+ExecStartPre=/usr/bin/nsenter -t 1 -n -- /sbin/sysctl -w net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1
 
 
 # Setup named namespace for easier troubleshooting from the outside.
