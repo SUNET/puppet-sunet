@@ -17,8 +17,6 @@ define sunet::nftables::rule(
     Integer $order = 400,
     String $group = 'sunet_rules'
 ) {
-  include sunet::nftables
-
   $rules_fn = "/etc/nftables/conf.d/${order}-${group}.nft"
   ensure_resource('concat', $rules_fn, {
     owner => 'root',
