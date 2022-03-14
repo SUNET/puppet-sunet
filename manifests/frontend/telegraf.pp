@@ -10,6 +10,7 @@ define sunet::frontend::telegraf(
   String           $statsd_listen_address = '',  # empty for all addresses
   Integer          $statsd_listen_port    = 8125,
   Array[String]    $allow_clients         = ['172.16.0.0/12'],
+  Boolean          $docker_run            = true,
 )
 {
   ensure_resource('sunet::system_user', $username, {
@@ -29,18 +30,20 @@ define sunet::frontend::telegraf(
       group   => $group,
       require => Sunet::System_user[$username],
       content => template('sunet/frontend/load_balancer_telegraf.conf.erb'),
-      notify  => [Sunet::Docker_run['sunetfrontend_telegraf']],
+      #notify  => [Sunet::Docker_run['sunetfrontend_telegraf']],
       ;
   }
 
-  sunet::docker_run { 'sunetfrontend_telegraf':
-    image    => $docker_image,
-    imagetag => $docker_imagetag,
-    expose   => ["${statsd_listen_port}/udp"],
-    net      => 'host',  # listening on localhost with --net host is better than exposing ports that will sneak past ufw rules
-    volumes  => flatten(["${basedir}/telegraf.conf:/etc/telegraf/telegraf.conf:ro",
-                         $docker_volumes,
-                         ]),
+  if $docker_run {
+    sunet::docker_run { 'sunetfrontend_telegraf':
+      image    => $docker_image,
+      imagetag => $docker_imagetag,
+      expose   => ["${statsd_listen_port}/udp"],
+      net      => 'host',  # listening on localhost with --net host is better than exposing ports that will sneak past ufw rules
+      volumes  => flatten(["${basedir}/telegraf.conf:/etc/telegraf/telegraf.conf:ro",
+                          $docker_volumes,
+                          ]),
+    }
   }
 
   sunet::misc::ufw_allow { 'allow_telegraf_statsd':

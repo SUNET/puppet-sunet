@@ -1,0 +1,20 @@
+#
+# SNAT IPv6 packages _from_ haproxy. The IPv6 address used for outgoing connections will always
+# be in the range fd0c::/64 (IP address added to sarimner0 by configure-container-network).
+#
+# Docker will NAT IPv4 packages for us, and that SNAT is handled in 200-sunet_dockerhost.nft.
+# IPv6 however is sadly dysfunctional in docker-compose, so for Sunet frontend instances, we
+# manage the IPv6 ourselves.
+#
+<% if @dport.is_a? String -%>
+add rule inet filter forward iif eth0 oifname to_<%= @instance -%> counter accept comment "Allow traffic from Frontend"
+<% end -%>
+
+add rule inet filter forward iifname to_<%= @instance -%> oif eth0 counter accept comment "Allow traffic from Frontend"
+add rule ip6 nat postrouting ip6 saddr { fd0c::/64 } oif eth0 counter masquerade comment "NAT traffic from Docker"
+
+#
+# Allow forwarding packages from docker to eth0
+#
+#add rule inet filter forward ct state established counter accept
+#add rule inet filter forward iifname to_docker oif eth0 counter accept comment "Allow traffic from Docker"

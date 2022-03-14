@@ -7,13 +7,14 @@ class sunet::dockerhost(
   $docker_extra_parameters                    = undef,
   Boolean $run_docker_cleanup                 = true,
   Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
-  $docker_dns                                 = $::ipaddress_default,
+  String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd0c::/16'),
+  Variant[String, Array[String]] $docker_dns  = $::ipaddress_default,
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
   String $compose_version                     = '1.24.0',
   Boolean $write_daemon_config                = false,
-  Boolean $tcp_bind                           = false,
+  Boolean $enable_ipv6                        = false,
 ) {
 
   # Remove old versions, if installed
@@ -132,6 +133,7 @@ class sunet::dockerhost(
     default => $docker_dns,
   }
 
+  $tcp_bind = false  # maybe this was once a parameter? now it is just dead code :/
   if $tcp_bind and has_key($::tls_certificates, $::fqdn) and has_key($::tls_certificates[$::fqdn], 'infra_cert') {
     $_tcp_bind = $tcp_bind
     $tls_enable = true
@@ -146,21 +148,66 @@ class sunet::dockerhost(
     $tls_key = undef
   }
 
-  class {'docker':
-    storage_driver              => $storage_driver,
-    manage_package              => false,
-    manage_kernel               => false,
-    use_upstream_package_source => false,
-    dns                         => $_docker_dns,
-    extra_parameters            => $docker_extra_parameters,
-    docker_command              => $docker_command,
-    daemon_subcommand           => $daemon_subcommand,
-    tcp_bind                    => $_tcp_bind,
-    tls_enable                  => $tls_enable,
-    tls_cacert                  => $tls_cacert,
-    tls_cert                    => $tls_cert,
-    tls_key                     => $tls_key,
-    require                     => Package[$docker_package_name],
+  # This is an approximation about how to enable IPv6 in Docker, but
+  # BEWARE! IPv6 is currently utterly dysfunctional in docker-compose (version 3 / 1.29.2). Sigh.
+  #
+  $ipv6_parameters = ($enable_ipv6 and ! $write_daemon_config) ? {
+    true => ['--ipv6',
+      $docker_network_v6 ? {
+        true => [],
+        default => ['--fixed-cidr-v6', $docker_network_v6],
+      }
+    ],
+    false => []
+  }
+
+  $_extra_parameters = flatten([
+    $docker_extra_parameters,
+    $ipv6_parameters,
+    ]).join(' ')
+
+
+  if $write_daemon_config {
+    if $docker_network =~ String[1] {
+      $default_address_pools = $docker_network
+    } else {
+      $default_address_pools = '172.16.0.0/12'
+    }
+    file {
+      '/etc/docker/daemon.json':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/dockerhost/daemon.json.erb'),
+        ;
+    }
+
+    # Docker rejects options specified both from command line and in daemon.json
+    class {'docker':
+      manage_package              => false,
+      manage_kernel               => false,
+      use_upstream_package_source => false,
+      extra_parameters            => $_extra_parameters,
+      docker_command              => $docker_command,
+      daemon_subcommand           => $daemon_subcommand,
+      require                     => Package[$docker_package_name],
+    }
+  } else {
+    class {'docker':
+      storage_driver              => $storage_driver,
+      manage_package              => false,
+      manage_kernel               => false,
+      use_upstream_package_source => false,
+      dns                         => $_docker_dns,
+      extra_parameters            => $_extra_parameters,
+      docker_command              => $docker_command,
+      daemon_subcommand           => $daemon_subcommand,
+      tcp_bind                    => $_tcp_bind,
+      tls_enable                  => $tls_enable,
+      tls_cacert                  => $tls_cacert,
+      tls_cert                    => $tls_cert,
+      tls_key                     => $tls_key,
+      require                     => Package[$docker_package_name],
+    }
   }
 
   if $docker_network =~ String {
@@ -289,17 +336,17 @@ class sunet::dockerhost(
     }
   }
 
-  if $write_daemon_config {
-    if $docker_network =~ String[1] {
-      $default_address_pools = $docker_network
-    } else {
-      $default_address_pools = '172.16.0.0/12'
-    }
+  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
     file {
-      '/etc/docker/daemon.json':
+      '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
         ensure  => file,
-        mode    => '0644',
-        content => template('sunet/dockerhost/daemon.json.erb'),
+        mode    => '0400',
+        content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
+        ;
+      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
+        ensure  => file,
+        mode    => '0400',
+        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
         ;
     }
   }
