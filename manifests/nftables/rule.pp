@@ -27,7 +27,7 @@ define sunet::nftables::rule(
   concat::fragment { $name:
     target  => $rules_fn,
     order   => '1000',
-    content => $rule,
+    content => sprintf("%s\n", $rule),
     notify  => Service['nftables'],
     require => Package['nftables'],
   }
