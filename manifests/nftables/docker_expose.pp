@@ -2,6 +2,7 @@
 define sunet::nftables::docker_expose(
   Variant[String, Array[String]] $allow_clients, # Allow traffic 'from' this IP (or list of IP:s).
   Variant[Integer, String] $port,  # Allow traffic to this port (or list of ports).
+  Enum['tcp', 'udp'] $proto = 'tcp',
   String $docker_v4 = '172.16.0.2',
   String $docker_v6 = 'fd00::2',
 ) {

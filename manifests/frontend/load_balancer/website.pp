@@ -169,7 +169,7 @@ define sunet::frontend::load_balancer::website(
 
     # Variables used in template
     #
-    $dport = sunet::format_nft_set('dport', pick($config['allow_ports'], []))
+    $tcp_dport = sunet::format_nft_set('dport', pick($config['allow_ports'], []))
     #
     ensure_resource('file', "/etc/nftables/conf.d/700-frontend-${instance}.nft", {
       ensure  => 'file',
