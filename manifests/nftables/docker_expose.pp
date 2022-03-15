@@ -20,7 +20,7 @@ define sunet::nftables::docker_expose(
     "/etc/nftables/conf.d/600-docker_expose-${safe_name}.nft":
       ensure  => file,
       mode    => '0400',
-      content => template('sunet/nftables/docker_expose.nft.erb'),
+      content => template('sunet/nftables/600-docker_expose.nft.erb'),
       notify  => Service['nftables'],
       ;
   }
