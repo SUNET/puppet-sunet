@@ -244,11 +244,6 @@ class sunet::dockerhost(
       mode    => '0755',
       content => template('sunet/dockerhost/docker-compose.erb'),
       ;
-    '/usr/bin/docker-compose':
-      # workaround: docker_compose won't find the binary in /usr/local/bin :(
-      ensure => 'link',
-      target => '/usr/local/bin/docker-compose',
-      ;
     }
 
   if $::sunet_has_nrpe_d == 'yes' {
