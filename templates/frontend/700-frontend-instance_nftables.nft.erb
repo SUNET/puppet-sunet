@@ -6,12 +6,14 @@
 # IPv6 however is sadly dysfunctional in docker-compose, so for Sunet frontend instances, we
 # manage the IPv6 ourselves.
 #
-<% if @dport.is_a? String -%>
-add rule inet filter forward iif eth0 oifname to_<%= @instance -%> counter accept comment "Allow traffic from Frontend"
-<% end -%>
-
 add rule inet filter forward iifname to_<%= @instance -%> oif eth0 counter accept comment "Allow traffic from Frontend"
 add rule ip6 nat postrouting ip6 saddr { fd0c::/64 } oif eth0 counter masquerade comment "NAT traffic from Docker"
+
+#
+# Allow exposed ports from eth0 to frontend instance docker containers
+<% if @dport.is_a? String -%>
+add rule inet filter forward iif eth0 oifname to_<%= @instance -%> <%= @dport -%> counter accept comment "Allow traffic to Frontend"
+<% end -%>
 
 #
 # Allow forwarding packages from docker to eth0
