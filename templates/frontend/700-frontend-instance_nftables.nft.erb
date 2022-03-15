@@ -11,8 +11,8 @@ add rule ip6 nat postrouting ip6 saddr { fd0c::/64 } oif eth0 counter masquerade
 
 #
 # Allow exposed ports from eth0 to frontend instance docker containers
-<% if @dport.is_a? String -%>
-add rule inet filter forward iif eth0 oifname to_<%= @instance -%> <%= @dport -%> counter accept comment "Allow traffic to Frontend"
+<% if @tcp_dport.is_a? String -%>
+add rule inet filter forward iif eth0 oifname to_<%= @instance -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to Frontend"
 <% end -%>
 
 #
