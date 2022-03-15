@@ -20,11 +20,18 @@ class sunet::frontend::load_balancer::services(
   # inotify used in websites_monitor.py.erb
   ensure_resource('package', 'python3-pyinotify', {ensure => 'installed'})
 
-  file { '/etc/exabgp/monitor':
-    ensure  => file,
-    mode    => '0755',
-    content => template('sunet/frontend/websites_monitor.py.erb'),
-    notify  => Service['exabgp'],
+  $monitor_dir = "${basedir}/monitor"
+
+  file {
+    $monitor_dir:
+      ensure  => 'directory',
+      ;
+    '/etc/exabgp/monitor':
+      ensure  => file,
+      mode    => '0755',
+      content => template('sunet/frontend/websites_monitor.py.erb'),
+      notify  => Service['exabgp'],
+    ;
   }
 
   configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
@@ -90,7 +97,7 @@ class sunet::frontend::load_balancer::services(
   $exabgp_imagetag = get_config($config, 'exabgp_imagetag', 'latest')
   $exabgp_volumes = [
     "${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
-    '/opt/frontend/monitor:/opt/frontend/monitor:ro',
+    "${monitor_dir}:${monitor_dir}:ro",
   ]
 
   #
