@@ -340,7 +340,7 @@ class sunet::dockerhost(
         ;
       '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
         ensure  => file,
-        mode    => '0400',
+        mode    => '0444',
         content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
         ;
     }
