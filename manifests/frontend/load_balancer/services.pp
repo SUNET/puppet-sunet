@@ -4,6 +4,7 @@ class sunet::frontend::load_balancer::services(
   String $basedir,
   Hash[String, Hash] $config,
   Integer $api_port = 8080,
+  Integer $statsd_port = 8125,
 ) {
   #
   # Exabgp, runs as a service - not in Docker (because it needs to run in the hosts network namespace)
@@ -65,9 +66,10 @@ class sunet::frontend::load_balancer::services(
     # docker_image          => pick($config['load_balancer']['telegraf_image'], 'docker.sunet.se/eduid/telegraf'),
     # docker_imagetag       => pick($config['load_balancer']['telegraf_imagetag'], 'stable'),
     # docker_volumes        => pick($config['load_balancer']['telegraf_volumes'], []),
-    forward_url => $config['load_balancer']['telegraf_forward_url'],
-    #statsd_listen_address => pick($::ipaddress_docker0, 'no-address-provided'),
-    docker_run  => false,
+    # statsd_listen_address => pick($::ipaddress_docker0, 'no-address-provided'),
+    forward_url        => $config['load_balancer']['telegraf_forward_url'],
+    statsd_listen_port => $statsd_port,
+    docker_run         => false,
   }
 
 
@@ -99,7 +101,6 @@ class sunet::frontend::load_balancer::services(
     "${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
     "${monitor_dir}:${monitor_dir}:ro",
   ]
-
   #
   $telegraf_image = get_config($config, 'telegraf_image', 'docker.sunet.se/eduid/telegraf')
   $telegraf_imagetag = get_config($config, 'telegraf_imagetag', 'stable')

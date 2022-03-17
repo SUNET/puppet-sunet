@@ -21,6 +21,8 @@ services:
 <% scope['sunet::frontend::load_balancer::services::telegraf_volumes'].each do | this | -%>
       - <%= this %>
 <% end -%>
+    ports:
+      - "<%= scope['sunet::frontend::load_balancer::services::statsd_port'] -%>:8125/udp"
 
 
 
