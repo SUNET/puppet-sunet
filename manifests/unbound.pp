@@ -13,7 +13,7 @@ class sunet::unbound(
     }
   }
 
-  if $use_apparmor {
+  if $use_apparmor and versioncmp($::operatingsystemrelease, '22.04') < 0 {
     include apparmor
 
     file {
