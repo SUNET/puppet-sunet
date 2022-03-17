@@ -127,9 +127,8 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
    }
    $nrpe_clients.each |$client| {
       $client_name = regsubst($client,'([.:]+)','_','G')
-      ufw::allow { "allow-nrpe-${client_name}":
+      sunet::misc::ufw_allow { "allow-nrpe-${client_name}":
          from  => "${client}",
-         ip    => 'any',
          proto => 'tcp',
          port  => '5666',
       }
