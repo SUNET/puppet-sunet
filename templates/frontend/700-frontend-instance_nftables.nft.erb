@@ -16,8 +16,8 @@ add rule inet filter forward iifname to_<%= @instance -%> oif eth0 counter accep
 <% if @tcp_dport.is_a? String -%>
 add rule inet filter forward iif eth0 oifname to_<%= @instance -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
 # icmp is necessary for path-mtu
-add rule inet filter forward iif eth0 oifname to_<%= @instance -%> ip protocol icmp counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
-add rule inet filter forward iif eth0 oifname to_<%= @instance -%> ip6 nexthdr icmpv6 counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+add rule inet filter forward iif eth0 oifname to_<%= @instance -%> ip protocol icmp counter accept comment "Allow ICMP to frontend instance <%= @instance -%>"
+add rule inet filter forward iif eth0 oifname to_<%= @instance -%> ip6 nexthdr icmpv6 counter accept comment "Allow ICMPv6 to frontend instance <%= @instance -%>"
 # We could filter on destination address too, but I'm not sure it would be worth the extra clock cylces
 # add rule inet filter forward iif eth0 ip  daddr <%= @frontend_ips_v4 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
 # add rule inet filter forward iif eth0 ip6 daddr <%= @frontend_ips_v6 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
