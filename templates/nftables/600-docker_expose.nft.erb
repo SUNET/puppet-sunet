@@ -12,8 +12,8 @@ add rule ip6 nat prerouting iif eth0 <%= @proto -%> <%= @dport %> dnat to fd00::
 # Allow forwarding of the packets to the exposed service
 #
 <% if @saddr_v4.is_a? String -%>
-add rule inet filter forward oifname="to_docker" <%= @saddr_v4 %> <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
+add rule inet filter forward oifname "to_docker" <%= @saddr_v4 %> <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
 <% end -%>
 <% if @saddr_v6.is_a? String -%>
-add rule inet filter forward oifname="to_docker" <%= @saddr_v6 %> <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
+add rule inet filter forward oifname "to_docker" <%= @saddr_v6 %> <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
 <% end -%>
