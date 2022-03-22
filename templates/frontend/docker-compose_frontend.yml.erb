@@ -7,11 +7,13 @@ services:
     image: "<%= scope['sunet::frontend::load_balancer::services::api_image'] -%>:<%= scope['sunet::frontend::load_balancer::services::api_imagetag'] -%>"
     restart: always
     volumes:
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
       - "<%= scope['sunet::frontend::load_balancer::services::api_basedir'] -%>/backends:/backends"
     ports:
       - "<%= scope['sunet::frontend::load_balancer::services::api_port'] -%>:8080"
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-api'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-api'] -%>"
+    environment:
+      - "runas_user=fe-api"
+      - "runas_group=fe-api"
 
   telegraf:
     image: "<%= scope['sunet::frontend::load_balancer::services::telegraf_image'] -%>:<%= scope['sunet::frontend::load_balancer::services::telegraf_imagetag'] -%>"
@@ -23,6 +25,7 @@ services:
 <% end -%>
     ports:
       - "<%= scope['sunet::frontend::load_balancer::services::statsd_port'] -%>:8125/udp"
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['telegraf'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['telegraf'] -%>"
 
 
 
