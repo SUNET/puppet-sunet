@@ -6,6 +6,9 @@ class sunet::frontend::load_balancer(
   String $router_id = $ipaddress_default,
   String $basedir   = '/opt/frontend',
 ) {
+  # Set up users for running all services as non-root
+  class { 'sunet::frontend::load_balancer::users': }
+
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
 

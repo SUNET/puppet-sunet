@@ -13,6 +13,7 @@ class sunet::dockerhost(
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
   String $compose_version                     = '1.24.0',
+  Optional[Array[String]] $tcp_bind           = undef,
   Boolean $write_daemon_config                = false,
   Boolean $enable_ipv6                        = false,
 ) {
@@ -133,7 +134,6 @@ class sunet::dockerhost(
     default => $docker_dns,
   }
 
-  $tcp_bind = false  # maybe this was once a parameter? now it is just dead code :/
   if $tcp_bind and has_key($::tls_certificates, $::fqdn) and has_key($::tls_certificates[$::fqdn], 'infra_cert') {
     $_tcp_bind = $tcp_bind
     $tls_enable = true

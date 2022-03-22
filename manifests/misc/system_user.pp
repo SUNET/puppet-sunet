@@ -18,6 +18,7 @@ define sunet::misc::system_user(
   ensure_resource('group', $group, {
     ensure => present,
     name   => $group,
+    gid    => $gid,
   })
 
   ensure_resource('user', $name, {
