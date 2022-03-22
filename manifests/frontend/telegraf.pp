@@ -4,8 +4,8 @@ define sunet::frontend::telegraf(
   String           $docker_imagetag       = 'stable',
   Array[String]    $docker_volumes        = [],
   String           $basedir               = '/opt/frontend/telegraf',
-  String           $username              = 'sunetfrontend',
-  String           $group                 = 'sunetfrontend',
+  String           $username              = 'telegraf',
+  String           $group                 = 'telegraf',
   Optional[String] $forward_url           = undef,
   String           $statsd_listen_address = '',  # empty for all addresses
   Integer          $statsd_listen_port    = 8125,
@@ -13,10 +13,6 @@ define sunet::frontend::telegraf(
   Boolean          $docker_run            = true,
 )
 {
-  ensure_resource('sunet::system_user', $username, {
-    username => $username,
-    group    => $group,
-  })
 
   exec { 'telegraf_mkdir':
     command => "/bin/mkdir -p ${basedir}",
@@ -28,7 +24,6 @@ define sunet::frontend::telegraf(
       ensure  => 'file',
       mode    => '0640',
       group   => $group,
-      require => Sunet::System_user[$username],
       content => template('sunet/frontend/load_balancer_telegraf.conf.erb'),
       #notify  => [Sunet::Docker_run['sunetfrontend_telegraf']],
       ;
