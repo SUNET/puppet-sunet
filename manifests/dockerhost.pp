@@ -13,6 +13,7 @@ class sunet::dockerhost(
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
   String $compose_version                     = '1.15.0',
+  Optional[Array[String]] $tcp_bind           = undef,
 ) {
 
   # Remove old versions, if installed
