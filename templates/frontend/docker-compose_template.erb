@@ -87,6 +87,7 @@ services:
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
       - haproxy_data:/etc/haproxy
     command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>"
 
   monitor:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
@@ -121,6 +122,7 @@ services:
       test: 'head -1 /var/run/haproxy-status | grep -q ^UP'
       interval: 2s
       start_period: 1m
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>"
 
 volumes:
   haproxy_data:
