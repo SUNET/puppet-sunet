@@ -17,7 +17,6 @@ services:
     # nothing will work anyways until the whole service is restarted
     restart: 'no'
     volumes:
-      - '/dev/log:/dev/log'
       - '/opt/frontend/scripts/haproxy-start.sh:/haproxy-start.sh:ro'
       - 'haproxy_data:/etc/haproxy'
       - 'haproxy_control:/var/run/haproxy-control'
