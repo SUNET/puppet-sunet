@@ -37,11 +37,9 @@ services:
       - '<%= server %>'
 <% end -%>
     sysctls:
-<% if scope['sunet::dockerhost::enable_v6'] -%>
-      - "net.ipv6.conf.all.disable_ipv6=0"
-<% end -%>
 <% end -%>
     depends_on:
+      - setup_data
       - config
       - monitor
     environment:
@@ -49,7 +47,9 @@ services:
 <% if @varnish_enabled == true -%>
       - 'WAIT_FOR_CONTAINER=varnish'
 <% end -%>
+      - 'HAPROXYMASTERSOCK=/dev/shm/haproxy-master.sock'  # needs to be writable by the haproxy user
     command: /haproxy-start.sh
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['haproxy'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['haproxy'] -%>"
 
 <% if @varnish_enabled == true -%>
   varnish:
@@ -71,6 +71,8 @@ services:
 <% else -%>
   # varnish disabled
 <% end -%>
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>"
+
 
   config:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
@@ -88,6 +90,7 @@ services:
       - haproxy_data:/etc/haproxy
     command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
     user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>"
+
 
   monitor:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
@@ -118,11 +121,33 @@ services:
       - 'HOSTFQDN=<%= @fqdn %>'
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
+      - 'STATUSFN=/dev/shm/haproxy-status'  # need to be writable by user fe-monitor
     healthcheck:
-      test: 'head -1 /var/run/haproxy-status | grep -q ^UP'
+      test: 'head -1 /dev/shm/haproxy-status | grep -q ^UP'
       interval: 2s
       start_period: 1m
     user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>"
+
+
+  # This just needs to run once as root to allow the other containers to have user: something
+  setup_data:
+    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
+    volumes:
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - 'haproxy_data:/haproxy_data'
+    entrypoint: "sh -c 'chown -R haproxy:fe-config /haproxy_data; chmod 770 /haproxy_data'"
+
+
+  # This just needs to run once as root to allow the other containers to have user: something
+  setup_control:
+    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
+    volumes:
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+      - 'haproxy_control:/haproxy_control'
+    entrypoint: "sh -c 'chown -R haproxy: /haproxy_control'"
+
 
 volumes:
   haproxy_data:

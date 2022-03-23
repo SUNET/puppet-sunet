@@ -5,7 +5,9 @@
 #
 
 HAPROXYCFG=${HAPROXYCFG-'/etc/haproxy/haproxy.cfg'}
-HAPROXYMASTERSOCK=${HAPROXYMASTERSOCK-'/run/haproxy-master.sock'}
+HAPROXYRUNDIR=${HAPROXYRUNDIR-'/run'}
+HAPROXYMASTERSOCK=${HAPROXYMASTERSOCK-"${HAPROXYRUNDIR}/haproxy-master.sock"}
+HAPROXYPIDFILE=${HAPROXYPIDFILE-"${HAPROXYRUNDIR}/haproxy.pid"}
 HAPROXYWAITIF=${HAPROXYWAITIF-'20'}
 HAPROXYWAITCFG=${HAPROXYWAITCFG-'10'}
 HAPROXYWAITCONTAINER=${HAPROXYWAITCONTAINER-'10'}
@@ -73,14 +75,14 @@ if [[ $HAPROXYMASTERSOCK ]]; then
     sock_args=(-S "${HAPROXYMASTERSOCK}")
 fi
 # -db is essential for haproxy to not pipe stdout,stderr to /dev/null
-haproxy_cmd=$(echo /usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" -W "${sock_args[@]}" -db)
+haproxy_cmd=$(echo /usr/sbin/haproxy "$@" -p "${HAPROXYPIDFILE}" -f "${HAPROXYCFG}" -W "${sock_args[@]}" -db)
 
 # haproxy 1.8 or 1.9
 if /usr/sbin/haproxy -v | grep -q 'HA-*Proxy version 1'; then
     echo ""
     echo "$0: Please upgrade haproxy to 2+"
     echo ""
-    haproxy_cmd=$(echo /usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}")
+    haproxy_cmd=$(echo /usr/sbin/haproxy "$@" -p "${HAPROXYPIDFILE}" -f "${HAPROXYCFG}")
 fi
 
 
@@ -92,7 +94,7 @@ if [ -x /usr/sbin/haproxy-systemd-wrapper ]; then
     echo "$0: Please upgrade haproxy to 2+"
     echo ""
     # haproxy 1.7
-    /usr/sbin/haproxy-systemd-wrapper -p /run/haproxy.pid -f "${HAPROXYCFG}" &
+    /usr/sbin/haproxy-systemd-wrapper -p "${HAPROXYPIDFILE}" -f "${HAPROXYCFG}" &
     main_pid=$!
 else
     $haproxy_cmd &
@@ -101,7 +103,7 @@ fi
 wait_pid=0
 
 term_handler() {
-    echo "$0: Received SIGTERM, shutting down PIDs $(xargs echo < /run/haproxy.pid) (main: ${main_pid}) (haproxy) + ${wait_pid} (wait)"
+    echo "$0: Received SIGTERM, shutting down PIDs $(xargs echo < \"${HAPROXYPIDFILE}\") (main: ${main_pid}) (haproxy) + ${wait_pid} (wait)"
     if [ $main_pid -ne 0 ]; then
 	kill -SIGTERM "$main_pid"
 	wait "$main_pid"
@@ -130,7 +132,7 @@ while true; do
     if [ $config_ok = 1 ]; then
 	echo "$0: Config ${HAPROXYCFG} checked OK, gracefully restarting haproxy"
 	# -sf is "send finish", sends a signal to all PIDs in the PID file asking them to finish up and terminate
-	$haproxy_cmd -sf "$(cat /run/haproxy.pid)" &
+	$haproxy_cmd -sf "$(cat \"${HAPROXYPIDFILE}\")" &
 	main_pid=$!
 	echo "$0: haproxy gracefully reloaded"
     else
