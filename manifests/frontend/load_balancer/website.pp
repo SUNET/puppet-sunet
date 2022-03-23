@@ -134,7 +134,7 @@ define sunet::frontend::load_balancer::website(
     content          => template('sunet/frontend/docker-compose_template.erb'),
     service_prefix   => 'frontend',
     service_name     => $instance,
-    compose_dir      => $confdir,
+    compose_dir      => "${basedir}/compose",
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
     start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
