@@ -74,9 +74,14 @@ define sunet::frontend::load_balancer::website(
 
   # 'export' config to one YAML file per instance
   file {
+    "${confdir}/${instance}":
+      ensure => 'directory',
+      group  => 'frontend',
+      mode   => '0750',
+      ;
     "${confdir}/${instance}/config.yml":
       ensure  => 'file',
-      group   => 'sunetfrontend',
+      group   => 'frontend',
       mode    => '0640',
       force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
