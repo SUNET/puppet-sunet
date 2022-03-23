@@ -61,7 +61,8 @@ define sunet::frontend::load_balancer::website(
   $local_config = hiera_hash('sunet_frontend_local', undef)
   $config4 = deep_merge($config3, $local_config)
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
-                                              "${confdir}/${instance}/certs",
+                                              ], { owner => 'root', group => 'frontend', mode => '0750' })
+  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}/certs",
                                               ], { owner => 'root', group => 'root', mode => '0700' })
 
   # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
@@ -74,11 +75,6 @@ define sunet::frontend::load_balancer::website(
 
   # 'export' config to one YAML file per instance
   file {
-    "${confdir}/${instance}":
-      ensure => 'directory',
-      group  => 'frontend',
-      mode   => '0750',
-      ;
     "${confdir}/${instance}/config.yml":
       ensure  => 'file',
       group   => 'frontend',
