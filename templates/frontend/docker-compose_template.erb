@@ -107,13 +107,13 @@ services:
 <% end -%>
 <% end -%>
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
-      - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
+      - /opt/frontend/config/<%= @instance %>/config.yml:/opt/frontend/config/<%= @instance %>/config.yml:ro
       - /opt/frontend/monitor/<%= @instance %>:/opt/frontend/monitor/<%= @instance %>:rw
       - haproxy_control:/haproxy_control
     command: >
         /opt/frontend/scripts/monitor-haproxy
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
-            --stats_url /var/run/haproxy-control/stats
+            --stats_url "/haproxy_control/stats"
             'site=<%= @site_name %>;group=<%= @monitor_group %>'
 <% if @dns.is_a? Array -%>
     dns:
@@ -126,12 +126,13 @@ services:
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
       - 'STATUSFN=/dev/shm/haproxy-status'  # need to be writable by user fe-monitor, and match the healthcheck
-      - 'STATSSOCKET=/haproxy_control/stats'
+      - 'STATSSOCKET=/haproxy_control/stats'  # need to match --stats_url in command
     healthcheck:
       test: 'head -1 /dev/shm/haproxy-status | grep -q ^UP'
       interval: 2s
       start_period: 1m
-    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['haproxy'] -%>"
+    # need group fe-config to read configuration to calculate announce parameters XXX TODO NOT POSSIBLE
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>"
 
 
   # This just needs to run once as root to allow the other containers to have user: something
@@ -146,8 +147,8 @@ services:
     # The fe-config user writes new config to this directory, and the haproxy user reads it
     entrypoint: >
        /bin/bash -c '
-         export D="/haproxy_control"; chown -R haproxy:fe-monitor "$${D}"; chmod 750 "$${D}"; find "$${D}" -ls;
-         export D="/haproxy_new_config"; chown -R fe-config:haproxy "$${D}"; chmod 750 "$${D}"; find "$${D}" -ls;
+         export D="/haproxy_control"; chown -R haproxy:fe-monitor "$${D}"; chmod 2750 "$${D}"; find "$${D}" -ls;
+         export D="/haproxy_new_config"; chown -R fe-config:haproxy "$${D}"; chmod 2750 "$${D}"; find "$${D}" -ls;
          export D="/haproxy_running_config"; chown -R haproxy:haproxy "$${D}"; chmod 700 "$${D}"; find "$${D}" -ls;
          '
 

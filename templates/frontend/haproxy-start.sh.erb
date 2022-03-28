@@ -154,7 +154,7 @@ while true; do
     mv "${HAPROXY_CFG}.new" "${HAPROXY_CFG}" && {
         echo "$0: Config ${HAPROXY_CFG}.new checked OK, gracefully restarting haproxy with it"
         # -sf is "send finish", sends a signal to all PIDs in the PID file asking them to finish up and terminate
-        $haproxy_cmd -sf "$(cat \"${HAPROXY_PIDFILE}\")" &
+        $haproxy_cmd -sf "$(cat "${HAPROXY_PIDFILE}")" &
         main_pid=$!
         echo "$0: haproxy gracefully reloaded"
     }
