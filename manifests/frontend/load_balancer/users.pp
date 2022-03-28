@@ -33,12 +33,12 @@ class sunet::frontend::load_balancer::users(
         'fe-monitor' => ['haproxy'],
         default      => ['frontend'],
       }
-    sunet::misc::system_user { $username:
+    ensure_resource ( 'sunet::misc::system_user', $username, {
       group    => $username,
       username => $username,
       uid      => $uidgid,
       gid      => $uidgid,
       groups   => $groups,
-    }
+    })
   }
 }
