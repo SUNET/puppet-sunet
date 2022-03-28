@@ -61,7 +61,7 @@ define sunet::frontend::load_balancer::website(
   $local_config = hiera_hash('sunet_frontend_local', undef)
   $config4 = deep_merge($config3, $local_config)
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
-                                              ], { owner => 'root', group => 'frontend', mode => '0750' })
+                                              ], { owner => 'root', group => 'fe-config', mode => '0750' })
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}/certs",
                                               ], { owner => 'root', group => 'root', mode => '0700' })
 
@@ -77,7 +77,7 @@ define sunet::frontend::load_balancer::website(
   file {
     "${confdir}/${instance}/config.yml":
       ensure  => 'file',
-      group   => 'frontend',
+      group   => 'fe-config',
       mode    => '0640',
       force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
@@ -137,7 +137,7 @@ define sunet::frontend::load_balancer::website(
     compose_dir      => "${basedir}/compose",
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
-    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
+    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${basedir}/compose/${instance}/docker-compose.yml",
   }
 
   if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
