@@ -32,10 +32,16 @@ if [[ $WAIT_FOR_INTERFACE ]]; then
     ip addr list "$WAIT_FOR_INTERFACE"
 fi
 
-echo "Current user:"
+echo "---"
+echo "$0: Current user:"
 id
-echo "Permissions and location of new config:"
-ls -ld "$(dirname ${HAPROXY_NEW_CONFIG})" "${HAPROXY_NEW_CONFIG}"
+echo "$0: Permissions and location of new config:"
+find "$(dirname ${HAPROXY_NEW_CONFIG})" -ls
+echo "$0: Permissions and location of RUNDIR:"
+find "${HAPROXY_RUNDIR}" -ls
+echo "$0: Permissions and location of assumed control socket:"
+find "/haproxy_control" -ls
+echo "---"
 
 for i in $(seq "${HAPROXY_WAITCFG}"); do
     test -s "${HAPROXY_NEW_CONFIG}" && break
@@ -46,6 +52,8 @@ done
 if [ ! -s "${HAPROXY_NEW_CONFIG}" ]; then
     echo "$0: haproxy config not found after ${HAPROXY_WAITCFG} seconds: ${HAPROXY_NEW_CONFIG} - exiting"
     echo "$0: The haproxy config file should have been created by the 'config' container for this frontend instance"
+    echo "$0: Permissions and location of new config:"
+    find "$(dirname ${HAPROXY_NEW_CONFIG})" -ls
     exit 1
 fi
 
