@@ -174,6 +174,10 @@ class sunet::dockerhost(
       $default_address_pools = '172.16.0.0/12'
     }
     file {
+      '/etc/docker':
+        ensure => 'directory',
+        mode   => '0755',
+        ;
       '/etc/docker/daemon.json':
         ensure  => file,
         mode    => '0644',
