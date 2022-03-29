@@ -11,9 +11,6 @@ services:
     ports:
       - "<%= scope['sunet::frontend::load_balancer::services::api_port'] -%>:8080"
     user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-api'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-api'] -%>"
-    environment:
-      - "runas_user=fe-api"
-      - "runas_group=fe-api"
 
   telegraf:
     image: "<%= scope['sunet::frontend::load_balancer::services::telegraf_image'] -%>:<%= scope['sunet::frontend::load_balancer::services::telegraf_imagetag'] -%>"

@@ -58,10 +58,18 @@ define sunet::frontend::load_balancer::website(
     'frontend_fqdn' => $::fqdn,
   })
 
+  # This group is created by the exabgp package, but Puppet requires this before create_dir below
+  ensure_resource('group', 'exabgp', {ensure => 'present'})
+
   $local_config = hiera_hash('sunet_frontend_local', undef)
   $config4 = deep_merge($config3, $local_config)
+  # Setup directory where the 'config' container will read configuration data for this instance
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
-                                              ], { owner => 'root', group => 'frontend', mode => '0750' })
+                                              ], { owner => 'root', group => 'fe-config', mode => '0750' })
+  # Setup directory where the 'monitor' container will write files read by the exabgp monitor script
+  ensure_resource('sunet::misc::create_dir', ["${basedir}/monitor/${instance}",
+                                              ], { owner => 'fe-monitor', group => 'exabgp', mode => '2750' })
+  # Setup certificates directory for haproxy
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}/certs",
                                               ], { owner => 'root', group => 'root', mode => '0700' })
 
@@ -74,11 +82,13 @@ define sunet::frontend::load_balancer::website(
   }
 
   # 'export' config to one YAML file per instance
+  # Both the config and monitor containers need to be able to read this file, but Docker will only allow
+  # a single gid on the process, so the file needs to be world readable :/.
   file {
     "${confdir}/${instance}/config.yml":
       ensure  => 'file',
-      group   => 'frontend',
-      mode    => '0640',
+      group   => 'fe-config',
+      mode    => '0644',
       force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
       ;
@@ -137,7 +147,7 @@ define sunet::frontend::load_balancer::website(
     compose_dir      => "${basedir}/compose",
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
-    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
+    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${basedir}/compose/${instance}/docker-compose.yml",
   }
 
   if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {

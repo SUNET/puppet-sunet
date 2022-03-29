@@ -1,31 +1,28 @@
 # Setup and run the API
 define sunet::frontend::api::server(
-  String $username   = 'sunetfrontend',
-  String $group      = 'sunetfrontend',
+  String $username   = 'fe-api',
+  String $group      = 'fe-api',
   String $basedir    = '/opt/frontend/api',
   String $docker_tag = 'latest',
   Integer $api_port = 8080,
   Boolean $docker_run = true,
 )
 {
-  ensure_resource('sunet::system_user', $username, {
-    username => $username,
-    group    => $group,
+  # ensure_resource('sunet::system_user', $username, {
+  #   username => $username,
+  #   group    => $group,
+  # })
+
+  ensure_resource('sunet::misc::create_dir', $basedir, {
+    owner => 'root',
+    group => 'root',
+    mode  => '0755',
   })
-
-  exec { 'api_mkdir':
-    command => "/bin/mkdir -p ${basedir}",
-    unless  => "/usr/bin/test -d ${basedir}",
-  }
-
-  file {
-    "${basedir}/backends":
-      ensure  => 'directory',
-      mode    => '0770',
-      group   => $group,
-      require => Sunet::System_user[$username],
-      ;
-  }
+  ensure_resource('sunet::misc::create_dir', "${basedir}/backends", {
+    owner => 'root',
+    group => $group,
+    mode  => '0770',
+  })
 
   if $docker_run {
     sunet::docker_run { "${name}_api":
