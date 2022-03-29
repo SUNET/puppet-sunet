@@ -71,12 +71,15 @@ define sunet::frontend::load_balancer::website(
                                               ], { owner => 'fe-monitor', group => 'exabgp', mode => '2750' })
   # Setup certificates directory for haproxy
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}/certs",
-                                              ], { owner => 'root', group => 'root', mode => '0700' })
+                                              ], { owner => 'root', group => 'haproxy', mode => '0750' })
 
   # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
   # so the service can be restarted
   file {
     "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
+      owner  => 'root',
+      group  => 'haproxy',
+      mode   => '0640',
       source => $tls_certificate_bundle,
       notify => Sunet::Docker_compose["frontend-${instance}"],
   }
