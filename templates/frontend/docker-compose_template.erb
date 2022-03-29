@@ -22,7 +22,7 @@ services:
       - 'haproxy_new_config:/new_config:ro'
       - 'haproxy_running_config:/etc/haproxy'
 <% if @tls_certificate_bundle -%>
-      - /opt/frontend/config/<%= @instance %>/certs/tls_certificate_bundle.pem:<%= @tls_certificate_bundle %>:ro
+      - <%= @tls_certificate_bundle_on_host -%>:<%= @tls_certificate_bundle_in_container -%>:ro
 <% else -%>
       # tls_certificate_bundle not set in Puppet
 <% end -%>

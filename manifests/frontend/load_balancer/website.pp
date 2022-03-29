@@ -10,8 +10,8 @@ define sunet::frontend::load_balancer::website(
   $site_name = pick($config['site_name'], $instance)
   $monitor_group = pick($config['monitor_group'], 'default')
 
+  # Figure out what certificate to pass to the haproxy container
   if ! has_key($config, 'tls_certificate_bundle') {
-    # Put suitable certificate path in $config['tls_certificate_bundle']
     if has_key($::tls_certificates, 'snakeoil') {
       $snakeoil = $::tls_certificates['snakeoil']['bundle']
     }
@@ -44,9 +44,18 @@ define sunet::frontend::load_balancer::website(
     if $snakeoil and $tls_certificate_bundle == $snakeoil {
       notice("Using snakeoil certificate for instance ${instance} (site ${site_name})")
     }
-    $config2 = merge($config, {'tls_certificate_bundle' => $tls_certificate_bundle})
   } else {
     $tls_certificate_bundle = $config['tls_certificate_bundle']
+  }
+
+  if $tls_certificate_bundle {
+    $tls_certificate_bundle_on_host = "${confdir}/${instance}/certs/tls_certificate_bundle.pem"
+    $tls_certificate_bundle_in_container = '/opt/frontend/certs/tls_certificate_bundle.pem'
+    # The certificate to use has been identified. It will be copied to $tls_certificate_bundle_on_host below,
+    # but for file access reasons (and convenience) it is mounted at $tls_certificate_bundle_in_container,
+    # and that path needs to reach the haproxy config template, so put (update) it in the config.
+    $config2 = merge($config, {'tls_certificate_bundle' => $tls_certificate_bundle_in_container})
+  } else {
     $config2 = $config
   }
 
@@ -73,15 +82,17 @@ define sunet::frontend::load_balancer::website(
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}/certs",
                                               ], { owner => 'root', group => 'haproxy', mode => '0750' })
 
-  # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
-  # so the service can be restarted
-  file {
-    "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
-      owner  => 'root',
-      group  => 'haproxy',
-      mode   => '0640',
-      source => $tls_certificate_bundle,
-      notify => Sunet::Docker_compose["frontend-${instance}"],
+  if $tls_certificate_bundle {
+    # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
+    # so the service can be restarted
+    file {
+      $tls_certificate_bundle_on_host:
+        owner  => 'root',
+        group  => 'haproxy',
+        mode   => '0640',
+        source => $tls_certificate_bundle,
+        notify => Sunet::Docker_compose["frontend-${instance}"],
+    }
   }
 
   # 'export' config to one YAML file per instance
