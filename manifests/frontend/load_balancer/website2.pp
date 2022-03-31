@@ -58,7 +58,7 @@ define sunet::frontend::load_balancer::website2(
     'frontend_fqdn' => $::fqdn,
   })
 
-  $local_config = hiera_hash("sunet_frontend_local", undef)
+  $local_config = hiera_hash('sunet_frontend_local', undef)
   $config4 = deep_merge($config3, $local_config)
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
                                               "${confdir}/${instance}/certs",
@@ -86,6 +86,7 @@ define sunet::frontend::load_balancer::website2(
   # Parameters used in frontend/docker-compose_template.erb
   $dns                    = pick_default($config['dns'], undef)
   $extra_ports            = pick_default($config['extra_ports'], undef)
+  $frontendtools_image    = pick($config['frontendtools_imagetag'], 'docker.sunet.se/frontend/frontend-tools')
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
   $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
