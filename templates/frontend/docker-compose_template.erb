@@ -76,7 +76,7 @@ services:
 
 
   config:
-    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
+    image: '<%= @frontendtools_image %>:<%= @frontendtools_imagetag %>'
     restart: always
     depends_on:
       - setup_volumes
@@ -98,7 +98,7 @@ services:
 
 
   monitor:
-    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
+    image: '<%= @frontendtools_image %>:<%= @frontendtools_imagetag %>'
     restart: always
     depends_on:
       - setup_volumes
