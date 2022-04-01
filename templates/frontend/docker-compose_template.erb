@@ -60,7 +60,7 @@ services:
     volumes:
       - <%= @varnish_config %>:/etc/varnish/default.vcl:ro
     tmpfs:
-      - /var/lib/varnish
+      - /var/lib/varnish:uid=<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>,gid=<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>
     command: varnishd -F -f /etc/varnish/default.vcl -s <%= @varnish_storage %> -a 0.0.0.0:1080
     restart: always
     depends_on:
