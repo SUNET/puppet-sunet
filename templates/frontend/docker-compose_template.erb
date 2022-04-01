@@ -59,6 +59,8 @@ services:
       - "1080"
     volumes:
       - <%= @varnish_config %>:/etc/varnish/default.vcl:ro
+    tmpfs:
+      - /var/lib/varnish
     command: varnishd -F -f /etc/varnish/default.vcl -s <%= @varnish_storage %> -a 0.0.0.0:1080
     restart: always
     depends_on:
