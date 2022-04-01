@@ -6,7 +6,11 @@ services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     expose:
-      - "443"
+      - 80
+      - 443
+<% if @varnish_enabled == true -%>
+      - 1080
+<%- end -%>
 <% if @extra_ports.is_a? Array -%>
 <% @extra_ports.each do |port| -%>
       - "<%= port %>"
