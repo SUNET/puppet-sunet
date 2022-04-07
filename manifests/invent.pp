@@ -31,9 +31,10 @@ class sunet::invent(
   -> file { "${script_dir}/invent.sh":
     content => template('sunet/invent/invent.sh.erb'),
   }
-  -> sunet::scriptherder::cronjob { "${script_dir}/invent.sh":
+  -> sunet::scriptherder::cronjob { 'inventory':
+    cmd      => "${script_dir}/invent.sh",
     job_name => 'gather_inventory',
-    user    => 'root',         
-    minute  =>  '*/10',          
+    user     => 'root',         
+    minute   =>  '*/10',          
   }
 }
