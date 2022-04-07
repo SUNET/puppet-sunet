@@ -1,7 +1,7 @@
 #!/bin/sh
 
 datadir="<%= @invent_dir%>/data"
-retention_days="<%= @invent_retention_days%>/data"
+retention_days="<%= @invent_retention_days%>"
 filename="${datadir}/data-$(date +%Y%m%dT%H%M%S).json"
 latest="${datadir}/latest.json"
 host_os="<%= @operatingsystem %>"
@@ -9,11 +9,11 @@ fact_dir="/var/lib/puppet/facts.d"
 # Gather packages
 
 case "${host_os}" in
-  case alpine)
+  alpine)
     query_command="apk list -q"
     parse_command="awk '{print \$1}' | sed 's/\-\\([0-9]\\)/ \1/' | awk -v q='\"' '{print \"\{ \"q\$1q\": \"q\$2q\" }\" }' | jq -s ."
     ;;
-  case centos | fedora | redhat)
+  centos | fedora | redhat)
     query_command="rpm -qa"
     ;;
   debian | ubuntu)

@@ -1,7 +1,7 @@
 # SUNET Inventory Service
 class sunet::invent(
-  String  $invent_dir     = '/opt/invent',
-  Integer $retention_days = 30,
+  String  $invent_dir            = '/opt/invent',
+  Integer $invent_retention_days = 30,
 ) {
   $host_os = String($::facts['operatingsystem'], "%d")
   $awk = $host_os ? {
