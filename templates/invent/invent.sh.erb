@@ -4,7 +4,7 @@ datadir="<%= @invent_dir%>/data"
 retention_days="<%= @invent_retention_days%>"
 filename="${datadir}/data-$(date +%Y%m%dT%H%M%S).json"
 latest="${datadir}/latest.json"
-host_os="<%= @operatingsystem %>"
+host_os="<%= @host_os %>"
 fact_dir="/var/lib/puppet/facts.d"
 # Gather packages
 
@@ -29,7 +29,7 @@ package_fact="${fact_dir}/packages.json"
 
 # Gather structured data fact
 echo "{
-        \"packages\": $(eval ${query_command} | eval ${parse_command} | jq -s .)
+        \"packages\": $(eval ${query_command} | eval ${parse_command} 2> /dev/null | jq -s .)
       }" \
     | jq . > ${package_fact}
 
