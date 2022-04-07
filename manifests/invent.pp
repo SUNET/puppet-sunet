@@ -5,20 +5,22 @@ class sunet::invent(
 ) {
   $host_os = String($::facts['operatingsystem'], "%d")
   $awk = $host_os ? {
-    alpine => gawk,
-    default => awk,
+    alpine => 'gawk',
+    default => 'awk',
   }
   $script_dir = "${invent_dir}/scripts"
 
-  package { 'awk':
+  package { 'invent_awk':
     ensure => installed,
     name   => $awk
   }
-  -> package { 'jq':
+  -> package { 'invent_jq':
     ensure => installed,
+    name   => 'jq'
   }
-  -> package { 'which':
+  -> package { 'invent_which':
     ensure => installed,
+    name   => 'witch'
   }
   -> file { $invent_dir:
     ensure => directory,
