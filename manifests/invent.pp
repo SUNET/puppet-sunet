@@ -30,6 +30,7 @@ class sunet::invent(
   }
   -> file { "${script_dir}/invent.sh":
     content => template('sunet/invent/invent.sh.erb'),
+    mode    => '0700',
   }
   -> sunet::scriptherder::cronjob { 'inventory':
     cmd      => "${script_dir}/invent.sh",
