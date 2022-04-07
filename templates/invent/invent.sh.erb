@@ -1,0 +1,55 @@
+#!/bin/sh
+
+datadir="<%= @invent_dir%>/data"
+retention_days="<%= @invent_retention_days%>/data"
+filename="${datadir}/data-$(date +%Y%m%dT%H%M%S).json"
+latest="${datadir}/latest.json"
+host_os="<%= @operatingsystem %>"
+fact_dir="/var/lib/puppet/facts.d"
+# Gather packages
+
+case "${host_os}" in
+  case alpine)
+    query_command="apk list -q"
+    parse_command="awk '{print \$1}' | sed 's/\-\\([0-9]\\)/ \1/' | awk -v q='\"' '{print \"\{ \"q\$1q\": \"q\$2q\" }\" }' | jq -s ."
+    ;;
+  case centos | fedora | redhat)
+    query_command="rpm -qa"
+    ;;
+  debian | ubuntu)
+    query_command="dpkg-query -W"
+    parse_command="awk -v q='\"' '{print \"\{ \"q\$1q\": \"q\$2q\" \}\" }' | jq -s ."
+    ;;
+  *)
+    query_command='echo {\"unknown\": \"none\"}'
+    parse_command='cat -'
+esac
+
+package_fact="${fact_dir}/packages.json"
+
+# Gather structured data fact
+echo "{
+        \"packages\": $(eval ${query_command} | eval ${parse_command} | jq -s .)
+      }" \
+    | jq . > ${package_fact}
+
+# Only run if we have docker
+if [ $(which docker) ]; then
+  docker_fact="${fact_dir}/docker_ps.json"
+
+  # Gather structured data fact
+  echo "{ 
+          \"docker_ps\": $(docker ps --format '{{json . }}' | sed 's/\\"//g' | jq -s .)
+       }" \
+    | jq . > ${docker_fact}
+
+fi
+
+# Export facts
+mkdir -p ${datadir}
+puppet facts --render-as json 2>/dev/null | jq . > ${filename}
+rm -f ${latest}
+ln -s ${filename} ${latest}
+
+# Clean out old facts
+find ${datadir} -type f -mtime +${retention_days} -delete 
