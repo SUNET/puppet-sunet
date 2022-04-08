@@ -25,9 +25,13 @@ case "${host_os}" in
     parse_command='cat -'
 esac
 
+# Gather structured data kernel fact
+kernel_fact="${fact_dir}/kernel.json"
+uname -rvmo | sed -e 's/ #/;#/' -e 's/ \([^ ]\+\) \([^ ]\+\)$/;\1;\2/'| \
+  awk -F ';' '{print "{ \"running-kernel\": { \"kernel-release\": \""$1"\",\"kernel-version\": \""$2"\", \"machine\": \""$3"\", \"operating-system\": \""$4"\" }}"}' | \
+  jq . > ${kernel_fact}
+# Gather structured data package fact
 package_fact="${fact_dir}/packages.json"
-
-# Gather structured data fact
 echo "{
         \"packages\": $(eval ${query_command} | eval ${parse_command} 2> /dev/null | jq -s .)
       }" \
@@ -35,9 +39,8 @@ echo "{
 
 # Only run if we have docker
 if [ $(which docker) ]; then
+  # Gather structured data docker fact
   docker_fact="${fact_dir}/docker_ps.json"
-
-  # Gather structured data fact
   echo "{ 
           \"docker_ps\": $(docker ps --format '{{json . }}' | sed 's/\\"//g' | jq -s .)
        }" \
