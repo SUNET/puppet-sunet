@@ -72,6 +72,8 @@ class sunet::server(
         from => $mgmt_addresses,
         port => pick($ssh_port, 22),
       }
+    } else {
+      notice('SSH from anywhere is disabled, and no mgmt_addresses provided or found in Hiera.')
     }
   }
 
