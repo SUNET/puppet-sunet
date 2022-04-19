@@ -47,8 +47,8 @@ class sunet::updater(
          minute        => $minute,
          hour          => $hour,
          weekday       => $weekday,
-         ok_criteria   => ['exit_status=0', 'max_age=25h'],
-         warn_criteria => ['exit_status=0', 'max_age=49h'],
+         ok_criteria   => ['exit_status=0', 'max_age=75h'],
+         warn_criteria => ['exit_status=0', 'max_age=96h'],
       }
    } else {
       sunet::scriptherder::cronjob { 'update_and_upgrade':
