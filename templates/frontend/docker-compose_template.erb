@@ -6,7 +6,11 @@ services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     expose:
-      - "443"
+      - 80
+      - 443
+<% if @varnish_enabled == true -%>
+      - 1080
+<%- end -%>
 <% if @extra_ports.is_a? Array -%>
 <% @extra_ports.each do |port| -%>
       - "<%= port %>"
@@ -59,6 +63,8 @@ services:
       - "1080"
     volumes:
       - <%= @varnish_config %>:/etc/varnish/default.vcl:ro
+    tmpfs:
+      - '/var/lib/varnish:uid=<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>,gid=<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>,exec'
     command: varnishd -F -f /etc/varnish/default.vcl -s <%= @varnish_storage %> -a 0.0.0.0:1080
     restart: always
     depends_on:

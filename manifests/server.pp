@@ -1,15 +1,15 @@
 class sunet::server(
-  $fail2ban = true,
-  $encrypted_swap = true,
-  $ethernet_bonding = true,
-  $sshd_config = true,
-  $ntpd_config = true,
-  $scriptherder = true,
-  $unattended_upgrades = false,
-  $unattended_upgrades_use_template = false,
-  $apparmor = false,
-  $disable_ipv6_privacy = false,
-  $disable_all_local_users = false,
+  Boolean $fail2ban = true,
+  Boolean $encrypted_swap = true,
+  Boolean $ethernet_bonding = true,
+  Boolean $sshd_config = true,
+  Boolean $ntpd_config = true,
+  Boolean $scriptherder = true,
+  Boolean $unattended_upgrades = false,
+  Boolean $unattended_upgrades_use_template = false,
+  Boolean $apparmor = false,
+  Boolean $disable_ipv6_privacy = false,
+  Boolean $disable_all_local_users = false,
   Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
   Optional[Boolean] $ssh_allow_from_anywhere = false,
 ) {
@@ -72,6 +72,8 @@ class sunet::server(
         from => $mgmt_addresses,
         port => pick($ssh_port, 22),
       }
+    } else {
+      notice('SSH from anywhere is disabled, and no mgmt_addresses provided or found in Hiera.')
     }
   }
 
