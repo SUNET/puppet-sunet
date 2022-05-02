@@ -71,7 +71,7 @@ if [ -x /usr/sbin/haproxy-systemd-wrapper ]; then
     pid=$!
 else
     # haproxy 1.8+
-    /usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" &
+    /usr/sbin/haproxy "$@" -p /run/haproxy.pid -f "${HAPROXYCFG}" -db &
     pid=$!
 fi
 pid2=0
