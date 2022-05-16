@@ -17,6 +17,9 @@ services:
 <% end -%>
       volumes:
         - "<%= @certdir%>:/certs"
+<%- @extra_volumes.each do |extra_volume| -%>
+        - "<%= extra_volume %>"
+<%- end -%>
       ports:
         - "<%= @tls_port %>:9980"
       environment:

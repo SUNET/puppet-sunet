@@ -8,6 +8,7 @@ define sunet::collabora::docs(
   String            $domain           = 'sunet.se',
   Array[String]     $dns              = [],
   Array[String]     $extra_hosts      = [],
+  Array[String]     $extra_volumes    = [],
   Optional[String]  $external_network = undef,
   String            $hostname         = $::fqdn,
   Integer           $tls_port         = 443,
