@@ -1,7 +1,10 @@
 include stdlib
 include concat
 
-class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
+class sunet::nagios(
+  $command_timeout = 60,
+  $nrpe_service    = 'nagios-nrpe-server',
+) {
 
   $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
   $nagios_ip_v6 = hiera('nagios_ip_v6', '2001:948:4:6::111')
