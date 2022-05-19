@@ -51,7 +51,7 @@ class sunet::nagios(
     }
   } else {
     sunet::nagios::nrpe_command {'check_load':
-      command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
+      command_line => '/usr/lib/nagios/plugins/check_load -w 24,16,8 -c 35,30,25'
     }
   }
   if $::fqdn == 'docker.sunet.se' {
