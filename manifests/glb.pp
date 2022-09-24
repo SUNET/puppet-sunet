@@ -37,13 +37,15 @@ class sunet::glb(
       imagetag  => $geodns_version,
       volumes  => ['/etc/geodns:/etc/geodns','/etc/GeoLiteFiles:/usr/share/GeoIP'],
       ports    => ["${::ipaddress_default}:53:5353/udp","${::ipaddress_default}:53:5353"],
-      command  => "-port 5353"
+      command  => "-port 5353",
+      extra_parameters => ['--security-opt seccomp=unconfined'],
    }
    sunet::docker_run { 'dnslb':
       image    => 'docker.sunet.se/dnslb',
       imagetag => $dnslb_version,
       volumes  => ['/etc/geodns:/etc/geodns'],
       env      => ["ZONE=${zone}"],
+      extra_parameters => ['--security-opt seccomp=unconfined'],
    }
    ufw::allow { "allow-dns-udp":
       ip   => "${::ipaddress_default}",
