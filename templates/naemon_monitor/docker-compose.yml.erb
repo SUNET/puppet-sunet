@@ -39,6 +39,7 @@ services:
     image: influxdb:<%= @influxdb_tag %>
     volumes:
       - '/var/lib/influxdb:/var/lib/influxdb'
+    environment:
 <%- @influx_env.each do |environ| -%>
       - "<%= environ %>"
 <%- end -%>
@@ -50,6 +51,7 @@ services:
     image: docker.sunet.se/nagflux:<%= @nagflux_tag %>
     volumes:
       - '/var/nagflux/:/var/nagflux/'
+    environment:
 <%- @nagflux_env.each do |environ| -%>
       - "<%= environ %>"
 <%- end -%>
