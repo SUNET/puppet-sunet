@@ -51,11 +51,6 @@ class sunet::naemon_monitor(
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
-  $class_dirs = ['/opt/', '/opt/naemon_monitor']
-    $class_dirs.each |$dir| {
-      ensure_resource('file',$dir, { ensure => directory} )
-    }
-
   file { '/opt/naemon_monitor/grafana.ini':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana.ini'),
