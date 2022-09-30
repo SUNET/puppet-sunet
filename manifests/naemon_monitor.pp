@@ -54,17 +54,14 @@ class sunet::naemon_monitor(
   file { '/opt/naemon_monitor/grafana.ini':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana.ini'),
-    require => File['/opt/naemon_monitor/'],
   }
   file { '/opt/naemon_monitor/histou.js':
     ensure  => file,
     content => template('sunet/naemon_monitor/histou.js'),
-    require => File['/opt/naemon_monitor/'],
   }
   file { '/opt/naemon_monitor/influxdb.yaml':
     ensure  => file,
     content => template('sunet/naemon_monitor/influxdb.yaml'),
-    require => File['/opt/naemon_monitor/'],
   }
 
 
