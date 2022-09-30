@@ -51,6 +51,11 @@ class sunet::naemon_monitor(
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
+  $dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/']
+    $dirs.each |$dir| {
+      ensure_resource('file',$dir, { ensure => directory} )
+    }
+
   nagioscfg::contactgroup {'alerts': }
   -> nagioscfg::service {'check_load':
     use            => 'naemon-service',
@@ -167,11 +172,6 @@ class sunet::naemon_monitor(
   }
 
   file { '/etc/naemon/conf.d/cosmos/':
-    ensure  => directory,
-    recurse => true,
-  }
-
-  file { '/etc/naemon/conf.d/nagioscfg/':
     ensure  => directory,
     recurse => true,
   }
