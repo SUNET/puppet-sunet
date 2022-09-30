@@ -29,7 +29,7 @@ services:
       - '443:443'
     volumes:
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
-      - '/opt/cosmos/shib-certs:/etc/shibboleth/certs'
+      - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
     environment:
 <%- @thruk_env.each do |environ| -%>
       - "<%= environ %>"
@@ -59,6 +59,6 @@ services:
   grafana:
     image: grafana/grafana:<%= @grafana_tag %>
     volumes:
-      - '/opt/cosmos/grafana.ini/:/etc/grafana/grafana.ini'
-      - '/opt/cosmos/influxdb.yaml:/etc/grafana/provisioning/datasources/nagflux.yaml'
-      - '/opt/cosmos/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro'
+      - '/opt/naemon_monitor/grafana.ini/:/etc/grafana/grafana.ini'
+      - '/opt/naemon_monitor/influxdb.yaml:/etc/grafana/provisioning/datasources/nagflux.yaml'
+      - '/opt/naemon_monitor/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro'
