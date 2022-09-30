@@ -51,54 +51,63 @@ class sunet::naemon_monitor(
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_load',
     description    => 'System Load',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_users':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_users',
     description    => 'Active Users',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_zombie_procs':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_zombie_procs',
     description    => 'Zombie Processes',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_total_procs':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_total_procs_lax',
     description    => 'Total Processes',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_root':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_root',
     description    => 'Root Disk',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_boot':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_boot_15_5',
     description    => 'Boot Disk',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_var':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_var',
     description    => 'Var Disk',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_boot_inodes':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_boot_inodes_15_5',
     description    => 'Boot Disk Inodes',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_root_inodes':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_root_inodes_15_5',
     description    => 'Root Disk Inodes',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
 
   nagioscfg::service {'check_uptime':
@@ -106,45 +115,57 @@ class sunet::naemon_monitor(
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_uptime',
     description    => 'Uptime',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_reboot':
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_reboot',
     description    => 'Reboot Needed',
     contact_groups => ['alerts']
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_memory':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_memory',
     description    => 'System Memory',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_entropy':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_entropy',
     description    => 'System Entropy',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_ntp_time':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_ntp_time',
     description    => 'System NTP Time',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_scriptherder':
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_scriptherder',
     description    => 'Scriptherder Status',
     contact_groups => ['naemon-admins']
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_apt':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_apt',
     description    => 'Packages available for upgrade',
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
 
   file { '/etc/naemon/conf.d/cosmos/':
+    ensure  => directory,
+    recurse => true,
+  }
+
+  file { '/etc/naemon/conf.d/nagioscfg/':
     ensure  => directory,
     recurse => true,
   }
@@ -182,5 +203,6 @@ class sunet::naemon_monitor(
     host_template  => 'naemon-host',
     service        => 'sunet-naemon_monitor',
     single_ip      => true,
+    require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
 }
