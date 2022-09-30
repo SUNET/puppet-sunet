@@ -152,24 +152,24 @@ class sunet::naemon_monitor(
   file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':
     ensure  => file,
     mode    => '0644',
-    content => template('naemon_monitor/naemon-hostgroups.cfg.erb'),
+    content => template('sunet/naemon_monitor/naemon-hostgroups.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
   file { '/etc/naemon/conf.d/cosmos/naemon-host.cfg':
     ensure  => file,
-    content => template('naemon_monitor/naemon-host.cfg.erb'),
+    content => template('sunet/naemon_monitor/naemon-host.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
   file { '/etc/naemon/conf.d/cosmos/naemon-service.cfg':
     ensure  => file,
-    content => template('naemon_monitor/naemon-service.cfg.erb'),
+    content => template('sunet/naemon_monitor/naemon-service.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
   file { '/etc/naemon/conf.d/cosmos/naemon-contactgroups.cfg':
     ensure  => file,
-    content => template('naemon_monitor/naemon-contactgroups.cfg.erb'),
+    content => template('sunet/naemon_monitor/naemon-contactgroups.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
