@@ -149,10 +149,10 @@ class sunet::naemon_monitor(
     recurse => true,
   }
 
-  file { '/etc/naemon/conf.d/cosmos/hostgroups.cfg':
+  file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':
     ensure  => file,
     mode    => '0644',
-    content => template('naemon_monitor/hostgroups.cfg.erb'),
+    content => template('naemon_monitor/naemon-hostgroups.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
   file { '/etc/naemon/conf.d/cosmos/naemon-host.cfg':
