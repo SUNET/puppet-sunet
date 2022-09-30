@@ -20,7 +20,7 @@ class sunet::naemon_monitor(
   class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
 
   if hiera('shib_key',undef) != undef {
-    sunet::snippets::secret_file { '/opt/cosmos/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
+    sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
     # assume cert is in cosmos repo (overlay)
   }
 
