@@ -52,7 +52,7 @@ class sunet::naemon_monitor(
   }
 
   $class_dirs = ['/opt/', '/opt/naemon_monitor']
-    $cosmos_dirs.each |$dir| {
+    $class_dirs.each |$dir| {
       ensure_resource('file',$dir, { ensure => directory} )
     }
 
