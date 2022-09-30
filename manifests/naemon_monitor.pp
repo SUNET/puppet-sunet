@@ -51,8 +51,8 @@ class sunet::naemon_monitor(
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
-  $dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/']
-    $dirs.each |$dir| {
+  $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/']
+    $nagioscfg_dirs.each |$dir| {
       ensure_resource('file',$dir, { ensure => directory} )
     }
 
@@ -171,8 +171,8 @@ class sunet::naemon_monitor(
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
 
-  $dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/cosmos/']
-    $dirs.each |$dir| {
+  $cosmos_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/cosmos/']
+    $cosmos_dirs.each |$dir| {
       ensure_resource('file',$dir, { ensure => directory} )
     }
 
