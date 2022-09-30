@@ -40,9 +40,15 @@ class sunet::naemon_monitor(
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
+  file { '/etc/systemd/system/sunet-naemon_monitor.service.d/':
+    ensure  => directory,
+    recurse => true,
+  }
+
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf':
     ensure  => file,
     content => template('sunet/naemon_monitor/service-override.conf'),
+    require => File['/etc/systemd/system/sunet-naemon_monitor.service.d/'],
   }
 
   nagioscfg::contactgroup {'alerts': }
