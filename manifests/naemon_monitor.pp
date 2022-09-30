@@ -121,7 +121,7 @@ class sunet::naemon_monitor(
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_reboot',
     description    => 'Reboot Needed',
-    contact_groups => ['alerts']
+    contact_groups => ['alerts'],
     require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_memory':
@@ -149,7 +149,7 @@ class sunet::naemon_monitor(
     hostgroup_name => ['nrpe'],
     check_command  => 'check_nrpe!check_scriptherder',
     description    => 'Scriptherder Status',
-    contact_groups => ['naemon-admins']
+    contact_groups => ['naemon-admins'],
     require => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_apt':
