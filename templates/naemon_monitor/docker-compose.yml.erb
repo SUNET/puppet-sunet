@@ -38,7 +38,7 @@ services:
   influxdb:
     image: influxdb:<%= @influxdb_tag %>
     volumes:
-      - '/var/lib/influxdb:/var/lib/influxdb',
+      - '/var/lib/influxdb:/var/lib/influxdb'
 <%- @influx_env.each do |environ| -%>
       - "<%= environ %>"
 <%- end -%>
@@ -57,6 +57,6 @@ services:
   grafana:
     image: grafana/grafana:<%= @grafana_tag %>
     volumes:
-      - '/opt/cosmos/grafana.ini/:/etc/grafana/grafana.ini',
+      - '/opt/cosmos/grafana.ini/:/etc/grafana/grafana.ini'
       - '/opt/cosmos/influxdb.yaml:/etc/grafana/provisioning/datasources/nagflux.yaml'
-      - '/opt/cosmos/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro''
+      - '/opt/cosmos/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro'
