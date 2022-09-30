@@ -31,15 +31,6 @@ class sunet::naemon_monitor(
   $influx_env =  [ 'INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux']
   $nagflux_env =  [ "INFLUXDB_ADMIN_PASSWORD=${influx_password}" ]
 
-  sunet::docker_compose { 'naemon_monitor':
-    content          => template('sunet/naemon_monitor/docker-compose.yml.erb'),
-    service_name     => 'naemon_monitor',
-    compose_dir      => '/opt/',
-    compose_filename => 'docker-compose.yml',
-    description      => 'Naemon monitoring (with Thruk)',
-    require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
-  }
-
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/':
     ensure  => directory,
     recurse => true,
@@ -49,6 +40,15 @@ class sunet::naemon_monitor(
     ensure  => file,
     content => template('sunet/naemon_monitor/service-override.conf'),
     require => File['/etc/systemd/system/sunet-naemon_monitor.service.d/'],
+  }
+
+  sunet::docker_compose { 'naemon_monitor':
+    content          => template('sunet/naemon_monitor/docker-compose.yml.erb'),
+    service_name     => 'naemon_monitor',
+    compose_dir      => '/opt/',
+    compose_filename => 'docker-compose.yml',
+    description      => 'Naemon monitoring (with Thruk)',
+    require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
   nagioscfg::contactgroup {'alerts': }
