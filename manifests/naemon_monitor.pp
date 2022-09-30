@@ -51,6 +51,28 @@ class sunet::naemon_monitor(
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
+  $class_dirs = ['/opt/', '/opt/naemon_monitor']
+    $cosmos_dirs.each |$dir| {
+      ensure_resource('file',$dir, { ensure => directory} )
+    }
+
+  file { '/opt/naemon_monitor/grafana.ini':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/grafana.ini'),
+    require => File['/opt/naemon_monitor/'],
+  }
+  file { '/opt/naemon_monitor/histou.js':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/histou.js'),
+    require => File['/opt/naemon_monitor/'],
+  }
+  file { '/opt/naemon_monitor/influxdb.yaml':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/influxdb.yaml'),
+    require => File['/opt/naemon_monitor/'],
+  }
+
+
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/']
     $nagioscfg_dirs.each |$dir| {
       ensure_resource('file',$dir, { ensure => directory} )
