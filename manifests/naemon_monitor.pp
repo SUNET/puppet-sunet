@@ -171,10 +171,10 @@ class sunet::naemon_monitor(
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
 
-  file { '/etc/naemon/conf.d/cosmos/':
-    ensure  => directory,
-    recurse => true,
-  }
+  $dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/cosmos/']
+    $dirs.each |$dir| {
+      ensure_resource('file',$dir, { ensure => directory} )
+    }
 
   file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':
     ensure  => file,
