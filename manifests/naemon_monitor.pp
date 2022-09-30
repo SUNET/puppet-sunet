@@ -1,5 +1,5 @@
 # Run naemon with Thruk
-class naemon::naemon_monitor(
+class sunet::naemon_monitor(
   String $domain,
   String $influx_password = safe_hiera('influx_password'),
   String $naemon_tag = 'latest',
