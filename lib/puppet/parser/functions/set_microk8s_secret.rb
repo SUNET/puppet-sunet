@@ -1,3 +1,4 @@
+require 'json'
 module Puppet::Parser::Functions
   newfunction(:set_microk8s_secret, :type => :rvalue) do |args|
     if args.size != 3
@@ -6,7 +7,7 @@ module Puppet::Parser::Functions
 
     namespace = args[0]
     name = args[1]
-    secret = args[2]
+    secret = JSON.parse(args[2])
 
     command  = "microk8s kubectl -n #{namespace} create secret generic #{name} "
     secret.each do |key, value|
