@@ -5,6 +5,7 @@ class sunet::microk8s::node(
   Integer $failure_domain = 42,
 ) {
   # Loop through peers and do things that require their ip:s
+  include stdlib
   split($facts['microk8s_peers'], ',').each | String $peer| {
     unless $peer == 'unknown' {
       $peer_ip = $facts[join(['microk8s_peer_', $peer])]
