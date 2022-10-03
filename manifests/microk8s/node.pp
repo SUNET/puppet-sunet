@@ -85,10 +85,10 @@ class sunet::microk8s::node(
       }
     }
   }
-  namespaces = hiera_hash('microk8s_secrets', [])
-  namespaces.keys().each |namespace| do {
+  namespaces = hiera_hash('microk8s_secrets', {})
+  namespaces.keys().each |String namespace| {
     if is_array(namespaces[namespace]) {
-      namespaces[namespace].keys().each |name| do {
+      namespaces[namespace].keys().each |String name| {
         secret = namespaces[namespace][name]
         if has_value(secret, 'key') and has_value(secret, 'value'){
           key = secret['key']
