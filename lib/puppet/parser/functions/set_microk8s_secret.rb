@@ -10,7 +10,7 @@ module Puppet::Parser::Functions
 
     command  = "microk8s kubectl -n #{namespace} create secret generic #{name} "
     secret.each do |key, value|
-      command += "--from-literal=\"#{key}\"=\"#{value}\" "
+      command += "--from-literal=#{key}='#{value}' "
     end
     command += "--dry-run=client -o yaml " +
                '| microk8s kubectl apply -f -'
