@@ -3,7 +3,7 @@ module Puppet::Parser::Functions
   newfunction(:set_microk8s_secret, :type => :rvalue) do |args|
 
     if args.size != 4
-      err('Invalid use of function set_secret')
+      err('Invalid use of function set_microk8s_secret')
     end
 
     namespace = args[0]
