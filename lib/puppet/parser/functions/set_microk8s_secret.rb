@@ -11,9 +11,8 @@ module Puppet::Parser::Functions
 
     command  = "microk8s kubectl -n #{namespace} create secret generic #{name} "
     secret.each do |item|
-      object = JSON.parse(item)
-      key = object['key']
-      value = object['value']
+      key = item['key']
+      value = item['value']
       puts key
       command += "--from-literal=#{key}='#{value}' "
     end
