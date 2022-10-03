@@ -1,4 +1,4 @@
-Puppet::Functions.create_function(:'microk8s::node::set_secret') do
+Puppet::Functions.create_function(:'sunet::microk8s::node::set_secret') do
   dispatch :set_secret do
     param 'String', :namespace
     param 'String', :name
