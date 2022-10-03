@@ -86,5 +86,6 @@ class sunet::microk8s::node(
     }
   }
 
-  set_secret('argocd', 'kanotestsecret', 'kanokey', 'kanovalue')
+  use sunet::microk8s
+  sunet::microk8s::set_secret('argocd', 'kanotestsecret', 'kanokey', 'kanovalue')
 }
