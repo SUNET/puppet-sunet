@@ -4,9 +4,18 @@ HOSTNAME="$1"
 PORT="$2"
 CERTFILE_ENDDATE=`echo | openssl x509 -noout -enddate -in /etc/dehydrated/private/${HOSTNAME}.crt`
 CERTSERVED_ENDDATE=`echo | openssl s_client -servername ${HOSTNAME} -connect ${HOSTNAME}:${PORT} 2>/dev/null | openssl x509 -noout -enddate`
+RELOAD_FILE=/etc/dehydrated/reload
 
 # If either of these strings is empty or contains crap; exit instantly as comparison is useless
 if [[ ! "$CERTFILE_ENDDATE" =~ "notAfter" || ! "$CERTSERVED_ENDDATE" =~ "notAfter" ]]; then
+        if [ -x ${RELOAD_FILE} ]; then
+                ${RELOAD_FILE}
+                if [ $? == 0 ]; then
+                        echo "Certificate reloaded by ${RELOAD_FILE}"
+                        exit 0
+                fi
+        fi
+
         echo "File:${CERTFILE_ENDDATE} <-> Served:${CERTSERVED_ENDDATE}; One of these cert end dates could not be read, exit 1"
         exit 1
 fi
