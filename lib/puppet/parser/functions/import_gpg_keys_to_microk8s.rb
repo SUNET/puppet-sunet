@@ -18,6 +18,6 @@ data:
         configmap += '  ' + fingerprint.chop() + ": |-\n"
         configmap += contents
     end
-    return `echo "#{configmap}" | microk8s kubectl apply -f -`
+    return `echo #{configmap} | microk8s kubectl apply -f -`
   end
 end
