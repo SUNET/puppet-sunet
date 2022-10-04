@@ -92,4 +92,8 @@ class sunet::microk8s::node(
         set_microk8s_secret($namespace, $name, $secret)
     }
   }
+  file {'/etc/cosmos/keys':
+    audit => 'content',
+    notify => import_gpg_keys_to_microk8s(),
+  }
 }
