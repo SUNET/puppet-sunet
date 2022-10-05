@@ -15,7 +15,14 @@ class sunet::naemon_monitor(
 
   require stdlib
 
-  class { 'webserver': }
+  ufw::allow { 'naemon-allow-http':
+    ip   => 'any',
+    port => '80'
+  }
+  ufw::allow { 'naemon-allow-https':
+    ip   => 'any',
+    port => '443'
+  }
 
   class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
 
