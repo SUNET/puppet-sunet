@@ -25,6 +25,12 @@ services:
 
   thruk:
     image: docker.sunet.se/thruk:<%= @thruk_tag %>
+<% if @resolvers.is_a? Array -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
     ports:
       - '443:443'
     volumes:
