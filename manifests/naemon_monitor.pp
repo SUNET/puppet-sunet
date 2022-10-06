@@ -4,7 +4,7 @@ class sunet::naemon_monitor(
   String $influx_password = hiera('influx_password'),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
-  Array $resolvers = Undef,
+  Array $resolvers = [],
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
   Array $thruk_users = [],
