@@ -25,7 +25,7 @@ services:
 
   thruk:
     image: docker.sunet.se/thruk:<%= @thruk_tag %>
-<% if @resolvers.is_a? Array -%>
+<% unless @resolvers.empty? -%>
     dns:
 <% @resolvers.each do |resolver| -%>
       - <%= resolver %>
