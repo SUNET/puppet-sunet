@@ -10,6 +10,12 @@ services:
 
   naemon:
     image: docker.sunet.se/naemon:<%= @naemon_tag %>
+<% unless @resolvers.empty? -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
     ports:
       - '127.0.0.1:6666:6666'
     volumes:
