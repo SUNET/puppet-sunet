@@ -85,10 +85,14 @@ class sunet::dockerhost(
       subscribe   => [Apt::Key['docker_ce']],
       refreshonly => true,
     }
-  }
-  package { $docker_package_name :
-    ensure  => $docker_version,
-    require => Exec['dockerhost_apt_get_update'],
+    package { $docker_package_name :
+      ensure  => $docker_version,
+      require => Exec['dockerhost_apt_get_update'],
+    }
+  } else {
+    package { $docker_package_name :
+      ensure  => $docker_version,
+    }
   }
 
   if $docker_package_name == 'docker-ce' {
