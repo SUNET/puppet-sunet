@@ -2,7 +2,7 @@
 class sunet::dockerhost(
   String $docker_version,
   String $docker_package_name                 = 'docker-engine',  # facilitate transition to new docker-ce package
-  Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
+  Enum['stable', 'edge', 'test', 'none'] $docker_repo = 'stable',
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
   Boolean $run_docker_cleanup                 = true,
@@ -35,56 +35,57 @@ class sunet::dockerhost(
     package {'docker-engine': ensure => 'purged'}
   }
 
-  # Add the dockerproject repository, then force an apt-get update before
-  # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
-  #
-  sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'}
-  file {
-    '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
-      ensure  => file,
-      mode    => '0644',
-      content => template('sunet/dockerhost/docker_ce-8D81803C0EBFCD88.pub.erb'),
-      ;
+  if $docker_repo != 'none' {
+    # Add the dockerproject repository, then force an apt-get update before
+    # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
+    #
+    sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'}
+    file {
+      '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/dockerhost/docker_ce-8D81803C0EBFCD88.pub.erb'),
+        ;
+      }
+    apt::key { 'docker_ce':
+      id     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
+      source => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
     }
-  apt::key { 'docker_ce':
-    id     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
-    source => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
-  }
 
-  if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
-    $architecture = 'amd64'
-  } else {
-    $architecture = undef
-  }
+    if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
+      $architecture = 'amd64'
+    } else {
+      $architecture = undef
+    }
 
-  # new source
-  apt::source {'docker_ce':
-    location     => 'https://download.docker.com/linux/ubuntu',
-    release      => $::lsbdistcodename,
-    repos        => $docker_repo,
-    key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
-    architecture => $architecture,
-  }
+    # new source
+    apt::source {'docker_ce':
+      location     => 'https://download.docker.com/linux/ubuntu',
+      release      => $::lsbdistcodename,
+      repos        => $docker_repo,
+      key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
+      architecture => $architecture,
+    }
 
-  if $docker_version =~ /^\d.*/ {
-    # if it looks like a version number (as opposed to 'latest', 'installed', ...)
-    # then pin it so that automatic/manual dist-upgrades don't touch the docker package
-    apt::pin { 'docker-ce':
-      packages => $docker_package_name,
-      version  => $docker_version,
-      priority => 920,  # upgrade, but do not downgrade
-      notify   => Exec['dockerhost_apt_get_update'],
+    if $docker_version =~ /^\d.*/ {
+      # if it looks like a version number (as opposed to 'latest', 'installed', ...)
+      # then pin it so that automatic/manual dist-upgrades don't touch the docker package
+      apt::pin { 'docker-ce':
+        packages => $docker_package_name,
+        version  => $docker_version,
+        priority => 920,  # upgrade, but do not downgrade
+        notify   => Exec['dockerhost_apt_get_update'],
+      }
+    }
+
+    exec { 'dockerhost_apt_get_update':
+      command     => '/usr/bin/apt-get update',
+      cwd         => '/tmp',
+      require     => [Apt::Key['docker_ce']],
+      subscribe   => [Apt::Key['docker_ce']],
+      refreshonly => true,
     }
   }
-
-  exec { 'dockerhost_apt_get_update':
-    command     => '/usr/bin/apt-get update',
-    cwd         => '/tmp',
-    require     => [Apt::Key['docker_ce']],
-    subscribe   => [Apt::Key['docker_ce']],
-    refreshonly => true,
-  }
-
   package { $docker_package_name :
     ensure  => $docker_version,
     require => Exec['dockerhost_apt_get_update'],
