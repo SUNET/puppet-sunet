@@ -7,7 +7,7 @@ define sunet::docker_compose_service(
   Array[String]    $service_extras = [],
   Optional[String] $start_command = undef,
 ) {
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+  if ($::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0) or $::operatingsystem == 'Debian' {
     include sunet::systemd_reload
 
     $_service_name = $service_name ? {
