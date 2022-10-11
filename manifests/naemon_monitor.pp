@@ -59,6 +59,11 @@ class sunet::naemon_monitor(
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
+  file { '/opt/naemon_monitor/stop-monitor.sh':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/stop-monitor.sh'),
+  }
+
   file { '/opt/naemon_monitor/grafana.ini':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana.ini'),
