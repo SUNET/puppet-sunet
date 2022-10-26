@@ -42,6 +42,7 @@ services:
     volumes:
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
       - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
+      - '/opt/naemon_monitor/data:/var/lib/thruk'
     environment:
 <%- @thruk_env.each do |environ| -%>
       - "<%= environ %>"
