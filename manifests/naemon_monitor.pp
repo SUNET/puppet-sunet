@@ -76,6 +76,9 @@ class sunet::naemon_monitor(
     ensure  => file,
     content => template('sunet/naemon_monitor/influxdb.yaml'),
   }
+  file { '/opt/naemon_monitor/data':
+    ensure  => directory,
+  }
 
 
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/']
