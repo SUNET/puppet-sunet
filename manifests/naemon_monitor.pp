@@ -80,8 +80,7 @@ class sunet::naemon_monitor(
     ensure  => directory,
   }
 
-
-  $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/']
+  $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
     $nagioscfg_dirs.each |$dir| {
       ensure_resource('file',$dir, { ensure => directory} )
     }
@@ -200,11 +199,6 @@ class sunet::naemon_monitor(
     description    => 'Packages available for upgrade',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
-
-  $cosmos_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/cosmos/']
-    $cosmos_dirs.each |$dir| {
-      ensure_resource('file',$dir, { ensure => directory} )
-    }
 
   file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':
     ensure  => file,
