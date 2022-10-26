@@ -78,6 +78,7 @@ class sunet::naemon_monitor(
   }
   file { '/opt/naemon_monitor/data':
     ensure  => directory,
+    owner   => 'www-data'
   }
 
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
