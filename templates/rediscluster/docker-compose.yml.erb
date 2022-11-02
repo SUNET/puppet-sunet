@@ -1,8 +1,10 @@
 version: '3.2'
 services:
-<% for i in 0..@numnodes %>
+<% numnodesmone = @numnodes - 1 %>
+<% for i in 0..numnodesmone %>
 <% port = 7000 + i %>
   redis-node-<%= i %>:
+    container_name: redis-node-<%= i %>:
     image: redis:7-bullseye
     dns:
       - 89.46.20.75
