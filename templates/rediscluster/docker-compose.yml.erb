@@ -2,7 +2,8 @@ version: '3.2'
 services:
 <% numnodesmone = @numnodes - 1 -%>
 <% for i in 0..numnodesmone -%>
-<% port = 7000 + i %>
+<% clusterport = 7000 + i %>
+<% redisport = 6379 + i %>
   redis-node-<%= i %>:
     container_name: redis-node-<%= i %>
     image: redis:7-bullseye
@@ -11,7 +12,8 @@ services:
       - 89.46.21.29
       - 89.32.32.32
     ports:
-      - "<%= port %>:<%= port %>"
+      - "<%= redisport %>:<%= redisport %>"
+      - "<%= clusterport %>:<%= clusterport %>"
     volumes:
       - /opt/redis/node-<%= i %>:/data
     command: redis-server /data/server.conf --loglevel verbose

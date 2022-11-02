@@ -14,7 +14,8 @@ class sunet::rediscluster(
   }
 
   range(0, $numnodes - 1).each |$i|{
-    $portnum = 7000 + $i
+    $clusterportnum = 7000 + $i
+    $redisportnum = 6379 + $i
 
     file { "/opt/redis/node-${i}":
       ensure  => directory,
@@ -25,7 +26,7 @@ class sunet::rediscluster(
     }
     -> sunet::misc::ufw_allow { "redis_port_${portnum}":
       from => '0.0.0.0/0',
-      port => $portnum,
+      port => [$redisportnum,$clusterportnum],
     }
   }
 }
