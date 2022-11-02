@@ -5,7 +5,7 @@ class sunet::rediscluster(
 {
   include stdlib
 
-  docker_compose { 'rediscluster_compose':
+  sunet::docker_compose { 'rediscluster_compose':
     content          => template('sunet/rediscluster/docker-compose.yml.erb'),
     service_name     => 'redis',
     compose_dir      => '/opt/',
