@@ -19,10 +19,7 @@ class sunet::rediscluster(
     file { "/opt/redis/node-${i}":
       ensure  => directory,
     }
-    -> file { "/opt/redis/node-${i}/data":
-      ensure  => directory,
-    }
-    -> file { "/opt/redis/node-${i}/data/server.conf":
+    -> file { "/opt/redis/node-${i}/server.conf":
       ensure  => present,
       content => template('sunet/rediscluster/server.conf.erb'),
     }
