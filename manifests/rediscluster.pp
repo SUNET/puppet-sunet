@@ -6,7 +6,7 @@ class sunet::rediscluster(
   include stdlib
 
   docker_compose { 'rediscluster_compose':
-    content          => template('rediscluster/docker-compose.yml.erb'),
+    content          => template('sunet/rediscluster/docker-compose.yml.erb'),
     service_name     => 'redis',
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
@@ -24,7 +24,7 @@ class sunet::rediscluster(
     }
     -> file { "/opt/redis/node-${i}/data/server.conf":
       ensure  => present,
-      content => template('rediscluster/server.conf.erb'),
+      content => template('sunet/rediscluster/server.conf.erb'),
     }
     -> sunet::misc::ufw_allow { "redis_port_${portnum}":
       from => '0.0.0.0/0',
