@@ -16,7 +16,7 @@ class sunet::rediscluster(
   }
 
   range(0, $numnodes - 1).each |$i|{
-    $clusterportnum = 7000 + $i
+    $clusterportnum = 16379 + $i
     $redisportnum = 6379 + $i
 
     file { "/opt/redis/node-${i}":
