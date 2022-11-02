@@ -24,7 +24,7 @@ class sunet::rediscluster(
       ensure  => present,
       content => template('sunet/rediscluster/server.conf.erb'),
     }
-    -> sunet::misc::ufw_allow { "redis_port_${portnum}":
+    -> sunet::misc::ufw_allow { "redis_port_${i}":
       from => '0.0.0.0/0',
       port => [$redisportnum,$clusterportnum],
     }
