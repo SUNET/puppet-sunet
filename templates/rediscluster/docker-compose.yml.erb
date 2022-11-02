@@ -1,0 +1,17 @@
+version: '3.2'
+services:
+<% for i in 0..@numnodes %>
+<% port = 7000 + i %>
+  redis-node-<%= i %>:
+    image: redis:7-bullseye
+    dns:
+      - 89.46.20.75
+      - 89.46.21.29
+      - 89.32.32.32
+    ports:
+      - "<%= port %>:<%= port %>"
+    volumes:
+      - /opt/redis/node-<%= i %>:/data
+    command: redis-server /data/server.conf --loglevel verbose
+    restart: always
+<% end %>
