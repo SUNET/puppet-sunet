@@ -4,6 +4,7 @@ class sunet::rediscluster(
 )
 {
   include stdlib
+  include sunet
 
   sunet::docker_compose { 'rediscluster_compose':
     content          => template('sunet/rediscluster/docker-compose.yml.erb'),
