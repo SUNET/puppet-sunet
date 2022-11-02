@@ -1,6 +1,8 @@
-port <%= @redisportnum %>
-cluster-port <%= @clusterportnum %>
-cluster-enabled yes
-cluster-config-file nodes.conf
-cluster-node-timeout 5000
 appendonly yes
+bind * -::*
+cluster-config-file nodes.conf
+cluster-enabled yes
+cluster-node-timeout 5000
+cluster-port <%= @clusterportnum %>
+port <%= @redisportnum %>
+requirepass "<%= @redis_password %>"

@@ -5,6 +5,8 @@ class sunet::rediscluster(
 {
   include stdlib
 
+  $redis_password = safe_hiera('redis_password')
+
   sunet::docker_compose { 'rediscluster_compose':
     content          => template('sunet/rediscluster/docker-compose.yml.erb'),
     service_name     => 'redis',

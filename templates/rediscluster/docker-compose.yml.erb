@@ -7,6 +7,7 @@ services:
   redis-node-<%= i %>:
     container_name: redis-node-<%= i %>
     image: redis:7-bullseye
+    network_mode: host
     dns:
       - 89.46.20.75
       - 89.46.21.29
