@@ -4,6 +4,6 @@ cluster-config-file nodes.conf
 cluster-enabled yes
 cluster-node-timeout 5000
 cluster-port <%= @clusterportnum %>
-loglevel notice
+loglevel warning
 port <%= @redisportnum %>
 requirepass "<%= @redis_password %>"
