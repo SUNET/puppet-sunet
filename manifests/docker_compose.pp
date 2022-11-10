@@ -18,7 +18,7 @@ define sunet::docker_compose(
       ensure  => 'file',
       mode    => '600',
       content => $content,
-      require => Class['sunet::dockerhost'],
+      require => Class['dockerhost'],
   })
 
   sunet::docker_compose_service { "${service_prefix}-${service_name}":
