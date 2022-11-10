@@ -70,14 +70,14 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
     volumes:
-      - ./redis:/data
+      - /opt/mastodon/redis:/data
 
   web:
     image: tootsuite/mastodon:<%= @mastodon_version %>
     container_name: web
     restart: always
     env_file:
-      - mastodon.env.production
+      - mastodon.env
     command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
     networks:
       - external_network

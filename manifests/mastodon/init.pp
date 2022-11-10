@@ -53,7 +53,7 @@ class sunet::mastodon(
     mode    => '0640',
     content => template('sunet/mastodon/mastodon.env.erb'),
   }
-  $tl_dirs = ['mastodon', 'nginx']
+  $tl_dirs = ['mastodon', 'nginx', 'postgres', 'redis']
   $tl_dirs.each | $dir| {
     file { "/opt/mastodon/${dir}":
       ensure => directory,
