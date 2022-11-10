@@ -6,7 +6,7 @@ class sunet::mastodon(
   String $db_user                  = 'postgres',
   String $mastodon_version         = 'latest',
   String $redis_host               = 'redis',
-  String $redis_port               = '6739',
+  String $redis_port               = '6379',
   String $s3_bucket                = 'mastodon',
   String $s3_hostname              = 's3.sto3.safedc.net',
   String $s3_port                  = '443',
