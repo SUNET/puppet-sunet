@@ -1,9 +1,9 @@
 # mastodon web server
 class sunet::mastodon(
   String $db_host                  = 'postgres',
-  String $db_name                  = 'mastodon',
+  String $db_name                  = 'postgres',
   String $db_port                  = '5432',
-  String $db_user                  = 'mastodon',
+  String $db_user                  = 'postgres',
   String $mastodon_version         = 'latest',
   String $redis_host               = 'redis',
   String $redis_port               = '6739',
