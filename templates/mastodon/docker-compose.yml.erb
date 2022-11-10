@@ -104,7 +104,7 @@ services:
     container_name: streaming
     image: tootsuite/mastodon:<%= @mastodon_version %>
     restart: always
-    env_file: mastodon.env.production
+    env_file: mastodon.env
     command: node ./streaming
     dns:
       - 89.32.32.32
@@ -127,7 +127,7 @@ services:
     container_name: sidekiq
     image: tootsuite/mastodon:latest
     restart: always
-    env_file: mastodon.env.production
+    env_file: mastodon.env
     command: bundle exec sidekiq
     dns:
       - 89.32.32.32
