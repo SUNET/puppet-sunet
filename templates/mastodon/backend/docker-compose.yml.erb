@@ -5,9 +5,11 @@ services:
     container_name: postgres
     restart: always
     image: postgres:14-alpine
+    dns:
+      - 89.32.32.32
+    ports:
+      - "5432:5432"
     shm_size: 256mb
-    networks:
-      - internal_network
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
     volumes:
@@ -22,15 +24,12 @@ services:
     container_name: redis
     restart: always
     image: redis:6-alpine
-    networks:
-      - internal_network
+    dns:
+      - 89.32.32.32
+    ports:
+      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
     command: redis-server /data/server.conf
     volumes:
       - /opt/mastodon_backend/redis:/data
-
-networks:
-  external_network:
-  internal_network:
-    internal: true
