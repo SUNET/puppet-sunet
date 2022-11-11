@@ -35,4 +35,8 @@ class sunet::mastodon::backend(
     mode    => '0640',
     content => template('sunet/mastodon/backend/redis.conf.erb'),
   }
+  sunet::misc::ufw_allow { 'backend_ports':
+     from => 'any',
+     port => ['5432', '6379']
+  }
 }

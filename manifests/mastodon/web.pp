@@ -72,4 +72,9 @@ class sunet::mastodon::web(
       mode   => '0751',
     }
   }
+
+ sunet::misc::ufw_allow { 'web_ports':
+    from => 'any',
+    port => ['80', '443']
+ }
 }
