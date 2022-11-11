@@ -1,5 +1,5 @@
 # mastodon web server
-class sunet::mastodon(
+class sunet::mastodon::web(
   String $db_host                  = 'postgres',
   String $db_name                  = 'postgres',
   String $db_port                  = '5432',
@@ -16,19 +16,20 @@ class sunet::mastodon(
   String $smtp_openssl_verify_mode = 'none',
   String $smtp_port                = '465',
   String $smtp_server              = 'smtp.sunet.se',
-  String $vhost                    = 'swehighered.sunet.se',
+  String $vhost                    = 'social.sunet.se',
 ) {
   # Must set in hiera eyaml 
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
   $otp_secret=safe_hiera('otp_secret')
+  $redis_pass=safe_hiera('redis_pass')
   $saml_cert=safe_hiera('saml_cert')
   $saml_idp_cert=safe_hiera('saml_idp_cert')
   $saml_private_key=safe_hiera('saml_private_key')
+  $secret_key_base=safe_hiera('secret_key_base')
   $smtp_password=safe_hiera('smtp_password')
   $vaipd_public_key=safe_hiera('vaipd_public_key')
   $vapid_private_key=safe_hiera('vapid_private_key')
-  $secret_key_base=safe_hiera('secret_key_base')
 
   # Interpolated variables
   $s3_alias_host = "${s3_hostname}:${s3_port}/${s3_bucket}"
@@ -37,24 +38,24 @@ class sunet::mastodon(
   $smtp_login = $smtp_from_address
 
   # Composefile
-  sunet::docker_compose { 'mastodon':
-    content          => template('sunet/mastodon/docker-compose.yml.erb'),
-    service_name     => 'mastodon',
+  sunet::docker_compose { 'mastodon_web':
+    content          => template('sunet/mastodon/web/docker-compose.yml.erb'),
+    service_name     => 'mastodon_web',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'Mastodon',
   }
   # Directories and files
-  -> file { '/opt/mastodon/mastodon.env':
+  -> file { '/opt/mastodon_web/mastodon.env':
     ensure  => file,
     owner   => 'root',
     group   => 'root',
     mode    => '0640',
-    content => template('sunet/mastodon/mastodon.env.erb'),
+    content => template('sunet/mastodon/web/mastodon.env.erb'),
   }
-  $tl_dirs = ['mastodon', 'nginx', 'postgres', 'redis']
+  $tl_dirs = ['mastodon', 'nginx']
   $tl_dirs.each | $dir| {
-    file { "/opt/mastodon/${dir}":
+    file { "/opt/mastodon_web/${dir}":
       ensure => directory,
       owner  => 'root',
       group  => 'root',
@@ -63,7 +64,7 @@ class sunet::mastodon(
   }
   $nginx_dirs = ['acme', 'certs', 'conf', 'dhparam', 'html', 'vhost']
   $nginx_dirs.each | $dir| {
-    file { "/opt/mastodon/nginx/${dir}":
+    file { "/opt/mastodon_web/nginx/${dir}":
       ensure => directory,
       owner  => 'root',
       group  => 'root',
