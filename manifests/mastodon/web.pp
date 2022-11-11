@@ -7,6 +7,7 @@ class sunet::mastodon::web(
   String $mastodon_version         = 'latest',
   String $redis_host               = 'redis',
   String $redis_port               = '6379',
+  String $redis_user               = 'admin',
   String $s3_bucket                = 'mastodon',
   String $s3_hostname              = 's3.sto3.safedc.net',
   String $s3_port                  = '443',
