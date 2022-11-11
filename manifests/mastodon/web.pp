@@ -21,6 +21,7 @@ class sunet::mastodon::web(
   # Must set in hiera eyaml 
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
+  $db_pass=safe_hiera('db_pass')
   $otp_secret=safe_hiera('otp_secret')
   $redis_pass=safe_hiera('redis_pass')
   $saml_cert=safe_hiera('saml_cert')
