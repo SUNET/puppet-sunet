@@ -33,7 +33,7 @@ class sunet::mastodon::web(
   $vapid_private_key=safe_hiera('vapid_private_key')
 
   # Interpolated variables
-  $s3_alias_host = "files.${vhost}}"
+  $s3_alias_host = "files.${vhost}"
   $s3_endpoint = "https://${s3_hostname}:${s3_port}"
   $smtp_from_address = "admin@${vhost}"
   $smtp_login = $smtp_from_address
