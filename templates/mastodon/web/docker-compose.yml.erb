@@ -63,9 +63,6 @@ services:
       - "127.0.0.1:3000:3000"
     dns:
       - 89.32.32.32
-    depends_on:
-      - postgres
-      - redis
     volumes:
       - /opt/mastodon/mastodon:/mastodon/public/system
     environment:
@@ -90,9 +87,6 @@ services:
       test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1"]
     ports:
       - "127.0.0.1:4000:4000"
-    depends_on:
-      - postgres
-      - redis
     environment:
       - VIRTUAL_HOST=<%= @vhost %>
       - VIRTUAL_PATH=/api/v1/streaming
@@ -106,9 +100,6 @@ services:
     command: bundle exec sidekiq
     dns:
       - 89.32.32.32
-    depends_on:
-      - postgres
-      - redis
     networks:
       - external_network
       - internal_network
