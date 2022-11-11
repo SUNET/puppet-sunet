@@ -1,14 +1,10 @@
 # mastodon web server
 class sunet::mastodon::backend(
-  String $db_host                  = 'postgres',
   String $db_name                  = 'postgres',
-  String $db_port                  = '5432',
   String $db_user                  = 'postgres',
-  String $redis_host               = 'redis',
-  String $redis_port               = '6379',
 ) {
   # Must set in hiera eyaml 
-  $db_pass=safe_hiera('postgres_pass')
+  $db_pass=safe_hiera('db_pass')
   $redis_pass=safe_hiera('redis_pass')
 
   # Composefile
