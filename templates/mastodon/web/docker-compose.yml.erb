@@ -15,11 +15,11 @@ services:
     labels:
       com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
     volumes:
-      - /opt/mastodon/nginx/certs:/etc/nginx/certs:ro
-      - /opt/mastodon/nginx/conf:/etc/nginx/conf.d
-      - /opt/mastodon/nginx/dhparam:/etc/nginx/dhparam
-      - /opt/mastodon/nginx/html:/usr/share/nginx/html
-      - /opt/mastodon/nginx/vhost:/etc/nginx/vhost.d
+      - /opt/mastodon_web/nginx/certs:/etc/nginx/certs:ro
+      - /opt/mastodon_web/nginx/conf:/etc/nginx/conf.d
+      - /opt/mastodon_web/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/mastodon_web/nginx/html:/usr/share/nginx/html
+      - /opt/mastodon_web/nginx/vhost:/etc/nginx/vhost.d
       - /var/run/docker.sock:/tmp/docker.sock:ro
     environment:
       - ENABLE_IPV6=true
@@ -33,12 +33,12 @@ services:
     dns:
       - 89.32.32.32
     volumes:
-      - /opt/mastodon/nginx/acme:/etc/acme.sh
-      - /opt/mastodon/nginx/certs:/etc/nginx/certs:rw
-      - /opt/mastodon/nginx/conf:/etc/nginx/conf.d
-      - /opt/mastodon/nginx/dhparam:/etc/nginx/dhparam
-      - /opt/mastodon/nginx/html:/usr/share/nginx/html
-      - /opt/mastodon/nginx/vhost:/etc/nginx/vhost.d:rw
+      - /opt/mastodon_web/nginx/acme:/etc/acme.sh
+      - /opt/mastodon_web/nginx/certs:/etc/nginx/certs:rw
+      - /opt/mastodon_web/nginx/conf:/etc/nginx/conf.d
+      - /opt/mastodon_web/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/mastodon_web/nginx/html:/usr/share/nginx/html
+      - /opt/mastodon_web/nginx/vhost:/etc/nginx/vhost.d:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - NGINX_PROXY_CONTAINER=nginx
@@ -64,7 +64,7 @@ services:
     dns:
       - 89.32.32.32
     volumes:
-      - /opt/mastodon/mastodon:/mastodon/public/system
+      - /opt/mastodon_web/mastodon:/mastodon/public/system
     environment:
       - VIRTUAL_HOST=<%= @vhost %>
       - VIRTUAL_PATH=/
@@ -104,7 +104,7 @@ services:
       - external_network
       - internal_network
     volumes:
-      - /opt/mastodon/mastodon:/mastodon/public/system
+      - /opt/mastodon_web/mastodon:/mastodon/public/system
     extra_hosts:
       <%= @smtp_server %>: <%= @smtp_ip %>
 
