@@ -11,7 +11,7 @@ class sunet::mastodon::web(
   String $s3_bucket                = 'mastodon',
   String $s3_hostname              = 's3.sto3.safedc.net',
   String $s3_port                  = '443',
-  String $saml_idp_sso_target_url  = '',
+  String $saml_idp_sso_target_url  = 'https://idp-proxy-social.sunet.se/idp/sso',
   String $smtp_auth_method         = 'login',
   String $smtp_ip                  = '192.36.171.214',
   String $smtp_openssl_verify_mode = 'none',
