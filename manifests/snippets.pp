@@ -181,7 +181,7 @@ define sunet::snippets::no_icmp_redirects($order=10) {
       notify      => Exec["refresh-sysctl-${title}"]
    }
    exec {"refresh-sysctl-${title}":
-      command     => "sysctl -p ${cfg}", 
+      command     => "sysctl -p ${cfg}",
       refreshonly => true
    }
 }
@@ -227,10 +227,10 @@ define sunet::snippets::secret_file(
 
 define sunet::snippets::reinstall::keep() {
    $safe_name = regsubst($name, '[^0-9A-Za-z_]', '_', 'G')
-   ensure_resource('file','/etc/sunet-reinstall.keep',{owner=>'root',group=>'root',mode=>'0644'})
-   exec { "preserve_${safe_name}_during_reinstall":
-      command => "echo $name >> /etc/sunet-reinstall.keep",
-      onlyif  => "grep -ve '^${name}\$' /etc/sunet-reinstall.keep"
+   ensure_resource('file', '/etc/sunet-reinstall.keep', {owner => 'root', group => 'root', mode => '0644'})
+   sunet::snippets::file_line { "preserve_${safe_name}_during_reinstall":
+      filename => '/etc/sunet-reinstall.keep',
+      line     => $name,
    }
 }
 
