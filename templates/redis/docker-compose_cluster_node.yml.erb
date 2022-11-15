@@ -12,7 +12,7 @@ services:
       - <%= @basedir %>/data:/data
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
-    cmd: "/etc/redis/redis-server.conf"
+    command: "/etc/redis/redis-server.conf"
 
   sentinel:
     image: <%= @docker_image %>:<%= @docker_tag %>'
@@ -25,4 +25,4 @@ services:
       - <%= @basedir %>/etc/redis-sentinel.conf:/etc/redis/redis-sentinel.conf
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
-    cmd: "/etc/redis/redis-sentinel.conf"
+    command: "/etc/redis/redis-sentinel.conf"
