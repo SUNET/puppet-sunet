@@ -45,7 +45,7 @@ cluster-slave-validity-factor 0
 <% if @public_ip -%>
 cluster-announce-ip <%= @public_ip %>
 cluster-announce-port <%= @port %>
-cluster-announce-bus-port 26379
+cluster-announce-bus-port <%= @sentinel_port %>
 <% end -%>
 <% else -%>
 # cluster_config not set in puppet
@@ -53,6 +53,7 @@ cluster-announce-bus-port 26379
 
 # Sentinel config
 <% if @sentinel_config == "yes" -%>
+# monitor Docker container 'server' on port 6379
 sentinel monitor <%= @cluster_name %> server 6379 2
 sentinel down-after-milliseconds <%= @cluster_name %> 5000
 sentinel parallel-syncs <%= @cluster_name %> 1

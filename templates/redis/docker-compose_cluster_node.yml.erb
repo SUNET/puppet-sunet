@@ -20,7 +20,7 @@ services:
       - server
     restart: always
     expose:
-      - <%= @port %>
+      - <%= @sentinel_port %>
     volumes:
       - <%= @basedir %>/etc/redis-sentinel.conf:/etc/redis/redis-sentinel.conf
       - /etc/passwd:/etc/passwd:ro

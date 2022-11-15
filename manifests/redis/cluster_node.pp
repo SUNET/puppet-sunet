@@ -7,6 +7,7 @@ define sunet::redis::cluster_node (
   Optional[String] $docker_image    = undef,
   String           $docker_tag      = 'latest',
   String           $basedir         = "/opt/redis/${name}"
+  String           $compose_dir     = '/opt/sunet/compose',
 ) {
   $username = 'redis'
   $group = 'redis'
@@ -41,12 +42,14 @@ define sunet::redis::cluster_node (
   sunet::redis::config { 'server':
     filename      => "${basedir}/etc/redis-server.conf",
     cluster_nodes => $cluster_nodes,
+    public_ip     => $public_ip,
   }
 
   # Write a configuration file for the redis-sentinel
   sunet::redis::config { 'sentinel':
     filename        => "${basedir}/etc/redis-sentinel.conf",
     cluster_nodes   => $cluster_nodes,
+    public_ip       => $public_ip,
     sentinel_config => 'yes',
   }
 
@@ -54,6 +57,7 @@ define sunet::redis::cluster_node (
     sunet::docker_compose { $name:
       service_name => 'redis',
       description  => 'Redis database',
+      compose_dir  => $compose_dir,
       content      => template('sunet/redis/docker-compose_cluster_node.yml.erb'),
     }
 

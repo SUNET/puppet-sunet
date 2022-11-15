@@ -11,8 +11,8 @@ define sunet::redis::config (
   Enum['yes', 'no'] $cluster_config  = 'no',
   String            $cluster_name    = 'redis-cluster',
   Enum['yes', 'no'] $sentinel_config = 'no',
+  Integer           $sentinel_port   = 26379,
   String            $master_ip       = pick($cluster_nodes[0], $::facts['ipaddress_default']),
-  Integer           $master_port     = 6379,
 ) {
   # Configure all nodes as replicaof $master_ip, unless this node actually has $master_ip as $public_ip
   $replica_node = $master_ip ? {
