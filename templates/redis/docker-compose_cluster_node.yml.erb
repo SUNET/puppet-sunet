@@ -25,4 +25,6 @@ services:
       - <%= @basedir %>/etc/redis-sentinel.conf:/etc/redis/redis-sentinel.conf
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
+    tmpfs:
+      - /data
     command: "/etc/redis/redis-sentinel.conf"
