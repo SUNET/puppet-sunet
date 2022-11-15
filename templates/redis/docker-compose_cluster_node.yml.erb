@@ -3,7 +3,7 @@ version: '3'
 services:
 
   server:
-    image: <%= @docker_image %>:<%= @docker_tag %>'
+    image: '<%= @docker_image %>:<%= @docker_tag %>'
     restart: always
     expose:
       - 6379
@@ -15,7 +15,7 @@ services:
     command: "/etc/redis/redis-server.conf"
 
   sentinel:
-    image: <%= @docker_image %>:<%= @docker_tag %>'
+    image: '<%= @docker_image %>:<%= @docker_tag %>'
     depends_on:
       - server
     restart: always
