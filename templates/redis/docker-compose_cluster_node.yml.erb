@@ -23,7 +23,6 @@ services:
       - <%= @port %>
     volumes:
       - <%= @basedir %>/etc/redis-sentinel.conf:/etc/redis/redis-sentinel.conf
-      - <%= @basedir %>/data:/data
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
     cmd: "/etc/redis/redis-sentinel.conf"
