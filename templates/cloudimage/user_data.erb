@@ -56,7 +56,7 @@ apt:
 package_update: true
 runcmd:
    - "echo '*** debug: interfaces:'"
-   - "ifconfig -a"
+   - "ip addr list"
    - "echo '*** debug: /etc/network/interfaces:'"
    - "cat /etc/network/interfaces"
    - "echo '*** debug: find /etc/network/ -ls:'"
@@ -69,7 +69,9 @@ runcmd:
    - "cat /etc/netplan/*"
    - "mkdir /tmp/seed"
    - "mount /dev/vdb /tmp/seed"
-   - "cp /tmp/seed/bootstrap-cosmos.sh /tmp/seed/cosmos_1.2-2_all.deb /tmp/seed/cosmos_1.5-1_all.deb /root"
+   - "echo '*** debug: Seed disk contents:'"
+   - "find /tmp/seed -ls"
+   - "cp /tmp/seed/bootstrap-cosmos.sh /tmp/seed/cosmos_*_all.deb /root"
    - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
    - "cd /root && /root/bootstrap-cosmos.sh <%= @name %> <%= @repo %> <%= @tagpattern %>"
    - "bash -lc 'cosmos -v update && cosmos -v apply'"
