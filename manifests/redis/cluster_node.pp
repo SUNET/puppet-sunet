@@ -8,6 +8,7 @@ define sunet::redis::cluster_node (
   String           $docker_tag      = 'latest',
   String           $basedir         = "/opt/redis/${name}",
   String           $compose_dir     = '/opt/sunet/compose',
+  Integer          $sentinel_port   = 26379,
 ) {
   $username = 'redis'
   $group = 'redis'
@@ -40,9 +41,11 @@ define sunet::redis::cluster_node (
 
   # Write a configuration file for the redis-server
   sunet::redis::config { 'server':
-    filename      => "${basedir}/etc/redis-server.conf",
-    cluster_nodes => $cluster_nodes,
-    public_ip     => $public_ip,
+    filename        => "${basedir}/etc/redis-server.conf",
+    cluster_nodes   => $cluster_nodes,
+    public_ip       => $public_ip,
+    sentinel_config => 'no',
+    sentinel_port   => $sentinel_port,
   }
 
   # Write a configuration file for the redis-sentinel
@@ -51,6 +54,7 @@ define sunet::redis::cluster_node (
     cluster_nodes   => $cluster_nodes,
     public_ip       => $public_ip,
     sentinel_config => 'yes',
+    sentinel_port   => $sentinel_port,
   }
 
   if $docker_image {
