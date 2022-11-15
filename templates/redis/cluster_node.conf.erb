@@ -1,0 +1,65 @@
+###################################################
+#
+# This file is managed with
+#
+#  #####   #    #  #####   #####   ######   #####
+#  #    #  #    #  #    #  #    #  #          #
+#  #    #  #    #  #    #  #    #  #####      #
+#  #####   #    #  #####   #####   #          #
+#  #       #    #  #       #       #          #
+#  #        ####   #       #       ######     #
+#
+# ... so you can't just change it locally.
+#
+###################################################
+
+<% if @daemonize != "" -%>
+daemonize <%= @daemonize %>
+<% else -%>
+# redis_daemonize not set in puppet
+<% end -%>
+
+port <%= @port %>
+
+<% if @redis_bind != "" -%>
+bind <%= @redis_bind %>
+<% else -%>
+# bind not set in puppet
+<% end -%>
+
+dir /data
+
+<% if @replica_node == "yes" -%>
+replicaof <%= @master_ip %> <%= @master_port %>
+<% else -%>
+# replica_node not set in puppet
+<% end -%>
+
+# Cluster config
+<% if @cluster_config == "yes" -%>
+cluster-enabled yes
+cluster-config-file /data/cluster-config_do_not_edit_by_hand.data
+cluster-node-timeout 5000
+cluster-slave-validity-factor 0
+
+<% if @public_ip -%>
+cluster-announce-ip <%= @public_ip %>
+cluster-announce-port <%= @port %>
+cluster-announce-bus-port 26379
+<% end -%>
+<% else -%>
+# cluster_config not set in puppet
+<% end -%>
+
+# Sentinel config
+<% if @sentinel_config == "yes" -%>
+sentinel monitor <%= @cluster_name %> server 6379 2
+sentinel down-after-milliseconds <%= @cluster_name %> 5000
+sentinel parallel-syncs <%= @cluster_name %> 1
+sentinel failover-timeout <%= @cluster_name %> 10000
+# make isolated master stop accepting writes
+min-slaves-to-write 1
+min-slaves-max-lag 10
+<% else -%>
+# sentinel_config not set in puppet
+<% end -%>

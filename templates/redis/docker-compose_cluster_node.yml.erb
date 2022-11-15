@@ -1,0 +1,29 @@
+---
+version: '3'
+services:
+
+  server:
+    image: <%= @docker_image %>:<%= @docker_tag %>'
+    restart: always
+    expose:
+      - 6379
+    volumes:
+      - <%= @basedir %>/etc/redis-server.conf:/etc/redis/redis-server.conf
+      - <%= @basedir %>/data:/data
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    cmd: "/etc/redis/redis-server.conf"
+
+  sentinel:
+    image: <%= @docker_image %>:<%= @docker_tag %>'
+    depends_on:
+      - server
+    restart: always
+    expose:
+      - <%= @port %>
+    volumes:
+      - <%= @basedir %>/etc/redis-sentinel.conf:/etc/redis/redis-sentinel.conf
+      - <%= @basedir %>/data:/data
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    cmd: "/etc/redis/redis-sentinel.conf"
