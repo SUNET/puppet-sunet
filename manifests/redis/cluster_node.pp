@@ -6,7 +6,7 @@ define sunet::redis::cluster_node (
   String           $master_ip       = pick($cluster_nodes[0], $::facts['ipaddress_default']),
   Optional[String] $docker_image    = undef,
   String           $docker_tag      = 'latest',
-  String           $basedir         = "/opt/redis/${name}"
+  String           $basedir         = "/opt/redis/${name}",
   String           $compose_dir     = '/opt/sunet/compose',
 ) {
   $username = 'redis'
