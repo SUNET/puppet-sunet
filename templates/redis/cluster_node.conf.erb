@@ -30,7 +30,7 @@ bind <%= @redis_bind %>
 dir /data
 
 <% if @replica_node == "yes" -%>
-replicaof <%= @master_ip %> <%= @master_port %>
+replicaof <%= @master_ip %> <%= @port %>
 <% else -%>
 # replica_node not set in puppet
 <% end -%>
