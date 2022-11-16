@@ -17,3 +17,9 @@ add rule inet filter forward oifname "to_docker" <%= @saddr_v4 %> <%= @proto -%>
 <% if @saddr_v6.is_a? String -%>
 add rule inet filter forward oifname "to_docker" <%= @saddr_v6 %> <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
 <% end -%>
+
+#
+# Allow access from docker containers on this host to the exposed service
+#
+add rule inet filter input iifname "to_docker" <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
+add rule inet filter input iifname "to_docker" <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
