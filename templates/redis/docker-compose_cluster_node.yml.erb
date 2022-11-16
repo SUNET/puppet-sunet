@@ -12,7 +12,8 @@ services:
       - <%= @basedir %>/data:/data
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
-    command: "/etc/redis/redis-server.conf"
+    environment:
+      - "cfg_file=/etc/redis/redis-server.conf"
 
   sentinel:
     image: '<%= @docker_image %>:<%= @docker_tag %>'
@@ -27,4 +28,11 @@ services:
       - /etc/group:/etc/group:ro
     tmpfs:
       - /data
-    command: "/etc/redis/redis-sentinel.conf"
+    environment:
+      - "cfg_file=/etc/redis/redis-sentinel.conf"
+
+# Provide user-friendly name of bridge interface
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-redis
