@@ -5,7 +5,7 @@ services:
   server:
     image: '<%= @docker_image %>:<%= @docker_tag %>'
     restart: always
-    port:
+    ports:
       - <%= @public_port %>:6379
     volumes:
       - <%= @basedir %>/etc/redis-server.conf:/etc/redis/redis-server.conf
@@ -20,7 +20,7 @@ services:
     depends_on:
       - server
     restart: always
-    port:
+    ports:
       - <%= @sentinel_port %>:26379
     volumes:
       - <%= @basedir %>/etc/redis-sentinel.conf:/etc/redis/redis-sentinel.conf
