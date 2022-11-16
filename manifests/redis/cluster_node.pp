@@ -73,6 +73,7 @@ define sunet::redis::cluster_node (
       sunet::nftables::docker_expose { 'redis-server' :
         allow_clients => $allow_clients,
         port          => 6379,
+        allow_local   => true,
       }
 
       sunet::nftables::docker_expose { 'redis-sentinel' :
