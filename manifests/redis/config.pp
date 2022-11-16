@@ -2,7 +2,7 @@
 define sunet::redis::config (
   String            $filename,
   String            $public_ip       = $::facts['ipaddress_default'],
-  Integer           $port            = 6379,
+  Integer           $public_port     = 6379,
   String            $bind            = '0.0.0.0',    # need specific IP, otherwise redis 3.2+ will deny clients
   Enum['yes', 'no'] $protected_mode  = 'yes',
   String            $username        = 'redis',
@@ -21,13 +21,13 @@ define sunet::redis::config (
   }
 
   if $replica_node == 'yes' {
-    notice("Configuring Redis node replicaof ${master_ip} port ${master_port}")
+    notice("Configuring Redis node replicaof ${master_ip} port ${public_port}")
   } else {
     notice("Configuring as Redis master with IP ${master_ip} as public_ip")
   }
 
   if $sentinel_config == 'yes' {
-    notice("Configuring Redis Sentinel to monitor ${master_ip} port ${master_port}")
+    notice("Configuring Redis Sentinel to monitor ${master_ip} port ${port}")
   }
 
   file {

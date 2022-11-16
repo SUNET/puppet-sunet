@@ -19,7 +19,11 @@ daemonize <%= @daemonize %>
 # daemonize not set in puppet
 <% end -%>
 
-port <%= @port %>
+<% if @sentinel_config == "yes" -%>
+port 26379
+<% else -%>
+port 6379
+<% end -%>
 
 <% if @bind -%>
 bind <%= @bind %>
@@ -30,7 +34,7 @@ bind <%= @bind %>
 dir /data
 
 <% if @replica_node == "yes" -%>
-replicaof <%= @master_ip %> <%= @port %>
+replicaof <%= @master_ip %> <%= @public_port %>
 <% else -%>
 # replica_node not set in puppet
 <% end -%>
@@ -44,7 +48,7 @@ cluster-slave-validity-factor 0
 
 <% if @public_ip -%>
 cluster-announce-ip <%= @public_ip %>
-cluster-announce-port <%= @port %>
+cluster-announce-port <%= @public_port %>
 cluster-announce-bus-port <%= @sentinel_port %>
 <% end -%>
 <% else -%>
