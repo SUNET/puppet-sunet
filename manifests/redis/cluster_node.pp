@@ -1,6 +1,7 @@
 # Set up and run Redis in a server+sentinel configuration using Docker compose.
 define sunet::redis::cluster_node (
   String           $public_ip       = $::facts['ipaddress_default'],
+  Integer          $public_port     = 6379,
   Array            $allow_clients   = [],
   Array            $cluster_nodes   = [],
   String           $master_ip       = pick($cluster_nodes[0], $::facts['ipaddress_default']),
@@ -44,6 +45,7 @@ define sunet::redis::cluster_node (
     filename        => "${basedir}/etc/redis-server.conf",
     cluster_nodes   => $cluster_nodes,
     public_ip       => $public_ip,
+    public_port     => $public_port,
     sentinel_config => 'no',
     sentinel_port   => $sentinel_port,
   }
@@ -53,6 +55,7 @@ define sunet::redis::cluster_node (
     filename        => "${basedir}/etc/redis-sentinel.conf",
     cluster_nodes   => $cluster_nodes,
     public_ip       => $public_ip,
+    public_port     => $public_port,
     sentinel_config => 'yes',
     sentinel_port   => $sentinel_port,
   }
