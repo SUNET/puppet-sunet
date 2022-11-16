@@ -30,7 +30,7 @@ services:
       - /data
     environment:
       - "cfg_file=/etc/redis/redis-sentinel.conf"
-    command: "--sentinel"
+      - "extra_args=--sentinel"
 
 # Provide user-friendly name of bridge interface
 networks:
