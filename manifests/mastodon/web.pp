@@ -36,7 +36,9 @@ class sunet::mastodon::web(
 
   # Interpolated variables
   $s3_endpoint = "https://${s3_hostname}:${s3_port}"
-  $smtp_from_address = "admin@${vhost}"
+  $temp_array = split($vhost, '[.]')
+  $smtp_user = $temp_array[0]
+  $smtp_from_address = "$smtp_user@sunet.se"
   $smtp_login = $smtp_from_address
 
   # Composefile
