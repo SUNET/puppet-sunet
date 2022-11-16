@@ -13,16 +13,16 @@
 #
 ###################################################
 
-<% if @daemonize != "" -%>
+<% if @daemonize -%>
 daemonize <%= @daemonize %>
 <% else -%>
-# redis_daemonize not set in puppet
+# daemonize not set in puppet
 <% end -%>
 
 port <%= @port %>
 
-<% if @redis_bind != "" -%>
-bind <%= @redis_bind %>
+<% if @bind -%>
+bind <%= @bind %>
 <% else -%>
 # bind not set in puppet
 <% end -%>
