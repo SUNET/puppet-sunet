@@ -35,6 +35,10 @@ dir /data
 
 <% if @replica_node == "yes" -%>
 replicaof <%= @master_ip %> <%= @public_port %>
+<% if @public_ip -%>
+replica-announce-ip <%= @public_ip %>
+replica-announce-port <%= @public_port %>
+<% end -%>
 <% else -%>
 # replica_node not set in puppet
 <% end -%>
@@ -57,11 +61,14 @@ cluster-announce-bus-port <%= @sentinel_port %>
 
 # Sentinel config
 <% if @sentinel_config == "yes" -%>
+
 # monitor Docker container 'server' on port 6379
 sentinel monitor <%= @cluster_name %> server 6379 2
 sentinel down-after-milliseconds <%= @cluster_name %> 5000
 sentinel parallel-syncs <%= @cluster_name %> 1
 sentinel failover-timeout <%= @cluster_name %> 10000
+sentinel announce-ip <%= @public_ip %>
+sentinel announce-port <%= @sentinel_port %>
 # make isolated master stop accepting writes
 min-slaves-to-write 1
 min-slaves-max-lag 10
