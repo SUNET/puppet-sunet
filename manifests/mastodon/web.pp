@@ -25,6 +25,7 @@ class sunet::mastodon::web(
   $db_pass=safe_hiera('db_pass')
   $otp_secret=safe_hiera('otp_secret')
   $redis_pass=safe_hiera('redis_pass')
+  $s3_alias_host = safe_hiera('s3_alias_host')
   $saml_cert=safe_hiera('saml_cert')
   $saml_idp_cert=safe_hiera('saml_idp_cert')
   $saml_private_key=safe_hiera('saml_private_key')
@@ -34,7 +35,6 @@ class sunet::mastodon::web(
   $vapid_private_key=safe_hiera('vapid_private_key')
 
   # Interpolated variables
-  $s3_alias_host = "files.${vhost}"
   $s3_endpoint = "https://${s3_hostname}:${s3_port}"
   $smtp_from_address = "admin@${vhost}"
   $smtp_login = $smtp_from_address
