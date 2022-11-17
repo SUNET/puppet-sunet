@@ -27,8 +27,6 @@ services:
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
       - 'sentinel_data:/data'
-    tmpfs:
-      - /data
     environment:
       - "cfg_file=/etc/redis/redis-sentinel.conf"
       - "extra_args=--sentinel"
