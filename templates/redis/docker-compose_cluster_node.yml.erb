@@ -26,11 +26,13 @@ services:
       - <%= @basedir %>/etc/redis-sentinel.conf:/etc/redis/redis-sentinel.conf
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
-    tmpfs:
-      - /data
+      - 'sentinel_data:/data'
     environment:
       - "cfg_file=/etc/redis/redis-sentinel.conf"
       - "extra_args=--sentinel"
+
+volumes:
+  sentinel_data:
 
 # Provide user-friendly name of bridge interface
 networks:

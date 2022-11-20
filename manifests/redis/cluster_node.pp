@@ -67,18 +67,20 @@ define sunet::redis::cluster_node (
       compose_dir  => $compose_dir,
       content      => template('sunet/redis/docker-compose_cluster_node.yml.erb'),
     }
+  }
 
+  if $allow_clients {
     if $::facts['sunet_nftables_opt_in'] == 'yes' or ( $::facts['operatingsystem'] == 'Ubuntu' and
     versioncmp($::facts['operatingsystemrelease'], '22.04') >= 0 ) {
       sunet::nftables::docker_expose { 'redis-server' :
         allow_clients => $allow_clients,
-        port          => 6379,
+        port          => $public_port,
         allow_local   => true,
       }
 
       sunet::nftables::docker_expose { 'redis-sentinel' :
-        allow_clients => $cluster_nodes,
-        port          => 26379,
+        allow_clients => $allow_clients,
+        port          => $sentinel_port,
         allow_local   => true,
       }
     }
