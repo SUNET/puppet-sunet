@@ -1,14 +1,14 @@
 # Run a cronjob and create a scriptherder monitoring file
-define sunet::scriptherder::cronjob(
+define sunet::scriptherder::cronjob (
   # cron parameters
   String $cmd,
   Optional[String]          $job_name      = undef,
   Enum['present', 'absent'] $ensure        = 'present',
   String                    $user          = 'root',
-  Optional[String]          $hour          = undef,
-  Optional[String]          $minute        = undef,
-  Optional[String]          $monthday      = undef,
-  Optional[String]          $weekday       = undef,
+  Optional[Variant[String, Array[Integer]]] $hour     = undef,
+  Optional[Variant[String, Array[Integer]]] $minute   = undef,
+  Optional[Variant[String, Array[Integer]]] $monthday = undef,
+  Optional[Variant[String, Array[Integer]]] $weekday  = undef,
   Optional[String]          $special       = undef,    # e.g. 'daily'
   # scriptherder parameters
   Array[String[1]]          $ok_criteria   = ['exit_status=0'],
