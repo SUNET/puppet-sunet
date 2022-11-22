@@ -1,11 +1,23 @@
-# Last Modified: Sat Mar  9 18:20:47 2019
+# Last Modified: Tue Nov 22 09:53:13 2022
 #include <tunables/global>
 
 /usr/share/gitolite3/gitolite-shell {
   #include <abstractions/base>
   #include <abstractions/bash>
+  #include <abstractions/nameservice>
   #include <abstractions/perl>
 
+  /@{HOME}/ r,
+  /@{HOME}/.gitolite.rc r,
+  /@{HOME}/.gitolite/ r,
+  /@{HOME}/.gitolite/** rw,
+  /@{HOME}/.gitolite/hooks/*/* rix,
+  /@{HOME}/.ssh/authorized_keys rw,
+  /@{HOME}/.ssh/authorized_keys.* rw,
+  /@{HOME}/projects.list rw,
+  /@{HOME}/projects.list.* rw,
+  /@{HOME}/repositories/ r,
+  /@{HOME}/repositories/** rwl,
   /bin/dash rix,
   /bin/grep rix,
   /bin/hostname rix,
@@ -15,7 +27,6 @@
   /bin/sed rix,
   /etc/ssl/openssl.cnf r,
   /lib/x86_64-linux-gnu/ld-*.so mr,
-  @{PROC}/@{pid}/loginuid r,
   /usr/bin/cut rix,
   /usr/bin/find rix,
   /usr/bin/git mr,
@@ -32,16 +43,6 @@
   /usr/share/gitolite3/** r,
   /usr/share/gitolite3/commands/* rix,
   /usr/share/gitolite3/triggers/*/* rix,
-  /@{HOME}/ r,
-  /@{HOME}/.gitolite.rc r,
-  /@{HOME}/.gitolite/ r,
-  /@{HOME}/.gitolite/** rw,
-  /@{HOME}/.gitolite/hooks/*/* rix,
-  /@{HOME}/.ssh/authorized_keys rw,
-  /@{HOME}/.ssh/authorized_keys.* rw,
-  /@{HOME}/projects.list rw,
-  /@{HOME}/projects.list.* rw,
-  /@{HOME}/repositories/ r,
-  /@{HOME}/repositories/** rwl,
+  @{PROC}/@{pid}/loginuid r,
 
 }
