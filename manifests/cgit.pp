@@ -62,7 +62,7 @@ class sunet::cgit(
     exec { 'enable 010-cgit':
         command => 'a2ensite 010-cgit',
         creates => '/etc/apache2/sites-enabled/010-cgit.conf',
-        onlyif  => "test -s /etc/ssl/certs/$fqdn",
+        onlyif  => "test -s /etc/ssl/certs/$fqdn.crt",
         notify  => Service['apache2'],
     }
 
