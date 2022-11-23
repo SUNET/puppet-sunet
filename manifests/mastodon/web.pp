@@ -38,8 +38,8 @@ class sunet::mastodon::web(
   $s3_endpoint = "https://${s3_hostname}:${s3_port}"
   $temp_array = split($vhost, '[.]')
   $smtp_user = $temp_array[0]
-  $smtp_from_address = "$smtp_user@sunet.se"
-  $smtp_login = $smtp_from_address
+  $smtp_from_address = $smtp_user
+  $smtp_login = $smtp_user
 
   # Composefile
   sunet::docker_compose { 'mastodon_web':
