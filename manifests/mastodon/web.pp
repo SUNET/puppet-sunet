@@ -15,7 +15,7 @@ class sunet::mastodon::web(
   String $smtp_auth_method         = 'login',
   String $smtp_ip                  = '192.36.171.214',
   String $smtp_openssl_verify_mode = 'none',
-  String $smtp_port                = '465',
+  String $smtp_port                = '587',
   String $smtp_server              = 'smtp.sunet.se',
   String $vhost                    = 'social.sunet.se',
 ) {
