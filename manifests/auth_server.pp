@@ -36,7 +36,7 @@ define sunet::auth_server(
     $mongodb_root_username = safe_hiera("${service_name}_mongodb_root_username")
     $mongodb_root_password = safe_hiera("${service_name}_mongodb_root_password")
     sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etc/config.yaml":
-        content => $config,
+        content => inline_template("<%= @config.to_yaml %>"),
         group   => $group,
         force   => true,
         notify  => [Sunet::Docker_compose["$service_name-docker-compose"]],
