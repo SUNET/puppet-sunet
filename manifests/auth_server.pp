@@ -1,6 +1,6 @@
 define sunet::auth_server(
     String $service_name,
-    String $config,
+    Hash $config,
     String $cert_file,
     String $key_file,
     String $server_name      = $::fqdn,
@@ -33,8 +33,6 @@ define sunet::auth_server(
         mode => '0750',
     }
 
-    $mongodb_root_username = safe_hiera("${service_name}_mongodb_root_username")
-    $mongodb_root_password = safe_hiera("${service_name}_mongodb_root_password")
     sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etc/config.yaml":
         content => inline_template("<%= @config.to_yaml %>"),
         group   => $group,
@@ -64,6 +62,8 @@ define sunet::auth_server(
         }
     }
 
+    $mongodb_root_username = safe_hiera("${service_name}_mongodb_root_username")
+    $mongodb_root_password = safe_hiera("${service_name}_mongodb_root_password")
     $content = template('sunet/auth_server/docker-compose_auth_server.yml.erb')
     sunet::docker_compose {"$service_name-docker-compose":
         service_name => $service_name,
