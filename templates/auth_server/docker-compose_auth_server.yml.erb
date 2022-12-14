@@ -27,8 +27,6 @@ services:
       - 27017
     volumes:
       - mongodbdata:/data/db
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
     environment:
       MONGO_INITDB_ROOT_USERNAME: <%= @mongodb_root_username %>
       MONGO_INITDB_ROOT_PASSWORD: <%= @mongodb_root_password %>
@@ -39,8 +37,8 @@ services:
     expose:
       - 8080
     volumes:
-      - /opt/sunet/<%= @service_name %>/etc/mdx.fd:/opt/pyff/mdx.fd:ro
-      - /opt/sunet/<%= @service_name %>/etc/md-signer2.crt:/opt/pyff/md-signer2.crt:ro
+      - /opt/sunet/<%= @service_name %>-pyff/etc/mdx.fd:/opt/pyff/mdx.fd:ro
+      - /opt/sunet/<%= @service_name %>-pyff/etc/md-signer2.crt:/opt/pyff/md-signer2.crt:ro
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
     environment:
