@@ -60,7 +60,6 @@ define sunet::auth_server(
         sunet::misc::create_key_file { "${base_dir}/${service_name}/etc/saml.key":
             hiera_key => "${service_name}_saml_key",
             group     => $group,
-            force     => true,
             notify    => [Sunet::Docker_compose["$service_name-docker-compose"]],
         }
     }
