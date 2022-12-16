@@ -68,5 +68,5 @@ volumes:
 networks:
   default:
     driver_opts:
-      com.docker.network.bridge.name: br-<%= @service_name %>
+      com.docker.network.bridge.name: br-<%= @service_name[0,12] %>  # bridge name can not be longer than 15 chars
 
