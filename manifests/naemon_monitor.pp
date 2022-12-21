@@ -226,8 +226,15 @@ class sunet::naemon_monitor(
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
+  $hostgroups =  $::roles + $manual_hosts
+  each($manuel_hosts) |$hgn, $members| {
+    each($members) |$member| {
+       $hostgroups['all'] << $member
+    }
+  }
+
   class { 'nagioscfg':
-    hostgroups     => $::roles + $manual_hosts,
+    hostgroups     => $hostgroups,
     config         => 'naemon_monitor',
     manage_package => false,
     manage_service => false,
