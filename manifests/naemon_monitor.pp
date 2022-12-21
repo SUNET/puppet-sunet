@@ -12,6 +12,7 @@ class sunet::naemon_monitor(
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
   String $grafana_tag = '9.1.6',
+  Hash $manual_hosts = {},
 ){
 
   require stdlib
@@ -226,7 +227,7 @@ class sunet::naemon_monitor(
   }
 
   class { 'nagioscfg':
-    hostgroups     => $::roles,
+    hostgroups     => $::roles + $manual_hosts,
     config         => 'naemon_monitor',
     manage_package => false,
     manage_service => false,
