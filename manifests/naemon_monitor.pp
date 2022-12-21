@@ -227,7 +227,7 @@ class sunet::naemon_monitor(
   }
 
   $hostgroups =  $::roles + $manual_hosts
-  each($manuel_hosts) |$hgn, $members| {
+  each($manual_hosts) |$hgn, $members| {
     each($members) |$member| {
        $hostgroups['all'] << $member
     }
