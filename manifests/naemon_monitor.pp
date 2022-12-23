@@ -226,12 +226,14 @@ class sunet::naemon_monitor(
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
-  $hostgroups =  $::roles + $manual_hosts
-  each($manual_hosts) |$hgn, $members| {
-    each($members) |$member| {
-       $hostgroups['all'] << $member
+  $tmp_hostgroups =  $::roles + $manual_hosts
+  $all_hosts = flatten(map($tmp_hostgroups) |$hgn, $members| {
+    $groups = map($tmp_hostgroups[$hgn]) |$member| {
+      "$member"
     }
-  }
+  })
+  $hostgroups_with_new_all = { 'all' => unique($all_hosts) }
+  $hostgroups  = $tmp_hostgroups + $hostgroups_with_new_all
 
   class { 'nagioscfg':
     hostgroups     => $hostgroups,
