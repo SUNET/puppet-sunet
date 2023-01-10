@@ -17,6 +17,6 @@ services:
       - "<%= clusterport %>:<%= clusterport %>"
     volumes:
       - /opt/redis/node-<%= i %>:/data
-    command: redis-server /data/server.conf --loglevel verbose
+    command: redis-server /data/server.conf
     restart: always
 <% end %>
