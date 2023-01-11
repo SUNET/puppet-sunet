@@ -3,7 +3,7 @@ class sunet::mastodon::backend(
   String $db_name                  = 'postgres',
   String $db_user                  = 'postgres',
 ) {
-  # Must set in hiera eyaml 
+  # Must set in hiera eyaml
   $db_pass=safe_hiera('db_pass')
   $redis_pass=safe_hiera('redis_pass')
 
