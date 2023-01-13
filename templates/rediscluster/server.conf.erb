@@ -10,3 +10,4 @@ cluster-require-full-coverage no
 loglevel warning
 port <%= @redisportnum %>
 requirepass "<%= @redis_password %>"
+masterauth "<%= @redis_password %>"
