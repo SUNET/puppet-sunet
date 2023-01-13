@@ -14,7 +14,10 @@ class sunet::rediscluster(
     compose_filename => 'docker-compose.yml',
     description      => 'Redis Cluster',
   }
-
+  file {'/etc/sysctl.d/55-vm-overcommit.conf':
+    ensure  => present,
+    content => template('sunet/rediscluster/55-vm-overcommit.conf.erb'),
+  }
   range(0, $numnodes - 1).each |$i|{
     $clusterportnum = 16379 + $i
     $redisportnum = 6379 + $i
