@@ -7,6 +7,6 @@ cluster-port <%= @clusterportnum %>
 cluster-slave-validity-factor 0
 cluster-allow-reads-when-down yes
 cluster-require-full-coverage no
-loglevel notice
+loglevel warning
 port <%= @redisportnum %>
 requirepass "<%= @redis_password %>"
