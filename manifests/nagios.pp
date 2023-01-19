@@ -43,7 +43,7 @@ class sunet::nagios(
   }
 
   sunet::nagios::nrpe_command {'check_dynamic_disk':
-    command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -W 15% -K 5% -X overlay -X aufs -X tmpfs -X devtmpfs -X nsfs -A -i "^/var/lib/docker/plugins/.*/propagated-mount|^/snap|^/var/snap"'
+    command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -W 15% -K 5% -X overlay -X aufs -X tmpfs -X devtmpfs -X nsfs -A -i "^/var/lib/docker/plugins/.*/propagated-mount|^/snap|^/var/snap|^/sys/kernel/debug/tracing"'
   }
   sunet::nagios::nrpe_command {'check_users':
     command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
