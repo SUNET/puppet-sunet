@@ -73,7 +73,7 @@ class sunet::microk8s::node(
     }
   }
   unless any2bool($facts['microk8s_community']) {
-    exec { 'enable_plugin_traefik':
+    exec { 'enable_community_repo':
       command  => '/snap/bin/microk8s enable community',
       provider => 'shell',
     }
