@@ -37,6 +37,10 @@ class sunet::nagios($nrpe_service = 'nagios-nrpe-server') {
        require => Package['nagios-nrpe-server'],
        content => template('sunet/nagioshost/nrpe.cfg.erb'),
    }
+
+   sunet::nagios::nrpe_command {'check_dynamic_disk':
+      command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -W 15% -K 5% -X overlay -X aufs -X tmpfs -X devtmpfs'
+   }
    sunet::nagios::nrpe_command {'check_users':
       command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
    }

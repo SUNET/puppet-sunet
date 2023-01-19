@@ -116,39 +116,11 @@ class sunet::naemon_monitor(
     description    => 'Total Processes',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
-  nagioscfg::service {'check_root':
+  nagioscfg::service {'check_dynamic_disk':
     use            => 'naemon-service',
     hostgroup_name => ['nrpe'],
-    check_command  => 'check_nrpe!check_root',
-    description    => 'Root Disk',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
-  nagioscfg::service {'check_boot':
-    use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
-    check_command  => 'check_nrpe!check_boot_15_5',
-    description    => 'Boot Disk',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
-  nagioscfg::service {'check_var':
-    use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
-    check_command  => 'check_nrpe!check_var',
-    description    => 'Var Disk',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
-  nagioscfg::service {'check_boot_inodes':
-    use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
-    check_command  => 'check_nrpe!check_boot_inodes_15_5',
-    description    => 'Boot Disk Inodes',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
-  nagioscfg::service {'check_root_inodes':
-    use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
-    check_command  => 'check_nrpe!check_root_inodes_15_5',
-    description    => 'Root Disk Inodes',
+    check_command  => 'check_nrpe!check_dynamic_disk',
+    description    => 'Disk',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
 
