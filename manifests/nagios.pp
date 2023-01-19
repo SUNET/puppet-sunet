@@ -11,7 +11,6 @@ class sunet::nagios(
   $nrpe_clients = hiera_array('nrpe_clients',['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
   #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
 
-
   $allowed_hosts = join($nrpe_clients,',')
 
   package {$nrpe_service:
@@ -99,6 +98,9 @@ class sunet::nagios(
       }
     }
   }
+  sunet::nagios::nrpe_command {'check_dynamic_disk':
+    command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -W 15% -K 5% -X overlay -X aufs -X tmpfs -X devtmpfs'
+  }
   sunet::nagios::nrpe_command {'check_uptime':
     command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
   }
@@ -144,11 +146,10 @@ class sunet::nagios(
   $nrpe_clients.each |$client| {
     $client_name = regsubst($client,'([.:]+)','_','G')
     ufw::allow { "allow-nrpe-${client_name}":
-        from  => "${client}",
+        from  => $client,
         ip    => 'any',
         proto => 'tcp',
         port  => '5666',
     }
   }
 }
-
