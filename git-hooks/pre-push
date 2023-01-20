@@ -1,0 +1,14 @@
+#!/bin/bash
+
+cur_branch=$(git branch --show-current)
+new_tagname=$(git tag --contains=$(git rev-parse HEAD))
+if [[ -z ${new_tagname} ]]; then
+  exit 0
+fi
+if [[ ${new_tagname} =~ ${cur_branch} ]]; then 
+  exit 0
+else
+  echo "Your tag: ${new_tagname} does not match the name of the branch: ${cur_branch}."
+  echo "To push anyway run again with the --no-verify option"
+  exit 1
+fi
