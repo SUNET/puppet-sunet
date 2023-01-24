@@ -38,7 +38,9 @@ define sunet::cloudimage (
   String           $apt_mirror  = 'http://se.archive.ubuntu.com/ubuntu',
 )
 {
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 {
+    $kvm_package = 'qemu-system-x86'
+  } elsif $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
     $kvm_package = 'qemu-kvm'
   } else {
     $kvm_package = 'kvm'  # old name
