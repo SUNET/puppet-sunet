@@ -1,4 +1,3 @@
-include stdlib
 class sunet::rsyslog(
   $syslog_servers = hiera_array('syslog_servers',[]),
   $relp_syslog_servers = hiera_array('relp_syslog_servers',[]),
@@ -8,6 +7,7 @@ class sunet::rsyslog(
   $tcp_port = hiera('tcp_port',undef),
   $tcp_client = hiera('tcp_client',"any"),
 ) {
+  include stdlib
   ensure_resource('package', 'rsyslog', {
     ensure => 'installed'
   })

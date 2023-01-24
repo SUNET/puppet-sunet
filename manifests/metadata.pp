@@ -13,11 +13,13 @@ define sunet::metadata($url=undef,
    }
    $safe_name = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G')
    $fetch = "fetch_${safe_name}"
-   cron {$fetch:
-      command => "/usr/bin/wget --no-check-certificate -q ${url} -N -O ${local}.tmp && chmod 0644 ${local}.tmp && ${verify} && mv ${local}.tmp ${local}",
-      user    => 'root',
-      minute  => '*/5'
-   }
+   sunet::scriptherder::cronjob { $fetch:
+    cmd           => "sh -c '/usr/bin/wget --no-check-certificate -q ${url} -N -O ${local}.tmp && chmod 0644 ${local}.tmp && ${verify} && mv ${local}.tmp ${local}'",
+    user          => 'root',
+    minute        => '*/5',
+    ok_criteria   => ['exit_status=0', 'max_age=25h'],
+    warn_criteria => ['exit_status=0', 'max_age=49h'],
+    }
 }
 
 define sunet::metadata::swamid {
