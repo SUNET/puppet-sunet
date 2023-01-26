@@ -3,7 +3,7 @@ version: '3'
 services:
 
   auth_server:
-    image: 'docker.sunet.se/sunet/sunet-auth-server:<%= scope.function_safe_hiera(["auth_server_tag"]) %>'
+    image: 'docker.sunet.se/sunet/sunet-auth-server:<%= @auth_server_tag %>'
     restart: always
     expose:
       - 8080
@@ -48,7 +48,7 @@ services:
 <% end %>
 
   haproxy:
-    image: 'docker.sunet.se/eduid/haproxy:<%= scope.function_safe_hiera(["haproxy_tag"]) %>'
+    image: 'docker.sunet.se/eduid/haproxy:<%= @haproxy_tag %>'
     restart: always
     ports:
       - <%= @port %>:443
@@ -69,4 +69,3 @@ networks:
   default:
     driver_opts:
       com.docker.network.bridge.name: br-<%= @service_name[0,12] %>  # bridge name can not be longer than 15 chars
-
