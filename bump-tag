@@ -61,8 +61,6 @@ if [[ -z ${ALLOW_NEW_TAG} ]]; then
 		esac
 	done
 	extra_message=" AND DIFF ABOVE"
-else
-  this_tag="${cur_branch}-$(date +%F)-v01"
 fi
 
 echo ""
