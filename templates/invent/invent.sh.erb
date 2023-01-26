@@ -51,8 +51,7 @@ fi
 # Export facts
 mkdir -p ${datadir}
 puppet facts --render-as json 2>/dev/null | jq . > ${filename}
-rm -f ${latest}
-ln -s ${filename} ${latest}
+ln -f -s "${filename}" "${latest}"
 
 # Clean out old facts
 find ${datadir} -type f -mtime +${retention_days} -delete 

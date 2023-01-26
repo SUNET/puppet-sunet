@@ -97,19 +97,11 @@ ip netns exec "${INSTANCE}" sysctl net.ipv6.conf.sarimner0.accept_dad=0
 # ip netns exec ${INSTANCE} sysctl net.ipv4.ip_nonlocal_bind=1
 # ip netns exec ${INSTANCE} sysctl net.ipv6.ip_nonlocal_bind=1
 
-# Add IPv6 default gateway
-#sysctl net.ipv6.conf.${VETHHOST}.accept_dad=0
-v6gw=$(ip -6 addr list br-${INSTANCE} | awk '/inet6/{print $2}' | head -1 | awk -F / '{print $1}')
-if [[ $v6gw ]]; then
-    ip netns exec ${INSTANCE} ip -6 route add default via ${v6gw} dev sarimner0
-else
-    echo "Can't set up IPv6 routing from container, device ${VETHHOST} has no IPv6 address"
-fi
 
 # Add IP addresses to the network namespace of the docker container
-for IP in $(${SCRIPTSDIR}/frontend-config --instance ${INSTANCE} print_ips); do
-    ip netns exec ${INSTANCE} ip addr add ${IP} dev sarimner0
-    ip route add ${IP} dev br-${INSTANCE}
+for IP in $("${SCRIPTSDIR}"/frontend-config --instance "${INSTANCE}" print_ips); do
+    ip netns exec "${INSTANCE}" ip addr add "${IP}" dev sarimner0
+    ip route add "${IP}" dev br-"${INSTANCE}"
 done
 
 ip netns exec "${INSTANCE}" ip link set sarimner0 up

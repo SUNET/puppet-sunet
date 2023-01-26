@@ -10,18 +10,6 @@ class sunet::invent(
   }
   $script_dir = "${invent_dir}/scripts"
 
-  # package { 'invent_awk':
-  #   ensure => installed,
-  #   name   => $awk
-  # }
-  # -> package { 'invent_jq':
-  #   ensure => installed,
-  #   name   => 'jq'
-  # }
-  # -> package { 'invent_which':
-  #   ensure => installed,
-  #   name   => 'witch'
-  # }
   file { $invent_dir:
     ensure => directory,
   }

@@ -1,13 +1,15 @@
 define sunet::auth_server(
     String $service_name,
-    String $config,
+    Hash $config,
     String $cert_file,
     String $key_file,
-    String $server_name     = $::fqdn,
-    String $port            = '443',
-    String $username        = 'sunet',
-    String $group           = 'sunet',
-    String $base_dir        = '/opt/sunet',
+    String $server_name      = $::fqdn,
+    String $port             = '443',
+    String $username         = 'sunet',
+    String $group            = 'sunet',
+    String $base_dir         = '/opt/sunet',
+    Boolean $saml_sp         = false,
+    String $pysaml2_base_url = "https://$::fqdn/saml2/sp",
 ) {
 
     ensure_resource('sunet::system_user', $username, {
@@ -30,12 +32,14 @@ define sunet::auth_server(
         group => $group,
         mode => '0750',
     }
+
     sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etc/config.yaml":
-        content => $config,
+        content => inline_template("<%= @config.to_yaml %>"),
         group   => $group,
         force   => true,
         notify  => [Sunet::Docker_compose["$service_name-docker-compose"]],
     }
+
     $keystore = safe_hiera("${service_name}_jwks")
     sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etc/keystore.jwks":
         content => inline_template("<%= @keystore.to_json %>"),
@@ -44,6 +48,22 @@ define sunet::auth_server(
         notify  => [Sunet::Docker_compose["$service_name-docker-compose"]],
     }
 
+    if $saml_sp {
+        sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etc/saml2_settings.py":
+            content => template('sunet/auth_server/saml2_settings.py.erb'),
+            group   => $group,
+            force   => true,
+            notify  => [Sunet::Docker_compose["$service_name-docker-compose"]],
+        }
+        sunet::misc::create_key_file { "${base_dir}/${service_name}/etc/saml.key":
+            hiera_key => "${service_name}_saml_key",
+            group     => $group,
+            notify    => [Sunet::Docker_compose["$service_name-docker-compose"]],
+        }
+    }
+
+    $mongodb_root_username = safe_hiera("${service_name}_mongodb_root_username")
+    $mongodb_root_password = safe_hiera("${service_name}_mongodb_root_password")
     $content = template('sunet/auth_server/docker-compose_auth_server.yml.erb')
     sunet::docker_compose {"$service_name-docker-compose":
         service_name => $service_name,
