@@ -25,9 +25,11 @@ if [ -f /snap/bin/microk8s ]; then
   fi
 else
   echo 'microk8s=no'
+  echo 'microk8s_community=no'
   echo 'microk8s_dns=no'
   echo 'microk8s_ha-cluster=no'
-  echo 'microk8s_openebs=no'
-  echo 'microk8s_traefik=no'
+  echo 'microk8s_mayastor=no'
   echo 'microk8s_peers=unknown'
+  echo 'microk8s_rbac=no'
+  echo 'microk8s_traefik=no'
 fi
