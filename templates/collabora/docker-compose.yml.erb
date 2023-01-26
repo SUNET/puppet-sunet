@@ -1,6 +1,7 @@
 version: '3.2'
 services:
     code-server:
+      privileged: true
       image: <%= @docker_image %>:<%= @docker_tag %>
       networks:
         - default
@@ -9,8 +10,17 @@ services:
 <% end -%>
       dns:
         - 89.32.32.32
+<% if @extra_hosts -%>
+      extra_hosts:
+        <%- @extra_hosts.each do |extra_host| -%>
+        - "<%= extra_host %>"
+        <%- end -%>
+<% end -%>
       volumes:
-        - "<%= @certdir %>:/certs"
+        - "<%= @certdir%>:/certs"
+<%- @extra_volumes.each do |extra_volume| -%>
+        - "<%= extra_volume %>"
+<%- end -%>
       ports:
         - "<%= @tls_port %>:9980"
       environment:
