@@ -33,7 +33,7 @@ define sunet::auth_server(
     }
 
     sunet::misc::create_cfgfile { "${base_dir}/${service_name}/etc/config.yaml":
-        content => inline_template("<%= @config.to_yaml %>"),
+        content => inline_template("<%= @config['app_config'].to_yaml %>"),
         group   => $group,
         force   => true,
         notify  => [Sunet::Docker_compose["$service_name-docker-compose"]],
@@ -63,13 +63,13 @@ define sunet::auth_server(
 
     $mongodb_root_username = safe_hiera("${service_name}_mongodb_root_username")
     $mongodb_root_password = safe_hiera("${service_name}_mongodb_root_password")
-    $haproxy_tag = pick($config["haproxy_tag"], safe_hiera('haproxy_tag'))
-    $auth_server_tag = pick($config["auth_server_tag"], safe_hiera('auth_server_tag'))
+    $haproxy_tag = $config["haproxy_tag"]
+    $auth_server_tag = $config["auth_server_tag"]
     $content = template('sunet/auth_server/docker-compose_auth_server.yml.erb')
-    sunet::docker_compose {"$service_name-docker-compose":
+    sunet::docker_compose { "${service_name}-docker-compose":
         service_name => $service_name,
         content      => $content,
-        description  => "sunet auth server application",
+        description  => 'sunet auth server application',
         compose_dir  => '/opt/sunet/compose',
         subscribe    => [
             Sunet::Haproxy::Simple_setup["$service_name-haproxy"],
