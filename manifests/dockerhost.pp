@@ -112,11 +112,13 @@ class sunet::dockerhost(
     }
   }
 
-  package { [
-    'python3-yaml',  # check_docker_containers requirement
-    'jq',            # restart_unhealthy_containers requirement
-  ] :
+  package { 'dockerhost_pyyaml' :
     ensure => 'installed',
+    name   => 'python3-yaml',  # check_docker_containers requirement
+  }
+  package { 'dockerhost_jq' :
+    ensure => 'installed',
+    name   => 'jq',            # restart_unhealthy_containers requirement
   }
 
   $docker_command = $docker_package_name ? {
