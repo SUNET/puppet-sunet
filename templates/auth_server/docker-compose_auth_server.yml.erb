@@ -17,6 +17,8 @@ services:
       - "app_name=auth-server"
       - "config_file=/opt/sunet/etc/config.yaml"
       - "app_entrypoint=auth_server.run:app"
+      - "username=<%= @username %>"
+      - "group=<%= @group %>"
 
 <% if @saml_sp -%>
   # mongodb and pyff are only needed if we want to run a stateful service like a SAML SP
