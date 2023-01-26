@@ -111,8 +111,15 @@ class sunet::dockerhost(
       notice("Docker version ${docker_version} does not have a docker-ce-cli package")
     }
   }
-  ensure_packages('python3-yaml') # check_docker_containers requirement
-  ensure_packages('jq')           # restart_unhealthy_containers requirement
+
+  package { 'dockerhost_pyyaml' :
+    ensure => 'installed',
+    name   => 'python3-yaml',  # check_docker_containers requirement
+  }
+  package { 'dockerhost_jq' :
+    ensure => 'installed',
+    name   => 'jq',            # restart_unhealthy_containers requirement
+  }
 
   $docker_command = $docker_package_name ? {
     'docker-ce' => 'dockerd',  # docker-ce has a new dockerd executable
