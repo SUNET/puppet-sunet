@@ -2,7 +2,7 @@
 class sunet::dockerhost(
   String $docker_version,
   String $docker_package_name                 = 'docker-engine',  # facilitate transition to new docker-ce package
-  Enum['stable', 'edge', 'test', 'none'] $docker_repo = 'stable',
+  Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
   Boolean $run_docker_cleanup                 = true,
@@ -12,30 +12,31 @@ class sunet::dockerhost(
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
-  String $compose_version                     = '1.15.0',
+  String $compose_version                     = '1.24.0',
   Optional[Array[String]] $tcp_bind           = undef,
+  Boolean $write_daemon_config                = false,
+  Boolean $enable_ipv6                        = false,
 ) {
-
-  # Remove old versions, if installed
-  package { ['lxc-docker-1.6.2', 'lxc-docker'] :
-    ensure => 'purged',
-  }
-
-  file {'/etc/apt/sources.list.d/docker.list':
-    ensure => 'absent',
-  }
-
-  if $docker_package_name != 'docker-engine' {
-    # transisition to docker-ce
-    exec { 'remove_dpkg_arch_i386':
-      command => '/usr/bin/dpkg --remove-architecture i386',
-      onlyif  => '/usr/bin/dpkg --print-foreign-architectures | grep i386',
+  if versioncmp($::operatingsystemrelease, '22.04') <= 0 {
+    # Remove old versions, if installed
+    package { ['lxc-docker-1.6.2', 'lxc-docker'] :
+      ensure => 'purged',
     }
 
-    package {'docker-engine': ensure => 'purged'}
-  }
+    file {'/etc/apt/sources.list.d/docker.list':
+      ensure => 'absent',
+    }
 
-  if $docker_repo != 'none' {
+    if $docker_package_name != 'docker-engine' and $docker_package_name != 'docker.io' {
+      # transisition to docker-ce
+      exec { 'remove_dpkg_arch_i386':
+        command => '/usr/bin/dpkg --remove-architecture i386',
+        onlyif  => '/usr/bin/dpkg --print-foreign-architectures | grep i386',
+      }
+
+      package {'docker-engine': ensure => 'purged'}
+    }
+
     # Add the dockerproject repository, then force an apt-get update before
     # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
     #
@@ -50,6 +51,7 @@ class sunet::dockerhost(
     apt::key { 'docker_ce':
       id     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
       source => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
+      notify => Exec['dockerhost_apt_get_update'],
     }
 
     if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
@@ -65,34 +67,30 @@ class sunet::dockerhost(
       repos        => $docker_repo,
       key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
       architecture => $architecture,
+      notify       => Exec['dockerhost_apt_get_update'],
     }
+  }
 
-    if $docker_version =~ /^\d.*/ {
-      # if it looks like a version number (as opposed to 'latest', 'installed', ...)
-      # then pin it so that automatic/manual dist-upgrades don't touch the docker package
-      apt::pin { 'docker-ce':
-        packages => $docker_package_name,
-        version  => $docker_version,
-        priority => 920,  # upgrade, but do not downgrade
-        notify   => Exec['dockerhost_apt_get_update'],
-      }
+  if $docker_version =~ /^\d.*/ {
+    # if it looks like a version number (as opposed to 'latest', 'installed', ...)
+    # then pin it so that automatic/manual dist-upgrades don't touch the docker package
+    apt::pin { 'docker package':
+      packages => $docker_package_name,
+      version  => $docker_version,
+      priority => 920,  # upgrade, but do not downgrade
+      notify   => Exec['dockerhost_apt_get_update'],
     }
+  }
 
-    exec { 'dockerhost_apt_get_update':
-      command     => '/usr/bin/apt-get update',
-      cwd         => '/tmp',
-      require     => [Apt::Key['docker_ce']],
-      subscribe   => [Apt::Key['docker_ce']],
-      refreshonly => true,
-    }
-    package { $docker_package_name :
-      ensure  => $docker_version,
-      require => Exec['dockerhost_apt_get_update'],
-    }
-  } else {
-    package { $docker_package_name :
-      ensure  => $docker_version,
-    }
+  exec { 'dockerhost_apt_get_update':
+    command     => '/usr/bin/apt-get update',
+    cwd         => '/tmp',
+    refreshonly => true,
+  }
+
+  package { $docker_package_name :
+    ensure  => $docker_version,
+    require => Exec['dockerhost_apt_get_update'],
   }
 
   if $docker_package_name == 'docker-ce' {
@@ -116,6 +114,7 @@ class sunet::dockerhost(
 
   package { [
     'python3-yaml',  # check_docker_containers requirement
+    'jq',            # restart_unhealthy_containers requirement
   ] :
     ensure => 'installed',
   }
@@ -150,21 +149,70 @@ class sunet::dockerhost(
     $tls_key = undef
   }
 
-  class {'docker':
-    storage_driver              => $storage_driver,
-    manage_package              => false,
-    manage_kernel               => false,
-    use_upstream_package_source => false,
-    dns                         => $_docker_dns,
-    extra_parameters            => $docker_extra_parameters,
-    docker_command              => $docker_command,
-    daemon_subcommand           => $daemon_subcommand,
-    tcp_bind                    => $_tcp_bind,
-    tls_enable                  => $tls_enable,
-    tls_cacert                  => $tls_cacert,
-    tls_cert                    => $tls_cert,
-    tls_key                     => $tls_key,
-    require                     => Package[$docker_package_name],
+  # This is an approximation about how to enable IPv6 in Docker, but
+  # BEWARE! IPv6 is currently utterly dysfunctional in docker-compose (version 3 / 1.29.2). Sigh.
+  #
+  $ipv6_parameters = ($enable_ipv6 and ! $write_daemon_config) ? {
+    true => ['--ipv6',
+      $docker_network_v6 ? {
+        true => [],
+        default => ['--fixed-cidr-v6', $docker_network_v6],
+      }
+    ],
+    false => []
+  }
+
+  $_extra_parameters = flatten([
+    $docker_extra_parameters,
+    $ipv6_parameters,
+    ]).join(' ')
+
+
+  if $write_daemon_config {
+    if $docker_network =~ String[1] {
+      $default_address_pools = $docker_network
+    } else {
+      $default_address_pools = '172.16.0.0/12'
+    }
+    file {
+      '/etc/docker':
+        ensure => 'directory',
+        mode   => '0755',
+        ;
+      '/etc/docker/daemon.json':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/dockerhost/daemon.json.erb'),
+        ;
+    }
+
+    # Docker rejects options specified both from command line and in daemon.json
+    class {'docker':
+      manage_package              => false,
+      manage_kernel               => false,
+      use_upstream_package_source => false,
+      extra_parameters            => $_extra_parameters,
+      docker_command              => $docker_command,
+      daemon_subcommand           => $daemon_subcommand,
+      require                     => Package[$docker_package_name],
+    }
+  } else {
+    class {'docker':
+      storage_driver              => $storage_driver,
+      manage_package              => false,
+      manage_kernel               => false,
+      use_upstream_package_source => false,
+      dns                         => $_docker_dns,
+      extra_parameters            => $_extra_parameters,
+      docker_command              => $docker_command,
+      daemon_subcommand           => $daemon_subcommand,
+      tcp_bind                    => $_tcp_bind,
+      tls_enable                  => $tls_enable,
+      tls_cacert                  => $tls_cacert,
+      tls_cert                    => $tls_cert,
+      tls_key                     => $tls_key,
+      require                     => Package[$docker_package_name],
+    }
   }
 
   if $docker_network =~ String {
@@ -201,11 +249,6 @@ class sunet::dockerhost(
       mode    => '0755',
       content => template('sunet/dockerhost/docker-compose.erb'),
       ;
-    '/usr/bin/docker-compose':
-      # workaround: docker_compose won't find the binary in /usr/local/bin :(
-      ensure => 'link',
-      target => '/usr/local/bin/docker-compose',
-      ;
     }
 
   if $::sunet_has_nrpe_d == 'yes' {
@@ -232,6 +275,11 @@ class sunet::dockerhost(
         mode    => '0755',
         content => template('sunet/dockerhost/check_docker_containers.erb'),
         ;
+      '/usr/local/bin/restart_unhealthy_containers':
+        ensure  => file,
+        mode    => '0755',
+        content => template('sunet/dockerhost/restart_unhealthy_containers.erb'),
+        ;
       '/usr/local/bin/check_for_updated_docker_image':
         ensure  => file,
         mode    => '0755',
@@ -243,7 +291,16 @@ class sunet::dockerhost(
   if $run_docker_cleanup {
     # Cron job to remove old unused docker images
     sunet::scriptherder::cronjob { 'dockerhost_cleanup':
-      cmd           => '/bin/echo \'Running \"/usr/bin/docker system prune -af\" disabled since it removes too many tags\'',
+      cmd           => join([
+        'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock',
+        'docker.sunet.se/sunet/docker-custodian dcgc',
+        '--exclude-image \'*:latest\'',
+        '--exclude-image \'*:staging\'',
+        '--exclude-image \'*:stable\'',
+        '--exclude-image \'*:*-staging\'',
+        '--exclude-image \'*:*-production\'',
+        '--max-image-age 24h',
+      ], ' '),
       special       => 'daily',
       ok_criteria   => ['exit_status=0', 'max_age=25h'],
       warn_criteria => ['exit_status=0', 'max_age=49h'],
