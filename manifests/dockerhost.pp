@@ -17,6 +17,9 @@ class sunet::dockerhost(
   Boolean $write_daemon_config                = false,
   Boolean $enable_ipv6                        = false,
 ) {
+  include sunet::packages::jq # restart_unhealthy_containers requirement
+  include sunet::packages::python3_yaml # check_docker_containers requirement
+
   if versioncmp($::operatingsystemrelease, '22.04') <= 0 {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
@@ -110,13 +113,6 @@ class sunet::dockerhost(
     } else {
       notice("Docker version ${docker_version} does not have a docker-ce-cli package")
     }
-  }
-
-  package { [
-    'python3-yaml',  # check_docker_containers requirement
-    'jq',            # restart_unhealthy_containers requirement
-  ] :
-    ensure => 'installed',
   }
 
   $docker_command = $docker_package_name ? {
