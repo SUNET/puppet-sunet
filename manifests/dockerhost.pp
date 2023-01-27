@@ -104,15 +104,6 @@ class sunet::dockerhost(
     }
   }
 
-<<<<<<< HEAD
-  package { [
-    'python3-yaml',  # check_docker_containers requirement
-  ] :
-    ensure => 'installed',
-  }
-
-=======
->>>>>>> b9bc0853 (Avoid declaring common packages that needs to coexist with outher manifests)
   $docker_command = $docker_package_name ? {
     'docker-ce' => 'dockerd',  # docker-ce has a new dockerd executable
     default     => undef,
