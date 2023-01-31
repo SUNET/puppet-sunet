@@ -13,7 +13,7 @@ class sunet::naemon_monitor(
   String $nagflux_tag = 'latest',
   String $grafana_tag = '9.1.6',
   Hash $manual_hosts = {},
-  String $nrpe_group = $nrpe_group,
+  String $nrpe_group = 'nrpe',
 ){
 
   require stdlib
