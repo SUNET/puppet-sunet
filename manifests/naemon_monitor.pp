@@ -14,6 +14,7 @@ class sunet::naemon_monitor(
   String $grafana_tag = '9.1.6',
   Hash $manual_hosts = {},
   String $nrpe_group = 'nrpe',
+  Optional[String] $default_host_group = undef,
 ){
 
   require stdlib
@@ -211,6 +212,7 @@ class sunet::naemon_monitor(
   class { 'nagioscfg':
     hostgroups     => $hostgroups,
     config         => 'naemon_monitor',
+    default_host_group => $default_host_group,
     manage_package => false,
     manage_service => false,
     cfgdir         => '/etc/naemon/conf.d/nagioscfg',
