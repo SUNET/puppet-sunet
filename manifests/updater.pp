@@ -1,10 +1,8 @@
 class sunet::updater(
   Boolean $cosmos_automatic_reboot = false,
-  Boolean $cron     = false,
-  Integer $interval = 120,
-  String  $hour     = '4',
-  String  $minute   = '2',
-  String  $weekday  = '*',
+  Boolean $cron   = false,
+  String  $hour   = '4',
+  String  $minute = '2',
 ) {
    file {'/usr/local/sbin/silent-update-and-upgrade':
      mode    => '0755',
@@ -19,7 +17,7 @@ class sunet::updater(
        export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 
        if [[ "\$1" == "--random-sleep" ]]; then
-           sleep \$(( \$RANDOM % ${interval} ))
+           sleep \$(( \$RANDOM % 120))
        fi
 
        status=1
@@ -46,9 +44,8 @@ class sunet::updater(
          cmd           => '/usr/local/sbin/silent-update-and-upgrade --random-sleep',
          minute        => $minute,
          hour          => $hour,
-         weekday       => $weekday,
-         ok_criteria   => ['exit_status=0', 'max_age=75h'],
-         warn_criteria => ['exit_status=0', 'max_age=96h'],
+         ok_criteria   => ['exit_status=0', 'max_age=25h'],
+         warn_criteria => ['exit_status=0', 'max_age=49h'],
       }
    } else {
       sunet::scriptherder::cronjob { 'update_and_upgrade':
