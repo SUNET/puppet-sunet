@@ -147,6 +147,8 @@ services:
   # This just needs to run once as root to allow the other containers to have user: something
   setup_volumes:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
+    labels:
+      - "se.sunet.check_docker_containers=runonce"
     volumes:
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro
