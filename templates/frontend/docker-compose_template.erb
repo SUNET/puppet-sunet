@@ -155,11 +155,11 @@ services:
       - 'haproxy_new_config:/haproxy_new_config:rw'
       - 'haproxy_running_config:/haproxy_running_config:rw'
     # The fe-config user writes new config to this directory, and the haproxy user reads it
-    entrypoint: '/bin/bash -c '
+    entrypoint: '/bin/bash -c ''
          id;
          export D="/haproxy_control"; chown -R haproxy:fe-monitor "$${D}"; chmod 2750 "$${D}"; find "$${D}" -ls;
          export D="/haproxy_new_config"; chown -R fe-config:haproxy "$${D}"; chmod 2750 "$${D}"; find "$${D}" -ls;
-         export D="/haproxy_running_config"; chown -R haproxy:haproxy "$${D}"; chmod 700 "$${D}"; find "$${D}" -ls;
+         export D="/haproxy_running_config"; chown -R haproxy:haproxy "$${D}"; chmod 700 "$${D}"; find "$${D}" -ls;''
          '
     # In case a container with a set user gets committed to this image...
     user: 'root:root'
