@@ -61,6 +61,8 @@ if [[ -z ${ALLOW_NEW_TAG} ]]; then
 		esac
 	done
 	extra_message=" AND DIFF ABOVE"
+else
+  this_tag=$(date "+${tagpfx}-%Y-%m-%d-v1")
 fi
 
 echo ""
