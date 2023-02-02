@@ -13,6 +13,7 @@ class sunet::naemon_monitor(
   String $nagflux_tag = 'latest',
   String $grafana_tag = '9.1.6',
   Hash $manual_hosts = {},
+  Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
   Optional[String] $default_host_group = undef,
 ){
@@ -200,17 +201,9 @@ class sunet::naemon_monitor(
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
-  $tmp_hostgroups =  $::roles + $manual_hosts
-  $all_hosts = flatten(map($tmp_hostgroups) |$hgn, $members| {
-    $groups = map($tmp_hostgroups[$hgn]) |$member| {
-      "$member"
-    }
-  })
-  $hostgroups_with_new_all = { 'all' => unique($all_hosts) }
-  $hostgroups  = $tmp_hostgroups + $hostgroups_with_new_all
-
   class { 'nagioscfg':
-    hostgroups     => $hostgroups,
+    hostgroups     => $::roles,
+    additional_entities => $additional_entities,
     config         => 'naemon_monitor',
     default_host_group => $default_host_group,
     manage_package => false,
