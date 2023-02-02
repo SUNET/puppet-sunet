@@ -44,6 +44,7 @@ import os
 import re
 import subprocess
 import sys
+from typing import Any, Dict, List, NewType, Optional, Tuple, cast
 
 import yaml
 
@@ -62,7 +63,10 @@ STATUS = {
 }
 
 
-def parse_args():
+Arguments = NewType("Arguments", argparse.Namespace)
+
+
+def parse_args() -> Arguments:
     """
     Parse the command line arguments
     """
@@ -108,17 +112,16 @@ def parse_args():
         help="Name of specific service to check",
     )
 
-    return parser.parse_args()
+    return cast(Arguments, parser.parse_args())
 
 
-def collect_systemd(args, logger):
+def collect_systemd(args: Arguments, logger: logging.Logger) -> List[str]:
     """
     Deduce the name of all docker containers expected to be running from service files in /etc/systemd/system
 
     :returns: Docker container names
-    :rtype: [str]
     """
-    res = []
+    res: List[str] = []
     path = "/etc/systemd/system"
     logger.debug(f"Looking for files in {path!r}")
     files = [this for this in os.listdir(path) if os.path.isfile(os.path.join(path, this))]
@@ -139,7 +142,7 @@ def collect_systemd(args, logger):
     return res
 
 
-def collect_compose_services(fn, logger):
+def collect_compose_services(fn: str, logger: logging.Logger) -> List[str]:
     """
     Look for systemd services that start containers using Docker compose.
     The services should be created using sunet::docker_compose_service in order to have
@@ -149,9 +152,8 @@ def collect_compose_services(fn, logger):
     :type logger: logging.Logger
 
     :returns: Docker container names
-    :rtype: [str]
     """
-    res = []
+    res: List[str] = []
     re_compose_file = re.compile(r"^#\s*COMPOSE_FILE=(.+?)\s*$")
     compose_file = _get_compose_metadata(fn, re_compose_file, logger)
     if compose_file:
@@ -162,7 +164,7 @@ def collect_compose_services(fn, logger):
     return res
 
 
-def _get_compose_metadata(filename, re_compose_file, logger):
+def _get_compose_metadata(filename: str, re_compose_file: re.Pattern[str], logger: logging.Logger) -> Optional[str]:
     logger.debug(f"Trying to find compose-file reference in file {filename!s}")
     with open(filename) as fd:
         for line in fd.readlines():
@@ -173,14 +175,13 @@ def _get_compose_metadata(filename, re_compose_file, logger):
                 return m.group(1)
 
 
-def _collect_compose_service(compose_file, service_name, logger):
+def _collect_compose_service(compose_file: str, service_name: str, logger: logging.Logger) -> List[str]:
     """
     Load a docker-compose file and return a list of containers one could expect to be running.
 
     :returns: Docker container names
-    :rtype: [str]
     """
-    res = []
+    res: List[str] = []
     with open(compose_file) as fd:
         data = yaml.safe_load(fd)
         # Check that we have a version 2 or 3 compose file.
@@ -195,7 +196,7 @@ def _collect_compose_service(compose_file, service_name, logger):
     return res
 
 
-def docker_inspect(container, logger):
+def docker_inspect(container: str, logger: logging.Logger) -> Optional[Dict[str, Any]]:
     cmd = ["/usr/bin/docker", "inspect", container]
     proc = subprocess.Popen(
         cmd,
@@ -215,17 +216,17 @@ def docker_inspect(container, logger):
     return data[0]
 
 
-def calc_running_seconds(started_at):
+def calc_running_seconds(started_at: str) -> float:
     # It is shockingly hard to parse an RFC3389 time string in Python
     # without installing additional modules. I know this is a hack.
     started_at = started_at.split(".")[0]
-    started_at = datetime.datetime.strptime(started_at, "%Y-%m-%dT%H:%M:%S")
+    _started_at = datetime.datetime.strptime(started_at, "%Y-%m-%dT%H:%M:%S")
     now = datetime.datetime.utcnow()
-    delta = now - started_at
+    delta = now - _started_at
     return delta.total_seconds()
 
 
-def timestr(seconds):
+def timestr(seconds: float) -> str:
     seconds = int(seconds)
     days = 0
     hours = 0
@@ -249,10 +250,10 @@ def timestr(seconds):
     return f"{seconds!s}s"
 
 
-def check_containers(expect, args, logger):
-    critical = []
-    warning = []
-    ok = []
+def check_containers(expect: List[str], args: Arguments, logger: logging.Logger) -> Tuple[str, str, str]:
+    critical: List[str] = []
+    warning: List[str] = []
+    ok: List[str] = []
 
     for this in expect:
         logger.debug(f"Docker inspect {this!r}")
@@ -322,7 +323,7 @@ def check_containers(expect, args, logger):
     return ", ".join(sorted(critical)), ", ".join(sorted(warning)), ", ".join(sorted(ok))
 
 
-def main(args, logger):
+def main(args: Arguments, logger: logging.Logger) -> int:
 
     expect = collect_systemd(args, logger)
 
@@ -334,15 +335,15 @@ def main(args, logger):
 
     critical, warning, ok = check_containers(expect, args, logger)
 
-    res = []
+    output: List[str] = []
     if critical:
-        res.append(f"CRITICAL: {critical!s}")
+        output.append(f"CRITICAL: {critical!s}")
     if warning:
-        res.append(f"WARNING: {warning!s}")
+        output.append(f"WARNING: {warning!s}")
     if ok:
-        res.append(f"OK: {ok!s}")
+        output.append(f"OK: {ok!s}")
 
-    print("{!s}".format(", ".join(res)))
+    print("{!s}".format(", ".join(output)))
 
     if critical:
         return STATUS["CRITICAL"]
