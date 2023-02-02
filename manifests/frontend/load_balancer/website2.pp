@@ -5,12 +5,14 @@ define sunet::frontend::load_balancer::website2(
   String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
+  String  $template_dir = undef,
 ) {
   $instance  = $name
   if length($instance) > 12 {
     notice("Instance name: ${instance} is longer than 12 characters and will not work in docker bridge networking, please rename instance.")
   }
   $site_name = pick($config['site_name'], $instance)
+  $haproxy_template_dir = pick($template_dir, $instance)
 
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
@@ -31,7 +33,7 @@ define sunet::frontend::load_balancer::website2(
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
         $_site_certs = $::tls_certificates[$site_name]
-        notice("None of the certificates for site ${site_name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): $_site_certs")
+        notice("None of the certificates for site ${site_name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): ${_site_certs}")
         if $snakeoil {
           $tls_certificate_bundle = $snakeoil
         }
