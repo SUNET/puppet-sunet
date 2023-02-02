@@ -99,14 +99,6 @@ services:
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/monitor/<%= @instance %>:/opt/frontend/monitor/<%= @instance %>:rw
-<<<<<<< HEAD
-      - haproxy_control:/haproxy_control
-    command: '/opt/frontend/scripts/monitor-haproxy
-            <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
-            --stats_url "/haproxy_control/stats"
-            "site=<%= @site_name %>;group=<%= @monitor_group %>"'
-<% if @dns.is_a? Array -%>
-=======
       - haproxy_control:/var/run/haproxy-control
     command: >
         /opt/frontend/scripts/monitor-haproxy
@@ -114,7 +106,6 @@ services:
             --stats_url /var/run/haproxy-control/stats
             'site=<%= @site_name %>;group=default'
 <% if @dns.is_a? Array and @dns.size > 0 -%>
->>>>>>> 1fb12bfc (Revert import from eduid_dev)
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
