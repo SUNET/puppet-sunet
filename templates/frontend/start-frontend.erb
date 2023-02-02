@@ -239,6 +239,8 @@ def main(myname='start-frontend', args=None, logger_in=None):
         logger.debug('Got command {!r}'.format(cmd))
         if cmd == 'compose_up':
             logger.info('Starting frontend instance {!r}'.format(args.name))
+            # Get a matching name for the compose container
+            os.environ['COMPOSE_OPTIONS'] = '--name {!s}_compose'.format(args.name)
             os.execv(args.compose_bin, [args.compose_bin,
                                         '-f', args.compose_file,
                                         'up',
