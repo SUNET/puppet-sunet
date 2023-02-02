@@ -148,7 +148,7 @@ services:
   setup_volumes:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
     labels:
-      - "se.sunet.check_docker_containers=runonce"
+      - "se.sunet.check_docker_containers=run_once"
     volumes:
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro

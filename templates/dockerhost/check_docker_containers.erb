@@ -273,6 +273,12 @@ def check_containers(expect: List[str], args: Arguments, logger: logging.Logger)
             running = data["State"]["Running"]
             started_at = data["State"]["StartedAt"]
             health_status = None
+            labels: Dict[str, str] = {}
+            if 'Config' in data and 'Labels' in data['Config']:
+                labels = data['Config']['Labels']
+            for this_label in labels:
+                if this_label.startswith('se.sunet.'):
+                    logger.debug(f"Sunet label spotted: {this_label}={labels[this_label]}")
 
             if "Health" in data["State"] and "Status" in data["State"]["Health"]:
                 health_status = data["State"]["Health"]["Status"]
@@ -285,6 +291,20 @@ def check_containers(expect: List[str], args: Arguments, logger: logging.Logger)
         except KeyError:
             warning.append(f"{this!s} unparsable")
             continue
+
+        if "se.sunet.check_docker_containers" in labels:
+            if labels["se.sunet.check_docker_containers"] == "run_once":
+                # Run-once containers run once when a compose setup starts, but then exit.
+                # For these jobs, we check that the exit status was 0.
+                _exit_code = data["State"]["ExitCode"]
+                logger.debug(f"Exit code: {_exit_code}, status: {status}")
+                msg = f"{this!s}[run-once exit={_exit_code}]"
+                if status == "exited":
+                    if _exit_code == 0:
+                        ok.append(msg)
+                    else:
+                        critical.append(msg)
+                continue
 
         if not running:
             critical.append(f"{this!s} not running")
