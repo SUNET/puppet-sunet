@@ -13,6 +13,9 @@ class sunet::naemon_monitor(
   String $nagflux_tag = 'latest',
   String $grafana_tag = '9.1.6',
   Hash $manual_hosts = {},
+  Hash $additional_entities = {},
+  String $nrpe_group = 'nrpe',
+  Optional[String] $default_host_group = undef,
 ){
 
   require stdlib
@@ -90,35 +93,35 @@ class sunet::naemon_monitor(
   nagioscfg::contactgroup {'alerts': }
   -> nagioscfg::service {'check_load':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_load',
     description    => 'System Load',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_users':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_users',
     description    => 'Active Users',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_zombie_procs':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_zombie_procs',
     description    => 'Zombie Processes',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_total_procs':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_total_procs_lax',
     description    => 'Total Processes',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_dynamic_disk':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_dynamic_disk',
     description    => 'Disk',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
@@ -126,13 +129,13 @@ class sunet::naemon_monitor(
 
   nagioscfg::service {'check_uptime':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_uptime',
     description    => 'Uptime',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_reboot':
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_reboot',
     description    => 'Reboot Needed',
     contact_groups => ['alerts'],
@@ -140,27 +143,27 @@ class sunet::naemon_monitor(
   }
   nagioscfg::service {'check_memory':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_memory',
     description    => 'System Memory',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_entropy':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_entropy',
     description    => 'System Entropy',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_ntp_time':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_ntp_time',
     description    => 'System NTP Time',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
   }
   nagioscfg::service {'check_scriptherder':
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_scriptherder',
     description    => 'Scriptherder Status',
     contact_groups => ['naemon-admins'],
@@ -168,7 +171,7 @@ class sunet::naemon_monitor(
   }
   nagioscfg::service {'check_apt':
     use            => 'naemon-service',
-    hostgroup_name => ['nrpe'],
+    hostgroup_name => [$nrpe_group],
     check_command  => 'check_nrpe!check_apt',
     description    => 'Packages available for upgrade',
     require        => File['/etc/naemon/conf.d/nagioscfg/'],
@@ -198,18 +201,11 @@ class sunet::naemon_monitor(
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
-  $tmp_hostgroups =  $::roles + $manual_hosts
-  $all_hosts = flatten(map($tmp_hostgroups) |$hgn, $members| {
-    $groups = map($tmp_hostgroups[$hgn]) |$member| {
-      "$member"
-    }
-  })
-  $hostgroups_with_new_all = { 'all' => unique($all_hosts) }
-  $hostgroups  = $tmp_hostgroups + $hostgroups_with_new_all
-
   class { 'nagioscfg':
-    hostgroups     => $hostgroups,
+    hostgroups     => $::roles,
+    additional_entities => $additional_entities,
     config         => 'naemon_monitor',
+    default_host_group => $default_host_group,
     manage_package => false,
     manage_service => false,
     cfgdir         => '/etc/naemon/conf.d/nagioscfg',
