@@ -5,6 +5,7 @@ define sunet::nftables::docker_expose(
   Enum['tcp', 'udp'] $proto = 'tcp',
   String $docker_v4 = '172.16.0.2',
   String $docker_v6 = 'fd00::2',
+  String $iif = 'eth0',
 ) {
   $safe_name = regsubst($title, '[^0-9A-Za-z_]', '_', 'G')
 
