@@ -4,6 +4,7 @@
 # @param proto          Protocol to allow traffic for.
 # @param dnat_v4_addr   IPv4 address of Docker bridge (the IP address of docker on the to_docker veth pair).
 # @param dnat_v6_addr   IPv6 address to use for DNAT. Docker won't set up DNAT for IPv6, so provide the containers v6 addr here.
+# @param dnat_v6_port   Port to use for v6 DNAT. Docker won't set up DNAT for IPv6, so provide the containers v6 port here.
 define sunet::nftables::docker_expose (
   Variant[String, Array[String]] $allow_clients, # Allow traffic 'from' this IP (or list of IP:s).
   Variant[Integer, String] $port,  # Allow traffic to this port (or list of ports).
@@ -11,6 +12,7 @@ define sunet::nftables::docker_expose (
   String $iif = 'eth0',
   String $dnat_v4_addr = '172.16.0.2',
   String $dnat_v6_addr = 'fd00::2',
+  Variant[Integer, String] $dnat_v6_port = $port,
 ) {
   $safe_name = regsubst($title, '[^0-9A-Za-z_]', '_', 'G')
 
