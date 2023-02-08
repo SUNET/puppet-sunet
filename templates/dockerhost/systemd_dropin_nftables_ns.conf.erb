@@ -44,6 +44,11 @@ ExecStartPre=-/sbin/ip -6 route list
 # Docker enables IP forwarding itself, but only in it's namespace of course. We need to enable it
 # in the hosts namespace too.
 ExecStartPre=/usr/bin/nsenter -t 1 -n -- /sbin/sysctl -w net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1
+
+# Route traffic from the container networks to the docker IP in the namespace, and let dockers iptables
+# rules handle the rest.
+ExecStartPre=/usr/bin/nsenter -t 1 -n -- /sbin/ip route add fd0c::/16 via fd00::2
+
 # Un-NATed packets from the containers appear quite frequently on the to_docker interface (looks like RST
 # packets when then connection is already closed for example), and gets logged as martian packets. Disable that.
 #
