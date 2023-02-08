@@ -20,9 +20,9 @@ define sunet::nftables::docker_expose (
 
   # Variables used in template
   $saddr_v4 = sunet::format_nft_set('ip saddr', $allow_clients_v4)
-  $daddr_v4 = sunet::format_nft_set('ip daddr', $dnat_v4_addr)
+  $daddr_v4 = sunet::format_nft_set('ip daddr', [$dnat_v4_addr])
   $saddr_v6 = sunet::format_nft_set('ip6 saddr', $allow_clients_v6)
-  $daddr_v6 = sunet::format_nft_set('ip6 daddr', $dnat_v6_addr)
+  $daddr_v6 = sunet::format_nft_set('ip6 daddr', [$dnat_v6_addr])
   $dport = sunet::format_nft_set('dport', $port)
 
   file {
