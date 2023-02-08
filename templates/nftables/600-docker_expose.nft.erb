@@ -15,5 +15,5 @@ add rule ip6 nat prerouting iif eth0 <%= @proto -%> <%= @dport %> dnat to [<%= @
 add rule inet filter forward oifname "to_docker" <%= @saddr_v4 %> <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
 <% end -%>
 <% if @saddr_v6.is_a? String -%>
-add rule inet filter forward oifname "to_docker" <%= @saddr_v6 %> <%= @daddr_v6 %> <%= @proto -%> <%= @v6_dnat_dport %> counter accept comment "docker_expose <%= @name %>"
+add rule inet filter forward oifname "to_docker" <%= @saddr_v6 %> <%= @daddr_v6 %> <%= @proto -%> <%= @dnat_dport_v6 %> counter accept comment "docker_expose <%= @name %>"
 <% end -%>
