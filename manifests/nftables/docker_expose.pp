@@ -25,6 +25,7 @@ define sunet::nftables::docker_expose (
   $saddr_v6 = sunet::format_nft_set('ip6 saddr', $allow_clients_v6)
   $daddr_v6 = sunet::format_nft_set('ip6 daddr', [$dnat_v6_addr])
   $dport = sunet::format_nft_set('dport', $port)
+  $v6_dnat_dport = sunet::format_nft_set('dport', $dnat_v6_port)
 
   file {
     "/etc/nftables/conf.d/600-docker_expose-${safe_name}.nft":
