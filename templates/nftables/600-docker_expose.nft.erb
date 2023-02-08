@@ -2,10 +2,10 @@
 # DNAT packets to an exposed service running in a Docker container
 #
 <% if @saddr_v4.is_a? String -%>
-add rule ip nat prerouting iif <%= @iif %> <%= @proto -%> <%= @dport %> dnat to 172.16.0.2 comment "docker_expose <%= @name %>"
+add rule ip nat prerouting iif <%= @iif %> <%= @proto -%> <%= @dport %> dnat to <%= @dnat_v4_addr %> comment "docker_expose <%= @name %>"
 <% end -%>
 <% if @saddr_v6.is_a? String -%>
-add rule ip6 nat prerouting iif <%= @iif %> <%= @proto -%> <%= @dport %> dnat to fd00::2 comment "docker_expose <%= @name %>"
+add rule ip6 nat prerouting iif <%= @iif %> <%= @proto -%> <%= @dport %> dnat to <%= @dnat_v6_addr %> comment "docker_expose <%= @name %>"
 <% end -%>
 
 #
