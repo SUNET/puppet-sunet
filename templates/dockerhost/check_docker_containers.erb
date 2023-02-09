@@ -148,9 +148,6 @@ def collect_compose_services(fn: str, logger: logging.Logger) -> List[str]:
     The services should be created using sunet::docker_compose_service in order to have
     COMPOSE_FILE and SERVICE_NAME metadata in the top comment.
 
-    :type fn: str
-    :type logger: logging.Logger
-
     :returns: Docker container names
     """
     res: List[str] = []
@@ -165,7 +162,7 @@ def collect_compose_services(fn: str, logger: logging.Logger) -> List[str]:
 
 
 # TODO: Type re_compose_file as re.Pattern[str] when we can drop Python 3.8 support
-def _get_compose_metadata(filename: str, re_compose_file: str, logger: logging.Logger) -> Optional[str]:
+def _get_compose_metadata(filename: str, re_compose_file: Any, logger: logging.Logger) -> Optional[str]:
     logger.debug(f"Trying to find compose-file reference in file {filename!s}")
     with open(filename) as fd:
         for line in fd.readlines():
