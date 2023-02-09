@@ -13,6 +13,7 @@ class sunet::dockerhost(
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
   String $compose_version                     = '1.24.0',
   Boolean $write_daemon_config                = false,
+  Boolean $enable_ipv6                        = false,   # NO-OP in this old eduid-stable branch
 ) {
 
   # Remove old versions, if installed
