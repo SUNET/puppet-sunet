@@ -165,7 +165,7 @@ def collect_compose_services(fn: str, logger: logging.Logger) -> List[str]:
 
 
 # TODO: Type re_compose_file as re.Pattern[str] when we can drop Python 3.8 support
-def _get_compose_metadata(filename: str, re_compose_file: re.Pattern, logger: logging.Logger) -> Optional[str]:
+def _get_compose_metadata(filename: str, re_compose_file: str, logger: logging.Logger) -> Optional[str]:
     logger.debug(f"Trying to find compose-file reference in file {filename!s}")
     with open(filename) as fd:
         for line in fd.readlines():
