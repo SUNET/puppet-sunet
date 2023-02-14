@@ -126,4 +126,8 @@ class sunet::server(
       special       => 'daily',
     }
   }
+
+  if $facts['dmi']['product']['name'] == 'OpenStack Compute' {
+    class { 'sunet::iaas::server': }
+  }
 }

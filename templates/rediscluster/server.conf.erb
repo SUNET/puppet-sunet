@@ -1,0 +1,13 @@
+appendonly yes
+bind * -::*
+cluster-config-file nodes.conf
+cluster-enabled yes
+cluster-node-timeout 5000
+cluster-port <%= @clusterportnum %>
+cluster-slave-validity-factor 0
+cluster-allow-reads-when-down yes
+cluster-require-full-coverage no
+loglevel warning
+port <%= @redisportnum %>
+requirepass "<%= @redis_password %>"
+masterauth "<%= @redis_password %>"

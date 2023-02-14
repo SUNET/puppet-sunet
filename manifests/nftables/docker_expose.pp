@@ -9,6 +9,7 @@ define sunet::nftables::docker_expose (
   Variant[String, Array[String]] $allow_clients, # Allow traffic 'from' this IP (or list of IP:s).
   Variant[Integer, String] $port,  # Allow traffic to this port (or list of ports).
   Enum['tcp', 'udp'] $proto = 'tcp',
+  String $iif = 'eth0',
   String $dnat_v4_addr = '172.16.0.2',
   String $dnat_v6_addr = 'fd00::2',
   Variant[Integer, String] $dnat_v6_port = $port,
@@ -24,7 +25,7 @@ define sunet::nftables::docker_expose (
   $saddr_v6 = sunet::format_nft_set('ip6 saddr', $allow_clients_v6)
   $daddr_v6 = sunet::format_nft_set('ip6 daddr', [$dnat_v6_addr])
   $dport = sunet::format_nft_set('dport', $port)
-  $dnat_dport_v6 = sunet::format_nft_set('dport', $dnat_v6_port)
+  $v6_dnat_dport = sunet::format_nft_set('dport', $dnat_v6_port)
 
   file {
     "/etc/nftables/conf.d/600-docker_expose-${safe_name}.nft":

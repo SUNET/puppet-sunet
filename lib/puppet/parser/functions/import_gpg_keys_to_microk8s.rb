@@ -18,6 +18,15 @@ data:
         configmap += '  ' + fingerprint.chop() + ": |-\n"
         configmap += contents
     end
-    return `echo "#{configmap}" | microk8s kubectl apply -f -`
+    tempfile = Tempfile.new('configmap_temp')
+    begin
+      tempfile.write <<~FILE
+      #{configmap}
+      FILE
+      tempfile.close
+      result = `microk8s kubectl apply -f #{tempfile.path}`
+    ensure
+      tempfile.delete
+    end
   end
 end

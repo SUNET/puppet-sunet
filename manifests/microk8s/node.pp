@@ -1,8 +1,7 @@
 # microk8s cluster node
 class sunet::microk8s::node(
-  String  $channel        = '1.21/stable',
-  Boolean $enable_openebs = true,
-  Boolean $write_docker_conf = true,
+  String  $channel        = '1.25/stable',
+  Boolean $mayastor       = true,
   Integer $failure_domain = 42,
   String  $dns_plugin = 'dns:89.32.32.32',
 ) {
@@ -57,6 +56,12 @@ class sunet::microk8s::node(
     provider => 'shell',
     unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
   }
+  unless any2bool($facts['microk8s_rbac']) {
+    exec { 'enable_plugin_rbac':
+      command  => '/snap/bin/microk8s enable rbac',
+      provider => 'shell',
+    }
+  }
   unless any2bool($facts['microk8s_dns']) {
     if $dns_plugin {
       exec { 'enable_plugin_dns':
@@ -65,31 +70,27 @@ class sunet::microk8s::node(
       }
     }
   }
+  unless any2bool($facts['microk8s_community']) {
+    exec { 'enable_community_repo':
+      command  => '/snap/bin/microk8s enable community',
+      provider => 'shell',
+    }
+  }
   unless any2bool($facts['microk8s_traefik']) {
     exec { 'enable_plugin_traefik':
       command  => '/snap/bin/microk8s enable traefik',
       provider => 'shell',
     }
   }
-
-  if $write_docker_conf {
-    file { '/etc/docker/daemon.json':
+  if $enable_mayastor {
+    file { '/etc/sysctl.d/20-microk8s-hugepages.conf':
       ensure  => file,
-      content => template('sunet/microk8s/daemon.json.erb'),
+      content => "vm.nr_hugepages = 1024\n",
       mode    => '0644',
     }
-  }
-
-  if $enable_openebs {
-    service { 'iscsid_enabled_running':
-      ensure   => running,
-      enable   => true,
-      name     => 'iscsid.service',
-      provider => systemd,
-    }
-    unless any2bool($facts['microk8s_openebs']) {
-      exec { 'enable_plugin_openebs':
-        command  => '/snap/bin/microk8s enable openebs',
+    unless any2bool($facts['microk8s_mayastor']) {
+      exec { 'enable_plugin_mayastor':
+        command  => '/snap/bin/microk8s enable mayastor',
         provider => 'shell',
       }
     }
@@ -100,8 +101,5 @@ class sunet::microk8s::node(
         set_microk8s_secret($namespace, $name, $secret)
     }
   }
-  file {'/etc/cosmos/keys':
-    audit => 'content',
-    notify => import_gpg_keys_to_microk8s(),
-  }
+  import_gpg_keys_to_microk8s()
 }
