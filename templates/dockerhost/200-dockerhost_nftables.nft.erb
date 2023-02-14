@@ -19,7 +19,8 @@ table ip6 nat {
 # SNAT packages _from_ Docker. Can't use iifname in postrouting rules.
 #
 add rule ip nat postrouting ip saddr { 172.16.0.0/12 } oif eth0 counter masquerade comment "SNAT traffic from Docker"
-add rule ip6 nat postrouting ip6 saddr { <%= scope['sunet::dockerhost::docker_network_v6'] -%> } oif eth0 counter masquerade comment "SNAT traffic from Docker"
+add rule ip6 nat postrouting ip6 saddr { fd00::2/128 } oif eth0 counter masquerade comment "SNAT traffic from Docker"
+add rule ip6 nat postrouting ip6 saddr { fd0c::/16 } oif eth0 counter masquerade comment "SNAT traffic from Docker"
 
 #
 # Allow forwarding packages from docker to eth0
