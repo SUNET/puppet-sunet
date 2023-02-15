@@ -5,7 +5,7 @@ define sunet::frontend::load_balancer::website2(
   String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
-  String  $template_dir = undef,
+  Optional[String] $template_dir = undef,
 ) {
   $instance  = $name
   if length($instance) > 12 {
