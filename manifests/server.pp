@@ -104,7 +104,9 @@ class sunet::server(
   }
 
   # Avoid bright red error message on Ubuntu 18.04 with Puppet 5.4
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 {
+  if $::facts['operatingsystem'] == 'Ubuntu' and
+  versioncmp($::facts['operatingsystemrelease'], '18.04') >= 0 and
+  versioncmp($::facts['operatingsystemrelease'], '22.04') < 0 {
     sunet::misc::create_dir { '/opt/puppetlabs/puppet/share/augeas':
       owner => 'root',
       group => 'root',
