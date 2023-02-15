@@ -5,10 +5,15 @@ define sunet::frontend::load_balancer::website2(
   String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
+  String  $template_dir = undef,
 ) {
   $instance  = $name
+  if length($instance) > 12 {
+    notice("Instance name: ${instance} is longer than 12 characters and will not work in docker bridge networking, please rename instance.")
+  }
   $site_name = pick($config['site_name'], $instance)
   $monitor_group = pick($config['monitor_group'], 'default')
+  $haproxy_template_dir = pick($template_dir, $instance)
 
   # Figure out what certificate to pass to the haproxy container
   if ! has_key($config, 'tls_certificate_bundle') {
@@ -115,14 +120,15 @@ define sunet::frontend::load_balancer::website2(
   }
 
   # Parameters used in frontend/docker-compose_template.erb
-  $dns                    = pick_default($config['dns'], undef)
-  $extra_ports            = pick_default($config['extra_ports'], undef)
+  $dns                    = pick_default($config['dns'], [])
+  $exposed_ports          = pick_default($config['exposed_ports'], ["443"])
   $frontendtools_image    = pick($config['frontendtools_image'], 'docker.sunet.se/frontend/frontend-tools')
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
   $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag       = pick($config['haproxy_imagetag'], 'stable')
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
+  $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
   $statsd_host            = pick($_docker_ip, $::ipaddress)
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')

@@ -2,19 +2,14 @@
 version: '3.4'
 
 services:
-
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     expose:
-      - 80
-      - 443
 <% if @varnish_enabled == true -%>
       - 1080
 <%- end -%>
-<% if @extra_ports.is_a? Array -%>
-<% @extra_ports.each do |port| -%>
+<% @exposed_ports.each do |port| -%>
       - "<%= port %>"
-<%- end -%>
 <%- end -%>
     # No point in restarting the haproxy container - the systemd service ExecStartPost will not
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
@@ -36,12 +31,10 @@ services:
       - '<%= this %>'
 <% end -%>
 <% end -%>
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
-<% end -%>
-    sysctls:
 <% end -%>
     depends_on:
       - config
@@ -69,7 +62,7 @@ services:
     restart: always
     depends_on:
       - haproxy
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
@@ -99,7 +92,7 @@ services:
       - haproxy_new_config:/new_config:rw
     environment:
       - 'HAPROXY_NEW_CONFIG=/new_config/haproxy.cfg'
-    command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
+    command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @haproxy_template_dir %>/haproxy.j2
     user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>"
 
 
@@ -124,7 +117,7 @@ services:
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
             --stats_url "/haproxy_control/stats"
             'site=<%= @site_name %>;group=<%= @monitor_group %>'
-<% if @dns.is_a? Array -%>
+<% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
 <% @dns.each do |server| -%>
       - '<%= server %>'
