@@ -86,7 +86,7 @@ define sunet::frontend::load_balancer::website2(
 
   # Parameters used in frontend/docker-compose_template.erb
   $dns                    = pick_default($config['dns'], [])
-  $extra_ports            = pick_default($config['extra_ports'], [])
+  $exposed_ports          = pick_default($config['exposed_ports'], ["443"])
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
   $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
@@ -100,11 +100,6 @@ define sunet::frontend::load_balancer::website2(
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
   $varnish_imagetag       = pick($config['varnish_imagetag'], 'stable')
   $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
-  if $::fqdn.match(/test/) {
-    $environment = 'test'
-  } else {
-    $environment = 'prod'
-  }
 
   ensure_resource('file', '/usr/local/bin/start-frontend', {
     ensure  => 'file',
