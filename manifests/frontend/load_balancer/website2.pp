@@ -5,9 +5,14 @@ define sunet::frontend::load_balancer::website2(
   String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
+  String  $template_dir = undef,
 ) {
   $instance  = $name
+  if length($instance) > 12 {
+    notice("Instance name: ${instance} is longer than 12 characters and will not work in docker bridge networking, please rename instance.")
+  }
   $site_name = pick($config['site_name'], $instance)
+  $haproxy_template_dir = pick($template_dir, $instance)
 
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
@@ -28,7 +33,7 @@ define sunet::frontend::load_balancer::website2(
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
         $_site_certs = $::tls_certificates[$site_name]
-        notice("None of the certificates for site ${site_name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): $_site_certs")
+        notice("None of the certificates for site ${site_name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): ${_site_certs}")
         if $snakeoil {
           $tls_certificate_bundle = $snakeoil
         }
@@ -54,6 +59,8 @@ define sunet::frontend::load_balancer::website2(
     'frontend_fqdn' => $::fqdn,
   })
 
+  $local_config = hiera_hash('sunet_frontend_local', {})
+  $config4 = deep_merge($config3, $local_config)
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
                                               "${confdir}/${instance}/certs",
                                               ], { owner => 'root', group => 'root', mode => '0700' })
@@ -73,23 +80,26 @@ define sunet::frontend::load_balancer::website2(
       group   => 'sunetfrontend',
       mode    => '0640',
       force   => true,
-      content => inline_template("# File created from Hiera by Puppet\n<%= @config3.to_yaml %>\n"),
+      content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
       ;
   }
 
   # Parameters used in frontend/docker-compose_template.erb
+  $dns                    = pick_default($config['dns'], [])
+  $exposed_ports          = pick_default($config['exposed_ports'], ["443"])
+  $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
+  $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag       = pick($config['haproxy_imagetag'], 'stable')
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
-  $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
-  $varnish_imagetag       = pick($config['varnish_imagetag'], 'stable')
-  $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
-  $varnish_enabled        = pick($config['varnish_enabled'], false)
-  $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
-  $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
-  $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
+  $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
   $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
+  $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
+  $varnish_enabled        = pick($config['varnish_enabled'], false)
+  $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
+  $varnish_imagetag       = pick($config['varnish_imagetag'], 'stable')
+  $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
 
   ensure_resource('file', '/usr/local/bin/start-frontend', {
     ensure  => 'file',
