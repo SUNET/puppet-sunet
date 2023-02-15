@@ -57,6 +57,13 @@ class sunet::mastodon::web(
     mode    => '0640',
     content => template('sunet/mastodon/web/mastodon.env.erb'),
   }
+  -> file { '/usr/local/bin/tootctl':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0750',
+    content => template('sunet/mastodon/web/tootctl.erb.sh'),
+  }
   $tl_dirs = ['mastodon', 'nginx']
   $tl_dirs.each | $dir| {
     file { "/opt/mastodon_web/${dir}":
