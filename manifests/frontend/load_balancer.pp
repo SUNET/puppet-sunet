@@ -63,7 +63,7 @@ class sunet::frontend::load_balancer(
 define configure_websites(Hash[String, Hash] $websites, String $basedir, String $confdir, String $scriptdir)
 {
   each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website', {$site => {}}, {
+    create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
       'basedir'   => $basedir,
       'confdir'   => $confdir,
       'scriptdir' => $scriptdir,
