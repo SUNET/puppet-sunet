@@ -64,12 +64,26 @@ define sunet::frontend::load_balancer::website2(
     $config2 = $config
   }
 
+  if $::facts['sunet_nftables_opt_in'] != 'yes' and
+  ! ( $::facts['operatingsystem'] == 'Ubuntu' and versioncmp($::facts['operatingsystemrelease'], '22.04') >= 0 ) {
+    # OLD setup
+    $_docker_ip = $::facts['ipaddress_docker0']
+    # On old setups, containers can't reach IPv6 only ACME-C backend directly, but have to go through
+    # a proxy process (always-https) running on the frontend host itself.
+    $_letsencrypt_override_address = $::facts['ipaddress_default']
+  } else {
+    # NEW setup with Docker in namespace
+    $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
+    $_letsencrypt_override_address = undef
+  }
+
   # Add IP and hostname of the host running the container - used to reach the
   # acme-c proxy in eduid
   $config3 = merge($config2, {
     'frontend_ip4' => $::ipaddress_default,
     'frontend_ip6' => $::ipaddress6_default,
     'frontend_fqdn' => $::fqdn,
+    'letsencrypt_override_address' => $_letsencrypt_override_address,
   })
 
   # This group is created by the exabgp package, but Puppet requires this before create_dir below
@@ -111,12 +125,6 @@ define sunet::frontend::load_balancer::website2(
       force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
       ;
-  }
-
-  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
-    $_docker_ip = $::ipaddress_docker0
-  } else {
-    $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
   }
 
   # Parameters used in frontend/docker-compose_template.erb
