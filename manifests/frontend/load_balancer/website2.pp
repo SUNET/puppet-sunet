@@ -79,12 +79,19 @@ define sunet::frontend::load_balancer::website2(
 
   # Add IP and hostname of the host running the container - used to reach the
   # acme-c proxy in eduid
-  $config3 = merge($config2, {
+  $config3a = merge($config2, {
     'frontend_ip4' => $::ipaddress_default,
     'frontend_ip6' => $::ipaddress6_default,
     'frontend_fqdn' => $::fqdn,
-    'letsencrypt_override_address' => $_letsencrypt_override_address,
   })
+
+  if $_letsencrypt_override_address {
+    $config3 = merge($config3a, {
+      'letsencrypt_override_address' => $_letsencrypt_override_address,
+    })
+  } else {
+    $config3 = $config3a
+  }
 
   # This group is created by the exabgp package, but Puppet requires this before create_dir below
   ensure_resource('group', 'exabgp', {ensure => 'present'})
