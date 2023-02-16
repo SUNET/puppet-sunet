@@ -3,9 +3,9 @@
 # Two versions of the websites setup are supported, but they won't work simultaneously!
 #
 class sunet::frontend::load_balancer(
-  String $router_id    = $ipaddress_default,
-  String $basedir      = '/opt/frontend',
-  String $template_dir = undef,
+  String $router_id              = $ipaddress_default,
+  String $basedir                = '/opt/frontend',
+  Optional[String] $templatedir = undef,
 ) {
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
@@ -131,12 +131,11 @@ define configure_websites($websites, $basedir, $confdir)
 define configure_websites2($websites, $basedir, $confdir, $scriptdir)
 {
   each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
+    create_resources('sunet::frontend::load_balancer::website2', {$site => {'templatedir' => $templatedir}}, {
       'basedir'         => $basedir,
       'confdir'         => $confdir,
       'scriptdir'       => $scriptdir,
       'config'          => $config,
-      'template_dir'    => $template_dir,
       })
   }
 }
