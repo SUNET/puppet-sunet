@@ -5,14 +5,13 @@ define sunet::frontend::load_balancer::website2(
   String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
-  Optional[String] $template_dir = undef,
 ) {
   $instance  = $name
   if length($instance) > 12 {
     notice("Instance name: ${instance} is longer than 12 characters and will not work in docker bridge networking, please rename instance.")
   }
   $site_name = pick($config['site_name'], $instance)
-  $haproxy_template_dir = pick($template_dir, $instance)
+  $haproxy_template_dir = hiera('haproxy_template_dir', $instance)
 
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
