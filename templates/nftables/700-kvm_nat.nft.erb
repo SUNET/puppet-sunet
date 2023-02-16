@@ -49,7 +49,7 @@ table inet sunet-kvm-<%= @bridge_name %> {
 	chain sunet-kvm-postrouting {
 		type nat hook postrouting priority srcnat; policy accept;
 
-                ip saddr <%= @bridge_v4_cidr %> ip daddr 224.0.0.0/24 counter return
+		ip saddr <%= @bridge_v4_cidr %> ip daddr 224.0.0.0/24 counter return
 		ip saddr <%= @bridge_v4_cidr %> ip daddr 255.255.255.255 counter return
 		meta l4proto tcp ip saddr <%= @bridge_v4_cidr %> ip daddr != <%= @bridge_v4_cidr %> counter masquerade to :1024-65535
 		meta l4proto udp ip saddr <%= @bridge_v4_cidr %> ip daddr != <%= @bridge_v4_cidr %> counter masquerade to :1024-65535
