@@ -5,7 +5,6 @@
 class sunet::frontend::load_balancer(
   String $router_id              = $ipaddress_default,
   String $basedir                = '/opt/frontend',
-  Optional[String] $templatedir = undef,
 ) {
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
@@ -131,7 +130,7 @@ define configure_websites($websites, $basedir, $confdir)
 define configure_websites2($websites, $basedir, $confdir, $scriptdir)
 {
   each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website2', {$site => {'templatedir' => $templatedir}}, {
+    create_resources('sunet::frontend::load_balancer::website2', {$site => {}, {
       'basedir'         => $basedir,
       'confdir'         => $confdir,
       'scriptdir'       => $scriptdir,
