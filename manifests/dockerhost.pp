@@ -64,9 +64,10 @@ class sunet::dockerhost(
       $architecture = undef
     }
 
+    $distro = downcase($::operatingsystem)
     # new source
     apt::source {'docker_ce':
-      location     => 'https://download.docker.com/linux/' . downcase($::operatingsystem),
+      location     => "https://download.docker.com/linux/${distro}",
       release      => $::lsbdistcodename,
       repos        => $docker_repo,
       key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
