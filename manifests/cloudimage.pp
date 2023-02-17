@@ -38,7 +38,9 @@ define sunet::cloudimage (
   String           $apt_mirror  = 'http://se.archive.ubuntu.com/ubuntu',
 )
 {
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 {
+    $kvm_package = 'qemu-system-x86'
+  } elsif $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
     $kvm_package = 'qemu-kvm'
   } else {
     $kvm_package = 'kvm'  # old name
@@ -55,11 +57,18 @@ define sunet::cloudimage (
   } else {
     $libvirt_package = 'libvirt-bin'
   }
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 {
+    # virsh command has been broken out of the libvirt-package for Jammy
+    $virt_extra = 'libvirt-clients'
+  } else {
+    $virt_extra = []
+  }
   ensure_resource('package', flatten(['cpu-checker',
                                       'mtools',
                                       'dosfstools',
                                       $kvm_package,
                                       $libvirt_package,
+                                      $virt_extra,
                                       'virtinst',
                                       'ovmf',  # for UEFI booting virtual machines
                                       $numad_package,

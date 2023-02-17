@@ -2,10 +2,10 @@
 # DNAT packets to an exposed service running in a Docker container
 #
 <% if @saddr_v4.is_a? String -%>
-add rule ip nat prerouting iif eth0 <%= @proto -%> <%= @dport %> dnat to 172.16.0.2 comment "docker_expose <%= @name %>"
+add rule ip nat prerouting iif <%= @iif %> <%= @proto -%> <%= @dport %> dnat to <%= @dnat_v4_addr %> comment "docker_expose <%= @name %>"
 <% end -%>
 <% if @saddr_v6.is_a? String -%>
-add rule ip6 nat prerouting iif eth0 <%= @proto -%> <%= @dport %> dnat to fd00::2 comment "docker_expose <%= @name %>"
+add rule ip6 nat prerouting iif <%= @iif %> <%= @proto -%> <%= @dport %> dnat to [<%= @dnat_v6_addr %>]:<%= @dnat_v6_port %> comment "docker_expose <%= @name %> (v6 DNAT)"
 <% end -%>
 
 #
@@ -15,12 +15,5 @@ add rule ip6 nat prerouting iif eth0 <%= @proto -%> <%= @dport %> dnat to fd00::
 add rule inet filter forward oifname "to_docker" <%= @saddr_v4 %> <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
 <% end -%>
 <% if @saddr_v6.is_a? String -%>
-add rule inet filter forward oifname "to_docker" <%= @saddr_v6 %> <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
-<% end -%>
-
-<% if @allow_local == true %>
-#
-# Allow access from docker containers on this host to the exposed service
-#
-add rule inet filter input iifname "to_docker" <%= @proto -%> <%= @dport %> counter accept comment "docker_expose <%= @name %>"
+add rule inet filter forward oifname "to_docker" <%= @saddr_v6 %> <%= @daddr_v6 %> <%= @proto -%> <%= @v6_dnat_dport %> counter accept comment "docker_expose <%= @name %>"
 <% end -%>

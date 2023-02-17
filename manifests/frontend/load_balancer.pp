@@ -3,8 +3,8 @@
 # Two versions of the websites setup are supported, but they won't work simultaneously!
 #
 class sunet::frontend::load_balancer(
-  String $router_id = $ipaddress_default,
-  String $basedir   = '/opt/frontend',
+  String $router_id              = $ipaddress_default,
+  String $basedir                = '/opt/frontend',
 ) {
   # Set up users for running all services as non-root
   class { 'sunet::frontend::load_balancer::users': }
@@ -25,17 +25,16 @@ class sunet::frontend::load_balancer(
       fail('Load balancer config contains neither "websites" nor "websites2"')
     }
 
-    $confdir = "${basedir}/config"
-    $scriptdir = "${basedir}/scripts"
-
-    ensure_resource('sunet::misc::create_dir', [$confdir, $scriptdir],
-                    { owner => 'root', group => 'root', mode => '0755' })
-
-    configure_websites { 'websites':
-      websites  => $websites,
-      basedir   => $basedir,
-      confdir   => $confdir,
-      scriptdir => $scriptdir,
+    $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
+      true  => $config['load_balancer']['exabgp_imagetag'],
+      false => 'latest',
+    }
+    sunet::exabgp { 'load_balancer':
+      docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
+        '/opt/frontend/monitor:/opt/frontend/monitor:ro',
+        '/dev/log:/dev/log',
+        ],
+      version        => $exabgp_imagetag,
     }
 
     class { 'sunet::frontend::load_balancer::services':
@@ -63,11 +62,11 @@ class sunet::frontend::load_balancer(
 define configure_websites(Hash[String, Hash] $websites, String $basedir, String $confdir, String $scriptdir)
 {
   each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website', {$site => {}}, {
-      'basedir'   => $basedir,
-      'confdir'   => $confdir,
-      'scriptdir' => $scriptdir,
-      'config'    => $config,
+    create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
+      'basedir'         => $basedir,
+      'confdir'         => $confdir,
+      'scriptdir'       => $scriptdir,
+      'config'          => $config,
       })
   }
 }

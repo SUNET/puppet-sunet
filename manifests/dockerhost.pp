@@ -6,7 +6,7 @@ class sunet::dockerhost(
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
   Boolean $run_docker_cleanup                 = true,
-  Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),  # default bridge
+  Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
   String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd0c:d0c::/64'),  # default bridge
   Variant[String, Array[String]] $docker_dns  = $::ipaddress_default,
   Boolean $ufw_allow_docker_dns               = true,
@@ -17,7 +17,11 @@ class sunet::dockerhost(
   Boolean $write_daemon_config                = false,
   Boolean $enable_ipv6                        = false,
 ) {
-  if versioncmp($::operatingsystemrelease, '22.04') <= 0 {
+  include sunet::packages::jq # restart_unhealthy_containers requirement
+  include sunet::packages::python3_yaml # check_docker_containers requirement
+  include stdlib
+
+  if versioncmp($::operatingsystemrelease, '22.04') <= 0 or $::operatingsystem == 'Debian' {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
       ensure => 'purged',
@@ -60,9 +64,10 @@ class sunet::dockerhost(
       $architecture = undef
     }
 
+    $distro = downcase($::operatingsystem)
     # new source
     apt::source {'docker_ce':
-      location     => 'https://download.docker.com/linux/ubuntu',
+      location     => "https://download.docker.com/linux/${distro}",
       release      => $::lsbdistcodename,
       repos        => $docker_repo,
       key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
@@ -110,13 +115,6 @@ class sunet::dockerhost(
     } else {
       notice("Docker version ${docker_version} does not have a docker-ce-cli package")
     }
-  }
-
-  package { [
-    'python3-yaml',  # check_docker_containers requirement
-    'jq',            # restart_unhealthy_containers requirement
-  ] :
-    ensure => 'installed',
   }
 
   $docker_command = $docker_package_name ? {
