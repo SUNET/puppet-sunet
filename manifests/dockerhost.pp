@@ -19,8 +19,9 @@ class sunet::dockerhost(
 ) {
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
+  include stdlib
 
-  if versioncmp($::operatingsystemrelease, '22.04') <= 0 {
+  if versioncmp($::operatingsystemrelease, '22.04') <= 0 or $::operatingsystem == 'Debian' {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
       ensure => 'purged',
@@ -63,9 +64,10 @@ class sunet::dockerhost(
       $architecture = undef
     }
 
+    $distro = downcase($::operatingsystem)
     # new source
     apt::source {'docker_ce':
-      location     => 'https://download.docker.com/linux/ubuntu',
+      location     => "https://download.docker.com/linux/${distro}",
       release      => $::lsbdistcodename,
       repos        => $docker_repo,
       key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
