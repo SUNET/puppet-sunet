@@ -334,7 +334,7 @@ class sunet::dockerhost(
     }
   }
 
-  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
     file {
       '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
         ensure  => file,
