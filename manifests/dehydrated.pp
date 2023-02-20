@@ -7,6 +7,7 @@ class sunet::dehydrated(
   String  $src_url = 'https://raw.githubusercontent.com/dehydrated-io/dehydrated/master/dehydrated',
   Array   $allow_clients = [],
   Integer $server_port = 80,
+  Integer $ssh_port = 22,
 ) {
   $conf = hiera_hash('dehydrated')
   if $conf !~ Hash {
@@ -146,6 +147,11 @@ class sunet::dehydrated(
     }
   } elsif $clients != undef {
     warning("Unknown format of 'clients' - ignoring")
+  }
+
+  sunet::misc::ufw_allow { 'allow-dehydrated-ssh':
+    from => $allow_clients,
+    port => $ssh_port,
   }
 }
 

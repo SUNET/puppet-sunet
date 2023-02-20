@@ -1,12 +1,12 @@
 ---
 version: '3'
-
 services:
-
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     expose:
-      - "443"
+<% @exposed_ports.each do |port| -%>
+      - "<%= port %>"
+<%- end -%>
     # No point in restarting the haproxy container - the systemd service ExecStartPost will not
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
     # nothing will work anyways until the whole service is restarted
@@ -25,6 +25,12 @@ services:
       # haproxy_volumes :
 <% @haproxy_volumes.each do |this| -%>
       - '<%= this %>'
+<% end -%>
+<% end -%>
+<% if @dns.is_a? Array and @dns.size > 0 -%>
+    dns:
+<% @dns.each do |server| -%>
+      - '<%= server %>'
 <% end -%>
 <% end -%>
 
@@ -49,6 +55,12 @@ services:
     restart: always
     depends_on:
       - haproxy
+<% if @dns.is_a? Array and @dns.size > 0 -%>
+    dns:
+<% @dns.each do |server| -%>
+      - '<%= server %>'
+<% end -%>
+<% end -%>
 <% else -%>
   # varnish disabled
 <% end -%>
@@ -67,7 +79,8 @@ services:
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
       - haproxy_data:/etc/haproxy
-    command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
+    command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @haproxy_template_dir %>/haproxy.j2
+
 
   monitor:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
@@ -88,6 +101,12 @@ services:
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
             --stats_url /var/run/haproxy-control/stats
             'site=<%= @site_name %>;group=default'
+<% if @dns.is_a? Array and @dns.size > 0 -%>
+    dns:
+<% @dns.each do |server| -%>
+      - '<%= server %>'
+<% end -%>
+<% end -%>
     environment:
       - 'HOSTFQDN=<%= @fqdn %>'
       - 'INSTANCE=<%= @instance %>'

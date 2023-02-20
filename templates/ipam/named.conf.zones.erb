@@ -1,7 +1,0 @@
-# Do not edit by hand - maintained by puppet#
-<% @zones.each do |zone| -%>
-zone "<%= zone %>" {
-  type master;
-  file "/etc/bind/generated/<%= zone %>";
-};
-<% end -%>

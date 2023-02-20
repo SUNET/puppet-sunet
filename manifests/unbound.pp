@@ -13,7 +13,7 @@ class sunet::unbound(
     }
   }
 
-  if $use_apparmor and versioncmp($::operatingsystemrelease, '22.04') < 0 {
+  if $use_apparmor and versioncmp($::operatingsystemrelease, '20.04') < 0 {
     include apparmor
 
     file {
@@ -57,12 +57,12 @@ class sunet::unbound(
   if $::operatingsystem == 'Ubuntu'
       and versioncmp($::operatingsystemrelease, '15.04') >= 0
       and versioncmp($::operatingsystemrelease, '22.04') < 0 and
-      $::sunet_nftables_opt_in != 'yes' {
+      $::facts['sunet_nftables_enabled'] != 'yes' {
     include sunet::systemd_reload
 
     # replace init.d script with systemd service file
     # Ubuntu 22.04 (ever since 18.04?) has it's own systemd service file - start using it.
-    # Also test this on earlier versions where $::sunet_nftables_opt_in is 'yes'.
+    # Also test this on earlier versions where $::sunet_nftables_enabled is 'yes' (through opt-in).
     file {
       '/etc/init.d/unbound':
         ensure => 'absent',
@@ -87,8 +87,7 @@ class sunet::unbound(
   $_disable_resolved = $disable_resolved_stub ? {
     true => true,
     false => false,
-    default => $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and
-                                                      versioncmp($::operatingsystemrelease, '22.04') >= 0 )
+    default => $::facts['sunet_nftables_enabled'] == 'yes'
   }
 
   if $_disable_resolved {
