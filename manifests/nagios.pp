@@ -2,8 +2,12 @@ include stdlib
 include concat
 
 class sunet::nagios(
-  $nrpe_service = 'nagios-nrpe-server',
+  $nrpe_service    = 'nagios-nrpe-server',
   $command_timeout = 60,
+  $loadw           = '15,10,5',
+  $loadc           = '30,25,20',
+  $procsw          = 150,
+  $procsc          = 200,
 ) {
 
   $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
@@ -48,7 +52,7 @@ class sunet::nagios(
     command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
   }
   sunet::nagios::nrpe_command {'check_load':
-    command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
+    command_line => "/usr/lib/nagios/plugins/check_load -w ${loadw} -c ${loadc}"
   }
   if $::fqdn == 'docker.sunet.se' {
     sunet::nagios::nrpe_command {'check_root':
@@ -74,21 +78,16 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_zombie_procs':
     command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
   }
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '12.04') <= 0 {
-    sunet::nagios::nrpe_command {'check_total_procs_lax':
-      command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
-    }
+  if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
+    # There are more processes than normal on frontend hosts
+    $_procw = $procsw + 350
+    $_procc = $procsc + 350
   } else {
-    if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
-      # There are more processes than normal on frontend hosts
-      sunet::nagios::nrpe_command {'check_total_procs_lax':
-        command_line => '/usr/lib/nagios/plugins/check_procs -k -w 500 -c 750'
-      }
-    } else {
-      sunet::nagios::nrpe_command {'check_total_procs_lax':
-        command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
-      }
-    }
+    $_procw = $procsw
+    $_procc = $procsc
+  }
+  sunet::nagios::nrpe_command {'check_total_procs_lax':
+    command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
   }
   sunet::nagios::nrpe_command {'check_uptime':
     command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
