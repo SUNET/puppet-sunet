@@ -7,13 +7,21 @@
         group-updates;
 
 <% if @md5 != '' -%>
+<% if @exabgp_version == '3' -%>
 	md5 "<%= @md5 %>";
+<% else -%>
+	md5-password "<%= @md5 %>";
+<% end -%>
 <% else -%>
 	# authentication not configured
 <% end -%>
 
         family {
+<% if @is_v4_peer -%>
                 ipv4 unicast;
+<% end -%>
+<% if @is_v6_peer -%>
                 ipv6 unicast;
+<% end -%>
         }
    }
