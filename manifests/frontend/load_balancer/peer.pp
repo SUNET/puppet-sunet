@@ -21,7 +21,7 @@ define sunet::frontend::load_balancer::peer(
     # which leads to the ipaddress6_default fact being undef. Go through some trouble to
     # give a clear error message in that case.
     if ($_local_ip == undef) {
-      fail("Could not figure out local IPv${_local_ip_family} address using the fact \$::${_local_ip_fact}, got: '$_local_ip'")
+      fail("Could not figure out local IPv${_local_ip_family} address using the fact \$::${_local_ip_fact}, got: '${_local_ip}'")
     }
   } else {
     $_local_ip = $local_ip
@@ -41,5 +41,7 @@ define sunet::frontend::load_balancer::peer(
     peer_address  => $remote_ip,
     router_id     => $router_id,
     md5           => $md5,
+    config        => '/etc/exabgp/exabgp.conf',
+    notify        => Service['exabgp']
   }
 }

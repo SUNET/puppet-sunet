@@ -11,10 +11,11 @@ define sunet::frontend::load_balancer::website2(
     notice("Instance name: ${instance} is longer than 12 characters and will not work in docker bridge networking, please rename instance.")
   }
   $site_name = pick($config['site_name'], $instance)
+  $monitor_group = pick($config['monitor_group'], 'default')
   $haproxy_template_dir = hiera('haproxy_template_dir', $instance)
 
+  # Figure out what certificate to pass to the haproxy container
   if ! has_key($config, 'tls_certificate_bundle') {
-    # Put suitable certificate path in $config['tls_certificate_bundle']
     if has_key($::tls_certificates, 'snakeoil') {
       $snakeoil = $::tls_certificates['snakeoil']['bundle']
     }
@@ -32,7 +33,10 @@ define sunet::frontend::load_balancer::website2(
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
         $_site_certs = $::tls_certificates[$site_name]
-        notice("None of the certificates for site ${site_name} matched my list (haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): ${_site_certs}")
+        notice(join([
+          "None of the certificates for site ${site_name} matched my list ",
+          "(haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): ${_site_certs}"
+        ], ''))
         if $snakeoil {
           $tls_certificate_bundle = $snakeoil
         }
@@ -44,40 +48,85 @@ define sunet::frontend::load_balancer::website2(
     if $snakeoil and $tls_certificate_bundle == $snakeoil {
       notice("Using snakeoil certificate for instance ${instance} (site ${site_name})")
     }
-    $config2 = merge($config, {'tls_certificate_bundle' => $tls_certificate_bundle})
   } else {
     $tls_certificate_bundle = $config['tls_certificate_bundle']
+  }
+
+  if $tls_certificate_bundle {
+    $tls_certificate_bundle_on_host = "${confdir}/${instance}/certs/tls_certificate_bundle.pem"
+    $tls_certificate_bundle_in_container = '/opt/frontend/certs/tls_certificate_bundle.pem'
+    # The certificate to use has been identified. It will be copied to $tls_certificate_bundle_on_host below,
+    # but for file access reasons (and convenience) it is mounted at $tls_certificate_bundle_in_container,
+    # and that path needs to reach the haproxy config template, so put (update) it in the config.
+    $config2 = merge($config, {'tls_certificate_bundle' => $tls_certificate_bundle_in_container})
+  } else {
     $config2 = $config
+  }
+
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
+    # OLD setup
+    $_docker_ip = $::facts['ipaddress_docker0']
+    # On old setups, containers can't reach IPv6 only ACME-C backend directly, but have to go through
+    # a proxy process (always-https) running on the frontend host itself.
+    $_letsencrypt_override_address = $::facts['ipaddress_default']
+  } else {
+    # NEW setup with Docker in namespace
+    $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
+    $_letsencrypt_override_address = undef
   }
 
   # Add IP and hostname of the host running the container - used to reach the
   # acme-c proxy in eduid
-  $config3 = merge($config2, {
+  $config3a = merge($config2, {
     'frontend_ip4' => $::ipaddress_default,
     'frontend_ip6' => $::ipaddress6_default,
     'frontend_fqdn' => $::fqdn,
   })
 
-  $local_config = hiera_hash('sunet_frontend_local', {})
-  $config4 = deep_merge($config3, $local_config)
-  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
-                                              "${confdir}/${instance}/certs",
-                                              ], { owner => 'root', group => 'root', mode => '0700' })
+  if $_letsencrypt_override_address {
+    $config3 = merge($config3a, {
+      'letsencrypt_override_address' => $_letsencrypt_override_address,
+    })
+  } else {
+    $config3 = $config3a
+  }
 
-  # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
-  # so the service can be restarted
-  file {
-    "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
-      source => $tls_certificate_bundle,
-      notify => Sunet::Docker_compose["frontend-${instance}"],
+  # This group is created by the exabgp package, but Puppet requires this before create_dir below
+  ensure_resource('group', 'exabgp', {ensure => 'present'})
+
+  $local_config = hiera_hash('sunet_frontend_local', undef)
+  $config4 = deep_merge($config3, $local_config)
+  # Setup directory where the 'config' container will read configuration data for this instance
+  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
+                                              ], { owner => 'root', group => 'fe-config', mode => '0750' })
+  # Setup directory where the 'monitor' container will write files read by the exabgp monitor script
+  ensure_resource('sunet::misc::create_dir', ["${basedir}/monitor/${instance}",
+                                              ], { owner => 'fe-monitor', group => 'exabgp', mode => '2750' })
+  # Setup certificates directory for haproxy
+  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}/certs",
+                                              ], { owner => 'root', group => 'haproxy', mode => '0750' })
+
+  if $tls_certificate_bundle {
+    # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
+    # so the service can be restarted
+    file {
+      $tls_certificate_bundle_on_host:
+        owner  => 'root',
+        group  => 'haproxy',
+        mode   => '0640',
+        source => $tls_certificate_bundle,
+        notify => Sunet::Docker_compose["frontend-${instance}"],
+    }
   }
 
   # 'export' config to one YAML file per instance
+  # Both the config and monitor containers need to be able to read this file, but Docker will only allow
+  # a single gid on the process, so the file needs to be world readable :/.
   file {
     "${confdir}/${instance}/config.yml":
       ensure  => 'file',
-      group   => 'sunetfrontend',
-      mode    => '0640',
+      group   => 'fe-config',
+      mode    => '0644',
       force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
       ;
@@ -85,7 +134,8 @@ define sunet::frontend::load_balancer::website2(
 
   # Parameters used in frontend/docker-compose_template.erb
   $dns                    = pick_default($config['dns'], [])
-  $exposed_ports          = pick_default($config['exposed_ports'], ["443"])
+  $exposed_ports          = pick_default($config['exposed_ports'], [80, 443])
+  $frontendtools_image    = pick($config['frontendtools_image'], 'docker.sunet.se/frontend/frontend-tools')
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
   $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
@@ -93,7 +143,7 @@ define sunet::frontend::load_balancer::website2(
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
   $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
-  $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
+  $statsd_host            = pick($_docker_ip, $::ipaddress)
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
@@ -128,27 +178,54 @@ define sunet::frontend::load_balancer::website2(
     content          => template('sunet/frontend/docker-compose_template.erb'),
     service_prefix   => 'frontend',
     service_name     => $instance,
-    compose_dir      => $confdir,
+    compose_dir      => "${basedir}/compose",
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
-    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
+    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${basedir}/compose/${instance}/docker-compose.yml",
   }
 
-  if has_key($config, 'allow_ports') {
-    each($config['frontends']) | $k, $v | {
-      # k should be a frontend FQDN and $v a hash with ips in it:
-      #   $v = {ips => [192.0.2.1]}}
-      if is_hash($v) and has_key($v, 'ips') {
-        sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
-          from => 'any',
-          to   => $v['ips'],
-          port => $config['allow_ports'],
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
+    # OLD way
+    if has_key($config, 'allow_ports') {
+      each($config['frontends']) | $k, $v | {
+        # k should be a frontend FQDN and $v a hash with ips in it:
+        #   $v = {ips => [192.0.2.1]}}
+        if is_hash($v) and has_key($v, 'ips') {
+          sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
+            from => 'any',
+            to   => $v['ips'],
+            port => $config['allow_ports'],
+          }
         }
       }
     }
-  }
-  exec { "workaround_allow_forwarding_to_${instance}":
-    command => "/usr/sbin/ufw route allow out on br-${instance}",
+
+    # old, traffic was routed to "br-foo"
+    exec { "workaround_allow_forwarding_to_${instance}":
+      command => "/usr/sbin/ufw route allow out on br-${instance}",
+    }
+    # new, traffic is routed into "to_foo" which is connected to the "br-foo" (which resides in another network ns)
+    exec { "workaround_allow_forwarding_to_${instance}_2":
+      command => "/usr/sbin/ufw route allow out on to_${instance}",
+    }
+  } else {
+    # NEW way, configure forwarding and IPv6 NAT (for haproxy to reach ipv6-only backends) using
+    # an nftables drop-in file.
+
+    $frontend_ips = get_all_frontend_ips($config)
+
+    # Variables used in template
+    #
+    $tcp_dport = sunet::format_nft_set('dport', pick($config['allow_ports'], []))
+    $frontend_ips_v4 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 4) })
+    $frontend_ips_v6 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 6) })
+    #
+    ensure_resource('file', "/etc/nftables/conf.d/700-frontend-${instance}.nft", {
+      ensure  => 'file',
+      mode    => '0400',
+      content => template('sunet/frontend/700-frontend-instance_nftables.nft.erb'),
+      notify  => Service['nftables'],
+    })
   }
 
   if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
@@ -175,4 +252,24 @@ define sunet::frontend::load_balancer::website2(
       }
     }
   }
+}
+
+# Get a list of all the instances frontend addresses
+function get_all_frontend_ips(
+  Hash[String, Any] $config,
+) >> Array[String] {
+  if ! has_key($config, 'frontends') {
+    fail('Website config contains no frontends section')
+  }
+  $all_ips = map($config['frontends']) | $frontend_fqdn, $v | {
+    # k should be a frontend FQDN and $v a hash with ips in it:
+    #   $v = {ips => [192.0.2.1]}}
+    (is_hash($v) and has_key($v, 'ips')) ? {
+      true  => $v['ips'],
+      false => []
+    }
+  }
+
+  $uniq = flatten($all_ips).unique
+  $uniq
 }
