@@ -19,7 +19,6 @@ class sunet::packages::podman(
     ensure  => file,
     name    => '/etc/apt/sources.list.d/libcontainers.list',
     content => "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/${reponame}_${::operatingsystemrelease}/ /\n",
-    unless  => 'test -f /etc/apt/sources.list.d/libcontainers.list',
   }
   -> exec { 'podman_update':
     command => 'apt update',
