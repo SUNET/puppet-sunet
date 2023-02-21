@@ -34,7 +34,7 @@ class sunet::server(
     class { 'sunet::security::configure_sshd':
       port => $ssh_port,
     }
-    if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+    if $::facts['sunet_nftables_enabled'] != 'yes' {
       notice('Enabling UFW')
       include ufw
     } else {

@@ -5,7 +5,6 @@ define sunet::frontend::load_balancer::website2(
   String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
-  Optional[String] $template_dir = undef,
 ) {
   $instance  = $name
   if length($instance) > 12 {
@@ -13,7 +12,7 @@ define sunet::frontend::load_balancer::website2(
   }
   $site_name = pick($config['site_name'], $instance)
   $monitor_group = pick($config['monitor_group'], 'default')
-  $haproxy_template_dir = pick($template_dir, $instance)
+  $haproxy_template_dir = hiera('haproxy_template_dir', $instance)
 
   # Figure out what certificate to pass to the haproxy container
   if ! has_key($config, 'tls_certificate_bundle') {
