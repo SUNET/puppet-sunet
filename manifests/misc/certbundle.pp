@@ -75,9 +75,15 @@ define sunet::misc::certbundle (
 
     # Get the "out=" line from the bundle array
     $_bundle_out_a = filter($bundle) | $this | { $this =~ /^out=/ }
-    $_bundle_out = $_bundle_out_a ? {
+    $_bundle_out_b = $_bundle_out_a ? {
       [] => undef,
       default => $_bundle_out_a[0][4,-1],
+    }
+
+    # Use path /etc/ssl/ if outfile was specified without an absolute path
+    $_bundle_out = $_bundle_out_b ? {
+      /^\/.*/ => $_bundle_out_b,
+      default => sprintf('/etc/ssl/%s', $_bundle_out_b),
     }
 
     if $_bundle_out {
