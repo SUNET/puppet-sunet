@@ -17,11 +17,12 @@ define sunet::misc::create_key_file(
     warning ("Key file data key '${hiera_key}' not set in hiera")
   } else {
     ensure_resource('file', $_path, {
-      ensure  => file,
-      owner   => $owner,
-      group   => $group,
-      mode    => $mode,
-      content => $key_content,
-      })
+        ensure    => file,
+        owner     => $owner,
+        group     => $group,
+        mode      => $mode,
+        content   => $key_content,
+        show_diff => false,
+    })
   }
 }
