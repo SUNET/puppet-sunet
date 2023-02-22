@@ -72,5 +72,20 @@ define sunet::misc::certbundle (
         'require' => $req,
         'returns' => [0, 1],
     })
+
+    # Get the "out=" line from the bundle array
+    $_bundle_out_a = filter($bundle) | $this | { $this =~ /^out=/ }
+    $_bundle_out = $_bundle_out_a ? {
+      [] => undef,
+      default => $_bundle_out_a[0][4,-1],
+    }
+
+    if $_bundle_out {
+      # Create a subscribable resource for the generated bundle file, allowing service restarting when the
+      # bundle file changes (i.e. when the input files change).
+      file { $_bundle_out:
+        audit => 'content',
+      }
+    }
   }
 }
