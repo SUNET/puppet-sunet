@@ -63,8 +63,7 @@ define sunet::frontend::load_balancer::website2(
     $config2 = $config
   }
 
-  if $::facts['sunet_nftables_opt_in'] != 'yes' and
-  ! ( $::facts['operatingsystem'] == 'Ubuntu' and versioncmp($::facts['operatingsystemrelease'], '22.04') >= 0 ) {
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
     # OLD setup
     $_docker_ip = $::facts['ipaddress_docker0']
     # On old setups, containers can't reach IPv6 only ACME-C backend directly, but have to go through
@@ -185,7 +184,7 @@ define sunet::frontend::load_balancer::website2(
     start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${basedir}/compose/${instance}/docker-compose.yml",
   }
 
-  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
     # OLD way
     if has_key($config, 'allow_ports') {
       each($config['frontends']) | $k, $v | {

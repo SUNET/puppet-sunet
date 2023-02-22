@@ -52,7 +52,7 @@ class sunet::frontend::load_balancer::services(
     api_port   => $api_port,
     #docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
   }
-  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'frontend-api' :
       allow_clients => get_all_backend_ips($config),
       port          => $api_port,
