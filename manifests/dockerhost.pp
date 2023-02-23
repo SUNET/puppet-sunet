@@ -21,6 +21,34 @@ class sunet::dockerhost(
   include sunet::packages::python3_yaml # check_docker_containers requirement
   include stdlib
 
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    # The nftables ns dropin file must be in place bedore the docker service is installed on a new host,
+    # otherwise the docker0 interface will be created and interfere until reboot.
+    sunet::misc::create_dir { '/etc/systemd/system/docker.service.d/': owner => 'root', group => 'root', mode => '0755', }
+    file {
+      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
+        ensure  => file,
+        mode    => '0444',
+        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
+        ;
+    }
+
+    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+      # Have to check if the Docker service has been (re-)started yet with the nftables ns dropin file in place.
+      # If not, there won't be a to_docker interface, and we can't set up the firewall rules.
+      notice('No to_docker interface found, not setting up the firewall rules for Docker (will probably work next time)')
+    } else {
+      file {
+        '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
+          ensure  => file,
+          mode    => '0400',
+          content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
+          notify  => Service['nftables'],
+          ;
+      }
+    }
+  }
+
   if versioncmp($::operatingsystemrelease, '22.04') <= 0 or $::operatingsystem == 'Debian' {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
@@ -331,32 +359,6 @@ class sunet::dockerhost(
         require => Package['unbound'],
         notify  => Service['unbound'],
         ;
-    }
-  }
-
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
-    file {
-      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
-        ensure  => file,
-        mode    => '0444',
-        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
-        notify  => Service['docker'],
-        ;
-    }
-
-    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
-      # We notify Service['docker'] above, but Puppet won't have restarted the service yet so the
-      # interface created by systemd_dropin_nftables_ns.conf won't exist yet.
-      notice('No to_docker interface found, not setting up the firewall rules for Docker (will probably work next time)')
-    } else {
-      file {
-        '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
-          ensure  => file,
-          mode    => '0400',
-          content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
-          notify  => Service['nftables'],
-          ;
-      }
     }
   }
 }
