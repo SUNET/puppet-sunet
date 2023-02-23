@@ -336,18 +336,28 @@ class sunet::dockerhost(
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     file {
-      '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
-        ensure  => file,
-        mode    => '0400',
-        content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
-        notify  => Service['docker'],
-        ;
       '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
         ensure  => file,
         mode    => '0444',
         content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
         notify  => Service['docker'],
         ;
+    }
+
+    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+      # We notify Service['docker'] above, but Puppet won't have restarted the service yet so the
+      # interface created by systemd_dropin_nftables_ns.conf won't exist yet.
+      notice('No to_docker interface found, not setting up the firewall rules for Docker (will probably work next time)')
+      $_install_service = false
+    } else {
+      file {
+        '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
+          ensure  => file,
+          mode    => '0400',
+          content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
+          notify  => Service['nftables'],
+          ;
+      }
     }
   }
 }

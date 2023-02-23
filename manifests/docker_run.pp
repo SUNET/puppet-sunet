@@ -25,7 +25,7 @@ define sunet::docker_run(
   Boolean $fetch_docker_image  = true,
 ) {
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-    if ! has_key($::facts['networking']['interfaces'], 'to_docer') {
+    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
       notice("sunet::docker_compose: No to_docker interface found, not installing ${name}")
       $_install_service = false
     } else {
