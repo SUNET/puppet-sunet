@@ -54,7 +54,7 @@ services:
 <% end -%>
 
   config:
-    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
+    image: '<%= @frontendtools_image %>:<%= @frontendtools_imagetag %>'
     restart: always
     volumes:
 <% if @frontendtools_volumes.is_a? Array -%>
