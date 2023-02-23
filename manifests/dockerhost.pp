@@ -340,11 +340,13 @@ class sunet::dockerhost(
         ensure  => file,
         mode    => '0400',
         content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
+        notify  => Service['docker'],
         ;
       '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
         ensure  => file,
         mode    => '0444',
         content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
+        notify  => Service['docker'],
         ;
     }
   }
