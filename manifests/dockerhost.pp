@@ -22,9 +22,15 @@ class sunet::dockerhost(
   include stdlib
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
+    # Hackishly create the /etc/systemd/system/docker.service.d/ directory before the docker service is installed.
+    # If we do this using 'file', the docker class will fail because of a duplicate declaration.
+    exec { "create_${name}_service_dir":
+      command => '/bin/mkdir -p /etc/systemd/system/docker.service.d/',
+      unless  => '/usr/bin/test -d /etc/systemd/system/docker.service.d/',
+    }
     # The nftables ns dropin file must be in place bedore the docker service is installed on a new host,
     # otherwise the docker0 interface will be created and interfere until reboot.
-    sunet::misc::create_dir { '/etc/systemd/system/docker.service.d/': owner => 'root', group => 'root', mode => '0755', }
+    #
     file {
       '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
         ensure  => file,
