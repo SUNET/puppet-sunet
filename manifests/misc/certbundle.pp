@@ -90,7 +90,8 @@ define sunet::misc::certbundle (
       # Create a subscribable resource for the generated bundle file, allowing service restarting when the
       # bundle file changes (i.e. when the input files change).
       file { $_bundle_out:
-        audit => 'content',
+        audit     => 'content',
+        show_diff => false,  # don't show diff as there might be a secret key in there
       }
     }
   }
