@@ -348,7 +348,6 @@ class sunet::dockerhost(
       # We notify Service['docker'] above, but Puppet won't have restarted the service yet so the
       # interface created by systemd_dropin_nftables_ns.conf won't exist yet.
       notice('No to_docker interface found, not setting up the firewall rules for Docker (will probably work next time)')
-      $_install_service = false
     } else {
       file {
         '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
