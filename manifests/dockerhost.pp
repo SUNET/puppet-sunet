@@ -41,6 +41,26 @@ class sunet::dockerhost(
       package {'docker-engine': ensure => 'purged'}
     }
 
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    file {
+      '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
+        ensure  => file,
+        mode    => '0400',
+        content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
+        ;
+      '/etc/systemd/system/docker.service.d':
+        ensure => directory,
+        mode   => '0444',
+        ;
+    }
+      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
+        ensure  => file,
+        mode    => '0444',
+        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
+        ;
+    }
+  }
+
     # Add the dockerproject repository, then force an apt-get update before
     # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
     #
@@ -330,21 +350,6 @@ class sunet::dockerhost(
         content => template('sunet/dockerhost/unbound.conf.erb'),
         require => Package['unbound'],
         notify  => Service['unbound'],
-        ;
-    }
-  }
-
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
-    file {
-      '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
-        ensure  => file,
-        mode    => '0400',
-        content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
-        ;
-      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
-        ensure  => file,
-        mode    => '0444',
-        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
         ;
     }
   }
