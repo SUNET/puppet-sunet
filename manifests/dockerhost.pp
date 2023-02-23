@@ -52,7 +52,6 @@ class sunet::dockerhost(
         ensure => directory,
         mode   => '0444',
         ;
-    }
       '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
         ensure  => file,
         mode    => '0444',
