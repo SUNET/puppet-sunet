@@ -70,7 +70,7 @@ services:
     command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @instance %>/haproxy.j2
 
   monitor:
-    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
+    image: '<%= @frontendtools_image %>:<%= @frontendtools_imagetag %>'
     restart: always
     volumes:
 <% if @frontendtools_volumes.is_a? Array -%>
