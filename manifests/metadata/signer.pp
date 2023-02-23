@@ -1,4 +1,10 @@
-class sunet::metadata::signer($dest_host=undef,$dest_dir="",$version="1.1.4") {
+class sunet::metadata::signer($dest_host=undef,$dest_dir="",$version="1.1.4", $interface="eth0") {
+
+  sunet::nftables::docker_expose { "${name}-expose-80":
+    allow_clients => '127.0.0.1',
+    port          => 80,
+    iif           => $interface,
+  }
    package { ['xsltproc','libxml2-utils','attr']: ensure => latest } ->
    sunet::pyff {$name:
       version           => $version,
