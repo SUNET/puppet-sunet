@@ -1,5 +1,10 @@
-# Create a file with secret content retrieved from hiera.
-define sunet::misc::create_key_file(
+# Create a file with secret content retrieved from Hiera.
+# @param hiera_key  If provided, write the Hiera contents to $path (or $name)
+# @param path       If provided, write the Hiera contents to this path, otherwise use $name
+# @param owner      File owner
+# @param group      File group
+# @param mode       File mode
+define sunet::misc::create_key_file (
   String           $hiera_key,
   Optional[String] $path       = undef,
   String           $owner      = 'root',
@@ -22,7 +27,7 @@ define sunet::misc::create_key_file(
         group     => $group,
         mode      => $mode,
         content   => $key_content,
-        show_diff => false,
+        show_diff => false,  # avoid leaking secrets in logs etc.
     })
   }
 }
