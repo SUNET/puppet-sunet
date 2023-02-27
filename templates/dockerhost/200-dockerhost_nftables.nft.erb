@@ -16,7 +16,7 @@ table ip6 nat {
 }
 
 #
-# SNAT packages _from_ Docker. Can't use iifname in postrouting rules.
+# SNAT packages _from_ Docker.
 #
 add rule ip nat postrouting ip saddr { 172.16.0.0/12 } iif to_docker counter masquerade comment "SNAT traffic from Docker"
 add rule ip6 nat postrouting ip6 saddr { fd00::2/128 } iif to_docker counter masquerade comment "SNAT traffic from Docker"
