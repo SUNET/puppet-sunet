@@ -16,7 +16,7 @@ class sunet::metadata::signer($dest_host=undef,$dest_dir="",$version="1.1.4") {
          ssh_privkey       => safe_hiera("publisher_ssh_privkey")
       } ->
       sunet::scriptherder::cronjob { "${name}-publish":
-         cmd               => "env RSYNC_ARGS='--chown=www-data:www-data --chmod=D0755,F0664 --xattrs' /usr/local/bin/mirror-mdq.sh http://localhost root@${dest_host}:${dest_dir}",
+         cmd               => "env RSYNC_ARGS='--chown=www-data:www-data --chmod=D0755,F0664 --xattrs' /usr/local/bin/mirror-mdq.sh http://172.16.0.2 root@${dest_host}:${dest_dir}",
          minute            => '*/5',
          ok_criteria       => ['exit_status=0'],
          warn_criteria     => ['max_age=30m']
