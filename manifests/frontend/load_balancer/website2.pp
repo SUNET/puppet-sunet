@@ -86,6 +86,7 @@ define sunet::frontend::load_balancer::website2(
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_storage        = pick($config['varnish_storage'], 'malloc,100M')
+  $frontendtools_image    = pick($config['frontendtools_image'], 'docker.sunet.se/frontend/frontend-tools')
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
   $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
