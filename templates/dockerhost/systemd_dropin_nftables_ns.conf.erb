@@ -41,6 +41,16 @@ ExecStartPre=-/bin/echo "--- Routes"
 ExecStartPre=-/sbin/ip route list
 ExecStartPre=-/sbin/ip -6 route list
 
+<% if @facts['dmi']['product']['name'] == 'OpenStack Compute' -%>
+# In environments where we relay on RAs for IPv6 (e.g Safespring) we need to
+# forcely allow RAs even if IP forwarding is enabled (below).
+#
+# We can't use 'all' when configuring "accept_ra" so specify the primary
+# interface.
+# https://unix.stackexchange.com/questions/90443/what-is-the-difference-between-all-default-and-eth-in-proc-sys-net-ipv
+ExecStartPre=/usr/bin/nsenter -t 1 -n -- /sbin/sysctl -w net.ipv6.conf.<%= @facts['networking']['primary'] %>.accept_ra=2
+<%- end -%>
+
 # Docker enables IP forwarding itself, but only in it's namespace of course. We need to enable it
 # in the hosts namespace too.
 ExecStartPre=/usr/bin/nsenter -t 1 -n -- /sbin/sysctl -w net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1
