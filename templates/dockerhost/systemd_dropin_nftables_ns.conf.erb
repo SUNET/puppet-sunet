@@ -42,7 +42,7 @@ ExecStartPre=-/sbin/ip route list
 ExecStartPre=-/sbin/ip -6 route list
 
 <% if @facts['dmi']['product']['name'] == 'OpenStack Compute' -%>
-# In environments where we relay on RAs for IPv6 (e.g Safespring) we need to
+# In environments where we rely on RAs for IPv6 (e.g Safespring) we need to
 # forcely allow RAs even if IP forwarding is enabled (below). Otherwise the
 # default IPv6 route will be thrown away.
 #
