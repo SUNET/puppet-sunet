@@ -39,7 +39,7 @@ class sunet::forgejo (
   }
   -> file{ '/opt/forgejo/config/app.ini':
     ensure  => file,
-    content => template('forgejo/app.ini.erb'),
+    content => template('sunet/forgejo/app.ini.erb'),
     mode    => '0644',
     owner   => 'git',
     group   => 'git',
