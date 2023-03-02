@@ -1,14 +1,14 @@
 define sunet::misc::system_user(
-  String                  $group,
-  Optional[String]        $username = undef,
-  Boolean                 $system = true,
-  Boolean                 $managehome = false,
-  String                  $shell = '/bin/false',
-  String                  $ensure = 'present',
-  Optional[String]        $home = undef,
-  Optional[Integer]       $uid = undef,
-  Optional[Integer]       $gid = undef,
-  Optional[Array[String]] $groups = undef,
+  String                    $group,
+  Optional[String]          $username = undef,
+  Boolean                   $system = true,
+  Boolean                   $managehome = false,
+  String                    $shell = '/bin/false',
+  Enum['present', 'absent'] $ensure = 'present',
+  Optional[String]          $home = undef,
+  Optional[Integer]         $uid = undef,
+  Optional[Integer]         $gid = undef,
+  Optional[Array[String]]   $groups = undef,
 ) {
 
   $_username = $username ? {

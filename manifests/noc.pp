@@ -1,5 +1,7 @@
 # Class for allowing NOC staff to do specific predefined tasks on servers
-class sunet::noc() {
+class sunet::noc(
+  Boolean $allow_reboot = true,
+) {
   $ssh_authorized_keys = hiera_hash('noc_ssh_authorized_keys', undef)
   # If we have Authorized keys for NOC staff, we create a user, 
   # add ssh keys there and allow them to run select commands
@@ -34,12 +36,14 @@ class sunet::noc() {
       owner   => 'root',
       group   => 'root',
     }
-    file { '/usr/local/bin/sunet_noc_reboot':
-      ensure  => file,
-      content => "#!/bin/bash\n/usr/sbin/reboot\n",
-      mode    => '0750',
-      owner   => 'root',
-      group   => 'root',
+    if $allow_reboot {
+      file { '/usr/local/bin/sunet_noc_reboot':
+        ensure  => file,
+        content => "#!/bin/bash\n/usr/sbin/reboot\n",
+        mode    => '0750',
+        owner   => 'root',
+        group   => 'root',
+      }
     }
   }
   # If the keys are not there we will not allow the NOC user to log in and do some clean up
@@ -53,6 +57,11 @@ class sunet::noc() {
     file { '/home/noc/.ssh/authorized_keys':
       ensure  => absent,
     }
+    file { '/usr/local/bin/sunet_noc_reboot':
+      ensure  => absent,
+    }
+  }
+  unless $allow_reboot {
     file { '/usr/local/bin/sunet_noc_reboot':
       ensure  => absent,
     }
