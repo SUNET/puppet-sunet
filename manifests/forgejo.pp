@@ -4,15 +4,15 @@ class sunet::forgejo (
   String $forgejo_version = '1.18.5-0-rootless',
   Integer $uid            = '900',
   Integer $gid            = '900',
-){
+) {
   # gitea generate secret INTERNAL_TOKEN
-  String $internal_token = hiera('internal_token')
+  $internal_token = hiera('internal_token')
   # gitea generate secret JWT_SECRET
-  String $jwt_secret = hiera('jwt_secret')
+  $jwt_secret = hiera('jwt_secret')
   # gitea generate secret JWT_SECRET
-  String $lfs_jwt_secret = hiera('lfs_jwt_secret')
+  $lfs_jwt_secret = hiera('lfs_jwt_secret')
   # gitea generate secret SECRET_KEY
-  String $secret_key = hiera('secret_key')
+  $secret_key = hiera('secret_key')
   # Compose
   sunet::docker_compose { 'forgejo':
     content          => template('sunet/forgejo/docker-compose.yaml.erb'),
@@ -22,8 +22,8 @@ class sunet::forgejo (
     description      => 'Forgejo Git Services',
   }
   -> sunet::misc::system_user { 'git':
-    uid      => $uid,
-    gid      => $gid,
+    uid => $uid,
+    gid => $gid,
   }
   # Data directory
   -> file{ '/opt/forgejo/data':
