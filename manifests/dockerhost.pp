@@ -19,8 +19,43 @@ class sunet::dockerhost(
 ) {
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
+  include stdlib
 
-  if versioncmp($::operatingsystemrelease, '22.04') <= 0 {
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    # Hackishly create the /etc/systemd/system/docker.service.d/ directory before the docker service is installed.
+    # If we do this using 'file', the docker class will fail because of a duplicate declaration.
+    exec { "create_${name}_service_dir":
+      command => '/bin/mkdir -p /etc/systemd/system/docker.service.d/',
+      unless  => '/usr/bin/test -d /etc/systemd/system/docker.service.d/',
+    }
+    # The nftables ns dropin file must be in place bedore the docker service is installed on a new host,
+    # otherwise the docker0 interface will be created and interfere until reboot.
+    #
+    file {
+      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
+        ensure  => file,
+        mode    => '0444',
+        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
+        ;
+    }
+
+    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+      # Have to check if the Docker service has been (re-)started yet with the nftables ns dropin file in place.
+      # If not, there won't be a to_docker interface, and we can't set up the firewall rules.
+      notice('No to_docker interface found, not setting up the firewall rules for Docker (will probably work next time)')
+    } else {
+      file {
+        '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
+          ensure  => file,
+          mode    => '0400',
+          content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
+          notify  => Service['nftables'],
+          ;
+      }
+    }
+  }
+
+  if versioncmp($::operatingsystemrelease, '22.04') <= 0 or $::operatingsystem == 'Debian' {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
       ensure => 'purged',
@@ -63,9 +98,10 @@ class sunet::dockerhost(
       $architecture = undef
     }
 
+    $distro = downcase($::operatingsystem)
     # new source
     apt::source {'docker_ce':
-      location     => 'https://download.docker.com/linux/ubuntu',
+      location     => "https://download.docker.com/linux/${distro}",
       release      => $::lsbdistcodename,
       repos        => $docker_repo,
       key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
@@ -328,21 +364,6 @@ class sunet::dockerhost(
         content => template('sunet/dockerhost/unbound.conf.erb'),
         require => Package['unbound'],
         notify  => Service['unbound'],
-        ;
-    }
-  }
-
-  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
-    file {
-      '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
-        ensure  => file,
-        mode    => '0400',
-        content => template('sunet/dockerhost/200-dockerhost_nftables.nft.erb'),
-        ;
-      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
-        ensure  => file,
-        mode    => '0444',
-        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
         ;
     }
   }

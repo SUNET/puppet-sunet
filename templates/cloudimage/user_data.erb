@@ -55,12 +55,13 @@ apt:
 <% end -%>
 package_update: true
 runcmd:
-   - "echo '*** debug: interfaces:'"
-   - "ifconfig -a"
-   - "echo '*** debug: /etc/network/interfaces:'"
-   - "cat /etc/network/interfaces"
-   - "echo '*** debug: find /etc/network/ -ls:'"
-   - "find /etc/network -ls"
+   - "echo '*** debug: basics:'"
+   - "ip --br addr list"
+   - "echo '*** debug: routes:'"
+   - "ip route list"
+   - "ip -6 route list"
+   - "echo '*** debug: full address list:'"
+   - "ip addr list"
    - "echo '*** debug: cat /etc/network/interfaces.d/50-cloud-init.cfg:'"
    - "cat /etc/network/interfaces.d/50-cloud-init.cfg"
    - "echo '*** debug: cat /etc/resolv.conf:'"
