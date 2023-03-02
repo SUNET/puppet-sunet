@@ -28,21 +28,21 @@ class sunet::forgejo(
   }
   # Data directory
   -> file{ '/opt/forgejo/data':
-    ensure => directory;
-    owner => 'git'
-    group => 'git'
+    ensure => directory,
+    owner => 'git',
+    group => 'git',
   }
   # Config directory/file
   -> file{ '/opt/forgejo/config':
-    ensure => directory;
-    owner => 'git'
-    group => 'git'
+    ensure => directory,
+    owner => 'git',
+    group => 'git',
   }
   -> file{ '/opt/forgejo/config/app.ini':
     ensure  => file,
     content => template('forgejo/app.ini.erb'),
     mode    => '0644',
     owner   => 'git',
-    group   => 'git'
+    group   => 'git',
   }
 }
