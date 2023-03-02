@@ -1,4 +1,5 @@
-class sunet::forgejo(
+# A class to install and manage Forgejo
+class sunet::forgejo (
   String $domain          = 'platform.sunet.se',
   String $forgejo_version = '1.18.5-0-rootless',
   Integer $uid            = '900',
@@ -21,22 +22,20 @@ class sunet::forgejo(
     description      => 'Forgejo Git Services',
   }
   -> sunet::misc::system_user { 'git':
-    username => 'git',
-    group    => 'git',
     uid      => $uid,
     gid      => $gid,
   }
   # Data directory
   -> file{ '/opt/forgejo/data':
     ensure => directory,
-    owner => 'git',
-    group => 'git',
+    owner  => 'git',
+    group  => 'git',
   }
   # Config directory/file
   -> file{ '/opt/forgejo/config':
     ensure => directory,
-    owner => 'git',
-    group => 'git',
+    owner  => 'git',
+    group  => 'git',
   }
   -> file{ '/opt/forgejo/config/app.ini':
     ensure  => file,
