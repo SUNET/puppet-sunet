@@ -57,6 +57,7 @@ package_update: true
 runcmd:
    - "echo '*** debug: basics:'"
    - "ip --br addr list"
+   - "echo '*** debug: routes:'"
    - "ip route list"
    - "ip -6 route list"
    - "echo '*** debug: full address list:'"
