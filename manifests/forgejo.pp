@@ -20,7 +20,7 @@ class sunet::forgejo(
     compose_filename => 'docker-compose.yaml',
     description      => 'Forgejo Git Services',
   }
-  -> sunet::misc:system_user {
+  -> sunet::misc::system_user {
     username => 'git',
     group    => 'git',
     uid      => $uid,
