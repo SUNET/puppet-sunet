@@ -45,4 +45,9 @@ class sunet::forgejo (
     owner   => 'git',
     group   => 'git',
   }
+  -> sunet::nftables::docker_expose { 'forgejo_ssh':
+    allow_clients => 'all',
+    port          => 22022,
+    iif           => 'ens3',
+  }
 }
