@@ -22,8 +22,9 @@ class sunet::forgejo (
     description      => 'Forgejo Git Services',
   }
   -> sunet::misc::system_user { 'git':
-    uid => $uid,
-    gid => $gid,
+    group => 'git',
+    uid   => $uid,
+    gid   => $gid,
   }
   # Data directory
   -> file{ '/opt/forgejo/data':
