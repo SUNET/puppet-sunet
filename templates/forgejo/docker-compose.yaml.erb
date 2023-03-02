@@ -1,0 +1,25 @@
+version: "3.7"
+
+services:
+  forgejo:
+    container_name: forgejo
+    restart: always
+    user: "<%= @uid %>:<%= @gid %>"
+    image: codeberg.org/forgejo/forgejo:<%= @forgejo_version %>
+    dns:
+      - 89.32.32.32
+    ports:
+      - "3000:3000"
+      - "22022:22022"
+    volumes:
+      - /opt/forgejo/data:/opt/forgejo/data
+      - /opt/forgejo/config:/opt/forgejo/config
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - USER=git
+      - UID=<%= @uid %>
+      - GID=<%= @gid %>
+      - HOME=/data/git
+      - GITEA_WORK_DIR=/opt/forgejo/data
+    command: -c /opt/forgejo/config/app.ini
