@@ -22,4 +22,4 @@ services:
       - GID=<%= @gid %>
       - HOME=/data/git
       - GITEA_WORK_DIR=/opt/forgejo/data
-    command: -c /opt/forgejo/config/app.ini
+    entrypoint: gitea -c /opt/forgejo/config/app.ini
