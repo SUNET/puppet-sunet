@@ -1,10 +1,12 @@
-class sunet::server(
+# Base class for all Sunet hosts
+class sunet::server (
   Boolean $fail2ban = true,
   Boolean $encrypted_swap = true,
   Boolean $ethernet_bonding = true,
   Boolean $sshd_config = true,
   Boolean $ntpd_config = true,
   Boolean $scriptherder = true,
+  Boolean $install_scriptherder = false,  # Change to true when all repos have removed their copy of scriptherder
   Boolean $unattended_upgrades = false,
   Boolean $unattended_upgrades_use_template = false,
   Boolean $apparmor = false,
@@ -13,7 +15,6 @@ class sunet::server(
   Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
   Optional[Boolean] $ssh_allow_from_anywhere = false,
 ) {
-
   if $fail2ban {
     # Configure fail2ban to lock out SSH scanners
     class { 'sunet::fail2ban': }
@@ -82,7 +83,7 @@ class sunet::server(
   }
 
   if $scriptherder {
-    sunet::snippets::scriptherder { 'sunet_scriptherder': }
+    ensure_resource('class', 'sunet::scriptherder::init', { install => $install_scriptherder })
   }
 
   if $unattended_upgrades {
