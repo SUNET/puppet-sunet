@@ -1,4 +1,18 @@
 # Base class for all Sunet hosts
+# @param fail2ban                          Enable fail2ban
+# @param encrypted_swap                    Enable encrypted swap
+# @param ethernet_bonding                  Enable ethernet bonding
+# @param sshd_config                       Configure SSH daemon
+# @param ntpd_config                       Configure NTP daemon
+# @param scriptherder                      Enable scriptherder
+# @param install_scriptherder              Install bundled version of scriptherder
+# @param unattended_upgrades               Enable unattended upgrades
+# @param unattended_upgrades_use_template  Use template for unattended upgrades config
+# @param apparmor                          Enable AppArmor
+# @param disable_ipv6_privacy              Disable IPv6 privacy extensions
+# @param disable_all_local_users           Disable all local users
+# @param mgmt_addresses                    List of management addresses (for SSH access)
+# @param ssh_allow_from_anywhere           Allow SSH from anywhere
 class sunet::server (
   Boolean $fail2ban = true,
   Boolean $encrypted_swap = true,
@@ -13,7 +27,7 @@ class sunet::server (
   Boolean $disable_ipv6_privacy = false,
   Boolean $disable_all_local_users = false,
   Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
-  Optional[Boolean] $ssh_allow_from_anywhere = false,
+  Boolean $ssh_allow_from_anywhere = false,
 ) {
   if $fail2ban {
     # Configure fail2ban to lock out SSH scanners
@@ -79,7 +93,7 @@ class sunet::server (
     }
   }
 
-  if $::is_virtual == true {
+  if $::facts['is_virtual'] == true {
     file { '/usr/local/bin/sunet-reinstall':
       ensure  => file,
       mode    => '0755',
