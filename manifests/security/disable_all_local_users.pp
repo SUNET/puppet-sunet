@@ -1,3 +1,4 @@
+# Lock all local users
 class sunet::security::disable_all_local_users () {
   exec { 'disable_all_local_users_exec':
     path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin',],
