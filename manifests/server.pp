@@ -34,46 +34,10 @@ class sunet::server(
     class { 'sunet::security::configure_sshd':
       port => $ssh_port,
     }
-    if $::facts['sunet_nftables_enabled'] != 'yes' {
-      notice('Enabling UFW')
-      include ufw
-    } else {
-      notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
-      ensure_resource ('class','sunet::nftables::init', { })
-    }
-    if $ssh_allow_from_anywhere {
-      sunet::misc::ufw_allow { 'allow-ssh-from-all':
-        from => 'any',
-        port => pick($ssh_port, 22),
-      }
-    } else {
-      # Remove any existing rule from when ssh_allow_from_anywhere was true as default
-      ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh', {
-        ensure => 'absent',
-        from   => 'any',
-        to     => 'any',
-        proto  => 'tcp',
-        port   => sprintf('%s', pick($ssh_port, 22)),
-      })
-
-      if $::ipaddress_default {
-        # Also remove historical allow-any-to-my-IP rules
-        ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
-          ensure => 'absent',
-          from   => 'any',
-          to     => $::ipaddress_default,
-          proto  => 'tcp',
-          port   => sprintf('%s', pick($ssh_port, 22)),
-        })
-      }
-    }
-    if $mgmt_addresses != [] {
-      sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
-        from => $mgmt_addresses,
-        port => pick($ssh_port, 22),
-      }
-    } else {
-      notice('SSH from anywhere is disabled, and no mgmt_addresses provided or found in Hiera.')
+    class { 'sunet::security::allow_ssh':
+      allow_from_anywhere => $ssh_allow_from_anywhere,
+      mgmt_addresses      => flatten($mgmt_addresses),
+      port                => pick($ssh_port, 22),
     }
   }
 
