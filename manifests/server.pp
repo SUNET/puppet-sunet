@@ -13,7 +13,7 @@ class sunet::server (
   Boolean $disable_ipv6_privacy = false,
   Boolean $disable_all_local_users = false,
   Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
-  Optional[Boolean] $ssh_allow_from_anywhere = false,
+  Boolean $ssh_allow_from_anywhere = false,
 ) {
   if $fail2ban {
     # Configure fail2ban to lock out SSH scanners
@@ -68,7 +68,7 @@ class sunet::server (
     class { 'sunet::security::disable_all_local_users': }
   }
 
-  if $::is_virtual == true {
+  if $::facts['is_virtual'] == true {
     file { '/usr/local/bin/sunet-reinstall':
       ensure  => file,
       mode    => '0755',
