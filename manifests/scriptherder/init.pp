@@ -22,7 +22,7 @@ class sunet::scriptherder::init (
     }
   }
   if $nrpe {
-    ensure_resource('class', 'class sunet::scriptherder::monitoring', {
+    ensure_resource('sunet::scriptherder::monitoring', 'scriptherder_monitoring', {
         use_sudo => $nrpe_sudo,
     })
   }
