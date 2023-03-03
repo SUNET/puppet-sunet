@@ -140,39 +140,6 @@ define sunet::snippets::disable_ipv6_privacy() {
   }
 }
 
-# Set up scriptherder. XXX scriptherder is not *installed* here. Figure out how to.
-define sunet::snippets::scriptherder() {
-  $scriptherder_dir = '/var/cache/scriptherder'
-  $scriptherder_delete_older_than = hiera('scriptherder_delete_older_than', 6)
-
-  file {
-    '/etc/scriptherder':
-      ensure  => 'directory',
-      mode    => '0755',
-      ;
-    '/etc/scriptherder/check':
-      ensure  => 'directory',
-      mode    => '0755',
-      ;
-    $scriptherder_dir:
-      ensure  => 'directory',
-      mode    => '1777',    # like /tmp, so user-cronjobs can also use scriptherder
-      ;
-  }
-
-  # Remove scriptherder data older than 7 days.
-  cron { 'scriptherder_cleanup':
-    command  => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${scriptherder_delete_older_than} -print0 | xargs -0 rm -f)",
-    user     => 'root',
-    special  => 'daily',
-  }
-
-  # FIXME: This should be removed as soon as all hosts have run Cosmos and removed the old cronjob in global overlay!!!
-  file { '/etc/cron.daily/scriptherder_cleanup':
-    ensure   => 'absent',
-  }
-}
-
 define sunet::snippets::no_icmp_redirects($order=10) {
    $cfg = "/etc/sysctl.d/${order}_${title}.conf";
    file { "${cfg}":
@@ -181,7 +148,7 @@ define sunet::snippets::no_icmp_redirects($order=10) {
       notify      => Exec["refresh-sysctl-${title}"]
    }
    exec {"refresh-sysctl-${title}":
-      command     => "sysctl -p ${cfg}", 
+      command     => "sysctl -p ${cfg}",
       refreshonly => true
    }
 }

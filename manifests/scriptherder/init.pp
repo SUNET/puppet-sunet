@@ -7,9 +7,11 @@
 # @param nrpe       Whether to install the default NRPE checks or not
 # @param nrpe_sudo  Run the NRPE check with sudo or not. Needed if umask prevents nagios user from reading check results.
 class sunet::scriptherder::init (
-  Boolean $install   = true,
-  Boolean $nrpe      = true,
-  Boolean $nrpe_sudo = true,
+  Boolean $install          = true,
+  Boolean $nrpe             = true,
+  Boolean $nrpe_sudo        = true,
+  String  $scriptherder_dir = '/var/cache/scriptherder',
+  Integer $keep_days        = hiera('scriptherder_delete_older_than', 6),
 ) {
   if $install {
     if $::facts['operatingsystem'] == 'Ubuntu' and versioncmp($::facts['operatingsystemrelease'], '18.04') < 0 {
@@ -27,6 +29,25 @@ class sunet::scriptherder::init (
     })
   }
 
-  # Create the directory for the job outputs
-  sunet::misc::create_root_dir { '/var/cache/scriptherder': mode => '0700', }
+  file {
+    '/etc/scriptherder':
+      ensure => 'directory',
+      mode   => '0755',
+      ;
+    '/etc/scriptherder/check':
+      ensure => 'directory',
+      mode   => '0755',
+      ;
+    $scriptherder_dir:
+      ensure => 'directory',
+      mode   => '1777',    # like /tmp, so user-cronjobs can also use scriptherder
+      ;
+  }
+
+  # Remove scriptherder data older than 7 days.
+  cron { 'scriptherder_cleanup':
+    command => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${keep_days} -print0 | xargs -0 rm -f)",
+    user    => 'root',
+    special => 'daily',
+  }
 }
