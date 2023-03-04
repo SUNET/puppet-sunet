@@ -52,7 +52,7 @@ class sunet::frontend::load_balancer::services(
     api_port   => $api_port,
     #docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
   }
-  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'frontend-api' :
       allow_clients => get_all_backend_ips($config),
       port          => $api_port,
@@ -72,22 +72,7 @@ class sunet::frontend::load_balancer::services(
     docker_run         => false,
   }
 
-
   #
-  # Always HTTPS (webserver to redirect HTTP to HTTPS)
-  #
-  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
-    sunet::nftables::docker_expose { 'always-https' :
-      allow_clients => 'any',
-      port          => 80,
-    }
-  } else {
-    sunet::misc::ufw_allow { 'always-https-allow-http':
-      from => 'any',
-      port => '80'
-    }
-  }
-
   # Variables used in compose file.
   #   NOTE: For this (scope lookup) to work, this code has to be a class and not a define!
   #

@@ -7,8 +7,12 @@ define sunet::frontend::load_balancer::website(
   Integer $api_port = 8080,
 ) {
   $instance  = $name
+  if length($instance) > 12 {
+    notice("Instance name: ${instance} is longer than 12 characters and will not work in docker bridge networking, please rename instance.")
+  }
   $site_name = pick($config['site_name'], $instance)
   $monitor_group = pick($config['monitor_group'], 'default')
+  $haproxy_template_dir = hiera('haproxy_template_dir', $instance)
 
   # Figure out what certificate to pass to the haproxy container
   if ! has_key($config, 'tls_certificate_bundle') {
@@ -59,13 +63,33 @@ define sunet::frontend::load_balancer::website(
     $config2 = $config
   }
 
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
+    # OLD setup
+    $_docker_ip = $::facts['ipaddress_docker0']
+    # On old setups, containers can't reach IPv6 only ACME-C backend directly, but have to go through
+    # a proxy process (always-https) running on the frontend host itself.
+    $_letsencrypt_override_address = $::facts['ipaddress_default']
+  } else {
+    # NEW setup with Docker in namespace
+    $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
+    $_letsencrypt_override_address = undef
+  }
+
   # Add IP and hostname of the host running the container - used to reach the
   # acme-c proxy in eduid
-  $config3 = merge($config2, {
+  $config3a = merge($config2, {
     'frontend_ip4' => $::ipaddress_default,
     'frontend_ip6' => $::ipaddress6_default,
     'frontend_fqdn' => $::fqdn,
   })
+
+  if $_letsencrypt_override_address {
+    $config3 = merge($config3a, {
+      'letsencrypt_override_address' => $_letsencrypt_override_address,
+    })
+  } else {
+    $config3 = $config3a
+  }
 
   # This group is created by the exabgp package, but Puppet requires this before create_dir below
   ensure_resource('group', 'exabgp', {ensure => 'present'})
@@ -108,21 +132,16 @@ define sunet::frontend::load_balancer::website(
       ;
   }
 
-  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
-    $_docker_ip = $::ipaddress_docker0
-  } else {
-    $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
-  }
-
   # Parameters used in frontend/docker-compose_template.erb
-  $dns                    = pick_default($config['dns'], undef)
-  $extra_ports            = pick_default($config['extra_ports'], undef)
+  $dns                    = pick_default($config['dns'], [])
+  $exposed_ports          = pick_default($config['exposed_ports'], [80, 443])
   $frontendtools_image    = pick($config['frontendtools_image'], 'docker.sunet.se/frontend/frontend-tools')
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
   $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
   $haproxy_imagetag       = pick($config['haproxy_imagetag'], 'stable')
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
+  $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
   $statsd_host            = pick($_docker_ip, $::ipaddress)
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
@@ -165,7 +184,7 @@ define sunet::frontend::load_balancer::website(
     start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${basedir}/compose/${instance}/docker-compose.yml",
   }
 
-  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
     # OLD way
     if has_key($config, 'allow_ports') {
       each($config['frontends']) | $k, $v | {

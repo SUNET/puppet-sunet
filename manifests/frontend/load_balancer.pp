@@ -25,16 +25,17 @@ class sunet::frontend::load_balancer(
       fail('Load balancer config contains neither "websites" nor "websites2"')
     }
 
-    $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
-      true  => $config['load_balancer']['exabgp_imagetag'],
-      false => 'latest',
-    }
-    sunet::exabgp { 'load_balancer':
-      docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
-        '/opt/frontend/monitor:/opt/frontend/monitor:ro',
-        '/dev/log:/dev/log',
-        ],
-      version        => $exabgp_imagetag,
+    $confdir = "${basedir}/config"
+    $scriptdir = "${basedir}/scripts"
+
+    ensure_resource('sunet::misc::create_dir', [$confdir, $scriptdir],
+                    { owner => 'root', group => 'root', mode => '0755' })
+
+    configure_websites { 'websites':
+      websites  => $websites,
+      basedir   => $basedir,
+      confdir   => $confdir,
+      scriptdir => $scriptdir,
     }
 
     class { 'sunet::frontend::load_balancer::services':
@@ -62,7 +63,7 @@ class sunet::frontend::load_balancer(
 define configure_websites(Hash[String, Hash] $websites, String $basedir, String $confdir, String $scriptdir)
 {
   each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
+    create_resources('sunet::frontend::load_balancer::website', {$site => {}}, {
       'basedir'         => $basedir,
       'confdir'         => $confdir,
       'scriptdir'       => $scriptdir,

@@ -1,11 +1,15 @@
 ---
-version: '3'
+version: '3.4'
+
 services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     expose:
+<% if @varnish_enabled == true -%>
+      - 1080
+<%- end -%>
 <% @exposed_ports.each do |port| -%>
-      - "<%= port %>"
+      - <%= port %>
 <%- end -%>
     # No point in restarting the haproxy container - the systemd service ExecStartPost will not
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
@@ -33,7 +37,6 @@ services:
       - '<%= server %>'
 <% end -%>
 <% end -%>
-
     depends_on:
       - config
       - monitor
@@ -66,6 +69,7 @@ services:
       - '<%= server %>'
 <% end -%>
 <% end -%>
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>"
 <% else -%>
   # varnish disabled
 <% end -%>
@@ -86,8 +90,11 @@ services:
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
-      - haproxy_data:/etc/haproxy
+      - haproxy_new_config:/new_config:rw
+    environment:
+      - 'HAPROXY_NEW_CONFIG=/new_config/haproxy.cfg'
     command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @haproxy_template_dir %>/haproxy.j2
+    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>"
 
 
   monitor:
@@ -109,8 +116,8 @@ services:
     command: >
         /opt/frontend/scripts/monitor-haproxy
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
-            --stats_url /var/run/haproxy-control/stats
-            'site=<%= @site_name %>;group=default'
+            --stats_url "/haproxy_control/stats"
+            'site=<%= @site_name %>;group=<%= @monitor_group %>'
 <% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
 <% @dns.each do |server| -%>
@@ -134,6 +141,8 @@ services:
   # This just needs to run once as root to allow the other containers to have user: something
   setup_volumes:
     image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
+    labels:
+      - "se.sunet.check_docker_containers=run_once"
     volumes:
       - /etc/passwd:/etc/passwd:ro
       - /etc/group:/etc/group:ro

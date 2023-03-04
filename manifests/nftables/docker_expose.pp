@@ -28,13 +28,17 @@ define sunet::nftables::docker_expose (
   $dport = sunet::format_nft_set('dport', $port)
   $v6_dnat_dport = sunet::format_nft_set('dport', $dnat_v6_port)
 
-  file {
-    "/etc/nftables/conf.d/600-docker_expose-${safe_name}.nft":
-      ensure  => file,
-      mode    => '0400',
-      content => template('sunet/nftables/600-docker_expose.nft.erb'),
-      notify  => Service['nftables'],
-      ;
+  if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+    notice('No to_docker interface found, not setting up the DNAT rules for Docker (will probably work next time)')
+  } else {
+    file {
+      "/etc/nftables/conf.d/600-docker_expose-${safe_name}.nft":
+        ensure  => file,
+        mode    => '0400',
+        content => template('sunet/nftables/600-docker_expose.nft.erb'),
+        notify  => Service['nftables'],
+        ;
+    }
   }
 
   if $allow_local {

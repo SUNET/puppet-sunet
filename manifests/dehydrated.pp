@@ -298,7 +298,7 @@ define sunet::dehydrated::client_define(
       command => "rsync -e \"ssh -i \$HOME/.ssh/id_${_ssh_id}\" -az root@${server}: /etc/dehydrated/certs/${domain} && /usr/bin/le-ssl-compat.sh",
       user    => $user,
       hour    => '*',
-      minute  => '13'
+      minute  => fqdn_rand(60),
     }
   } else {
     ensure_resource('sunet::scriptherder::cronjob',  "dehydrated_fetch_${server}", {
