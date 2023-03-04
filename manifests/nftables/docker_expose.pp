@@ -13,6 +13,7 @@ define sunet::nftables::docker_expose (
   String $dnat_v4_addr = '172.16.0.2',
   String $dnat_v6_addr = 'fd00::2',
   Variant[Integer, String] $dnat_v6_port = $port,
+  Boolean $allow_local = false,
 ) {
   $safe_name = regsubst($title, '[^0-9A-Za-z_]', '_', 'G')
 
@@ -34,5 +35,9 @@ define sunet::nftables::docker_expose (
       content => template('sunet/nftables/600-docker_expose.nft.erb'),
       notify  => Service['nftables'],
       ;
+  }
+
+  if $allow_local {
+    notice('Allow-local is a NO-OP here unless it is still needed?')
   }
 }
