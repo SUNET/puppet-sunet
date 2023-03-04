@@ -40,8 +40,4 @@ define sunet::nftables::docker_expose (
         ;
     }
   }
-
-  if $allow_local {
-    notice('Allow-local is a NO-OP here unless it is still needed?')
-  }
 }
