@@ -1,9 +1,11 @@
 #
-# Silently drop broad broadcast and multicast traffic. However we need IPv6 router solicitations, which is multicast,
-# so we keep them but drop other things of little interest so we don't spam the logs generated below otherwise.
+# Silently drop broad broadcast and multicast traffic. We'd get a lot of IPv6 router solicitations and other things of little
+# interest in the logs generated below otherwise.
 #
-add rule inet filter input pkttype broadcast counter drop comment "Silently drop broadcast"
+add rule inet filter input   pkttype broadcast counter drop comment "Silently drop broadcast"
+add rule inet filter input   pkttype multicast counter drop comment "Silently drop multicast"
 add rule inet filter forward pkttype broadcast counter drop comment "Silently drop broadcast"
+add rule inet filter forward pkttype multicast counter drop comment "Silently drop multicast"
 #
 # Log packets being dropped, with rate limiting to avoid the logging itself becoming a problem (attack vector).
 #
