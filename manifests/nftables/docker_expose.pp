@@ -7,7 +7,7 @@
 # @param dnat_v6_port   Port to use for v6 DNAT. Docker won't set up DNAT for IPv6, so provide the containers v6 port here.
 define sunet::nftables::docker_expose (
   Variant[String, Array[String]] $allow_clients, # Allow traffic 'from' this IP (or list of IP:s).
-  Variant[Integer, String] $port,  # Allow traffic to this port (or list of ports).
+  Variant[Integer, String] $port,  # Allow traffic to this port
   Enum['tcp', 'udp'] $proto = 'tcp',
   String $iif = 'eth0',
   String $dnat_v4_addr = '172.16.0.2',
