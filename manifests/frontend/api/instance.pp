@@ -17,8 +17,7 @@ define sunet::frontend::api::instance(
   # accept register requests from the servers
   ensure_resource('file', "${basedir}/backends/${site_name}", {
       ensure => 'directory',
-      owner  => 'fe-api',
-      group  => 'fe-config',
-      mode   => '2750',
+      group  => 'sunetfrontend',
+      mode   => '0770',
   })
 }

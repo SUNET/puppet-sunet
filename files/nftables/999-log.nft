@@ -3,9 +3,7 @@
 # so we keep them but drop other things of little interest so we don't spam the logs generated below otherwise.
 #
 add rule inet filter input pkttype broadcast counter drop comment "Silently drop broadcast"
-add rule ip filter input pkttype multicast counter drop comment "Silently drop multicast"
 add rule inet filter forward pkttype broadcast counter drop comment "Silently drop broadcast"
-add rule ip filter forward pkttype multicast counter drop comment "Silently drop multicast"
 #
 # Log packets being dropped, with rate limiting to avoid the logging itself becoming a problem (attack vector).
 #
