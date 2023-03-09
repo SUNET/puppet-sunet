@@ -46,19 +46,12 @@ class sunet::baas2(
     # Install the configuration files
     file { "/opt/tivoli/tsm/client/ba/bin/dsm.sys":
        ensure  => "file",
-       content => template("sunet/baas2/dsm_sys.erb")
+       content => template("sunet/baas2/dsm.sys.erb")
     }
     file { "/opt/tivoli/tsm/client/ba/bin/dsm.opt":
        ensure  => "file",
-       content => template("sunet/baas2/dsm_opt.erb")
+       content => template("sunet/baas2/dsm.opt.erb")
     }
 
   }
-
-  # FIXME: This doesnt currently work because TSM requires a human to press enter to initiate a new host with dsmc
-  exec {"Initiate the new node in BaaS":
-     command => "dsmc query session -password=$baas_password",
-     unless  => "test -f /etc/adsm/TSM.PWD",
-  }
-
 }
