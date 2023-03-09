@@ -1,0 +1,260 @@
+#!/usr/bin/env python3
+# pylint:disable=invalid-name
+# pylint:enable=invalid-name
+"""
+This tool manages the installation of IBM Spectrum Protect Backup-Archive
+Client for the Safespring Backup 2.0 service
+
+Operations based on a combination of:
+https://docs.safespring.com/backup/install/linux/
+https://www.ibm.com/docs/en/SSEQVQ_8.1.15/pdf/b_ba_guide_unx_lnx.pdf
+
+Tools used before committing code:
+black sunet-bootstrap-baas2
+pylint sunet-bootstrap-baas2
+mypy --strict sunet-bootstrap-baas2
+"""
+import argparse
+import subprocess
+import shlex
+import sys
+import os
+import os.path
+import tarfile
+
+from typing import Union
+
+
+def get_installed_version() -> Union[str, None]:
+    """Return current installed version string or None if not installed"""
+    proc_args = shlex.split("dpkg --status tivsm-ba")
+    # If not installed:
+    #
+    # $ dpkg --status tivsm-ba
+    # dpkg-query: package 'tivsm-ba' is not installed and no information is available
+    # Use dpkg --info (= dpkg-deb --info) to examine archive files.
+    #
+    # If installed:
+    #
+    # $ dpkg --status tivsm-ba
+    # Package: tivsm-ba
+    # Status: install ok installed
+    # Section: Utilities/Archiving
+    # Maintainer: IBM
+    # Architecture: amd64
+    # Version: 8.1.15-2
+    # Pre-Depends: tivsm-api64 (= 8.1.15-2)
+    # Description: This is the IBM Spectrum Protect Linux BA Client
+    # Homepage: http://www.ibm.com/software/tivoli/products/storage-mgr/
+    try:
+        proc = subprocess.run(
+            proc_args, check=True, capture_output=True, encoding="utf8"
+        )
+    except subprocess.CalledProcessError as exc:
+        # If the package is not installed this is OK, we will install it
+        if " is not installed " in exc.stderr:
+            return None
+        raise exc
+
+    # Parse out the package information
+    package_info = {}
+    for line in proc.stdout.splitlines():
+        key, value = line.split(": ", maxsplit=2)
+        package_info[key] = value
+
+    if "Version" not in package_info:
+        raise KeyError("no 'Version' field parsed from dpkg output")
+
+    # The debian package version "8.1.15-2" matches the "upstream" version
+    # "Version 8, Release 1, Level 15.2" and this in turn matches the
+    # "filename" version 8.1.15.2, so replace the hyphen with a dot.
+    return package_info["Version"].replace("-", ".")
+
+
+def get_tar_url(version_string: str) -> str:
+    """figure out the URL to the tar file given a version"""
+
+    # It turns out IBM separates the downloads into "maintenance" and "patches":
+    #
+    # example "maintenance" URL:
+    # https://www3.software.ibm.com/storage/tivoli-storage-management/maintenance/client/v8r1/Linux/LinuxX86_DEB/BA/v8117/8.1.17.0-TIV-TSMBAC-LinuxX86_DEB.tar
+    #
+    # example "patches" URL:
+    # https://www3.software.ibm.com/storage/tivoli-storage-management/patches/client/v8r1/Linux/LinuxX86_DEB/v8115/8.1.15.1-TIV-TSMBAC-LinuxX86_DEB.tar
+    #
+    base_url = "https://www3.software.ibm.com/storage/tivoli-storage-management"
+
+    # The version string has four parts, e.g. 8.1.15.2. The dsmc client presents this as:
+    # Version: 8, Release 1, Level: 15.2
+    version_string_parts = version_string.split(".")
+    if len(version_string_parts) != 4:
+        raise IndexError(
+            f"unexpected number of version parts: {len(version_string_parts)}"
+        )
+
+    # Convert to int for easier comparisions
+    version = int(version_string_parts[0])
+    release = int(version_string_parts[1])
+    level_first = int(version_string_parts[2])
+    level_last = int(version_string_parts[3])
+
+    # From what we can tell, a version ending in .0 lives under "maintenance"
+    # while anything else lives under "patches".
+    # Also, the path name directy after after client/ (e.g. "v8r1") is
+    # basically "v<version>r<release>" and the later path name "v8117" is
+    # corresponds to "v<version><release><level_first>"
+    if level_last == 0:
+        url = (
+            base_url
+            + f"/maintenance/client/v{version}r{release}/Linux/LinuxX86_DEB/BA/v{version}{release}{level_first}/{version_string}-TIV-TSMBAC-LinuxX86_DEB.tar"  # pylint:disable=line-too-long
+        )
+    else:
+        url = (
+            base_url
+            + f"/patches/client/v{version}r{release}/Linux/LinuxX86_DEB/v{version}{release}{level_first}/{version_string}-TIV-TSMBAC-LinuxX86_DEB.tar"  # pylint:disable=line-too-long
+        )
+
+    return url
+
+
+def download_file(url: str, download_dir: str) -> str:
+    """downloads the file pointed to by url, returns path to downloaded file"""
+
+    os.makedirs(download_dir, exist_ok=True)
+
+    filename = url.split("/")[-1]
+
+    file_path = f"{download_dir}/{filename}"
+
+    if os.path.isfile(file_path):
+        print(f"file {file_path} already exists, not downloading")
+        return file_path
+
+    proc_args = shlex.split(f"curl --fail --silent --output {file_path} {url}")
+    subprocess.run(proc_args, check=True)
+
+    print(f"downloaded file: {file_path}")
+
+    return file_path
+
+
+def extract_tar_file(tar_file: str, dst_dir: str) -> None:
+    """extract a tar file to a destination directory"""
+    with tarfile.open(tar_file) as tar:
+        tar.extractall(path=dst_dir)
+
+
+def verify_file_hash(checksum_file: str) -> None:
+    """given a checksum file, verify the contents"""
+    proc_args = shlex.split(f"sha256sum -c {checksum_file}")
+
+    # The file path inside the checksum file is relative, and there is no way
+    # to tell sha256sum to go to another directory. Therefore we need to change
+    # to the download dir temporarily.
+
+    orig_dir = os.getcwd()
+    checksum_file_dir = os.path.dirname(checksum_file)
+
+    os.chdir(checksum_file_dir)
+    subprocess.run(proc_args, check=True, capture_output=True)
+    os.chdir(orig_dir)
+
+
+def install_deb_files(dir_name: str) -> None:
+    """install deb files located in the given directory, in the expected order"""
+    prefix_tuple = (
+        "gskcrypt64_",
+        "gskssl64_",
+        "tivsm-api64.amd64.deb",
+        "tivsm-ba.amd64.deb",
+    )
+
+    found_files = []
+    with os.scandir(dir_name) as entries:
+        for entry in entries:
+            if entry.is_file() and entry.name.startswith(prefix_tuple):
+                found_files.append(entry.path)
+
+    if len(found_files) != 4:
+        raise ValueError(f"unexpected number of found deb files: {len(found_files)}")
+
+    # We need to install the files in the order they are written in
+    # tuple_prefix (because of deb dependencies), which may be different from
+    # the order we found them in the directory scan, so loop over the prefixes
+    # to set the order:
+    for prefix in prefix_tuple:
+        for path in found_files:
+            if os.path.basename(path).startswith(prefix):
+                proc_args = shlex.split(f"dpkg -i {path}")
+                subprocess.run(proc_args, check=True)
+
+
+def install_root_cert(ca_file_path: str) -> None:
+    """add cert at file path to the dsmcert.kdb database file"""
+    proc_args = shlex.split(f"dsmcert -add -server SafeDC -file {ca_file_path}")
+    subprocess.run(proc_args, check=True)
+
+
+def get_trust_labels(cert_db_file: str) -> list[str]:
+    """extract a list of trusted cert labels from an existing dsmcert.kdb file"""
+    # # gsk8capicmd_64 -cert -list -db /opt/tivoli/tsm/client/ba/bin/dsmcert.kdb -stashed
+    # Certificates found
+    # * default, - personal, ! trusted, # secret key
+    # !	"TSM server SafeDC self-signed key"
+    proc_args = shlex.split(f"gsk8capicmd_64 -cert -list -db {cert_db_file} -stashed")
+    proc = subprocess.run(proc_args, capture_output=True, check=True, encoding="utf-8")
+
+    trusted_cert_labels = []
+    for line in proc.stdout.splitlines():
+        # lines starting with "!" is a trusted cert label
+        if line.startswith("!\t"):
+            trusted_cert_label = line.lstrip('!\t"').rstrip('"')
+            trusted_cert_labels.append(trusted_cert_label)
+
+    return trusted_cert_labels
+
+
+def main() -> None:
+    """the starting point of the program"""
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--version", help="version of client to install", required=True)
+    args = parser.parse_args()
+
+    installed_version = get_installed_version()
+
+    download_dir = f"/var/cache/{os.path.basename(sys.argv[0])}"
+
+    if installed_version != args.version:
+        print(f"installing version: {args.version}")
+        url = get_tar_url(args.version)
+        print(f"url is: {url}")
+        tar_file = download_file(url, download_dir)
+        checksum_file = download_file(url + ".sha256sum.txt", download_dir)
+        verify_file_hash(checksum_file)
+        extract_tar_file(tar_file, download_dir)
+        install_deb_files(download_dir)
+
+    root_cert_needed = False
+    root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
+    if not os.path.isfile(root_cert_file):
+        root_cert_needed = True
+    else:
+        trust_labels = get_trust_labels(root_cert_file)
+        if "TSM server SafeDC self-signed key" not in trust_labels:
+            root_cert_needed = True
+
+    if root_cert_needed:
+        root_ca_file = download_file(
+            "https://raw.githubusercontent.com/safespring/cloud-BaaS/master/pki/SafeDC-Net-Root-CA.pem",  # pylint:disable=line-too-long
+            download_dir,
+        )
+        install_root_cert(root_ca_file)
+
+    # run initial expect-clicky-clicky <-- needs things to be filled in and registered
+    # enable systemctl stuff if disabled
+    # cleanup download_dir
+
+
+if __name__ == "__main__":
+    main()
