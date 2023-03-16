@@ -220,7 +220,11 @@ def set_dsmc_password(password: str) -> None:
     # password twice we can set the password without having to handle
     # interactive prompts
     proc_args = shlex.split(f"dsmc set password {password} {password}")
-    subprocess.run(proc_args, capture_output=True, check=True)
+    try:
+        subprocess.run(proc_args, capture_output=True, check=True)
+    except subprocess.CalledProcessError:
+        # Do not output the full command line since it contains secrets
+        raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
 
 
 def main() -> None:
