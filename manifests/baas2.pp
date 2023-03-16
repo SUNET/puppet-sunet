@@ -20,10 +20,12 @@
 #   3. Call upon this module with the nodename, default also backs up subdirs.
 #
 
-# @param nodename  The nodename registered in the IBM system for this server
-# @param version   The version of the client to install
+# @param nodename          The nodename registered in the IBM system for this server
+# @param tcpserveraddress  The address of the TSM server we are sending backup data to
+# @param version           The version of the client to install
 class sunet::baas2(
    String $nodename="",
+   String $tcpserveraddress="tsm12.backup.sto2.safedc.net",
    String $version="8.1.15.2",
 ) {
 
