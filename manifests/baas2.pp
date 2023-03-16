@@ -43,6 +43,7 @@ class sunet::baas2(
 
     # Make sure the requested version is installed
     exec { "/usr/local/sbin/sunet-bootstrap-baas2 --version=$version":
+        environment => [ "SUNET_BAAS_PASSWORD=$baas_password" ],
     }
 
     # Install the configuration files
