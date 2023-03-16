@@ -214,6 +214,15 @@ def get_trust_labels(cert_db_file: str) -> list[str]:
     return trusted_cert_labels
 
 
+def set_dsmc_password(password: str) -> None:
+    """set password for dsmc client"""
+    # The UX of this is kind of weird, but by running this with the same
+    # password twice we can set the password without having to handle
+    # interactive prompts
+    proc_args = shlex.split(f"dsmc set password {password} {password}")
+    subprocess.run(proc_args, capture_output=True, check=True)
+
+
 def main() -> None:
     """the starting point of the program"""
 
@@ -251,7 +260,13 @@ def main() -> None:
         )
         install_root_cert(root_ca_file)
 
-    # run initial expect-clicky-clicky <-- needs things to be filled in and registered
+    baas_password = os.environ.get("SUNET_BAAS_PASSWORD")
+    if baas_password is not None:
+        # The file that stores the encrypted passwords.
+        encrypted_passwords_db = "/etc/adsm/TSM.KDB"
+        if not os.path.isfile(encrypted_passwords_db):
+            set_dsmc_password(baas_password)
+
     # enable systemctl stuff if disabled
     # cleanup download_dir
 
