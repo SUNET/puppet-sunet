@@ -22,6 +22,15 @@ class sunet::forgejo (
   $lfs_jwt_secret = hiera('lfs_jwt_secret')
   # gitea generate secret SECRET_KEY
   $secret_key = hiera('secret_key')
+  # Nginx stuff
+  file{ '/opt/nginx':
+    ensure => directory,
+  }
+  $nginx_dirs = ['conf', 'dhparam', 'html', 'vhost']
+  $nginx_dirs.each|$dir| {
+  file{ "/opt/nginx/${dir}":
+    ensure => directory,
+  }
   # Compose
   sunet::docker_compose { 'forgejo':
     content          => template('sunet/forgejo/docker-compose.yaml.erb'),
@@ -55,7 +64,7 @@ class sunet::forgejo (
     group   => 'git',
   }
   -> sunet::misc::ufw_allow { 'forgejo_ports':
-      from => 'any',
-      port => ['80', '443', '22022']
-   }
+    from => 'any',
+    port => ['80', '443', '22022'],
+  }
 }
