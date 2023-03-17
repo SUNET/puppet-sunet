@@ -5,6 +5,12 @@ class sunet::forgejo (
   Integer $uid            = '900',
   Integer $gid            = '900',
 ) {
+  sunet::docker_run {'alwayshttps':
+    ensure => 'present',
+    image  => 'docker.sunet.se/always-https',
+    ports  => ['80:80'],
+    env    => ['ACME_URL=http://acme-c.sunet.se'],
+  }
   # gitea generate secret INTERNAL_TOKEN
   $internal_token = hiera('internal_token')
   # gitea generate secret JWT_SECRET
