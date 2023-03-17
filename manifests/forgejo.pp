@@ -28,8 +28,9 @@ class sunet::forgejo (
   }
   $nginx_dirs = ['conf', 'dhparam', 'html', 'vhost']
   $nginx_dirs.each|$dir| {
-  file{ "/opt/nginx/${dir}":
-    ensure => directory,
+    file{ "/opt/nginx/${dir}":
+      ensure => directory,
+    }
   }
   # Compose
   sunet::docker_compose { 'forgejo':
