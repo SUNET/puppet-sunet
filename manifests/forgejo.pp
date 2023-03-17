@@ -5,6 +5,9 @@ class sunet::forgejo (
   Integer $uid            = '900',
   Integer $gid            = '900',
 ) {
+  docker_network { 'docker':
+    ensure => 'present',
+  }
   sunet::docker_run {'alwayshttps':
     ensure => 'present',
     image  => 'docker.sunet.se/always-https',
