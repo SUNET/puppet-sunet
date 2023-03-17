@@ -366,5 +366,9 @@ class sunet::dockerhost(
         notify  => Service['unbound'],
         ;
     }
+  } else {
+    if $::operatingsystem == 'Ubuntu' {
+      ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => true,})
+    }
   }
 }
