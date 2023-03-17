@@ -77,6 +77,6 @@ class sunet::unbound(
                     ],
         ;
     }
+    ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => $disable_resolved_stub,})
   }
-  ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => $disable_resolved_stub,})
 }
