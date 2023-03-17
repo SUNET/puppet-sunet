@@ -25,6 +25,9 @@ services:
       - GID=<%= @gid %>
       - HOME=/data/git
       - GITEA_WORK_DIR=/opt/forgejo/data
+      - VIRTUAL_HOST=<%= @domain %>
+      - VIRTUAL_PATH=/
+      - VIRTUAL_PORT=3000
     entrypoint: gitea -c /opt/forgejo/config/app.ini
   nginx:
     image: docker.io/nginxproxy/nginx-proxy:latest
