@@ -73,7 +73,7 @@ define sunet::docker_run(
     before_stop              => $before_stop,
     after_start              => $after_start,
     after_stop               => $after_stop,
-    docker_service           => true,  # the service 'docker' is maintainer by puppet, so depend on it
+    docker_service           => false,
     image                    => $image_tag,
     extra_parameters         => flatten([$extra_parameters]),
     extra_systemd_parameters => $extra_systemd_parameters,
