@@ -79,4 +79,10 @@ class sunet::unbound(
     }
     ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => $disable_resolved_stub,})
   }
+  elsif $::operatingsystem == 'Debian' {
+    file_line { 'base':
+        path => '/etc/resolvconf/resolv.conf.d/base',
+        line => "nameserver ${::ipaddress_default}",
+      }
+  }
 }
