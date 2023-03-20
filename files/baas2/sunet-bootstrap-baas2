@@ -21,6 +21,7 @@ import sys
 import os
 import os.path
 import tarfile
+import shutil
 
 from typing import Union
 
@@ -246,7 +247,10 @@ def main() -> None:
 
     installed_version = get_installed_version()
 
-    download_dir = f"/var/cache/{os.path.basename(sys.argv[0])}"
+    # This is the directory used for downloading temporary files when
+    # installing the client. It will be automatically removed when installation
+    # is done.
+    download_dir = "/var/cache/sunet-bootstrap-baas2"
 
     if installed_version is None and args.install is False:
         print(
@@ -299,7 +303,9 @@ def main() -> None:
         if not os.path.isfile(encrypted_passwords_db):
             set_dsmc_password(baas_password)
 
-    # cleanup download_dir
+    # Remove download dir to save space
+    if os.path.isdir(download_dir):
+        shutil.rmtree(download_dir)
 
 
 if __name__ == "__main__":
