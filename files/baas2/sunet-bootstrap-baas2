@@ -231,47 +231,74 @@ def main() -> None:
     """the starting point of the program"""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--version", help="version of client to install", required=True)
+    parser.add_argument("--version", help="version of client to install")
+    parser.add_argument(
+        "--install", help="version of client to install", action="store_true"
+    )
+    parser.add_argument(
+        "--register", help="version of client to install", action="store_true"
+    )
     args = parser.parse_args()
+
+    if args.install and not args.version:
+        print("--install requires that you supply --version")
+        sys.exit(1)
 
     installed_version = get_installed_version()
 
     download_dir = f"/var/cache/{os.path.basename(sys.argv[0])}"
 
-    if installed_version != args.version:
-        print(f"installing version: {args.version}")
-        url = get_tar_url(args.version)
-        print(f"url is: {url}")
-        tar_file = download_file(url, download_dir)
-        checksum_file = download_file(url + ".sha256sum.txt", download_dir)
-        verify_file_hash(checksum_file)
-        extract_tar_file(tar_file, download_dir)
-        install_deb_files(download_dir)
-
-    root_cert_needed = False
-    root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
-    if not os.path.isfile(root_cert_file):
-        root_cert_needed = True
-    else:
-        trust_labels = get_trust_labels(root_cert_file)
-        if "TSM server SafeDC self-signed key" not in trust_labels:
-            root_cert_needed = True
-
-    if root_cert_needed:
-        root_ca_file = download_file(
-            "https://raw.githubusercontent.com/safespring/cloud-BaaS/master/pki/SafeDC-Net-Root-CA.pem",  # pylint:disable=line-too-long
-            download_dir,
+    if installed_version is None and args.install is False:
+        print(
+            "The client is not currently installed, you need to run the tool with --install"
         )
-        install_root_cert(root_ca_file)
+        sys.exit(1)
 
-    baas_password = os.environ.get("SUNET_BAAS_PASSWORD")
-    if baas_password is not None:
+    if args.install:
+        if installed_version != args.version:
+            print(f"installing version: {args.version}")
+            url = get_tar_url(args.version)
+            print(f"url is: {url}")
+            tar_file = download_file(url, download_dir)
+            checksum_file = download_file(url + ".sha256sum.txt", download_dir)
+            verify_file_hash(checksum_file)
+            extract_tar_file(tar_file, download_dir)
+            install_deb_files(download_dir)
+
+        root_cert_needed = False
+        root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
+        if not os.path.isfile(root_cert_file):
+            root_cert_needed = True
+        else:
+            trust_labels = get_trust_labels(root_cert_file)
+            if "TSM server SafeDC self-signed key" not in trust_labels:
+                root_cert_needed = True
+
+        if root_cert_needed:
+            root_ca_file = download_file(
+                "https://raw.githubusercontent.com/safespring/cloud-BaaS/master/pki/SafeDC-Net-Root-CA.pem",  # pylint:disable=line-too-long
+                download_dir,
+            )
+            install_root_cert(root_ca_file)
+
+    # We use a separate flag for registering the client because we need
+    # puppet to modify configuration files in the middle of things. Basically
+    # the steps performed by puppet are:
+    # * Run script with --install --version=X.Y.Z
+    # * Modify configuration files (expecting directory trees to have been
+    #   created by installation)
+    # * Run script with --register
+    password_env_name = "SUNET_BAAS_PASSWORD"
+    if args.register:
+        baas_password = os.environ.get(password_env_name)
+        if baas_password is None:
+            print(f"missing required environment variable '{password_env_name}'")
+            sys.exit(1)
         # The file that stores the encrypted passwords.
         encrypted_passwords_db = "/etc/adsm/TSM.KDB"
         if not os.path.isfile(encrypted_passwords_db):
             set_dsmc_password(baas_password)
 
-    # enable systemctl stuff if disabled
     # cleanup download_dir
 
 

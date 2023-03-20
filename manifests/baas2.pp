@@ -42,8 +42,8 @@ class sunet::baas2(
     }
 
     # Make sure the requested version is installed
-    exec { "/usr/local/sbin/sunet-bootstrap-baas2 --version=$version":
-        environment => [ "SUNET_BAAS_PASSWORD=$baas_password" ],
+    exec { 'sunet-bootstrap-baas2 --install':
+        command => "/usr/local/sbin/sunet-bootstrap-baas2 --install --version=$version",
     }
 
     # Install the configuration files
@@ -56,5 +56,16 @@ class sunet::baas2(
        content => template("sunet/baas2/dsm.opt.erb")
     }
 
-  }
+    # Make sure the client is registered with the server
+    exec { 'sunet-bootstrap-baas2 --register':
+        command => "/usr/local/sbin/sunet-bootstrap-baas2 --register",
+        environment => [ "SUNET_BAAS_PASSWORD=$baas_password" ],
+        require => File['/opt/tivoli/tsm/client/ba/bin/dsm.sys'],
+    }
+
+    service { 'dsmcad':
+        ensure  => 'running',
+        enable  => true,
+        require => Exec['sunet-bootstrap-baas2 --register'],
+    }
 }
