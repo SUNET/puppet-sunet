@@ -45,8 +45,8 @@ class sunet::scriptherder::init (
   }
 
   if $::facts['cosmos_wrapper_available'] and ( $::facts['scriptherder_available'] or $install) {
-    $scriptherder_ok   = 'exit_status=0'
-    $scriptherder_warn = 'exit_status=0'
+    $scriptherder_ok   = 'exit_status=0, max_age=8h'
+    $scriptherder_warn = 'exit_status=0, max_age=24 OR_file_exists=/etc/no-automatic-cosmos'
 
     file { '/etc/scriptherder/check/cosmos.ini' :
       ensure  => $_file_ensure,
