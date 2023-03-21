@@ -1,19 +1,12 @@
 #!/bin/bash
-cosmos_wrapper_available="false"
-scriptherder_available="false"
-local_cosmos_ini="false"
 if [ -x "/usr/local/libexec/cosmos-cron-wrapper" ]; then
-    cosmos_wrapper_available="true"
+    echo "cosmos_wrapper_available=true"
 fi
 
 if [ -x "/usr/local/bin/scriptherder" ]; then
-    scriptherder_available="true"
+    echo "scriptherder_available=true"
 fi
 
 if [ -f "/etc/scriptherder/check/cosmos.ini" ]; then
-    local_cosmos_ini="true"
+    echo "local_cosmos_ini=true"
 fi
-
-echo "cosmos_wrapper_available=${cosmos_wrapper_available}"
-echo "scriptherder_available=${scriptherder_available}"
-echo "local_cosmos_ini=${local_cosmos_ini}"
