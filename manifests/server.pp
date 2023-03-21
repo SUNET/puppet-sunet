@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-class sunet::server(
 # Base class for all Sunet hosts
 class sunet::server (
   Boolean $fail2ban = true,
