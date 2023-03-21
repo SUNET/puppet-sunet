@@ -44,6 +44,18 @@ class sunet::scriptherder::init (
       ;
   }
 
+  if $::facts['cosmos_wrapper_available'] and ( $::facts['scriptherder_available'] or $install) {
+    $ok_criteria   = ['exit_status=0']
+    $warn_criteria = ['exit_status=0']
+
+    file { '/etc/scriptherder/check/cosmos.ini' :
+      ensure  => $_file_ensure,
+      mode    => '0644', # to allow NRPE to read it
+      group   => 'root',
+      content => template('sunet/scriptherder/scriptherder_check.ini.erb'),
+    }
+  }
+
   # Remove scriptherder data older than 7 days.
   cron { 'scriptherder_cleanup':
     command => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${keep_days} -print0 | xargs -0 rm -f)",

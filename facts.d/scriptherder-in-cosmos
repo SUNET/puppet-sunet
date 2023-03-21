@@ -1,0 +1,14 @@
+#!/bin/bash
+cosmos_wrapper_available="false"
+scriptherder_available="false"
+if [ -x "/usr/local/libexec/cosmos-cron-wrapper" ]; then
+    cosmos_wrapper_available="true"
+fi
+
+if [ -x "/usr/local/bin/scriptherder" ]; then
+    scriptherder_available="true"
+fi
+
+
+echo "cosmos_wrapper_available=${cosmos_wrapper_available}"
+echo "scriptherder_available=${scriptherder_available}"
