@@ -23,7 +23,14 @@ SECRET_KEY = <%= @secret_key %>
 INTERNAL_TOKEN = <%= @internal_token %>
 
 [mailer]
-ENABLED = false
+ENABLED        = true
+FROM           = platform@sunet.se
+MAILER_TYPE    = smtp
+SMTP_ADDR      = smtp.sunet.se
+SMTP_PORT      = 587
+IS_TLS_ENABLED = true
+USER           = platform@sunet.se
+PASSWD         = <%= @smtp_password %>
 
 [oauth2]
 JWT_SECRET = <%= @jwt_secret %>

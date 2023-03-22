@@ -22,6 +22,8 @@ class sunet::forgejo (
   $lfs_jwt_secret = hiera('lfs_jwt_secret')
   # gitea generate secret SECRET_KEY
   $secret_key = hiera('secret_key')
+  # SMTP Password from NOC
+  $smtp_password = hiera('smtp_password')
 
   # White list for email domains for account creation
   $email_domain_whitelist = hiera('email_domain_whitelist')
