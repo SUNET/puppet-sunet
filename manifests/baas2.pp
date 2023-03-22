@@ -23,16 +23,24 @@
 # @param nodename          The nodename registered in the IBM system for this server
 # @param tcpserveraddress  The address of the TSM server we are sending backup data to
 # @param version           The version of the client to install
+# @param backup_dirs       Specific directories to backup, default is to backup everything
 class sunet::baas2(
-  String $nodename="",
-  String $tcpserveraddress="tsm12.backup.sto2.safedc.net",
-  String $version="8.1.15.2",
+  String        $nodename="",
+  String        $tcpserveraddress="tsm12.backup.sto2.safedc.net",
+  String        $version="8.1.15.2",
+  Array[String] $backup_dirs = [],
 ) {
 
   # MUST be set properly in hiera to continue
   $baas_password = hiera('baas_password', 'NOT_SET_IN_HIERA')
 
   if $nodename and $baas_password != 'NOT_SET_IN_HIERA' {
+
+    # The dsm.sys template expects backup_dirs to not have a trailing slash, so
+    # make sure this is the case
+    $backup_dirs = $backup_dirs.map |$backup_dir| {
+        regsubst($backup_dir,'/$','')
+    }
 
     file { "/usr/local/sbin/sunet-bootstrap-baas2":
       ensure  => 'file',
