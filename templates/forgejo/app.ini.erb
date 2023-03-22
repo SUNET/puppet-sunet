@@ -24,11 +24,11 @@ INTERNAL_TOKEN = <%= @internal_token %>
 
 [mailer]
 ENABLED        = true
+PROTOCOL       = smtp+starttls
 FROM           = platform@sunet.se
 MAILER_TYPE    = smtp
 SMTP_ADDR      = smtp.sunet.se
 SMTP_PORT      = 587
-IS_TLS_ENABLED = true
 USER           = platform@sunet.se
 PASSWD         = <%= @smtp_password %>
 
