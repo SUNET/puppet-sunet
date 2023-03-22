@@ -62,7 +62,7 @@ SERVERNAME SafeDC
 * ... so we need to exclude everything at the top of the list and then include
 * the requested directories afterwards.
   exclude /.../*
-  <% @backup_dirs_transformed.each do |dir| -%>
+<% @backup_dirs_transformed.each do |dir| -%>
   include <%= dir %>/.../*
-  <% end -%>
+<% end -%>
 <% end -%>
