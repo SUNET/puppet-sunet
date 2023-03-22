@@ -38,7 +38,7 @@ class sunet::baas2(
 
     # The dsm.sys template expects backup_dirs to not have a trailing slash, so
     # make sure this is the case
-    $backup_dirs = $backup_dirs.map |$backup_dir| {
+    $backup_dirs_transformed = $backup_dirs.map |$backup_dir| {
         regsubst($backup_dir,'/$','')
     }
 
