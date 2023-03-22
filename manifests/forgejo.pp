@@ -62,6 +62,11 @@ class sunet::forgejo (
     owner  => 'git',
     group  => 'git',
   }
+  -> file{ '/opt/forgejo/backups':
+    ensure => directory,
+    owner  => 'git',
+    group  => 'git',
+  }
   -> file{ '/opt/forgejo/config/app.ini':
     ensure  => file,
     content => template('sunet/forgejo/app.ini.erb'),

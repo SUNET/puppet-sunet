@@ -12,8 +12,9 @@ services:
       - "3000:3000"
       - "22022:22022"
     volumes:
-      - /opt/forgejo/data:/opt/forgejo/data
+      - /opt/forgejo/backups:/opt/forgejo/backups
       - /opt/forgejo/config:/opt/forgejo/config
+      - /opt/forgejo/data:/opt/forgejo/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
