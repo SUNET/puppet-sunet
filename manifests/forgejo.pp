@@ -74,6 +74,18 @@ class sunet::forgejo (
     owner   => 'git',
     group   => 'git',
   }
+  -> file{ '/opt/forgejo/backup.sh':
+    ensure  => file,
+    content => template('sunet/forgejo/backup.erb.sh'),
+    mode    => '0744',
+  }
+  -> sunet::scriptherder::cronjob { 'forgejo_backup':
+       cmd           => '/opt/forgejo/backup.sh',
+       minute        => '20',
+       hour          => '3',
+       ok_criteria   => ['exit_status=0', 'max_age=25h'],
+       warn_criteria => ['exit_status=0', 'max_age=49h'],
+  }
   -> sunet::misc::ufw_allow { 'forgejo_ports':
     from => 'any',
     port => ['80', '443', '22022'],
