@@ -31,11 +31,16 @@ class sunet::forgejo (
   file{ '/opt/nginx':
     ensure => directory,
   }
-  $nginx_dirs = ['conf', 'dhparam', 'html', 'vhost']
+  $nginx_dirs = ['conf', 'dhparam', 'html', 'vhost', 'template']
   $nginx_dirs.each|$dir| {
     file{ "/opt/nginx/${dir}":
       ensure => directory,
     }
+  }
+  -> file{ '/opt/nginx/template/nginx.tmpl':
+    ensure  => file,
+    content => template('sunet/forgejo/nginx.tmpl'),
+    mode    => '0644',
   }
   # Compose
   sunet::docker_compose { 'forgejo':

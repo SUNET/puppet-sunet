@@ -12,7 +12,6 @@ services:
       - "3000:3000"
       - "22022:22022"
     volumes:
-      - /etc/dehydrated/certs/:/opt/forgejo/certs:ro
       - /opt/forgejo/backups:/opt/forgejo/backups
       - /opt/forgejo/config:/opt/forgejo/config
       - /opt/forgejo/data:/opt/forgejo/data
@@ -43,6 +42,7 @@ services:
       - "443:443"
     volumes:
       - /etc/dehydrated/certs/:/etc/nginx/certs:ro
+      - /opt/nginx/template/nginx.tmpl:/app/nginx.tmpl
       - /opt/nginx/conf:/etc/nginx/conf.d
       - /opt/nginx/dhparam:/etc/nginx/dhparam
       - /opt/nginx/html:/usr/share/nginx/html
