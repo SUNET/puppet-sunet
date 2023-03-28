@@ -1,0 +1,49 @@
+APP_NAME = platform.sunet.se: Gitops for teh win!
+RUN_USER = git
+
+; CONFIGURATION DOCUMENTATION: https://forgejo.org/docs/latest/admin/config-cheat-sheet/
+
+[server]
+DOMAIN = <%= @domain %> 
+ENABLE_LETSENCRYPT=true
+HTTP_PORT = 3000
+LFS_JWT_SECRET = <%= @lfs_jwt_secret %>
+PROTOCOL = http
+ROOT_URL = https://<%= @domain %>/
+SSH_PORT = 22022
+START_SSH_SERVER = true
+
+[database]
+DB_TYPE = sqlite3
+PATH = /opt/forgejo/data/forgejo.db
+
+[security]
+INSTALL_LOCK = true
+SECRET_KEY = <%= @secret_key %>
+INTERNAL_TOKEN = <%= @internal_token %>
+
+[mailer]
+ENABLED = false
+
+[oauth2]
+JWT_SECRET = <%= @jwt_secret %>
+
+[picture]
+DISABLE_GRAVATAR        = false
+ENABLE_FEDERATED_AVATAR = false
+
+[repository]
+ROOT = /opt/forgejo/data/forgejo-repositories
+DEFAULT_BRANCH = main
+MAX_CREATION_LIMIT = 0
+
+[service]
+DISABLE_REGISTRATION = false
+DEFAULT_ALLOW_CREATE_ORGANIZATION = false
+
+[CORS]
+ALLOW_DOMAIN = sunet.se
+ALLOW_SUBDOMAIN = true
+X_FRAME_OPTIONS = SAMEORIGIN
+SCHEME = https
+ENABLED = true
