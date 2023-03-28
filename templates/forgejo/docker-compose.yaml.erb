@@ -12,6 +12,7 @@ services:
       - "3000:3000"
       - "22022:22022"
     volumes:
+      - /etc/dehydrated/certs/:/opt/forgejo/certs:ro
       - /opt/forgejo/backups:/opt/forgejo/backups
       - /opt/forgejo/config:/opt/forgejo/config
       - /opt/forgejo/data:/opt/forgejo/data
