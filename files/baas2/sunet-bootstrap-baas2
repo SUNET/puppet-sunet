@@ -25,6 +25,18 @@ import shutil
 
 from typing import Union
 
+# Discovered by running "hexdump -C /etc/adsm/TSM.IDX"
+PREFIX_SIZE = 2
+INDEX_SIZE = 1
+SERVERNAME_MAX_SIZE = 256
+NODENAME_MAX_SIZE = 130
+LABEL_MAX_SIZE = 256
+ENTRY_SIZE = (
+    PREFIX_SIZE + INDEX_SIZE + SERVERNAME_MAX_SIZE + NODENAME_MAX_SIZE + LABEL_MAX_SIZE
+)
+# Each entry starts with the bytes EF 05
+PREFIX_EXPECTED_BYTES = b"\xef\x05"
+
 
 def get_installed_version() -> Union[str, None]:
     """Return current installed version string or None if not installed"""
@@ -228,6 +240,223 @@ def set_dsmc_password(password: str) -> None:
         raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
 
 
+def read_index_file(path: str):  # pylint:disable=too-many-locals
+    """parse a TSM.IDX file"""
+    # Be cautious if index is ever allowed to be more than one byte as I am
+    # unsure what byte order would be used in the file
+    if INDEX_SIZE > 1:
+        raise ValueError(
+            "the expects index to be a single byte in call to int.from_bytes() below, verify correct byteorder is used for multibyte index"  # pylint:disable=line-too-long
+        )
+
+    with open(path, "rb") as fileobj:
+        data = fileobj.read()
+
+    if len(data) % ENTRY_SIZE != 0:
+        raise RuntimeError(
+            f"the IDX file length ({len(data)}) is not evenly divisible by expected entry size ({ENTRY_SIZE}), this is unexpected"  # pylint:disable=line-too-long
+        )
+
+    num_entries = int(len(data) / ENTRY_SIZE)
+
+    index_data = {"raw_data": data}
+
+    entry_index = 0
+    while entry_index < num_entries:
+        # Set the entry offset in the file based on what entry we are one,
+        # starting with 0 for the first entry and then going forward.
+        prefix_offset = entry_index * ENTRY_SIZE
+        prefix_bytes = data[prefix_offset : prefix_offset + PREFIX_SIZE]
+
+        if prefix_bytes != PREFIX_EXPECTED_BYTES:
+            raise ValueError(
+                "unexpected start of IDX entry, expected: '{PREFIX_EXPECTED_BYTES}', actual: '{prefix_bytes'}"  # pylint:disable=line-too-long
+            )
+
+        index_offset = prefix_offset + PREFIX_SIZE
+        index_byte = data[index_offset : index_offset + INDEX_SIZE]
+
+        # The byteorder does not matter for a single byte, so "big" has just been
+        # randomly selected. If the index is ever allowed to be more than one byte
+        # this needs to be verified, but we raise an execption above if this is
+        # the case so it is noticed.
+        index = int.from_bytes(index_byte, byteorder="big")
+
+        servername_offset = index_offset + INDEX_SIZE
+        servername_bytes = data[
+            servername_offset : servername_offset + SERVERNAME_MAX_SIZE
+        ]
+        servername = servername_bytes.decode(encoding="utf-8").rstrip("\x00")
+
+        nodename_offset = servername_offset + SERVERNAME_MAX_SIZE
+        nodename_bytes = data[nodename_offset : nodename_offset + NODENAME_MAX_SIZE]
+        nodename = nodename_bytes.decode(encoding="utf-8").rstrip("\x00")
+
+        label_offset = nodename_offset + NODENAME_MAX_SIZE
+        label_bytes = data[label_offset : label_offset + LABEL_MAX_SIZE]
+        label = label_bytes.decode(encoding="utf-8").rstrip("\x00")
+
+        # Go to next entry
+        entry_index += 1
+
+        if index in index_data:
+            raise RuntimeError(
+                f"index {index} is alreay present in index_data, this is unexpected"
+            )
+
+        index_data[index] = {
+            "servername": servername,
+            "nodename": nodename,
+            "label": label,
+        }
+
+    return index_data
+
+
+def upper_if_ascii(string: str) -> str:
+    """Take a string and return the .upper() version of it, but only for ascii
+    characters. This matches the behaviour shown by 'dsmc set password'"""
+    out_string = ""
+    for char in string:
+        if ord(char) < 128:
+            out_string += char.upper()
+        else:
+            out_string += char
+
+    return out_string
+
+
+def build_index_entry(index: int, servername: str, nodename: str, label: str):
+    """Build a binary entry suitable for appending to the TSM.IDX file"""
+    entry = b""
+
+    if len(servername) > SERVERNAME_MAX_SIZE:
+        raise ValueError(
+            f"servername '{servername}' is too long ({len(servername)}), max is {SERVERNAME_MAX_SIZE}"  # pylint:disable=line-too-long
+        )
+
+    if len(nodename) > NODENAME_MAX_SIZE:
+        raise ValueError(
+            f"nodename '{nodename}' is too long ({len(nodename)}), max is {NODENAME_MAX_SIZE}"
+        )
+
+    if len(label) > LABEL_MAX_SIZE:
+        raise ValueError(f"label '{label}' is too long, max is {NODENAME_MAX_SIZE}")
+
+    prefix_bytes = PREFIX_EXPECTED_BYTES
+    entry += prefix_bytes
+
+    # The index is at most one byte so therefore require length=1
+    index_bytes = index.to_bytes(length=1, byteorder="big")
+    entry += index_bytes
+
+    servername_bytes = upper_if_ascii(servername).encode(encoding="utf-8")
+    servername_padding_bytes = b"\x00" * (SERVERNAME_MAX_SIZE - len(servername_bytes))
+    entry += servername_bytes + servername_padding_bytes
+
+    nodename_bytes = nodename.encode(encoding="utf-8")
+    nodename_padding_bytes = b"\x00" * (NODENAME_MAX_SIZE - len(nodename_bytes))
+    entry += nodename_bytes + nodename_padding_bytes
+
+    label_bytes = label.encode(encoding="utf-8")
+    label_padding_bytes = b"\x00" * (LABEL_MAX_SIZE - len(label_bytes))
+
+    entry += label_bytes + label_padding_bytes
+
+    if len(entry) != ENTRY_SIZE:
+        raise RuntimeError(
+            "ENTRY_SIZE ({ENTRY_SIZE}) does not match actual entry size ({len(entry)}), something is wrong"  # pylint:disable=line-too-long
+        )
+
+    return entry
+
+
+def get_servername(path: str):
+    """Extract servername from dsm.opt"""
+    servername = None
+    with open(path, "r", encoding="utf-8") as fileobj:
+        for line in fileobj.readlines():
+            if "SERVERNAME" in line:
+                servername = line.split(maxsplit=1)[1].rstrip()
+                break
+
+    return servername
+
+
+def get_nodename(path: str):
+    """Extract nodename from dsm.sys"""
+    # TODO(patlu): Only support one nodename, if someone uses more than one
+    # SERVERNAME stanza this will break.
+    nodename = None
+    with open(path, "r", encoding="utf-8") as fileobj:
+        for line in fileobj.readlines():
+            if "NODENAME" in line:
+                nodename = line.split(maxsplit=1)[1].rstrip()
+                break
+
+    return nodename
+
+
+def add_kdb_entry(db_path: str, label: str, password: str):
+    """Add a password entry to the TSM.KDB file"""
+
+    # The -add command requires the use of a file that the password is read
+    # from, so we need to create this file in a location that is only readable
+    # by root
+    tmp_password_file = "/root/sunet-bootstrap-baas2-encryption-secret.tmp"
+
+    with open(tmp_password_file, "w", encoding="utf-8") as fileobj:
+        fileobj.write(password)
+
+    proc_args = shlex.split(
+        f"gsk8capicmd_64 -secretkey -add -db {db_path} -label {label} -stashed -file {tmp_password_file}"  # pylint:disable=line-too-long
+    )
+    try:
+        subprocess.run(proc_args, capture_output=True, check=True, encoding="utf-8")
+    except subprocess.CalledProcessError as exc:
+        # Cleanup before we crash
+        os.remove(tmp_password_file)
+        raise exc
+
+    os.remove(tmp_password_file)
+
+
+def set_encrypt_password(password_db: str, password: str):
+    """The goal of this function is the configure the password used for encryption"""
+
+    servername = get_servername("/opt/tivoli/tsm/client/ba/bin/dsm.opt")
+    nodename = get_nodename("/opt/tivoli/tsm/client/ba/bin/dsm.sys")
+    # Statically assigned label for now, seems to work and should not collide
+    # with a future timestamp because it has already passed.
+    label = "1680001337_0"
+
+    if servername is None:
+        print("unable to find servername in dsm.opt, exiting")
+        sys.exit(1)
+
+    tsm_idx_path = "/etc/adsm/TSM.IDX"
+    index_data = read_index_file(tsm_idx_path)
+
+    if 1 in index_data:
+        print("entry with index 1 already exists, nothing to add")
+        sys.exit(0)
+
+    add_kdb_entry(password_db, label, password)
+
+    entry = build_index_entry(
+        index=1, servername=servername, nodename=nodename, label=label
+    )
+
+    updated_index_data = index_data["raw_data"] + entry
+
+    idx_tmp_file = tsm_idx_path + ".sunet.tmp"
+
+    with open(idx_tmp_file, "wb") as file:
+        file.write(updated_index_data)
+
+    os.rename(idx_tmp_file, tsm_idx_path)
+
+
 def main() -> None:
     """the starting point of the program"""
 
@@ -259,31 +488,7 @@ def main() -> None:
         sys.exit(1)
 
     if args.install:
-        if installed_version != args.version:
-            print(f"installing version: {args.version}")
-            url = get_tar_url(args.version)
-            print(f"url is: {url}")
-            tar_file = download_file(url, download_dir)
-            checksum_file = download_file(url + ".sha256sum.txt", download_dir)
-            verify_file_hash(checksum_file)
-            extract_tar_file(tar_file, download_dir)
-            install_deb_files(download_dir)
-
-        root_cert_needed = False
-        root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
-        if not os.path.isfile(root_cert_file):
-            root_cert_needed = True
-        else:
-            trust_labels = get_trust_labels(root_cert_file)
-            if "TSM server SafeDC self-signed key" not in trust_labels:
-                root_cert_needed = True
-
-        if root_cert_needed:
-            root_ca_file = download_file(
-                "https://raw.githubusercontent.com/safespring/cloud-BaaS/master/pki/SafeDC-Net-Root-CA.pem",  # pylint:disable=line-too-long
-                download_dir,
-            )
-            install_root_cert(root_ca_file)
+        handle_installation(args, installed_version, download_dir)
 
     # We use a separate flag for registering the client because we need
     # puppet to modify configuration files in the middle of things. Basically
@@ -292,20 +497,63 @@ def main() -> None:
     # * Modify configuration files (expecting directory trees to have been
     #   created by installation)
     # * Run script with --register
-    password_env_name = "SUNET_BAAS_PASSWORD"
     if args.register:
-        baas_password = os.environ.get(password_env_name)
-        if baas_password is None:
-            print(f"missing required environment variable '{password_env_name}'")
-            sys.exit(1)
-        # The file that stores the encrypted passwords.
-        encrypted_passwords_db = "/etc/adsm/TSM.KDB"
-        if not os.path.isfile(encrypted_passwords_db):
-            set_dsmc_password(baas_password)
+        handle_registration()
 
     # Remove download dir to save space
     if os.path.isdir(download_dir):
         shutil.rmtree(download_dir)
+
+
+def handle_installation(args, installed_version, download_dir):
+    """Overall handler for installing the TSM client"""
+    if installed_version != args.version:
+        print(f"installing version: {args.version}")
+        url = get_tar_url(args.version)
+        print(f"url is: {url}")
+        tar_file = download_file(url, download_dir)
+        checksum_file = download_file(url + ".sha256sum.txt", download_dir)
+        verify_file_hash(checksum_file)
+        extract_tar_file(tar_file, download_dir)
+        install_deb_files(download_dir)
+
+    root_cert_needed = False
+    root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
+    if not os.path.isfile(root_cert_file):
+        root_cert_needed = True
+    else:
+        trust_labels = get_trust_labels(root_cert_file)
+        if "TSM server SafeDC self-signed key" not in trust_labels:
+            root_cert_needed = True
+
+    if root_cert_needed:
+        root_ca_file = download_file(
+            "https://raw.githubusercontent.com/safespring/cloud-BaaS/master/pki/SafeDC-Net-Root-CA.pem",  # pylint:disable=line-too-long
+            download_dir,
+        )
+        install_root_cert(root_ca_file)
+
+
+def handle_registration():
+    """Overall handler registering an installed client with the BaaS service,
+    including setting an encryption password"""
+    password_env_name = "SUNET_BAAS_PASSWORD"
+    baas_password = os.environ.get(password_env_name)
+    if baas_password is None:
+        print(f"missing required environment variable '{password_env_name}'")
+        sys.exit(1)
+    # The file that stores the encrypted passwords.
+    encrypted_passwords_db = "/etc/adsm/TSM.KDB"
+    if not os.path.isfile(encrypted_passwords_db):
+        set_dsmc_password(baas_password)
+
+    # Set encrypt password
+    encryption_password_env_name = "SUNET_BAAS_ENCRYPTION_PASSWORD"
+    baas_encrypt_password = os.environ.get(encryption_password_env_name)
+    if baas_encrypt_password is None:
+        print(f"missing required environment variable '{encryption_password_env_name}'")
+        sys.exit(1)
+    set_encrypt_password(encrypted_passwords_db, baas_encrypt_password)
 
 
 if __name__ == "__main__":
