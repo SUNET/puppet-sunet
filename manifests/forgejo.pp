@@ -37,7 +37,7 @@ class sunet::forgejo (
       ensure => directory,
     }
   }
-  -> file{ '/opt/nginx/template/nginx.tmpl':
+  file{ '/opt/nginx/template/nginx.tmpl':
     ensure  => file,
     content => template('sunet/forgejo/nginx.tmpl'),
     mode    => '0644',
