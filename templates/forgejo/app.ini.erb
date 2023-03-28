@@ -12,8 +12,8 @@ PROTOCOL = http
 ROOT_URL = https://<%= @domain %>/
 SSH_PORT = 22022
 START_SSH_SERVER = true
-CERT_FILE: /opt/forgejo/certs/platform.sunet.se-chain.crt
-KEY_FILE: /opt/forgejo/certs/platform.sunet.se.key
+CERT_FILE: /opt/forgejo/certs/fullchain.pem
+KEY_FILE: /opt/forgejo/certs/privkey.pem
 
 
 [database]
