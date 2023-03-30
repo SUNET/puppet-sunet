@@ -33,8 +33,9 @@ class sunet::baas2(
 
   # MUST be set properly in hiera to continue
   $baas_password = hiera('baas_password', 'NOT_SET_IN_HIERA')
+  $baas_encryption_password = hiera('baas_encryption_password', 'NOT_SET_IN_HIERA')
 
-  if $nodename and $baas_password != 'NOT_SET_IN_HIERA' {
+  if $nodename and $baas_password != 'NOT_SET_IN_HIERA' and $baas_encryption_password != 'NOT_SET_IN_HIERA' {
 
     # The dsm.sys template expects backup_dirs to not have a trailing slash, so
     # make sure this is the case
@@ -67,7 +68,10 @@ class sunet::baas2(
     # Make sure the client is registered with the server
     exec { 'sunet-bootstrap-baas2 --register':
       command => "/usr/local/sbin/sunet-bootstrap-baas2 --register",
-      environment => [ "SUNET_BAAS_PASSWORD=$baas_password" ],
+      environment => [
+          "SUNET_BAAS_PASSWORD=$baas_password",
+          "SUNET_BAAS_ENCRYPTION_PASSWORD=$baas_encryption_password",
+      ],
       require => File['/opt/tivoli/tsm/client/ba/bin/dsm.sys'],
     }
 
