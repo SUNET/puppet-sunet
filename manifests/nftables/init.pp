@@ -1,6 +1,6 @@
 # Setup nftables on a host
 class sunet::nftables::init(
-  Boolean $default_log = true,
+  Boolean $default_log = false,
 ) {
     package { 'nftables':
         ensure => 'present',
