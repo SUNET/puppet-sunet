@@ -553,6 +553,13 @@ def handle_registration():
     if baas_encrypt_password is None:
         print(f"missing required environment variable '{encryption_password_env_name}'")
         sys.exit(1)
+
+    # Make sure there are no trailing \r or \n characters in the password. When
+    # the password is created by calling "dsmc" by hand the resulting password
+    # entry in TSM.KDB file has no newlines. We remove \r "just in case" there
+    # might have been a windows editor involved.
+    baas_encrypt_password = baas_encrypt_password.rstrip("\r\n")
+
     set_encrypt_password(encrypted_passwords_db, baas_encrypt_password)
 
 
