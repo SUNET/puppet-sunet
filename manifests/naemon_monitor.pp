@@ -202,7 +202,6 @@ class sunet::naemon_monitor(
   }
 
   class { 'nagioscfg':
-    hostgroups     => $::roles,
     additional_entities => $additional_entities,
     config         => 'naemon_monitor',
     default_host_group => $default_host_group,
