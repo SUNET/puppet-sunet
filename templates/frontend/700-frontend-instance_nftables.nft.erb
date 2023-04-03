@@ -8,7 +8,7 @@
 #
 add rule inet filter forward iifname to_<%= @instance -%> oifname <%= @external_interface -%> counter accept comment "Allow traffic from frontend instance <%= @instance -%>"
 #
-add rule ip6 nat postrouting ip6 saddr { fd0c::/64 } counter masquerade comment "SNAT traffic from frontend instances"
+add rule ip6 nat postrouting ip6 saddr { fd0c::/64 } iifname to_<%= @instance -%> counter masquerade comment "SNAT traffic from frontend instances"
 
 #
 # Allow exposed ports from eth0 to frontend instance docker containers
