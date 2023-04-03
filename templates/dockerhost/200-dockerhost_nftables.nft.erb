@@ -22,9 +22,8 @@ add rule ip nat postrouting ip saddr { 172.16.0.0/12 } iifname to_docker counter
 add rule ip6 nat postrouting ip6 saddr { fd00::2/128 } iifname to_docker counter masquerade comment "SNAT traffic from Docker"
 add rule ip6 nat postrouting ip6 saddr { fd0c::/16 } iifname to_docker counter masquerade comment "SNAT traffic from Docker"
 
-
-# Extra rule that seems to be needed on at least Ubuntu 20.04 (?) where iif is ""
-add rule ip nat postrouting ip saddr { 172.16.0.0/12 } oif eth0 counter masquerade comment "SNAT traffic from Docker"
+# eduid: Extra rule that seems to be needed on at least Ubuntu 20.04 (?) where iif is ""
+add rule ip nat postrouting ip saddr { 172.16.0.0/12 } oifname eth0 counter masquerade comment "SNAT traffic from Docker"
 
 #
 # Allow forwarding packages from docker
