@@ -63,7 +63,6 @@ define sunet::frontend::load_balancer::website2(
   file {
     "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
       source => $tls_certificate_bundle,
-      notify => Sunet::Docker_compose["frontend-${instance}"],
   }
 
   # 'export' config to one YAML file per instance
