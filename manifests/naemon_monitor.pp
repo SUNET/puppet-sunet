@@ -15,17 +15,20 @@ class sunet::naemon_monitor(
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
+  String $interface = 'ens3',
   Optional[String] $default_host_group = undef,
 ){
 
   require stdlib
 
     sunet::nftables::docker_expose { "allow_http" :
+    iif           => $interface,
     allow_clients => 'any',
     port          => 80,
   }
 
     sunet::nftables::docker_expose { "allow_https" :
+    iif           => $interface,
     allow_clients => 'any',
     port          => 443,
   }
