@@ -20,6 +20,16 @@ class sunet::naemon_monitor(
 
   require stdlib
 
+    sunet::nftables::docker_expose { "allow_http" :
+    allow_clients => 'any',
+    port          => 80,
+  }
+
+    sunet::nftables::docker_expose { "allow_https" :
+    allow_clients => 'any',
+    port          => 443,
+  }
+
   class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
 
   if hiera('shib_key',undef) != undef {
