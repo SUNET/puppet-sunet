@@ -85,11 +85,11 @@ class sunet::forgejo (
     mode    => '0744',
   }
   -> sunet::scriptherder::cronjob { 'forgejo_backup':
-       cmd           => '/opt/forgejo/backup.sh',
-       minute        => '20',
-       hour          => '3',
-       ok_criteria   => ['exit_status=0', 'max_age=25h'],
-       warn_criteria => ['exit_status=0', 'max_age=49h'],
+    cmd           => '/opt/forgejo/backup.sh',
+    minute        => '20',
+    hour          => '*/2',
+    ok_criteria   => ['exit_status=0', 'max_age=3h'],
+    warn_criteria => ['exit_status=0', 'max_age=5h'],
   }
   -> sunet::misc::ufw_allow { 'forgejo_ports':
     from => 'any',
