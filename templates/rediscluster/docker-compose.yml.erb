@@ -4,6 +4,7 @@ services:
 <% for i in 0..numnodesmone -%>
 <% clusterport = 7000 + i %>
 <% redisport = 6379 + i %>
+<% joinport = 16379 + i %>
   redis-node-<%= i %>:
     container_name: redis-node-<%= i %>
     image: redis:7-bullseye
@@ -14,6 +15,7 @@ services:
     ports:
       - "<%= redisport %>:<%= redisport %>"
       - "<%= clusterport %>:<%= clusterport %>"
+      - "<%= joinport %>:<%= joinport %>"
     volumes:
       - /opt/redis/node-<%= i %>:/data
     command: redis-server /data/server.conf
