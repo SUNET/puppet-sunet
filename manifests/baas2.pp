@@ -67,17 +67,17 @@ class sunet::baas2(
 
     file { '/etc/systemd/system/dsmcad.service.d':
       ensure => directory,
-      mode   => '0755'
-      user   => 'root'
-      group  => 'root'
+      mode   => '0755',
+      user   => 'root',
+      group  => 'root',
     }
 
     # Override dsmcad locale stuff to support more filenames when doing scheduled backups
     file { "/etc/systemd/system/dsmcad.service.d/sunet.conf":
       ensure  => "file",
-      mode   => '0644'
-      user   => 'root'
-      group  => 'root'
+      mode   => '0644',
+      user   => 'root',
+      group  => 'root',
       content => template("sunet/baas2/dsmcad.service.drop-in.erb")
     }
 
