@@ -81,6 +81,13 @@ class sunet::baas2(
       content => template("sunet/baas2/dsmcad.service.drop-in.erb")
     }
 
+    # Make sure systemctl has picked up the above drop-in file
+    exec { 'reload systemctl for dsmcad drop-in file':
+      command => 'systemctl daemon-reload',
+      subscribe => File['/etc/systemd/system/dsmcad.service.d/sunet.conf'],
+      refreshonly => true,
+    }
+
     # Make sure the client is registered with the server
     exec { 'sunet-bootstrap-baas2 --register':
       command => "/usr/local/sbin/sunet-bootstrap-baas2 --register",
