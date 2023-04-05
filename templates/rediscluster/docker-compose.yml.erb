@@ -12,10 +12,7 @@ services:
       - 89.46.20.75
       - 89.46.21.29
       - 89.32.32.32
-    ports:
-      - "<%= redisport %>:<%= redisport %>"
-      - "<%= clusterport %>:<%= clusterport %>"
-      - "<%= joinport %>:<%= joinport %>"
+    network_mode: host
     volumes:
       - /opt/redis/node-<%= i %>:/data
     command: redis-server /data/server.conf
