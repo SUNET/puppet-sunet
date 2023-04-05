@@ -22,13 +22,13 @@ class sunet::naemon_monitor(
   require stdlib
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-      sunet::nftables::docker_expose { "allow_http" :
+      sunet::nftables::docker_expose { 'allow_http' :
       iif           => $interface,
       allow_clients => 'any',
       port          => 80,
     }
 
-      sunet::nftables::docker_expose { "allow_https" :
+      sunet::nftables::docker_expose { 'allow_https' :
       iif           => $interface,
       allow_clients => 'any',
       port          => 443,
@@ -96,8 +96,8 @@ class sunet::naemon_monitor(
     content => template('sunet/naemon_monitor/influxdb.yaml'),
   }
   file { '/opt/naemon_monitor/data':
-    ensure  => directory,
-    owner   => 'www-data'
+    ensure => directory,
+    owner  => 'www-data'
   }
 
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
@@ -218,14 +218,14 @@ class sunet::naemon_monitor(
 
   class { 'nagioscfg':
     additional_entities => $additional_entities,
-    config         => 'naemon_monitor',
-    default_host_group => $default_host_group,
-    manage_package => false,
-    manage_service => false,
-    cfgdir         => '/etc/naemon/conf.d/nagioscfg',
-    host_template  => 'naemon-host',
-    service        => 'sunet-naemon_monitor',
-    single_ip      => true,
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    config              => 'naemon_monitor',
+    default_host_group  => $default_host_group,
+    manage_package      => false,
+    manage_service      => false,
+    cfgdir              => '/etc/naemon/conf.d/nagioscfg',
+    host_template       => 'naemon-host',
+    service             => 'sunet-naemon_monitor',
+    single_ip           => true,
+    require             => File['/etc/naemon/conf.d/nagioscfg/'],
   }
 }
