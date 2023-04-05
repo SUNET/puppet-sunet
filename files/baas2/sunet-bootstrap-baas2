@@ -23,7 +23,7 @@ import os.path
 import tarfile
 import shutil
 
-from typing import Union
+from typing import List, Union
 
 # Discovered by running "hexdump -C /etc/adsm/TSM.IDX"
 PREFIX_SIZE = 2
@@ -208,7 +208,7 @@ def install_root_cert(ca_file_path: str) -> None:
     subprocess.run(proc_args, check=True)
 
 
-def get_trust_labels(cert_db_file: str) -> list[str]:
+def get_trust_labels(cert_db_file: str) -> List[str]:
     """extract a list of trusted cert labels from an existing dsmcert.kdb file"""
     # # gsk8capicmd_64 -cert -list -db /opt/tivoli/tsm/client/ba/bin/dsmcert.kdb -stashed
     # Certificates found
