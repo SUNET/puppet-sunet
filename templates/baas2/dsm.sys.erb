@@ -9,9 +9,19 @@ SERVERNAME SafeDC
 
   *** Copy and Paste Information from Safespring Backup Portal ***
 
-  COMMMETHOD         V6TCPIP
+*  COMMMETHOD         V6TCPIP
 *  legacy clients may have to use TCPIP
-* COMMMETHOD         TCPIP
+*
+*  patlu: While mentioned as a "legacy" option, if we use V6TCPIP this causes
+*  the "dsmcad" process to use around 50% of a CPU core constantly. This odd
+*  behaviour seems to be triggered because the process looks up the name of the
+*  machine it runs on at startup, and unlike IPv4 that has a matching entry in
+*  /etc/hosts, this does not exist for IPv6 which causes a DNS lookup to the
+*  local systemd-resolved  which in turn gives back an empty NOERROR response.
+*  We can solve this either by using "TCPIP", or we can add a "::1" entry for
+*  the hostname in /etc/hosts like it exists for 127.0.0.1. Using TCPIP just
+*  felt like the less intrusive option for now.
+  COMMMETHOD         TCPIP
   SSL                yes
   SSLREQUIRED        yes
   PASSWORDACCESS     GENERATE
