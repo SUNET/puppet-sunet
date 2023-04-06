@@ -43,16 +43,16 @@ class sunet::baas2(
         regsubst($backup_dir,'/$','')
     }
 
-    file { "/usr/local/sbin/sunet-bootstrap-baas2":
+    file { "/usr/local/sbin/sunet-baas2-bootstrap":
       ensure  => 'file',
       mode    => '0755',
       owner   => 'root',
-      content => file('sunet/baas2/sunet-bootstrap-baas2')
+      content => file('sunet/baas2/sunet-baas2-bootstrap')
     }
 
     # Make sure the requested version is installed
-    exec { 'sunet-bootstrap-baas2 --install':
-      command => "/usr/local/sbin/sunet-bootstrap-baas2 --install --version=$version",
+    exec { 'sunet-baas2-bootstrap --install':
+      command => "/usr/local/sbin/sunet-baas2-bootstrap --install --version=$version",
     }
 
     # Install the configuration files
@@ -89,8 +89,8 @@ class sunet::baas2(
     }
 
     # Make sure the client is registered with the server
-    exec { 'sunet-bootstrap-baas2 --register':
-      command => "/usr/local/sbin/sunet-bootstrap-baas2 --register",
+    exec { 'sunet-baas2-bootstrap --register':
+      command => "/usr/local/sbin/sunet-baas2-bootstrap --register",
       environment => [
           "SUNET_BAAS_PASSWORD=$baas_password",
           "SUNET_BAAS_ENCRYPTION_PASSWORD=$baas_encryption_password",
@@ -101,7 +101,7 @@ class sunet::baas2(
     service { 'dsmcad':
        ensure  => 'running',
        enable  => true,
-       require => Exec['sunet-bootstrap-baas2 --register'],
+       require => Exec['sunet-baas2-bootstrap --register'],
     }
 
     file { "/usr/local/sbin/sunet-baas2-status":
