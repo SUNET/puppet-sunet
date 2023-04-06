@@ -23,7 +23,7 @@ import os.path
 import tarfile
 import shutil
 
-from typing import List, Union
+from typing import Any, Dict, List, Union
 
 # Discovered by running "hexdump -C /etc/adsm/TSM.IDX"
 PREFIX_SIZE = 2
@@ -240,7 +240,7 @@ def set_dsmc_password(password: str) -> None:
         raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
 
 
-def read_index_file(path: str):  # pylint:disable=too-many-locals
+def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-locals
     """parse a TSM.IDX file"""
     # Be cautious if index is ever allowed to be more than one byte as I am
     # unsure what byte order would be used in the file
@@ -259,7 +259,7 @@ def read_index_file(path: str):  # pylint:disable=too-many-locals
 
     num_entries = int(len(data) / ENTRY_SIZE)
 
-    index_data = {"raw_data": data}
+    index_data: Dict[str, Any] = {"raw_data": data, "entries": []}
 
     entry_index = 0
     while entry_index < num_entries:
@@ -299,16 +299,20 @@ def read_index_file(path: str):  # pylint:disable=too-many-locals
         # Go to next entry
         entry_index += 1
 
-        if index in index_data:
+        # Prior to adding the parsed entry we should have the same number of
+        # entries as "current parsed index"
+        if len(index_data["entries"]) != index:
             raise RuntimeError(
-                f"index {index} is alreay present in index_data, this is unexpected"
+                f"mismatch in number of found entries {len(index_data['entries'])} compared to the current index we parsed: {index}"  # pylint:disable=line-too-long
             )
 
-        index_data[index] = {
-            "servername": servername,
-            "nodename": nodename,
-            "label": label,
-        }
+        index_data["entries"].append(
+            {
+                "servername": servername,
+                "nodename": nodename,
+                "label": label,
+            }
+        )
 
     return index_data
 
@@ -326,7 +330,7 @@ def upper_if_ascii(string: str) -> str:
     return out_string
 
 
-def build_index_entry(index: int, servername: str, nodename: str, label: str):
+def build_index_entry(index: int, servername: str, nodename: str, label: str) -> bytes:
     """Build a binary entry suitable for appending to the TSM.IDX file"""
     entry = b""
 
@@ -371,7 +375,7 @@ def build_index_entry(index: int, servername: str, nodename: str, label: str):
     return entry
 
 
-def get_servername(path: str):
+def get_servername(path: str) -> str | None:
     """Extract servername from dsm.opt"""
     servername = None
     with open(path, "r", encoding="utf-8") as fileobj:
@@ -383,7 +387,7 @@ def get_servername(path: str):
     return servername
 
 
-def get_nodename(path: str):
+def get_nodename(path: str) -> str | None:
     """Extract nodename from dsm.sys"""
     # TODO(patlu): Only support one nodename, if someone uses more than one
     # SERVERNAME stanza this will break.
@@ -397,7 +401,7 @@ def get_nodename(path: str):
     return nodename
 
 
-def add_kdb_entry(db_path: str, label: str, password: str):
+def add_kdb_entry(db_path: str, label: str, password: str) -> None:
     """Add a password entry to the TSM.KDB file"""
 
     # The -add command requires the use of a file that the password is read
@@ -421,11 +425,20 @@ def add_kdb_entry(db_path: str, label: str, password: str):
     os.remove(tmp_password_file)
 
 
-def set_encrypt_password(password_db: str, password: str):
+def set_encrypt_password(password_db: str, password: str) -> None:
     """The goal of this function is the configure the password used for encryption"""
 
-    servername = get_servername("/opt/tivoli/tsm/client/ba/bin/dsm.opt")
-    nodename = get_nodename("/opt/tivoli/tsm/client/ba/bin/dsm.sys")
+    dsm_opt_path = "/opt/tivoli/tsm/client/ba/bin/dsm.opt"
+    dsm_sys_path = "/opt/tivoli/tsm/client/ba/bin/dsm.sys"
+
+    servername = get_servername(dsm_opt_path)
+    if servername is None:
+        raise RuntimeError(f"unable to parse servername from {dsm_opt_path}")
+
+    nodename = get_nodename(dsm_sys_path)
+    if nodename is None:
+        raise RuntimeError(f"unable to parse nodename from {dsm_sys_path}")
+
     # Statically assigned label for now, seems to work and should not collide
     # with a future timestamp because it has already passed.
     label = "1680001337_0"
@@ -437,8 +450,8 @@ def set_encrypt_password(password_db: str, password: str):
     tsm_idx_path = "/etc/adsm/TSM.IDX"
     index_data = read_index_file(tsm_idx_path)
 
-    if 1 in index_data:
-        print("entry with index 1 already exists, nothing to add")
+    if len(index_data["entries"]) > 1:
+        print("more than one entry already exists, nothing to add")
         sys.exit(0)
 
     add_kdb_entry(password_db, label, password)
@@ -505,7 +518,9 @@ def main() -> None:
         shutil.rmtree(download_dir)
 
 
-def handle_installation(args, installed_version, download_dir):
+def handle_installation(
+    args: argparse.Namespace, installed_version: str | None, download_dir: str
+) -> None:
     """Overall handler for installing the TSM client"""
     if installed_version != args.version:
         print(f"installing version: {args.version}")
@@ -534,7 +549,7 @@ def handle_installation(args, installed_version, download_dir):
         install_root_cert(root_ca_file)
 
 
-def handle_registration():
+def handle_registration() -> None:
     """Overall handler registering an installed client with the BaaS service,
     including setting an encryption password"""
     password_env_name = "SUNET_BAAS_PASSWORD"
