@@ -110,5 +110,11 @@ class sunet::baas2(
       owner   => 'root',
       content => file('sunet/baas2/sunet-baas2-status')
     }
+
+    sunet::scriptherder::cronjob { "sunet-baas2-status":
+      cmd         => "/usr/local/sbin/sunet-baas2-status",
+      minute      => '26',
+      ok_criteria => ['exit_status=0', 'max_age=3h'],
+    }
   }
 }
