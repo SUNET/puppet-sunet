@@ -103,5 +103,12 @@ class sunet::baas2(
        enable  => true,
        require => Exec['sunet-bootstrap-baas2 --register'],
     }
+
+    file { "/usr/local/sbin/sunet-baas2-status":
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      content => file('sunet/baas2/sunet-baas2-status')
+    }
   }
 }
