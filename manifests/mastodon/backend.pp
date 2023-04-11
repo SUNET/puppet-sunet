@@ -2,6 +2,7 @@
 class sunet::mastodon::backend(
   String $db_name                  = 'postgres',
   String $db_user                  = 'postgres',
+  String $interface                = 'ens3',
 ) {
   # Must set in hiera eyaml
   $db_pass=safe_hiera('db_pass')
@@ -30,8 +31,24 @@ class sunet::mastodon::backend(
     ensure  => file,
     content => template('sunet/mastodon/backend/redis.conf.erb'),
   }
-  sunet::misc::ufw_allow { 'backend_ports':
-     from => 'any',
-     port => ['5432', '6379']
+
+
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { 'backend_postgres_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 5432,
+    }
+    sunet::nftables::docker_expose { 'backend_redis_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 6379,
+    }
+  } else {
+    sunet::misc::ufw_allow { 'backend_ports':
+      from => 'any',
+      port => ['5432', '6379']
+    }
   }
+
 }
