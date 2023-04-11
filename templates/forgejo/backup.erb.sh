@@ -10,7 +10,7 @@ if [[ ${status} -ne 0 ]]; then
 else
   echo "Backup done: $(date)"
   echo "Moving backups to remote: $(date)"
-  PASSPHRASE="<% platform_sunet_se_gpg_password %>" duplicity --encrypt-key=platform@sunet.se --full-if-older-than 1M --asynchronous-upload "${backup_dir}" rclone://backups:/backups
+  PASSPHRASE="<% @platform_sunet_se_gpg_password %>" duplicity --encrypt-key=platform@sunet.se --full-if-older-than 1M --asynchronous-upload "${backup_dir}" rclone://backups:/backups
   second_status=${?}
   if [[ ${second_status} -eq 0 ]]; then
     echo "Cleaning up old backups: $(date)"
