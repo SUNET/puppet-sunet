@@ -25,6 +25,11 @@ class sunet::forgejo (
   # SMTP Password from NOC
   $smtp_password = hiera('smtp_password')
 
+  # S3 credentials from openstack
+  $s3_secret_key = hiera('s3_secret_key')
+  $s3_access_key = hiera('s3_access_key')
+  $s3_host = 's3.sto4.safedc.net'
+
   # White list for email domains for account creation
   $email_domain_whitelist = hiera('email_domain_whitelist')
   # Nginx stuff
@@ -78,6 +83,11 @@ class sunet::forgejo (
     mode    => '0644',
     owner   => 'git',
     group   => 'git',
+  }
+  -> file{ '/root/.rclone.conf':
+    ensure  => file,
+    content => template('sunet/forgejo/rclone.conf.erb'),
+    mode    => '0644',
   }
   -> file{ '/opt/forgejo/backup.sh':
     ensure  => file,
