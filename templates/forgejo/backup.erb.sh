@@ -1,7 +1,23 @@
 #!/bin/bash
+backup_dir="/opt/forgejo/backups"
 
 echo "Starting backup: $(date)"
-/usr/local/bin/docker-compose -f /opt/forgejo/docker-compose.yaml exec -ti forgejo  bash -c 'cd /opt/forgejo/backups && gitea dump -c /opt/forgejo/config/app.ini --tempdir /opt/forgejo/backups'
+/usr/local/bin/docker-compose -f /opt/forgejo/docker-compose.yaml exec -ti forgejo  bash -c "cd ${backup_dir} && gitea dump -c /opt/forgejo/config/app.ini --tempdir ${backup_dir}"
 status=${?}
-echo "Backup done: $(date)"
-exit ${status}
+if [[ ${status} -ne 0 ]]; then
+  echo "Backup failed: $(date)"
+  second_status=0
+else
+  echo "Backup done: $(date)"
+  echo "Moving backups to remote: $(date)"
+  PASSPHRASE="<% platform_sunet_se_gpg_password %>" duplicity --encrypt-key=platform@sunet.se --full-if-older-than 1M --asynchronous-upload "${backup_dir}" rclone://backups:/backups
+  second_status=${?}
+  if [[ ${second_status} -eq 0 ]]; then
+    echo "Cleaning up old backups: $(date)"
+    find "${backup_dir}" -mtime +30 -delete
+  else
+    echo "Backup to remote failed: $(date)"
+  fi
+fi
+total_status=$(( status + second_status ))
+exit ${total_status}

@@ -5,6 +5,10 @@ class sunet::forgejo (
   Integer $uid            = '900',
   Integer $gid            = '900',
 ) {
+  include sunet::packages::rclone
+  package { 'duplicity':
+    ensure => latest,
+  }
   docker_network { 'docker':
     ensure => 'present',
   }
