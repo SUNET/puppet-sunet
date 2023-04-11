@@ -34,6 +34,9 @@ class sunet::forgejo (
   $s3_access_key = hiera('s3_access_key')
   $s3_host = 's3.sto4.safedc.net'
 
+  # GPG password
+  $platform_sunet_se_gpg_password = hiera('platform_sunet_se_gpg_password')
+
   # White list for email domains for account creation
   $email_domain_whitelist = hiera('email_domain_whitelist')
   # Nginx stuff
