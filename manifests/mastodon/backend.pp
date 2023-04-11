@@ -44,11 +44,6 @@ class sunet::mastodon::backend(
       allow_clients => 'any',
       port          => 6379,
     }
-    sunet::nftables::docker_expose { 'backend_ports' :
-      iif           => $interface,
-      allow_clients => 'any',
-      port          => ['5432', '6379'],
-    }
   } else {
     sunet::misc::ufw_allow { 'backend_ports':
       from => 'any',
