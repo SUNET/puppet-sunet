@@ -34,6 +34,16 @@ class sunet::mastodon::backend(
 
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { 'backend_postgres_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 5432,
+    }
+    sunet::nftables::docker_expose { 'backend_redis_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 6379,
+    }
     sunet::nftables::docker_expose { 'backend_ports' :
       iif           => $interface,
       allow_clients => 'any',
