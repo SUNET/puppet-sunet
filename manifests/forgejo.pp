@@ -5,6 +5,10 @@ class sunet::forgejo (
   Integer $uid            = '900',
   Integer $gid            = '900',
 ) {
+  include sunet::packages::rclone
+  package { 'duplicity':
+    ensure => latest,
+  }
   docker_network { 'docker':
     ensure => 'present',
   }
@@ -24,6 +28,14 @@ class sunet::forgejo (
   $secret_key = hiera('secret_key')
   # SMTP Password from NOC
   $smtp_password = hiera('smtp_password')
+
+  # S3 credentials from openstack
+  $s3_secret_key = hiera('s3_secret_key')
+  $s3_access_key = hiera('s3_access_key')
+  $s3_host = 's3.sto4.safedc.net'
+
+  # GPG password
+  $platform_sunet_se_gpg_password = hiera('platform_sunet_se_gpg_password')
 
   # White list for email domains for account creation
   $email_domain_whitelist = hiera('email_domain_whitelist')
@@ -78,6 +90,11 @@ class sunet::forgejo (
     mode    => '0644',
     owner   => 'git',
     group   => 'git',
+  }
+  -> file{ '/root/.rclone.conf':
+    ensure  => file,
+    content => template('sunet/forgejo/rclone.conf.erb'),
+    mode    => '0644',
   }
   -> file{ '/opt/forgejo/backup.sh':
     ensure  => file,
