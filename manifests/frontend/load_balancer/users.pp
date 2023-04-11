@@ -5,17 +5,23 @@
 # for that user(name) - which won't work. Therefor, docker-compose files need to specify
 # uid/gid instead :/ and thus this has to be a class so the templates can look up the uid/gid.
 class sunet::frontend::load_balancer::users(
-  Integer $base_uidgid = hiera('sunet_frontend_load_balancer_base_uidgid', 800),
+  Integer $frontend,
+  Integer $fe_api,
+  Integer $fe_monitor,
+  Integer $fe_config,
+  Integer $haproxy,
+  Integer $telegraf,
+  Integer $varnish,
 ) {
   # uid/gids looked up from compose files
   $user2uid = {
-    'frontend' => $base_uidgid + 0,
-    'fe-api' => $base_uidgid + 1,
-    'fe-monitor' => $base_uidgid + 2,
-    'fe-config' => $base_uidgid + 3,
-    'haproxy' => $base_uidgid + 10,
-    'telegraf' => $base_uidgid + 11,
-    'varnish' => $base_uidgid + 12,
+    'frontend' => $frontend,
+    'fe-api' => $fe_api,
+    'fe-monitor' => $fe_monitor,
+    'fe-config' => $fe_config,
+    'haproxy' => $haproxy,
+    'telegraf' => $telegraf,
+    'varnish' => $varnish,
   }
 
   # Ensure this group is present before trying to add users fe-config and fe-monitor to it
