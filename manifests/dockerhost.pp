@@ -354,7 +354,7 @@ class sunet::dockerhost(
   }
 
   if $manage_dockerhost_unbound {
-    ensure_resource('class', 'sunet::unbound', {})
+    ensure_resource('class', 'sunet::unbound', { disable_resolved_stub => true, })
 
     file {
       '/etc/unbound/unbound.conf.d/unbound.conf':  # configuration to listen to the $docker_dns IP
@@ -367,8 +367,8 @@ class sunet::dockerhost(
         ;
     }
   } else {
-    if $::operatingsystem == 'Ubuntu' {
-      ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => true,})
+    if $::facts['operatingsystem'] == 'Ubuntu' {
+      ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => true, })
     }
   }
 }
