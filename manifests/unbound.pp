@@ -2,6 +2,7 @@
 class sunet::unbound(
   $use_apparmor        = true,
   $use_sunet_resolvers = true,
+  $disable_resolved_stub = undef,
 ) {
   package { 'unbound': ensure => 'installed' }
 
