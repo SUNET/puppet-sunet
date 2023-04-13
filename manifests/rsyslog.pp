@@ -1,4 +1,5 @@
 class sunet::rsyslog(
+  $daily_rotation = false,
   $syslog_servers = hiera_array('syslog_servers',[]),
   $relp_syslog_servers = hiera_array('relp_syslog_servers',[]),
   $syslog_enable_remote = safe_hiera('syslog_enable_remote','true'),
@@ -63,4 +64,12 @@ class sunet::rsyslog(
 
   }
 
+  if ($daily_rotation)
+  {
+     file { '/etc/logrotate.d/rsyslog':
+       ensure  => file,
+       mode    => '644',
+       content => template('sunet/rsyslog/rsyslog.logrotate.erb'),
+     }
+  }
 }
