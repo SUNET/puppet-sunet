@@ -10,9 +10,6 @@ class sunet::forgejo (
   package { 'duplicity':
     ensure => latest,
   }
-  docker_network { 'docker':
-    ensure => 'present',
-  }
   sunet::docker_run {'alwayshttps':
     ensure => 'present',
     image  => 'docker.sunet.se/always-https',
