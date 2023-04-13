@@ -20,7 +20,7 @@ class sunet::mastodon::web(
   String $smtp_server              = 'smtp.sunet.se',
   String $vhost                    = 'social.sunet.se',
 ) {
-  # Must set in hiera eyaml 
+  # Must set in hiera eyaml
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
   $db_pass=safe_hiera('db_pass')
