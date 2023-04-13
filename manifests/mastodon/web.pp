@@ -4,6 +4,7 @@ class sunet::mastodon::web(
   String $db_name                  = 'postgres',
   String $db_port                  = '5432',
   String $db_user                  = 'postgres',
+  String $interface                = 'ens3',
   String $mastodon_version         = 'latest',
   String $redis_host               = 'redis',
   String $redis_port               = '6379',
