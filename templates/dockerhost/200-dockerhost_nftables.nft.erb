@@ -1,4 +1,7 @@
 table ip nat {
+        chain output {
+		type nat hook output priority -100; policy accept;
+	}
         chain prerouting {
 		type nat hook prerouting priority -100; policy accept;
 	}
@@ -7,6 +10,9 @@ table ip nat {
         }
 }
 table ip6 nat {
+        chain output {
+		type nat hook output priority -100; policy accept;
+	}
         chain prerouting {
 		type nat hook prerouting priority -100; policy accept;
 	}
