@@ -20,27 +20,24 @@ module(load="imklog")   # provides kernel logging support
 #module(load="imtcp")
 #input(type="imtcp" port="514")
 
+module(load="builtin:omfile"
+  dirCreateMode="0755"
+  fileCreateMode="0640"
+  fileGroup="adm"
+  fileOwner="root"
 <% if @traditional_file_format == true -%>
-$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
+  template="RSYSLOG_TraditionalFileFormat"
 <% end -%>
+)
 
 ###########################
 #### GLOBAL DIRECTIVES ####
 ###########################
 
-#
-# Set the default permissions for all log files.
-#
-$FileOwner root
-$FileGroup adm
-$FileCreateMode 0640
-$DirCreateMode 0755
-$Umask 0022
-
-#
-# Where to place spool and state files
-#
-$WorkDirectory /var/spool/rsyslog
+global(
+  # Where to place spool and state files
+  workDirectory="/var/spool/rsyslog"
+)
 
 #
 # Include all config files in /etc/rsyslog.d/
