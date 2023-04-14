@@ -21,7 +21,7 @@ class sunet::rsyslog(
     notify  => Service['rsyslog']
   }
 
-  file { '/etc/rsyslog.d/40-sunet-default.conf':
+  file { '/etc/rsyslog.d/50-default.conf':
     ensure  => file,
     mode    => '644',
     content => template('sunet/rsyslog/rsyslog-default.conf.erb'),
