@@ -2,6 +2,7 @@ class sunet::rsyslog(
   $daily_rotation = false,
   $syslog_servers = hiera_array('syslog_servers',[]),
   $relp_syslog_servers = hiera_array('relp_syslog_servers',[]),
+  $single_log_file = false,
   $syslog_enable_remote = safe_hiera('syslog_enable_remote','true'),
   $udp_port = hiera('udp_port',undef),
   $udp_client = hiera('udp_client',"any"),
@@ -21,10 +22,15 @@ class sunet::rsyslog(
     notify  => Service['rsyslog']
   }
 
+  $default_template = $single_log_file ?
+  {
+      true  => 'rsyslog-default-single-logfile.conf.erb',
+      false => 'rsyslog-default.conf.erb',
+  }
   file { '/etc/rsyslog.d/50-default.conf':
     ensure  => file,
     mode    => '644',
-    content => template('sunet/rsyslog/rsyslog-default.conf.erb'),
+    content => template("sunet/rsyslog/${default_template}"),
     require => Package['rsyslog'],
     notify  => Service['rsyslog']
   }
