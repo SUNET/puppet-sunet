@@ -13,6 +13,14 @@ class sunet::rsyslog(
     ensure => 'installed'
   })
 
+  file { '/etc/rsyslog.d/rsyslog.conf':
+    ensure  => file,
+    mode    => '644',
+    content => template('sunet/rsyslog/rsyslog.conf.erb'),
+    require => Package['rsyslog'],
+    notify  => Service['rsyslog']
+  }
+
   $do_remote = str2bool($syslog_enable_remote)
 
   file { '/etc/rsyslog.d/60-remote.conf':
