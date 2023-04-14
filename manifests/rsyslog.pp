@@ -94,4 +94,13 @@ class sunet::rsyslog(
        content => template('sunet/rsyslog/rsyslog.logrotate.erb'),
      }
   }
+  if $single_log_file == true && $facts['fail2ban_is_enabled'] == 'yes' {
+     file { '/etc/fail2ban/jail.d/sshd-rsyslog-single-logfile.conf':
+       ensure  => file,
+       mode    => '644',
+       content => template('templates/rsyslog/fail2ban-ssh-syslog.conf.erb'),
+       notify  => Service['fail2ban'],
+     }
+
+  }
 }
