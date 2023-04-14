@@ -98,7 +98,7 @@ class sunet::rsyslog(
      file { '/etc/fail2ban/jail.d/sshd-rsyslog-single-logfile.conf':
        ensure  => file,
        mode    => '644',
-       content => template('rsyslog/fail2ban-ssh-syslog.conf.erb'),
+       content => template('sunet/rsyslog/fail2ban-ssh-syslog.conf.erb'),
        notify  => Service['fail2ban'],
      }
 
