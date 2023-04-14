@@ -2,7 +2,7 @@
 backup_dir="/opt/forgejo/backups"
 
 echo "Starting backup: $(date)"
-/usr/bin/docker exec -ti forgejo  bash -c "cd ${backup_dir} && gitea dump -c /opt/forgejo/config/app.ini --tempdir ${backup_dir}"
+/usr/bin/docker exec forgejo  bash -c "cd ${backup_dir} && gitea dump -c /opt/forgejo/config/app.ini --tempdir ${backup_dir}"
 status=${?}
 if [[ ${status} -ne 0 ]]; then
   echo "Backup failed: $(date)"
