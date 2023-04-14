@@ -60,7 +60,7 @@ class sunet::rsyslog(
   if ($tcp_port or $udp_port) {
 
      if ($udp_port) {
-        ufw::allow { "allow-syslog-udp-${udp_port}": 
+        ufw::allow { "allow-syslog-udp-${udp_port}":
            from  => "${udp_client}",
            ip    => 'any',
            proto => 'udp',
