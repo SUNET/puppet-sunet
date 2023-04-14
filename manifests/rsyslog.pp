@@ -13,7 +13,7 @@ class sunet::rsyslog(
     ensure => 'installed'
   })
 
-  file { '/etc/rsyslog.d/rsyslog.conf':
+  file { '/etc/rsyslog.conf':
     ensure  => file,
     mode    => '644',
     content => template('sunet/rsyslog/rsyslog.conf.erb'),
