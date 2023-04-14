@@ -87,7 +87,7 @@ class sunet::rsyslog(
 
   }
 
-  if ($daily_rotation)
+  if ($daily_rotation == true)
   {
      file { '/etc/logrotate.d/rsyslog':
        ensure  => file,
