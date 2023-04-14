@@ -15,7 +15,11 @@ action(
 module(load="omrelp")
 
 <% @relp_syslog_servers.each do |server| -%>
-*.*      :omrelp:<%= server %>
+action(
+  type="omrelp"
+  target="<%= server.split(':')[0] %>"
+  port="<%= server.split(':')[1] %>"
+)
 <% end -%>
 <% end -%>
 <% end -%>
