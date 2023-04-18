@@ -329,13 +329,32 @@ def upper_if_ascii(string: str) -> str:
 def build_index_entry(index: int, servername: str, nodename: str, label: str) -> bytes:
     """Build a binary entry suitable for appending to the TSM.IDX file"""
 
+    servername_uppercase = upper_if_ascii(servername)
+    servername_bytes = bytes(servername_uppercase, "utf-8")
+    if len(servername_bytes) > SERVERNAME_MAX_SIZE:
+        raise ValueError(
+            f"servername '{servername_uppercase}' byte string is too long ({len(servername_bytes)}), max is {SERVERNAME_MAX_SIZE}"  # pylint:disable=line-too-long
+        )
+
+    nodename_bytes = bytes(nodename, "utf-8")
+    if len(nodename_bytes) > NODENAME_MAX_SIZE:
+        raise ValueError(
+            f"nodename '{nodename}' byte string is too long ({len(nodename_bytes)}), max is {NODENAME_MAX_SIZE}"  # pylint:disable=line-too-long
+        )
+
+    label_bytes = bytes(label, "utf-8")
+    if len(label_bytes) > LABEL_MAX_SIZE:
+        raise ValueError(
+            f"label '{label}' byte string is too long ({len(nodename_bytes)}), max is {LABEL_MAX_SIZE}"  # pylint:disable=line-too-long
+        )
+
     entry = struct.pack(
         STRUCT_FORMAT,
         PREFIX_EXPECTED_BYTES,
         index,
-        bytes(upper_if_ascii(servername), "utf-8"),
-        bytes(nodename, "utf-8"),
-        bytes(label, "utf-8"),
+        servername_bytes,
+        nodename_bytes,
+        label_bytes,
     )
 
     if len(entry) != ENTRY_SIZE:
