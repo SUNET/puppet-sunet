@@ -10,9 +10,9 @@ https://docs.safespring.com/backup/install/linux/
 https://www.ibm.com/docs/en/SSEQVQ_8.1.15/pdf/b_ba_guide_unx_lnx.pdf
 
 Tools used before committing code:
-black sunet-bootstrap-baas2
-pylint sunet-bootstrap-baas2
-mypy --strict sunet-bootstrap-baas2
+black sunet-baas2-bootstrap
+pylint sunet-baas2-bootstrap
+mypy --strict sunet-baas2-bootstrap
 """
 import argparse
 import subprocess
@@ -103,12 +103,12 @@ def get_tar_url(version_string: str) -> str:
     # It turns out IBM separates the downloads into "maintenance" and "patches":
     #
     # example "maintenance" URL:
-    # https://www3.software.ibm.com/storage/tivoli-storage-management/maintenance/client/v8r1/Linux/LinuxX86_DEB/BA/v8117/8.1.17.0-TIV-TSMBAC-LinuxX86_DEB.tar
+    # https://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v8r1/Linux/LinuxX86_DEB/BA/v8117/8.1.17.0-TIV-TSMBAC-LinuxX86_DEB.tar
     #
     # example "patches" URL:
-    # https://www3.software.ibm.com/storage/tivoli-storage-management/patches/client/v8r1/Linux/LinuxX86_DEB/v8115/8.1.15.1-TIV-TSMBAC-LinuxX86_DEB.tar
+    # https://public.dhe.ibm.com/storage/tivoli-storage-management/patches/client/v8r1/Linux/LinuxX86_DEB/v8115/8.1.15.1-TIV-TSMBAC-LinuxX86_DEB.tar
     #
-    base_url = "https://www3.software.ibm.com/storage/tivoli-storage-management"
+    base_url = "https://public.dhe.ibm.com/storage/tivoli-storage-management"
 
     # The version string has four parts, e.g. 8.1.15.2. The dsmc client presents this as:
     # Version: 8, Release 1, Level: 15.2
@@ -397,7 +397,7 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
     # The -add command requires the use of a file that the password is read
     # from, so we need to create this file in a location that is only readable
     # by root
-    tmp_password_file = "/root/sunet-bootstrap-baas2-encryption-secret.tmp"
+    tmp_password_file = "/root/sunet-baas2-bootstrap-encryption-secret.tmp"
 
     with open(tmp_password_file, "w", encoding="utf-8") as fileobj:
         fileobj.write(password)
@@ -482,7 +482,7 @@ def main() -> None:
     # This is the directory used for downloading temporary files when
     # installing the client. It will be automatically removed when installation
     # is done.
-    download_dir = "/var/cache/sunet-bootstrap-baas2"
+    download_dir = "/var/cache/sunet-baas2-bootstrap"
 
     if installed_version is None and args.install is False:
         print(

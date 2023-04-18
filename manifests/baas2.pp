@@ -27,7 +27,7 @@
 class sunet::baas2(
   String        $nodename="",
   String        $tcpserveraddress="tsm12.backup.sto2.safedc.net",
-  String        $version="8.1.15.2",
+  String        $version="8.1.17.2",
   Array[String] $backup_dirs = [],
 ) {
 
