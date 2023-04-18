@@ -17,6 +17,7 @@ mypy --strict sunet-bootstrap-baas2
 import argparse
 import subprocess
 import shlex
+import struct
 import sys
 import os
 import os.path
@@ -31,11 +32,23 @@ INDEX_SIZE = 1
 SERVERNAME_MAX_SIZE = 256
 NODENAME_MAX_SIZE = 130
 LABEL_MAX_SIZE = 256
+# Each entry starts with the bytes EF 05
+PREFIX_EXPECTED_BYTES = b"\xef\x05"
 ENTRY_SIZE = (
     PREFIX_SIZE + INDEX_SIZE + SERVERNAME_MAX_SIZE + NODENAME_MAX_SIZE + LABEL_MAX_SIZE
 )
-# Each entry starts with the bytes EF 05
-PREFIX_EXPECTED_BYTES = b"\xef\x05"
+
+# Struct format string based on above numbers (INDEX_SIZE is replaced by an unsigned char "B")
+STRUCT_FORMAT = (
+    f"{PREFIX_SIZE}sB{SERVERNAME_MAX_SIZE}s{NODENAME_MAX_SIZE}s{LABEL_MAX_SIZE}s"
+)
+# Verify our manually counted sizes matches the size resulting from our struct
+# format string
+if ENTRY_SIZE != struct.calcsize(STRUCT_FORMAT):
+    print(
+        f"ENTRY_SIZE ({ENTRY_SIZE}) does not match struct format string size ({struct.calcsize(STRUCT_FORMAT)})"  # pylint:disable=line-too-long
+    )
+    sys.exit(1)
 
 
 def get_installed_version() -> Union[str, None]:
@@ -240,15 +253,8 @@ def set_dsmc_password(password: str) -> None:
         raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
 
 
-def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-locals
+def read_index_file(path: str) -> Dict[str, Any]:
     """parse a TSM.IDX file"""
-    # Be cautious if index is ever allowed to be more than one byte as I am
-    # unsure what byte order would be used in the file
-    if INDEX_SIZE > 1:
-        raise ValueError(
-            "the expects index to be a single byte in call to int.from_bytes() below, verify correct byteorder is used for multibyte index"  # pylint:disable=line-too-long
-        )
-
     with open(path, "rb") as fileobj:
         data = fileobj.read()
 
@@ -266,34 +272,24 @@ def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-loc
         # Set the entry offset in the file based on what entry we are one,
         # starting with 0 for the first entry and then going forward.
         prefix_offset = entry_index * ENTRY_SIZE
-        prefix_bytes = data[prefix_offset : prefix_offset + PREFIX_SIZE]
+
+        (
+            prefix_bytes,
+            index,
+            servername_bytes,
+            nodename_bytes,
+            label_bytes,
+        ) = struct.unpack(
+            STRUCT_FORMAT, data[prefix_offset : prefix_offset + ENTRY_SIZE]
+        )
 
         if prefix_bytes != PREFIX_EXPECTED_BYTES:
             raise ValueError(
                 "unexpected start of IDX entry, expected: '{PREFIX_EXPECTED_BYTES}', actual: '{prefix_bytes'}"  # pylint:disable=line-too-long
             )
 
-        index_offset = prefix_offset + PREFIX_SIZE
-        index_byte = data[index_offset : index_offset + INDEX_SIZE]
-
-        # The byteorder does not matter for a single byte, so "big" has just been
-        # randomly selected. If the index is ever allowed to be more than one byte
-        # this needs to be verified, but we raise an execption above if this is
-        # the case so it is noticed.
-        index = int.from_bytes(index_byte, byteorder="big")
-
-        servername_offset = index_offset + INDEX_SIZE
-        servername_bytes = data[
-            servername_offset : servername_offset + SERVERNAME_MAX_SIZE
-        ]
         servername = servername_bytes.decode(encoding="utf-8").rstrip("\x00")
-
-        nodename_offset = servername_offset + SERVERNAME_MAX_SIZE
-        nodename_bytes = data[nodename_offset : nodename_offset + NODENAME_MAX_SIZE]
         nodename = nodename_bytes.decode(encoding="utf-8").rstrip("\x00")
-
-        label_offset = nodename_offset + NODENAME_MAX_SIZE
-        label_bytes = data[label_offset : label_offset + LABEL_MAX_SIZE]
         label = label_bytes.decode(encoding="utf-8").rstrip("\x00")
 
         # Go to next entry
@@ -332,40 +328,15 @@ def upper_if_ascii(string: str) -> str:
 
 def build_index_entry(index: int, servername: str, nodename: str, label: str) -> bytes:
     """Build a binary entry suitable for appending to the TSM.IDX file"""
-    entry = b""
 
-    if len(servername) > SERVERNAME_MAX_SIZE:
-        raise ValueError(
-            f"servername '{servername}' is too long ({len(servername)}), max is {SERVERNAME_MAX_SIZE}"  # pylint:disable=line-too-long
-        )
-
-    if len(nodename) > NODENAME_MAX_SIZE:
-        raise ValueError(
-            f"nodename '{nodename}' is too long ({len(nodename)}), max is {NODENAME_MAX_SIZE}"
-        )
-
-    if len(label) > LABEL_MAX_SIZE:
-        raise ValueError(f"label '{label}' is too long, max is {NODENAME_MAX_SIZE}")
-
-    prefix_bytes = PREFIX_EXPECTED_BYTES
-    entry += prefix_bytes
-
-    # The index is at most one byte so therefore require length=1
-    index_bytes = index.to_bytes(length=1, byteorder="big")
-    entry += index_bytes
-
-    servername_bytes = upper_if_ascii(servername).encode(encoding="utf-8")
-    servername_padding_bytes = b"\x00" * (SERVERNAME_MAX_SIZE - len(servername_bytes))
-    entry += servername_bytes + servername_padding_bytes
-
-    nodename_bytes = nodename.encode(encoding="utf-8")
-    nodename_padding_bytes = b"\x00" * (NODENAME_MAX_SIZE - len(nodename_bytes))
-    entry += nodename_bytes + nodename_padding_bytes
-
-    label_bytes = label.encode(encoding="utf-8")
-    label_padding_bytes = b"\x00" * (LABEL_MAX_SIZE - len(label_bytes))
-
-    entry += label_bytes + label_padding_bytes
+    entry = struct.pack(
+        STRUCT_FORMAT,
+        PREFIX_EXPECTED_BYTES,
+        index,
+        bytes(upper_if_ascii(servername), "utf-8"),
+        bytes(nodename, "utf-8"),
+        bytes(label, "utf-8"),
+    )
 
     if len(entry) != ENTRY_SIZE:
         raise RuntimeError(
