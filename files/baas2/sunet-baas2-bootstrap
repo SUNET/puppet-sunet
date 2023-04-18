@@ -103,12 +103,12 @@ def get_tar_url(version_string: str) -> str:
     # It turns out IBM separates the downloads into "maintenance" and "patches":
     #
     # example "maintenance" URL:
-    # https://www3.software.ibm.com/storage/tivoli-storage-management/maintenance/client/v8r1/Linux/LinuxX86_DEB/BA/v8117/8.1.17.0-TIV-TSMBAC-LinuxX86_DEB.tar
+    # https://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v8r1/Linux/LinuxX86_DEB/BA/v8117/8.1.17.0-TIV-TSMBAC-LinuxX86_DEB.tar
     #
     # example "patches" URL:
-    # https://www3.software.ibm.com/storage/tivoli-storage-management/patches/client/v8r1/Linux/LinuxX86_DEB/v8115/8.1.15.1-TIV-TSMBAC-LinuxX86_DEB.tar
+    # https://public.dhe.ibm.com/storage/tivoli-storage-management/patches/client/v8r1/Linux/LinuxX86_DEB/v8115/8.1.15.1-TIV-TSMBAC-LinuxX86_DEB.tar
     #
-    base_url = "https://www3.software.ibm.com/storage/tivoli-storage-management"
+    base_url = "https://public.dhe.ibm.com/storage/tivoli-storage-management"
 
     # The version string has four parts, e.g. 8.1.15.2. The dsmc client presents this as:
     # Version: 8, Release 1, Level: 15.2
