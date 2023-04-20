@@ -13,16 +13,16 @@ burst = 3
 [etcd3]
 endpoints = ["https://etcd:2379"]
 username = "knubbis-fleetlock"
-password =  <%= @knubbis_fleetlock_standalone_secrets["etcd"]["users"]["knubbis-fleetlock"] %>
+password =  "<%= @knubbis_fleetlock_standalone_secrets["etcd"]["users"]["knubbis-fleetlock"] %>"
 insecure_skip_verify = false
 root_ca_path = "/cert-bootstrap-ca/ca.pem"
 
 [certmagic]
-salt = <%= @knubbis_fleetlock_secrets["conf"]["certmagic"]["salt"] %>
+salt = "<%= @knubbis_fleetlock_secrets["conf"]["certmagic"]["salt"] %>"
 argon_time = 3
 argon_memory = 65536
 argon_threads = 4
-password = <%= @knubbis_fleetlock_secrets["conf"]["certmagic"]["password"] %>
+password = "<%= @knubbis_fleetlock_secrets["conf"]["certmagic"]["password"] %>"
 etcd3_path = "se.sunet.knubbis/certmagic"
 letsencrypt_prod = false
 email = "patlu@sunet.se"
@@ -32,7 +32,7 @@ domains = ["<%= @domain %>"]
 username = "<%= @knubbis_fleetlock_secrets["conf"]["acmedns"]["knubbis.sunet.se"]["username"] %>"
 password = "<%= @knubbis_fleetlock_secrets["conf"]["acmedns"]["knubbis.sunet.se"]["password"] %>"
 subdomain = "<%= @knubbis_fleetlock_secrets["conf"]["acmedns"]["knubbis.sunet.se"]["subdomain"] %>"
-full_domain = "<%= @knubbis_fleetlock_secrets["conf"]["acmedns"]["knubbis.sunet.se"]["full_domain"]" %>
+full_domain = "<%= @knubbis_fleetlock_secrets["conf"]["acmedns"]["knubbis.sunet.se"]["full_domain"] %>"
 server_url = "https://acme-d.sunet.se"
 
 [prometheus]
