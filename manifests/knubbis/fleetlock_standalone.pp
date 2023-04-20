@@ -43,7 +43,7 @@ class sunet::knubbis::fleetlock_standalone(
 
             file { '/opt/knubbis-fleetlock/cert-bootstrap/bootstrap.sh':
               ensure => file,
-              mode   => '0644',
+              mode   => '0755',
               owner  => 'root',
               group  => 'root',
               content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/bootstrap.sh.erb")
