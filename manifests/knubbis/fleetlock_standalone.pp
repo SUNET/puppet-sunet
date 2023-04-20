@@ -42,27 +42,27 @@ class sunet::knubbis::fleetlock_standalone(
             }
 
             file { '/opt/knubbis-fleetlock/cert-bootstrap/bootstrap.sh':
-              ensure => file,
-              mode   => '0755',
-              owner  => 'root',
-              group  => 'root',
-              content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/bootstrap.sh.erb")
+                ensure => file,
+                mode   => '0755',
+                owner  => 'root',
+                group  => 'root',
+                content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/bootstrap.sh.erb")
             }
 
             file { '/opt/knubbis-fleetlock/cert-bootstrap/ca.json':
-              ensure => file,
-              mode   => '0644',
-              owner  => 'root',
-              group  => 'root',
-              content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/ca.json.erb")
+                ensure => file,
+                mode   => '0644',
+                owner  => 'root',
+                group  => 'root',
+                content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/ca.json.erb")
             }
 
             file { '/opt/knubbis-fleetlock/cert-bootstrap/csr.json':
-              ensure => file,
-              mode   => '0644',
-              owner  => 'root',
-              group  => 'root',
-              content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/csr.json.erb")
+                ensure => file,
+                mode   => '0644',
+                owner  => 'root',
+                group  => 'root',
+                content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/csr.json.erb")
             }
 
             file { '/opt/knubbis-fleetlock/cert-bootstrap-ca':
@@ -94,27 +94,27 @@ class sunet::knubbis::fleetlock_standalone(
             }
 
             file { '/opt/knubbis-fleetlock/etcd-bootstrap/bootstrap.sh':
-              ensure => file,
-              mode   => '0755',
-              owner  => 'root',
-              group  => 'root',
-              content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/bootstrap.sh.erb")
+                ensure => file,
+                mode   => '0755',
+                owner  => 'root',
+                group  => 'root',
+                content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/bootstrap.sh.erb")
             }
 
             file { '/opt/knubbis-fleetlock/etcd-bootstrap/password-root':
-              ensure => file,
-              mode   => '0400',
-              owner  => '1000000000',
-              group  => '1000000000',
-              content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/password-root.erb")
+                ensure => file,
+                mode   => '0400',
+                owner  => '1000000000',
+                group  => '1000000000',
+                content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/password-root.erb")
             }
 
             file { '/opt/knubbis-fleetlock/etcd-bootstrap/password-knubbis-fleetlock':
-              ensure => file,
-              mode   => '0400',
-              owner  => '1000000000',
-              group  => '1000000000',
-              content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/password-knubbis-fleetlock.erb")
+                ensure => file,
+                mode   => '0400',
+                owner  => '1000000000',
+                group  => '1000000000',
+                content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/password-knubbis-fleetlock.erb")
             }
 
             if $knubbis_fleetlock_secrets {
@@ -126,11 +126,11 @@ class sunet::knubbis::fleetlock_standalone(
                 }
 
                 file { '/opt/knubbis-fleetlock/conf/knubbis-fleetlock.toml':
-                  ensure => file,
-                  mode   => '0400',
-                  owner  => '1000000001',
-                  group  => '1000000001',
-                  content => template("sunet/knubbis/fleetlock_standalone/conf/knubbis-fleetlock.toml.erb")
+                    ensure => file,
+                    mode   => '0400',
+                    owner  => '1000000001',
+                    group  => '1000000001',
+                    content => template("sunet/knubbis/fleetlock_standalone/conf/knubbis-fleetlock.toml.erb")
                 }
 
                 sunet::docker_compose { 'knubbis-fleetlock_standalone':
@@ -142,9 +142,9 @@ class sunet::knubbis::fleetlock_standalone(
                 }
 
                 sunet::nftables::docker_expose { "knubbis_fleetlock_https" :
-                  allow_clients => 'any',
-                  port => 443,
-                  iif => $facts['interface_default'],
+                    allow_clients => 'any',
+                    port => 443,
+                    iif => $facts['interface_default'],
                 }
             }
         }
