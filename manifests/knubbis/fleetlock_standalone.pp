@@ -103,7 +103,7 @@ class sunet::knubbis::fleetlock_standalone(
 
             file { '/opt/knubbis-fleetlock/etcd-bootstrap/password-root':
               ensure => file,
-              mode   => '0750',
+              mode   => '0400',
               owner  => '1000000000',
               group  => '1000000000',
               content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/password-root.erb")
@@ -111,7 +111,7 @@ class sunet::knubbis::fleetlock_standalone(
 
             file { '/opt/knubbis-fleetlock/etcd-bootstrap/password-knubbis-fleetlock':
               ensure => file,
-              mode   => '0750',
+              mode   => '0400',
               owner  => '1000000000',
               group  => '1000000000',
               content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/password-knubbis-fleetlock.erb")
