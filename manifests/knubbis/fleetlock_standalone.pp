@@ -11,7 +11,7 @@
 
 # @param knubbis_fleetlock_version The version of the knubbis-fleetlock container to run
 # @param etcd_version  The version of the etcd backend container to run
-define sunet::knubbis::fleetlock_standalone(
+class sunet::knubbis::fleetlock_standalone(
   String        $knubbis_fleetlock_version="v0.0.2",
   String        $etcd_version="v3.5.7",
 ) {
