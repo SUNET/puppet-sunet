@@ -140,6 +140,12 @@ class sunet::knubbis::fleetlock_standalone(
                      compose_filename => 'docker-compose.yml',
                      description      => 'Standalone knubbis-fleetlock server',
                 }
+
+                sunet::nftables::docker_expose { "knubbis_fleetlock_https" :
+                  allow_clients => 'any',
+                  port => 443,
+                  iif => $facts['interface_default'],
+                }
             }
         }
     }
