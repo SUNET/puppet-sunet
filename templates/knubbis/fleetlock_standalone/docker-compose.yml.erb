@@ -18,6 +18,7 @@ services:
     volumes:
       - /opt/knubbis-fleetlock/etcd-data:/etcd-data
       - /opt/knubbis-fleetlock/cert-bootstrap-etcd:/cert-bootstrap-etcd
+      - /opt/knubbis-fleetlock/cert-bootstrap-ca:/cert-bootstrap-ca
     entrypoint: /usr/local/bin/etcd
     command:
       - "--data-dir=/etcd-data"
