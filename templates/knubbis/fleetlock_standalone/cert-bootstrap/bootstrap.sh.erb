@@ -11,7 +11,7 @@
 cd /work || exit 1
 
 cfssl gencert -initca /cert-bootstrap/ca.json | cfssljson -bare ca
-cfssl gencert -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/csr.json | cfssljson -bare etcd
+cfssl gencert -config /cert-bootstrap/cfssl.json -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/csr.json | cfssljson -bare etcd
 
 # We need the CA public key for knubbis-fleetlock and etcdctl invocations
 cp ca.pem /cert-bootstrap-ca

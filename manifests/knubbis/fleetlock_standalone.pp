@@ -49,6 +49,14 @@ class sunet::knubbis::fleetlock_standalone(
                 content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/bootstrap.sh.erb")
             }
 
+            file { '/opt/knubbis-fleetlock/cert-bootstrap/cfssl.json':
+                ensure => file,
+                mode   => '0644',
+                owner  => 'root',
+                group  => 'root',
+                content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/cfssl.json.erb")
+            }
+
             file { '/opt/knubbis-fleetlock/cert-bootstrap/ca.json':
                 ensure => file,
                 mode   => '0644',
