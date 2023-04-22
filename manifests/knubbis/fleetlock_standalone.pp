@@ -65,12 +65,12 @@ class sunet::knubbis::fleetlock_standalone(
                 content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/ca.json.erb")
             }
 
-            file { '/opt/knubbis-fleetlock/cert-bootstrap/csr.json':
+            file { '/opt/knubbis-fleetlock/cert-bootstrap/etcd.json':
                 ensure => file,
                 mode   => '0644',
                 owner  => 'root',
                 group  => 'root',
-                content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/csr.json.erb")
+                content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/etcd.json.erb")
             }
 
             file { '/opt/knubbis-fleetlock/cert-bootstrap/root.json':

@@ -14,7 +14,7 @@ cd /work || exit 1
 cfssl gencert -initca /cert-bootstrap/ca.json | cfssljson -bare ca
 
 # Generate etcd server cert
-cfssl gencert -config /cert-bootstrap/cfssl.json -profile server -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/csr.json | cfssljson -bare etcd
+cfssl gencert -config /cert-bootstrap/cfssl.json -profile server -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/etcd.json | cfssljson -bare etcd
 
 # Generate client certs
 cfssl gencert -config /cert-bootstrap/cfssl.json -profile client -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/root.json | cfssljson -bare root
