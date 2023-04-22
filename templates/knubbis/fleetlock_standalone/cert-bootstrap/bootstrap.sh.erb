@@ -6,16 +6,31 @@
 # everywhere. This also means there is no reason to store the CA private key
 # anywhere, since it is never used again.
 
-# Generate certs on tmpfs, the files we need to save will be copied to volume
+# Generate certs on tmpfs, the files we need to save will be moved to volume
 # directories
 cd /work || exit 1
 
+# Generate CA
 cfssl gencert -initca /cert-bootstrap/ca.json | cfssljson -bare ca
-cfssl gencert -config /cert-bootstrap/cfssl.json -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/csr.json | cfssljson -bare etcd
+
+# Generate etcd server cert
+cfssl gencert -config /cert-bootstrap/cfssl.json -profile server -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/csr.json | cfssljson -bare etcd
+
+# Generate client certs
+cfssl gencert -config /cert-bootstrap/cfssl.json -profile client -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/root.json | cfssljson -bare root
+cfssl gencert -config /cert-bootstrap/cfssl.json -profile client -ca ca.pem -ca-key ca-key.pem /cert-bootstrap/knubbis-fleetlock.json | cfssljson -bare knubbis-fleetlock
 
 # We need the CA public key for knubbis-fleetlock and etcdctl invocations
-cp ca.pem /cert-bootstrap-ca
+mv ca.pem /cert-bootstrap-ca
 
 # We need private and public key for the etcd server
-cp etcd.pem /cert-bootstrap-etcd
-cp etcd-key.pem /cert-bootstrap-etcd
+mv etcd.pem /cert-bootstrap-etcd
+mv etcd-key.pem /cert-bootstrap-etcd
+
+# Store "root" client cert for etcdctl invocations
+mv root.pem /cert-bootstrap-client-root
+mv root-key.pem /cert-bootstrap-client-root
+
+# Store "knubbis-fleetlock" client cert for knubbis-fleetlock server
+mv knubbis-fleetlock.pem /cert-bootstrap-client-knubbis-fleetlock
+mv knubbis-fleetlock-key.pem /cert-bootstrap-client-knubbis-fleetlock

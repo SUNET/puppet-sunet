@@ -9,11 +9,7 @@
 # be carried out anyway so it seems easier to just always include
 # username/password than trying to figure out if auth is enabled.
 
-# Prefer env variable over passing the password on the command line (since that
-# would make it visible in the process list).
-password=$(cat /etcd-bootstrap/password-root)
-export ETCDCTL_PASSWORD="$password"
-base_cmd="etcdctl --cacert=/cert-bootstrap-ca/ca.pem --endpoints=https://etcd:2379 --user root"
+base_cmd="etcdctl --cacert=/cert-bootstrap-ca/ca.pem --endpoints=https://etcd:2379 --cert=/cert-bootstrap-client-root/root.pem --key=/cert-bootstrap-client-root/root-key.pem"
 
 # wait for etcd container to be alive
 while true; do
@@ -28,12 +24,13 @@ if $base_cmd auth status | grep -q '^Authentication Status: false$'; then
 
     # Add 'root' user, required for enabling auth
     if ! $base_cmd user list | grep -q '^root$'; then
-        $base_cmd user add root --interactive=false < /etcd-bootstrap/password-root
+        $base_cmd user add root --no-password
+        $base_cmd user grant-role root root
     fi
 
     # Add 'knubbis-fleetlock' user, used by the service when talking to the backend
     if ! $base_cmd user list | grep -q '^knubbis-fleetlock$'; then
-        $base_cmd user add knubbis-fleetlock --interactive=false < /etcd-bootstrap/password-knubbis-fleetlock
+        $base_cmd user add knubbis-fleetlock --no-password
     fi
 
     # Add role with permissions and assign it to knubbis-fleetlock user
