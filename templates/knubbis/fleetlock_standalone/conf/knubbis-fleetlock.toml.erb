@@ -12,8 +12,8 @@ burst = 3
 
 [etcd3]
 endpoints = ["https://etcd:2379"]
-username = "knubbis-fleetlock"
-password =  "<%= @knubbis_fleetlock_standalone_secrets["etcd"]["users"]["knubbis-fleetlock"] %>"
+cert_file = "/cert-bootstrap-client-knubbis-fleetlock/knubbis-fleetlock.pem"
+key_file = "/cert-bootstrap-client-knubbis-fleetlock/knubbis-fleetlock-key.pem"
 insecure_skip_verify = false
 root_ca_path = "/cert-bootstrap-ca/ca.pem"
 
