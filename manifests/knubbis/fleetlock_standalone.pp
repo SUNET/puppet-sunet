@@ -13,7 +13,7 @@
 # @param etcd_version  The version of the etcd backend container to run
 # @param domain        The domain where the fleetlock server will supply its services
 class sunet::knubbis::fleetlock_standalone(
-  String        $knubbis_fleetlock_version="v0.0.4",
+  String        $knubbis_fleetlock_version="v0.0.5",
   String        $etcd_version="v3.5.7",
   String        $cfssl_helper_version="v0.0.1",
   String        $etcdctl_helper_version="v0.0.1",
@@ -73,6 +73,22 @@ class sunet::knubbis::fleetlock_standalone(
                 content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/csr.json.erb")
             }
 
+            file { '/opt/knubbis-fleetlock/cert-bootstrap/root.json':
+                ensure => file,
+                mode   => '0644',
+                owner  => 'root',
+                group  => 'root',
+                content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/root.json.erb")
+            }
+
+            file { '/opt/knubbis-fleetlock/cert-bootstrap/knubbis-fleetlock.json':
+                ensure => file,
+                mode   => '0644',
+                owner  => 'root',
+                group  => 'root',
+                content => template("sunet/knubbis/fleetlock_standalone/cert-bootstrap/knubbis-fleetlock.json.erb")
+            }
+
             file { '/opt/knubbis-fleetlock/cert-bootstrap-ca':
                 ensure => directory,
                 mode   => '0755',
@@ -87,7 +103,28 @@ class sunet::knubbis::fleetlock_standalone(
                 group  => '1000000000',
             }
 
+            file { '/opt/knubbis-fleetlock/cert-bootstrap-client-root':
+                ensure => directory,
+                mode   => '0755',
+                owner  => '1000000000',
+                group  => '1000000000',
+            }
+
+            file { '/opt/knubbis-fleetlock/cert-bootstrap-client-knubbis-fleetlock':
+                ensure => directory,
+                mode   => '0755',
+                owner  => '1000000000',
+                group  => '1000000000',
+            }
+
             file { '/opt/knubbis-fleetlock/etcd-data':
+                ensure => directory,
+                mode   => '0700',
+                owner  => '1000000000',
+                group  => '1000000000',
+            }
+
+            file { '/opt/knubbis-fleetlock/etcd-backup':
                 ensure => directory,
                 mode   => '0700',
                 owner  => '1000000000',
@@ -109,35 +146,19 @@ class sunet::knubbis::fleetlock_standalone(
                 content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/bootstrap.sh.erb")
             }
 
-            file { '/opt/knubbis-fleetlock/etcd-bootstrap/password-root':
-                ensure => file,
-                mode   => '0400',
-                owner  => '1000000000',
-                group  => '1000000000',
-                content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/password-root.erb")
-            }
-
-            file { '/opt/knubbis-fleetlock/etcd-bootstrap/password-knubbis-fleetlock':
-                ensure => file,
-                mode   => '0400',
-                owner  => '1000000000',
-                group  => '1000000000',
-                content => template("sunet/knubbis/fleetlock_standalone/etcd-bootstrap/password-knubbis-fleetlock.erb")
-            }
-
             if $knubbis_fleetlock_secrets {
                 file { '/opt/knubbis-fleetlock/conf':
                     ensure => directory,
                     mode   => '0750',
-                    owner  => '1000000001',
-                    group  => '1000000001',
+                    owner  => '1000000000',
+                    group  => '1000000000',
                 }
 
                 file { '/opt/knubbis-fleetlock/conf/knubbis-fleetlock.toml':
                     ensure => file,
                     mode   => '0400',
-                    owner  => '1000000001',
-                    group  => '1000000001',
+                    owner  => '1000000000',
+                    group  => '1000000000',
                     content => template("sunet/knubbis/fleetlock_standalone/conf/knubbis-fleetlock.toml.erb")
                 }
 
