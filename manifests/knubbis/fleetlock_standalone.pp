@@ -2,7 +2,6 @@
 # running everything on the same machine. It uses self-signed certificates for
 # communication between the fleetlock server and the etcd backend and these
 # certs are regenerated any time the service starts up.
-#
 # Client connections use automatically handled acme certs.
 #
 # The standalone setup offers no redundancy but allows for easy bootstrapping.
@@ -174,16 +173,16 @@ class sunet::knubbis::fleetlock_standalone(
                 iif => $facts['interface_default'],
             }
 
-            file { '/usr/local/sbin/knubbis-fleetlock_standalone-backup.sh':
+            file { '/usr/local/sbin/knubbis-fleetlock_standalone-backup':
                 ensure => file,
                 mode   => '0755',
                 owner  => 'root',
                 group  => 'root',
-                content => file("sunet/knubbis/fleetlock_standalone/knubbis-fleetlock_standalone-backup.sh")
+                content => file("sunet/knubbis/fleetlock_standalone/knubbis-fleetlock_standalone-backup")
             }
 
             sunet::scriptherder::cronjob { "knubbis-fleetlock_standalone-backup":
-                cmd => "/usr/local/sbin/knubbis-fleetlock_standalone-backup.sh",
+                cmd => "/usr/local/sbin/knubbis-fleetlock_standalone-backup",
                 minute      => '27',
                 ok_criteria => ['exit_status=0', 'max_age=3h'],
             }
