@@ -173,6 +173,20 @@ class sunet::knubbis::fleetlock_standalone(
                 port => 443,
                 iif => $facts['interface_default'],
             }
+
+            file { '/usr/local/sbin/knubbis-fleetlock_standalone-backup.sh':
+                ensure => file,
+                mode   => '0755',
+                owner  => 'root',
+                group  => 'root',
+                content => file("sunet/knubbis/fleetlock_standalone/knubbis-fleetlock_standalone-backup.sh")
+            }
+
+            sunet::scriptherder::cronjob { "knubbis-fleetlock_standalone-backup":
+                cmd => "/usr/local/sbin/knubbis-fleetlock_standalone-backup.sh",
+                minute      => '27',
+                ok_criteria => ['exit_status=0', 'max_age=3h'],
+            }
         }
     }
 }
