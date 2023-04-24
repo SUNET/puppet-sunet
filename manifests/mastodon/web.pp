@@ -4,6 +4,7 @@ class sunet::mastodon::web(
   String $db_name                  = 'postgres',
   String $db_port                  = '5432',
   String $db_user                  = 'postgres',
+  String $interface                = 'ens3',
   String $mastodon_version         = 'latest',
   String $redis_host               = 'redis',
   String $redis_port               = '6379',
@@ -19,7 +20,7 @@ class sunet::mastodon::web(
   String $smtp_server              = 'smtp.sunet.se',
   String $vhost                    = 'social.sunet.se',
 ) {
-  # Must set in hiera eyaml 
+  # Must set in hiera eyaml
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
   $db_pass=safe_hiera('db_pass')
@@ -83,8 +84,21 @@ class sunet::mastodon::web(
     }
   }
 
- sunet::misc::ufw_allow { 'web_ports':
-    from => 'any',
-    port => ['80', '443']
- }
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { 'web_http_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 80,
+    }
+    sunet::nftables::docker_expose { 'web_https_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 443,
+    }
+  } else {
+    sunet::misc::ufw_allow { 'web_ports':
+      from => 'any',
+      port => ['80', '443']
+    }
+  }
 }

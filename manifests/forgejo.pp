@@ -1,6 +1,7 @@
 # A class to install and manage Forgejo
 class sunet::forgejo (
   String $domain          = 'platform.sunet.se',
+  String $interface       = 'ens3',
   String $forgejo_version = '1.18.5-0-rootless',
   Integer $uid            = '900',
   Integer $gid            = '900',
@@ -8,9 +9,6 @@ class sunet::forgejo (
   include sunet::packages::rclone
   package { 'duplicity':
     ensure => latest,
-  }
-  docker_network { 'docker':
-    ensure => 'present',
   }
   sunet::docker_run {'alwayshttps':
     ensure => 'present',
@@ -108,8 +106,27 @@ class sunet::forgejo (
     ok_criteria   => ['exit_status=0', 'max_age=3h'],
     warn_criteria => ['exit_status=0', 'max_age=5h'],
   }
-  -> sunet::misc::ufw_allow { 'forgejo_ports':
-    from => 'any',
-    port => ['80', '443', '22022'],
+
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { 'forgejo_80_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 80,
+    }
+    sunet::nftables::docker_expose { 'forgejo_443_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 443,
+    }
+    sunet::nftables::docker_expose { 'forgejo_22022_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 22022,
+    }
+  } else {
+    sunet::misc::ufw_allow { 'forgejo_ports':
+      from => 'any',
+      port => ['80', '443', '22022'],
+    }
   }
 }

@@ -10,13 +10,14 @@ https://docs.safespring.com/backup/install/linux/
 https://www.ibm.com/docs/en/SSEQVQ_8.1.15/pdf/b_ba_guide_unx_lnx.pdf
 
 Tools used before committing code:
-black sunet-bootstrap-baas2
-pylint sunet-bootstrap-baas2
-mypy --strict sunet-bootstrap-baas2
+black sunet-baas2-bootstrap
+pylint sunet-baas2-bootstrap
+mypy --strict sunet-baas2-bootstrap
 """
 import argparse
 import subprocess
 import shlex
+import struct
 import sys
 import os
 import os.path
@@ -31,11 +32,23 @@ INDEX_SIZE = 1
 SERVERNAME_MAX_SIZE = 256
 NODENAME_MAX_SIZE = 130
 LABEL_MAX_SIZE = 256
+# Each entry starts with the bytes EF 05
+PREFIX_EXPECTED_BYTES = b"\xef\x05"
 ENTRY_SIZE = (
     PREFIX_SIZE + INDEX_SIZE + SERVERNAME_MAX_SIZE + NODENAME_MAX_SIZE + LABEL_MAX_SIZE
 )
-# Each entry starts with the bytes EF 05
-PREFIX_EXPECTED_BYTES = b"\xef\x05"
+
+# Struct format string based on above numbers (INDEX_SIZE is replaced by an unsigned char "B")
+STRUCT_FORMAT = (
+    f"{PREFIX_SIZE}sB{SERVERNAME_MAX_SIZE}s{NODENAME_MAX_SIZE}s{LABEL_MAX_SIZE}s"
+)
+# Verify our manually counted sizes matches the size resulting from our struct
+# format string
+if ENTRY_SIZE != struct.calcsize(STRUCT_FORMAT):
+    print(
+        f"ENTRY_SIZE ({ENTRY_SIZE}) does not match struct format string size ({struct.calcsize(STRUCT_FORMAT)})"  # pylint:disable=line-too-long
+    )
+    sys.exit(1)
 
 
 def get_installed_version() -> Union[str, None]:
@@ -90,12 +103,12 @@ def get_tar_url(version_string: str) -> str:
     # It turns out IBM separates the downloads into "maintenance" and "patches":
     #
     # example "maintenance" URL:
-    # https://www3.software.ibm.com/storage/tivoli-storage-management/maintenance/client/v8r1/Linux/LinuxX86_DEB/BA/v8117/8.1.17.0-TIV-TSMBAC-LinuxX86_DEB.tar
+    # https://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v8r1/Linux/LinuxX86_DEB/BA/v8117/8.1.17.0-TIV-TSMBAC-LinuxX86_DEB.tar
     #
     # example "patches" URL:
-    # https://www3.software.ibm.com/storage/tivoli-storage-management/patches/client/v8r1/Linux/LinuxX86_DEB/v8115/8.1.15.1-TIV-TSMBAC-LinuxX86_DEB.tar
+    # https://public.dhe.ibm.com/storage/tivoli-storage-management/patches/client/v8r1/Linux/LinuxX86_DEB/v8115/8.1.15.1-TIV-TSMBAC-LinuxX86_DEB.tar
     #
-    base_url = "https://www3.software.ibm.com/storage/tivoli-storage-management"
+    base_url = "https://public.dhe.ibm.com/storage/tivoli-storage-management"
 
     # The version string has four parts, e.g. 8.1.15.2. The dsmc client presents this as:
     # Version: 8, Release 1, Level: 15.2
@@ -240,15 +253,8 @@ def set_dsmc_password(password: str) -> None:
         raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
 
 
-def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-locals
+def read_index_file(path: str) -> Dict[str, Any]:
     """parse a TSM.IDX file"""
-    # Be cautious if index is ever allowed to be more than one byte as I am
-    # unsure what byte order would be used in the file
-    if INDEX_SIZE > 1:
-        raise ValueError(
-            "the expects index to be a single byte in call to int.from_bytes() below, verify correct byteorder is used for multibyte index"  # pylint:disable=line-too-long
-        )
-
     with open(path, "rb") as fileobj:
         data = fileobj.read()
 
@@ -266,34 +272,24 @@ def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-loc
         # Set the entry offset in the file based on what entry we are one,
         # starting with 0 for the first entry and then going forward.
         prefix_offset = entry_index * ENTRY_SIZE
-        prefix_bytes = data[prefix_offset : prefix_offset + PREFIX_SIZE]
+
+        (
+            prefix_bytes,
+            index,
+            servername_bytes,
+            nodename_bytes,
+            label_bytes,
+        ) = struct.unpack(
+            STRUCT_FORMAT, data[prefix_offset : prefix_offset + ENTRY_SIZE]
+        )
 
         if prefix_bytes != PREFIX_EXPECTED_BYTES:
             raise ValueError(
                 "unexpected start of IDX entry, expected: '{PREFIX_EXPECTED_BYTES}', actual: '{prefix_bytes'}"  # pylint:disable=line-too-long
             )
 
-        index_offset = prefix_offset + PREFIX_SIZE
-        index_byte = data[index_offset : index_offset + INDEX_SIZE]
-
-        # The byteorder does not matter for a single byte, so "big" has just been
-        # randomly selected. If the index is ever allowed to be more than one byte
-        # this needs to be verified, but we raise an execption above if this is
-        # the case so it is noticed.
-        index = int.from_bytes(index_byte, byteorder="big")
-
-        servername_offset = index_offset + INDEX_SIZE
-        servername_bytes = data[
-            servername_offset : servername_offset + SERVERNAME_MAX_SIZE
-        ]
         servername = servername_bytes.decode(encoding="utf-8").rstrip("\x00")
-
-        nodename_offset = servername_offset + SERVERNAME_MAX_SIZE
-        nodename_bytes = data[nodename_offset : nodename_offset + NODENAME_MAX_SIZE]
         nodename = nodename_bytes.decode(encoding="utf-8").rstrip("\x00")
-
-        label_offset = nodename_offset + NODENAME_MAX_SIZE
-        label_bytes = data[label_offset : label_offset + LABEL_MAX_SIZE]
         label = label_bytes.decode(encoding="utf-8").rstrip("\x00")
 
         # Go to next entry
@@ -332,40 +328,34 @@ def upper_if_ascii(string: str) -> str:
 
 def build_index_entry(index: int, servername: str, nodename: str, label: str) -> bytes:
     """Build a binary entry suitable for appending to the TSM.IDX file"""
-    entry = b""
 
-    if len(servername) > SERVERNAME_MAX_SIZE:
+    servername_uppercase = upper_if_ascii(servername)
+    servername_bytes = bytes(servername_uppercase, "utf-8")
+    if len(servername_bytes) > SERVERNAME_MAX_SIZE:
         raise ValueError(
-            f"servername '{servername}' is too long ({len(servername)}), max is {SERVERNAME_MAX_SIZE}"  # pylint:disable=line-too-long
+            f"servername '{servername_uppercase}' byte string is too long ({len(servername_bytes)}), max is {SERVERNAME_MAX_SIZE}"  # pylint:disable=line-too-long
         )
 
-    if len(nodename) > NODENAME_MAX_SIZE:
+    nodename_bytes = bytes(nodename, "utf-8")
+    if len(nodename_bytes) > NODENAME_MAX_SIZE:
         raise ValueError(
-            f"nodename '{nodename}' is too long ({len(nodename)}), max is {NODENAME_MAX_SIZE}"
+            f"nodename '{nodename}' byte string is too long ({len(nodename_bytes)}), max is {NODENAME_MAX_SIZE}"  # pylint:disable=line-too-long
         )
 
-    if len(label) > LABEL_MAX_SIZE:
-        raise ValueError(f"label '{label}' is too long, max is {NODENAME_MAX_SIZE}")
+    label_bytes = bytes(label, "utf-8")
+    if len(label_bytes) > LABEL_MAX_SIZE:
+        raise ValueError(
+            f"label '{label}' byte string is too long ({len(nodename_bytes)}), max is {LABEL_MAX_SIZE}"  # pylint:disable=line-too-long
+        )
 
-    prefix_bytes = PREFIX_EXPECTED_BYTES
-    entry += prefix_bytes
-
-    # The index is at most one byte so therefore require length=1
-    index_bytes = index.to_bytes(length=1, byteorder="big")
-    entry += index_bytes
-
-    servername_bytes = upper_if_ascii(servername).encode(encoding="utf-8")
-    servername_padding_bytes = b"\x00" * (SERVERNAME_MAX_SIZE - len(servername_bytes))
-    entry += servername_bytes + servername_padding_bytes
-
-    nodename_bytes = nodename.encode(encoding="utf-8")
-    nodename_padding_bytes = b"\x00" * (NODENAME_MAX_SIZE - len(nodename_bytes))
-    entry += nodename_bytes + nodename_padding_bytes
-
-    label_bytes = label.encode(encoding="utf-8")
-    label_padding_bytes = b"\x00" * (LABEL_MAX_SIZE - len(label_bytes))
-
-    entry += label_bytes + label_padding_bytes
+    entry = struct.pack(
+        STRUCT_FORMAT,
+        PREFIX_EXPECTED_BYTES,
+        index,
+        servername_bytes,
+        nodename_bytes,
+        label_bytes,
+    )
 
     if len(entry) != ENTRY_SIZE:
         raise RuntimeError(
@@ -407,7 +397,7 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
     # The -add command requires the use of a file that the password is read
     # from, so we need to create this file in a location that is only readable
     # by root
-    tmp_password_file = "/root/sunet-bootstrap-baas2-encryption-secret.tmp"
+    tmp_password_file = "/root/sunet-baas2-bootstrap-encryption-secret.tmp"
 
     with open(tmp_password_file, "w", encoding="utf-8") as fileobj:
         fileobj.write(password)
@@ -492,7 +482,7 @@ def main() -> None:
     # This is the directory used for downloading temporary files when
     # installing the client. It will be automatically removed when installation
     # is done.
-    download_dir = "/var/cache/sunet-bootstrap-baas2"
+    download_dir = "/var/cache/sunet-baas2-bootstrap"
 
     if installed_version is None and args.install is False:
         print(
