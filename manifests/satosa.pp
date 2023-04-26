@@ -4,7 +4,7 @@ class sunet::satosa(
   String           $image           = 'docker.sunet.se/satosa',
   String           $interface       = $::facts['interface_default'],
   String           $tag             = '8.0.1',
-  String           $redirect_uri    = lookup('redirect_uri'),
+  Optional[String] $redirect_uri    = lookup('redirect_uri'),
   Boolean          $enable_oidc     = false,
 ) {
   $proxy_conf = hiera('satosa_proxy_conf')
