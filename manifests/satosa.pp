@@ -33,7 +33,7 @@ class sunet::satosa(
    }
    file {"/etc/satosa/proxy_conf.yaml":
       content => inline_template("<%= @merged_conf.to_yaml %>\n"),
-      notify  => Sunet::Docker_run['satosa']
+      notify  => Service['sunet-satosa'],
    }
    $plugins = hiera("satosa_config")
    sort(keys($plugins)).each |$n| {
@@ -41,7 +41,7 @@ class sunet::satosa(
       $fn = $plugins[$n]
       file { "$fn":
          content => inline_template("<%= @conf.to_yaml %>\n"),
-         notify  => Sunet::Docker_run['satosa']
+         notify  => Service['sunet-satosa'],
       }
    }
 
