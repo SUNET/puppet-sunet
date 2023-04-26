@@ -61,12 +61,6 @@ class sunet::satosa(
     undef   => 'absent',
     default => 'present'
   }
-  sunet::docker_run {'alwayshttps':
-    ensure => $dehydrated_status
-    image  => 'docker.sunet.se/always-https',
-    ports  => ['80:80'],
-    env    => ['ACME_URL=http://acme-c.sunet.se'],
-  }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'allow_http' :
