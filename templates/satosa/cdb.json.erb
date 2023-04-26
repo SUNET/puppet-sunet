@@ -5,7 +5,7 @@
     "client_secret": "<%= @client_secret %>",
     "claims_supported" : ["id_token"],
     "redirect_uris": [
-      "https://platform.sunet.se/user/oauth2/platform/callback"
+      "<%= @redirect_uri %>"
     ],
     "allowed_scope_values": [
 	    "profile",
