@@ -65,7 +65,7 @@ class sunet::satosa(
   }
 
   if ($dehydrated_name) {
-    sunet::dehydrated::client { 'enable-dehydrated'
+    sunet::dehydrated::client { 'enable-dehydrated':
       domain    => $dehydrated_name,
       ssl_links => true,
     }
