@@ -1,12 +1,14 @@
 version: '3.2'
 
 services:
+<% if @dehydrated_name %>
   always-https:
     image: docker.sunet.se/always-https
     ports:
       - '80:80'
     environment:
       - 'ACME_URL=http://acme-c.sunet.se/'
+<% end -%>
   satosa:
     image: docker.sunet.se/satosa:<%= @tag %>
     volumes:

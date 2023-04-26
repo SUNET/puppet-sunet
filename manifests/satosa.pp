@@ -64,19 +64,19 @@ class sunet::satosa(
     default => 'present'
   }
 
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
-    sunet::nftables::docker_expose { 'allow_http' :
-      iif           => $interface,
-      allow_clients => 'any',
-      port          => 80,
-    }
-  } else {
-    sunet::misc::ufw_allow { 'allow-http':
-      from => 'any',
-      port => '80'
-    }
-  }
   if ($dehydrated_name) {
+    if $::facts['sunet_nftables_enabled'] == 'yes' {
+      sunet::nftables::docker_expose { 'allow_http' :
+        iif           => $interface,
+        allow_clients => 'any',
+        port          => 80,
+      }
+    } else {
+      sunet::misc::ufw_allow { 'allow-http':
+        from => 'any',
+        port => '80'
+      }
+    }
     file { '/etc/satosa/https.key': ensure => link, target => "/etc/dehydrated/certs/${dehydrated_name}.key" }
     file { '/etc/satosa/https.crt': ensure => link, target => "/etc/dehydrated/certs/${dehydrated_name}/fullchain.pem" }
   } else {
