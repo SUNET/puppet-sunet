@@ -1,6 +1,7 @@
 class sunet::satosa(
   $dehydrated_name=undef,
   $image='docker.sunet.se/satosa',
+  $interface = "${::facts['interface_default']}",
   $tag='3.4-stable'
 ) {
    $proxy_conf = hiera("satosa_proxy_conf")
@@ -50,10 +51,19 @@ class sunet::satosa(
          notify  => Sunet::Docker_run['satosa']
       }
    }
-   ufw::allow { "satosa-allow-https":
-      ip   => 'any',
+
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { 'allow_https' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 443,
+    }
+  } else {
+    sunet::misc::ufw_allow { 'allow-https':
+      from => 'any',
       port => '443'
-   }
+    }
+  }
    $dehydrated_status = $dehydrated_name ? {
       undef   => 'absent',
       default => 'present'
@@ -64,11 +74,19 @@ class sunet::satosa(
       env      => ['ACME_URL=http://acme-c.sunet.se'],
       ensure   => $dehydrated_status
    }
-   ufw::allow { "satosa-allow-http":
-      ip     => 'any',
-      port   => '80',
-      ensure => $dehydrated_status
-   }
+
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { 'allow_http' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 80,
+    }
+  } else {
+    sunet::misc::ufw_allow { 'allow-http':
+      from => 'any',
+      port => '80'
+    }
+  }
    if ($dehydrated_name) {
       file { '/etc/satosa/https.key': ensure => link, target => "/etc/dehydrated/certs/$dehydrated_name.key" }
       file { '/etc/satosa/https.crt': ensure => link, target => "/etc/dehydrated/certs/${dehydrated_name}/fullchain.pem" }
