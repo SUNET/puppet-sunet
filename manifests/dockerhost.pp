@@ -98,7 +98,7 @@ class sunet::dockerhost(
       $architecture = undef
     }
 
-    $distro = downcase($::operatingsystem)
+    $distro = downcase($::facts['operatingsystem'])
     # new source
     apt::source {'docker_ce':
       location     => "https://download.docker.com/linux/${distro}",
