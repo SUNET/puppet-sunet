@@ -4,6 +4,7 @@ class sunet::satosa(
   String           $image           = 'docker.sunet.se/satosa',
   String           $interface       = $::facts['interface_default'],
   String           $tag             = '8.0.1',
+  Boolean          $enable_oidc     = false,
 ) {
   $proxy_conf = hiera('satosa_proxy_conf')
   $default_conf = {
@@ -81,6 +82,15 @@ class sunet::satosa(
     sunet::snippets::keygen {'satosa_https':
       key_file  => '/etc/satosa/https.key',
       cert_file => '/etc/satosa/https.crt'
+    }
+  }
+
+  if ($enable_oidc) {
+    $client_id     = lookup('client_id')
+    $client_secret = lookup('client_secret')
+    file { '/etc/satosa/cdb.json':
+      ensure  => file,
+      content => template('mastodon/satosa/cdb.json.erb')
     }
   }
 
