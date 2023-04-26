@@ -31,13 +31,6 @@ class sunet::satosa(
          }
       }
    }
-   sunet::docker_run {'satosa':
-      image    => $image,
-      imagetag => $tag,
-      volumes  => ['/etc/satosa:/etc/satosa','/etc/dehydrated:/etc/dehydrated'],
-      ports    => ['443:8000'],
-      env      => ['METADATA_DIR=/etc/satosa/metadata']
-   }
    file {"/etc/satosa/proxy_conf.yaml":
       content => inline_template("<%= @merged_conf.to_yaml %>\n"),
       notify  => Sunet::Docker_run['satosa']
@@ -96,4 +89,20 @@ class sunet::satosa(
          cert_file => "/etc/satosa/https.crt"
       }
    }
+
+  service {'docker-satosa.service':
+    ensure => 'stopped',
+    enable => false,
+  }
+  service {'docker-alwayshttps.service':
+    ensure => 'stopped',
+    enable => false,
+  }
+  sunet::docker_compose { 'satosa_compose':
+    content          => template('sunet/satosa/docker-compose.yml.erb'),
+    service_name     => 'satosa',
+    compose_dir      => '/opt/',
+    compose_filename => 'docker-compose.yml',
+    description      => 'Satosa',
+  }
 }

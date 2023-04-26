@@ -1,0 +1,19 @@
+version: '3.2'
+
+services:
+  always-https:
+    image: docker.sunet.se/always-https
+    ports:
+      - '80:80'
+    environment:
+      - 'ACME_URL=http://acme-c.sunet.se/'
+  satosa:
+    image: docker.sunet.se/satosa:<%= @tag %>
+    volumes:
+      - '/etc/satosa:/etc/satosa'
+      - '/etc/dehydrated:/etc/dehydrated'
+    ports:
+      - '443:8000'
+    environment:
+      - 'METADATA_DIR=/etc/satosa/metadata'
+      - 'WORKER_TIMEOUT=120'
