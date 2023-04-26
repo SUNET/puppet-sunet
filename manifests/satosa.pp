@@ -1,9 +1,9 @@
 # Class to run Satosa in docker-compose
 class sunet::satosa(
-  $dehydrated_name=undef,
-  $image='docker.sunet.se/satosa',
-  $interface=$::facts['interface_default'],
-  $tag='8.0.1',
+  Optional[String] $dehydrated_name = undef,
+  String           $image           = 'docker.sunet.se/satosa',
+  String           $interface       = $::facts['interface_default'],
+  String           $tag             = '8.0.1',
 ) {
   $proxy_conf = hiera('satosa_proxy_conf')
   $default_conf = {
