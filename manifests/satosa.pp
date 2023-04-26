@@ -65,6 +65,11 @@ class sunet::satosa(
   }
 
   if ($dehydrated_name) {
+    sunet::dehydrated::client { 'enable-dehydrated'
+      domain    => $dehydrated_name,
+      ssl_links => true,
+    }
+
     if $::facts['sunet_nftables_enabled'] == 'yes' {
       sunet::nftables::docker_expose { 'allow_http' :
         iif           => $interface,
