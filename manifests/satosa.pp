@@ -2,7 +2,7 @@ class sunet::satosa(
   $dehydrated_name=undef,
   $image='docker.sunet.se/satosa',
   $interface = "${::facts['interface_default']}",
-  $tag='3.4-stable'
+  $tag='8.0.1',
 ) {
    $proxy_conf = hiera("satosa_proxy_conf")
    $default_conf = { 
