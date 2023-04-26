@@ -5,7 +5,7 @@ class sunet::satosa(
   $tag='8.0.1',
 ) {
    $proxy_conf = hiera("satosa_proxy_conf")
-   $default_conf = { 
+   $default_conf = {
       "STATE_ENCRYPTION_KEY"       => hiera("satosa_state_encryption_key"),
       "USER_ID_HASH_SALT"          => hiera("satosa_user_id_hash_salt"),
       "CUSTOM_PLUGIN_MODULE_PATHS" => ["plugins"],
