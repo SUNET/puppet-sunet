@@ -18,7 +18,7 @@ class sunet::pkcs11_ca(
   exec { 'pkcs11_ca_clone':
     command     => '/usr/bin/git clone https://github.com/SUNET/pkcs11_ca.git',
     cwd         => '/opt',
-    unless => '/usr/bin/ls pkcs11_ca 2> /dev/null,
+    unless => '/usr/bin/ls pkcs11_ca 2> /dev/null',
   }
 
   sunet::docker_compose { 'pkcs11_ca_compose':
@@ -28,5 +28,6 @@ class sunet::pkcs11_ca(
     compose_filename => 'docker-compose.yml',
     description      => 'PKCS11 CA',
   }
+
 
 }
