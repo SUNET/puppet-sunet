@@ -23,8 +23,8 @@ services:
       - ./data/hsm_tokens:/var/lib/softhsm/tokens
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    dns:
-      - 89.32.32.32
+    # dns:
+    #   - 89.32.32.32
     environment:
       - CA_URL=<%= @ca_url %>
       - ACME_ROOT=<%= @acme_root %>
@@ -56,8 +56,8 @@ services:
       - ./data/db_data:/var/lib/postgresql/data
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    dns:
-      - 89.32.32.32
+    # dns:
+    #   - 89.32.32.32
     environment:
       - POSTGRES_DB=<%= @postgres_database %>
       - POSTGRES_USER=<%= @postgres_user %>
@@ -79,8 +79,8 @@ services:
     # cpus: "1.0"
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    dns:
-      - 89.32.32.32
+    # dns:
+    #   - 89.32.32.32
     environment:
       - CA_URL=<%= @ca_url %>
       - ACME_ROOT=<%= @acme_root %>
