@@ -7,6 +7,7 @@ class sunet::pkcs11_ca(
   String $pkcs11_pin                     = '1234',  # remove default arg to require user to set it
   String $pkcs11_module                  = '/usr/lib/softhsm/libsofthsm2.so',
   String $postgres_host                  = 'postgres',
+  String $postgres_database              = 'pkcs11_testdb1',
   String $postgres_user                  = 'pkcs11_testuser1',
   String $postgres_password              = 'DBUserPassword',  # remove default arg to require user to set it
   String $postgres_port                  = '5432',
