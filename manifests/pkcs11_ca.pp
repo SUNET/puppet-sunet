@@ -21,7 +21,7 @@ class sunet::pkcs11_ca(
     unless => '/usr/bin/ls pkcs11_ca 2> /dev/null,
   }
 
-  $docker_compose = sunet::docker_compose { 'pkcs11_ca_compose':
+  sunet::docker_compose { 'pkcs11_ca_compose':
     content          => template('sunet/pkcs11_ca/docker-compose.yml.erb'),
     service_name     => 'pkcs11_ca',
     compose_dir      => '/opt/',
