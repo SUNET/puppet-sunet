@@ -22,6 +22,17 @@ class sunet::pkcs11_ca(
     unless => '/usr/bin/ls pkcs11_ca 2> /dev/null',
   }
 
+  file { '/opt/pkcs11_ca/deploy.sh':
+    ensure  => file,
+    content => template('sunet/pkcs11_ca/deploy.sh.erb'),
+  }
+
+  exec { 'pkcs11_ca_deploy':
+    command     => '/usr/bin/bash ./deploy.sh',
+    cwd         => '/opt/pkcs11_ca',
+    unless => '/usr/bin/ls data/db_data 2> /dev/null',
+  }
+
   sunet::docker_compose { 'pkcs11_ca_compose':
     content          => template('sunet/pkcs11_ca/docker-compose.yml.erb'),
     service_name     => 'pkcs11_ca',
@@ -29,6 +40,5 @@ class sunet::pkcs11_ca(
     compose_filename => 'docker-compose.yml',
     description      => 'PKCS11 CA',
   }
-
 
 }
