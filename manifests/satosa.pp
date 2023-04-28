@@ -99,7 +99,7 @@ class sunet::satosa(
     $client_secret = lookup('client_secret')
     file { '/etc/satosa/cdb.json':
       ensure  => file,
-      content => template('mastodon/satosa/cdb.json.erb')
+      content => template('sunet/satosa/cdb.json.erb')
     }
   }
 
