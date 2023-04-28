@@ -21,6 +21,9 @@ class sunet::satosa(
   ensure_resource('file','/etc/satosa/run', { ensure => directory } )
   ensure_resource('file','/etc/satosa/plugins', { ensure => directory } )
   ensure_resource('file','/etc/satosa/metadata', { ensure => directory } )
+  ensure_resource('file','/etc/satosa/md-signer2.crt', {
+    content  => file('sunet/md-signer2.crt')
+  })
   ['backend','frontend','metadata'].each |$id| {
     if hiera("satosa_${id}_key",undef) != undef {
       sunet::snippets::secret_file { "/etc/satosa/${id}.key": hiera_key => "satosa_${id}_key" }
