@@ -2,8 +2,8 @@ class sunet::pkcs11_ca(
   String $ca_url,
   String $ca_dns_name,
   String $acme_root                      = '/acme',
-  # String $pkcs11_sign_api_token        = 'xyz',
-  String $pkcs11_token                   = 'my_test_token_1',  # Taken from eyaml, here for clarity
+  # String $pkcs11_sign_api_token        = 'xyz',  # Taken from eyaml, here for clarity
+  String $pkcs11_token                   = 'my_test_token_1',
   # String $pkcs11_pin                   = '1234',  # Taken from eyaml, here for clarity
   String $pkcs11_module                  = '/usr/lib/softhsm/libsofthsm2.so',
   String $postgres_host                  = 'postgres',
@@ -15,6 +15,7 @@ class sunet::pkcs11_ca(
 ) {
   include stdlib
 
+  # Credentials from eyaml
   $postgres_password = safe_hiera('postgres_password')
   $pkcs11_pin = safe_hiera('pkcs11_pin')
   $pkcs11_sign_api_token = safe_hiera('pkcs11_sign_api_token')
