@@ -3,13 +3,13 @@ class sunet::pkcs11_ca(
   String $ca_dns_name,
   String $acme_root                      = '/acme',
   # String $pkcs11_sign_api_token        = 'xyz',
-  String $pkcs11_token                   = 'my_test_token_1',  # remove default arg to require user to set it
-  # String $pkcs11_pin                   = '1234',  # remove default arg to require user to set it
+  String $pkcs11_token                   = 'my_test_token_1',  # Taken from eyaml, here for clarity
+  # String $pkcs11_pin                   = '1234',  # Taken from eyaml, here for clarity
   String $pkcs11_module                  = '/usr/lib/softhsm/libsofthsm2.so',
   String $postgres_host                  = 'postgres',
   String $postgres_database              = 'pkcs11_testdb1',
   String $postgres_user                  = 'pkcs11_testuser1',
-  # String $postgres_password            = 'DBUserPassword',  # remove default arg to require user to set it
+  # String $postgres_password            = 'DBUserPassword',  # Taken from eyaml, here for clarity
   String $postgres_port                  = '5432',
   String $postgres_timeout               = '5',
 ) {
