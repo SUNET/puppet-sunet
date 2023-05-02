@@ -42,7 +42,7 @@ services:
     # build:
     # context: .
     # dockerfile: data/postgres_container/Dockerfile
-    image: postgres:15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c
+    image: <%= @postgres_image %>:<%= @postgres_version %>
     restart: always
     # read_only: true
     # cap_drop: [ALL]

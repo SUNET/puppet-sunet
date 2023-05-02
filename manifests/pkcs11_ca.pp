@@ -2,23 +2,21 @@ class sunet::pkcs11_ca(
   String $ca_url,
   String $ca_dns_name,
   String $acme_root                      = '/acme',
-  # String $pkcs11_sign_api_token        = 'xyz',  # Taken from eyaml, here for clarity
+  String $pkcs11_sign_api_token          = lookup('pkcs11_sign_api_token'), # Example 'xyz' Taken from eyaml, here for clarity
   String $pkcs11_token                   = 'my_test_token_1',
-  # String $pkcs11_pin                   = '1234',  # Taken from eyaml, here for clarity
+  String $pkcs11_pin                     = lookup('pkcs11_pin'), # Example '1234' Taken from eyaml, here for clarity
   String $pkcs11_module                  = '/usr/lib/softhsm/libsofthsm2.so',
   String $postgres_host                  = 'postgres',
   String $postgres_database              = 'pkcs11_testdb1',
   String $postgres_user                  = 'pkcs11_testuser1',
-  # String $postgres_password            = 'DBUserPassword',  # Taken from eyaml, here for clarity
+  String $postgres_password              = lookup('postgres_password'), # Example 'DBUserPassword' Taken from eyaml, here for clarity
   String $postgres_port                  = '5432',
   String $postgres_timeout               = '5',
+  String $postgres_image		 = 'postgres',
+  String $postgres_version		 = '15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c',
 ) {
   include stdlib
 
-  # Credentials from eyaml
-  $postgres_password = safe_hiera('postgres_password')
-  $pkcs11_pin = safe_hiera('pkcs11_pin')
-  $pkcs11_sign_api_token = safe_hiera('pkcs11_sign_api_token')
 
   # clone down the pkcs11 code
   exec { 'pkcs11_ca_clone':
