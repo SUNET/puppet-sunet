@@ -135,7 +135,7 @@ def main() -> None:
         if last_error > last_start:
             print(
                 f"CRITICAL: last error time ({last_error})",
-                "is newer than last start time ({last_start})",
+                f"is newer than last start time ({last_start})",
             )
             sys.exit(1)
 
