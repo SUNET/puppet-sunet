@@ -8,9 +8,11 @@
 #
 # The setup is described at https://github.com/SUNET/knubbis-fleetlock/tree/main/docker-compose-sample
 
-# @param knubbis_fleetlock_version The version of the knubbis-fleetlock container to run
-# @param etcd_version  The version of the etcd backend container to run
-# @param domain        The domain where the fleetlock server will supply its services
+# @param knubbis_fleetlock_version  The version of the knubbis-fleetlock container to run
+# @param etcd_version               The version of the etcd backend container to run
+# @param cfssl_helper_version       The version of the cfssl cert generation helper container to run
+# @param etcdctl_helper_version     The version of the etcdctl initial setup helper container to run
+# @param domain                     The domain where the fleetlock server will supply its services
 class sunet::knubbis::fleetlock_standalone(
   String        $knubbis_fleetlock_version="v0.0.6",
   String        $etcd_version="v3.5.8",
