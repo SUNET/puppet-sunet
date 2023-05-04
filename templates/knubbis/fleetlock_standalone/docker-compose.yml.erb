@@ -1,0 +1,67 @@
+version: "3.9"
+services:
+  cert-bootstrap:
+    image: "docker.sunet.se/knubbis/knubbis-cfssl-helper:<%= @cfssl_helper_version %>"
+    user: 1000000000:1000000000
+    volumes:
+      - /opt/knubbis-fleetlock/cert-bootstrap:/cert-bootstrap
+      - /opt/knubbis-fleetlock/cert-bootstrap-ca:/cert-bootstrap-ca
+      - /opt/knubbis-fleetlock/cert-bootstrap-etcd:/cert-bootstrap-etcd
+      - /opt/knubbis-fleetlock/cert-bootstrap-client-root:/cert-bootstrap-client-root
+      - /opt/knubbis-fleetlock/cert-bootstrap-client-knubbis-fleetlock:/cert-bootstrap-client-knubbis-fleetlock
+    tmpfs:
+      - /work:uid=1000000000
+    command:
+      - "/cert-bootstrap/bootstrap.sh"
+
+  etcd:
+    image: "gcr.io/etcd-development/etcd:<%= @etcd_version %>"
+    user: 1000000000:1000000000
+    volumes:
+      - /opt/knubbis-fleetlock/etcd-data:/etcd-data
+      - /opt/knubbis-fleetlock/etcd-backup:/etcd-backup
+      - /opt/knubbis-fleetlock/cert-bootstrap-etcd:/cert-bootstrap-etcd
+      - /opt/knubbis-fleetlock/cert-bootstrap-ca:/cert-bootstrap-ca
+      - /opt/knubbis-fleetlock/cert-bootstrap-client-root:/cert-bootstrap-client-root
+    entrypoint: /usr/local/bin/etcd
+    command:
+      - "--data-dir=/etcd-data"
+      - "--cert-file=/cert-bootstrap-etcd/etcd.pem"
+      - "--key-file=/cert-bootstrap-etcd/etcd-key.pem"
+      - "--listen-client-urls=https://0.0.0.0:2379"
+      - "--advertise-client-urls=https://0.0.0.0:2379"
+      - "--log-outputs=stderr"
+      - "--auto-compaction-retention=1"
+      - "--log-level=info"
+      - "--client-cert-auth=true"
+      - "--trusted-ca-file=/cert-bootstrap-ca/ca.pem"
+      - "--client-cert-allowed-hostname=etcd"
+      - "--enable-grpc-gateway=false"
+    depends_on:
+      cert-bootstrap:
+        condition: service_completed_successfully
+
+  etcd-bootstrap:
+    image: "docker.sunet.se/knubbis/knubbis-etcdctl-helper:<%= @etcdctl_helper_version %>"
+    user: 1000000000:1000000000
+    volumes:
+      - /opt/knubbis-fleetlock/etcd-bootstrap:/etcd-bootstrap
+      - /opt/knubbis-fleetlock/cert-bootstrap-ca:/cert-bootstrap-ca
+      - /opt/knubbis-fleetlock/cert-bootstrap-client-root:/cert-bootstrap-client-root
+    command:
+      - "/etcd-bootstrap/bootstrap.sh"
+    depends_on:
+      - etcd
+
+  knubbis-fleetlock:
+    image: "docker.sunet.se/knubbis/knubbis-fleetlock:<%= @knubbis_fleetlock_version %>"
+    user: 1000000000:1000000000
+    ports:
+      - "443:8443"
+    volumes:
+      - /opt/knubbis-fleetlock/conf:/conf
+      - /opt/knubbis-fleetlock/cert-bootstrap-ca:/cert-bootstrap-ca
+      - /opt/knubbis-fleetlock/cert-bootstrap-client-knubbis-fleetlock:/cert-bootstrap-client-knubbis-fleetlock
+    depends_on:
+      etcd-bootstrap:
+        condition: service_completed_successfully
