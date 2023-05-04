@@ -12,7 +12,7 @@
 # @param etcd_version  The version of the etcd backend container to run
 # @param domain        The domain where the fleetlock server will supply its services
 class sunet::knubbis::fleetlock_standalone(
-  String        $knubbis_fleetlock_version="v0.0.5",
+  String        $knubbis_fleetlock_version="v0.0.6",
   String        $etcd_version="v3.5.8",
   String        $cfssl_helper_version="v0.0.1",
   String        $etcdctl_helper_version="v0.0.1",
