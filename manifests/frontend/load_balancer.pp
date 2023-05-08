@@ -3,8 +3,16 @@
 # Two versions of the websites setup are supported, but they won't work simultaneously!
 #
 class sunet::frontend::load_balancer(
-  String $router_id              = $ipaddress_default,
-  String $basedir                = '/opt/frontend',
+  String  $router_id   = $ipaddress_default,
+  String  $basedir     = '/opt/frontend',
+  Integer $base_uidgid = hiera('sunet_frontend_load_balancer_base_uidgid', 800),
+  Integer $frontend    = $base_uidgid + 0,
+  Integer $fe_api      = $base_uidgid + 1,
+  Integer $fe_monitor  = $base_uidgid + 2,
+  Integer $fe_config   = $base_uidgid + 3,
+  Integer $haproxy     = $base_uidgid + 10,
+  Integer $telegraf    = $base_uidgid + 11,
+  Integer $varnish     = $base_uidgid + 12,
 ) {
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {

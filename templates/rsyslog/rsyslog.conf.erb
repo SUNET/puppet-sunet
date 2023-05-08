@@ -1,0 +1,45 @@
+# /etc/rsyslog.conf configuration file for rsyslog
+#
+# For more information install rsyslog-doc and see
+# /usr/share/doc/rsyslog-doc/html/configuration/index.html
+
+
+#################
+#### MODULES ####
+#################
+
+module(load="imuxsock") # provides support for local system logging
+module(load="imklog")   # provides kernel logging support
+#module(load="immark")  # provides --MARK-- message capability
+
+# provides UDP syslog reception
+#module(load="imudp")
+#input(type="imudp" port="514")
+
+# provides TCP syslog reception
+#module(load="imtcp")
+#input(type="imtcp" port="514")
+
+module(load="builtin:omfile"
+  dirCreateMode="0755"
+  fileCreateMode="0640"
+  fileGroup="adm"
+  fileOwner="root"
+<% if @traditional_file_format == true -%>
+  template="RSYSLOG_TraditionalFileFormat"
+<% end -%>
+)
+
+###########################
+#### GLOBAL DIRECTIVES ####
+###########################
+
+global(
+  # Where to place spool and state files
+  workDirectory="/var/spool/rsyslog"
+)
+
+#
+# Include all config files in /etc/rsyslog.d/
+#
+$IncludeConfig /etc/rsyslog.d/*.conf
