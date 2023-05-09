@@ -3,6 +3,7 @@
 # pylint:enable=invalid-name
 """ Check dsmc logs and other information and exit non-zero if something bad is detected """
 
+import configparser
 import shlex
 import subprocess
 import sys
@@ -110,10 +111,15 @@ def has_run_recently(last_time: datetime.datetime, hours: int) -> bool:
 
 def main() -> None:
     """the starting point of the program"""
-    # alert if there is no assigned backup schedule
-    if not have_schedule():
-        print("CRITICAL: we have no backup schedules")
-        sys.exit(1)
+
+    config = configparser.ConfigParser()
+    config.read("/etc/sunet-baas2/sunet-baas2-status.conf")
+
+    if config.getboolean("monitoring", "monitor_schedule"):
+        # alert if there is no assigned backup schedule
+        if not have_schedule():
+            print("CRITICAL: we have no backup schedules")
+            sys.exit(1)
 
     # alert if there have been no scheduled runs logged within the last 25 hours
     last_start = last_scheduled_start_time()
