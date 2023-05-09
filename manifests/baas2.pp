@@ -23,13 +23,11 @@
 # @param nodename          The nodename registered in the IBM system for this server
 # @param tcpserveraddress  The address of the TSM server we are sending backup data to
 # @param version           The version of the client to install
-# @param monitor_schedule  If monitoring tool should check for backup schedule in the BaaS portal
 # @param backup_dirs       Specific directories to backup, default is to backup everything
 class sunet::baas2(
   String        $nodename="",
   String        $tcpserveraddress="tsm12.backup.sto2.safedc.net",
   String        $version="8.1.17.2",
-  Boolean       $monitor_schedule = true,
   Array[String] $backup_dirs = [],
 ) {
 
@@ -104,20 +102,6 @@ class sunet::baas2(
        ensure  => 'running',
        enable  => true,
        require => Exec['sunet-baas2-bootstrap --register'],
-    }
-
-    file { '/etc/sunet-baas2':
-      ensure => directory,
-      mode   => '0755',
-      owner  => 'root',
-      group  => 'root',
-    }
-
-    file { "/etc/sunet-baas2/sunet-baas2-status.conf":
-      ensure  => 'file',
-      mode    => '0755',
-      owner   => 'root',
-      content => template('sunet/baas2/sunet-baas2-status.conf.erb')
     }
 
     file { "/usr/local/sbin/sunet-baas2-status":
