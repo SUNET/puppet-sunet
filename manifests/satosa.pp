@@ -55,7 +55,7 @@ class sunet::satosa(
     $conf = lookup($n)
     $fn = $json_configs[$n]
     file { $fn:
-      content => inline_template("<%= @conf.to_json_pretty %>\n"),
+      content => inline_template("<%= @conf.to_json %>\n"),
       notify  => Service['sunet-satosa'],
     }
   }
