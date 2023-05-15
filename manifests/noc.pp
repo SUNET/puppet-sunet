@@ -2,24 +2,20 @@
 class sunet::noc(
   Boolean $allow_reboot = true,
 ) {
-  $ssh_authorized_keys = hiera_hash('noc_ssh_authorized_keys', undef)
+  $noc_ssh_keys = lookup('noc_ssh_keys')
   # If we have Authorized keys for NOC staff, we create a user, 
   # add ssh keys there and allow them to run select commands
-  if is_hash($ssh_authorized_keys) {
+  if is_hash($noc_ssh_keys) {
     sunet::misc::system_user { 'noc':
       username   => 'noc',
       group      => 'noc',
       shell      => '/bin/bash',
       managehome => true
     }
-    $ssh_authorized_keys.each|$key, $value|{
-      ssh_authorized_key { $key:
-        ensure => $value['ensure'],
-        name   => $value['name'],
-        key    => $value['key'],
-        type   => $value['type'],
-        user   => 'noc'
-      }
+
+    sunet::ssh_keys { 'noc_ssh_keys':
+      config   => { 'noc' => keys($noc_ssh_keys) },
+      database => $noc_ssh_keys,
     }
     # This sudoers rule will allow noc user to run commands without password if they
     # are in /usr/local/bin and start with sunet_noc_. This is safe because only root 
