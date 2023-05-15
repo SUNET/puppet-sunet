@@ -54,7 +54,7 @@ class sunet::satosa(
   sort(keys($json_configs)).each |$n| {
     $conf = hiera($n)
     $fn = $json_configs[$n]
-    file { fn:
+    file { $fn:
       content => inline_template("<%= @conf.to_json %>\n"),
       notify  => Service['sunet-satosa'],
     }
