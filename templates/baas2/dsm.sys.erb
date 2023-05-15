@@ -57,22 +57,13 @@ SERVERNAME SafeDC
   include.encrypt /.../*
 
 <% if ! @backup_dirs_transformed.empty? -%>
-* Since the puppet class is executed with backup_dirs
-* we only include those directories and exclude
-* everything else (the default is to backup everything).
-* From: https://www.ibm.com/docs/en/tsm/7.1.2?topic=client-creating-include-exclude-list
-* ===
-* "Tivoli Storage Manager evaluates all exclude.fs and exclude.dir statements
-* first (regardless of their position within the include-exclude list), and
-* removes the excluded file spaces, directories, and files from the list of
-* objects available for processing. All other include-exclude statements are
-* processed from the bottom of the list up. Therefore, it is important to enter
-* all your include-exclude statements in the proper order."
-* ===
-* ... so we need to exclude everything at the top of the list and then include
-* the requested directories afterwards.
-  exclude /.../*
+* Configure a virtualmountpoint and domain for each backup dir. Trying to use
+* include/exclude statements for this results in backing up all directory
+* structures even if we "exclude everything" and just include the requested
+* directories, related problem report:
+* https://adsm.org/forum/index.php?threads/exclude-dir.6135/
 <% @backup_dirs_transformed.each do |dir| -%>
-  include <%= dir %>/.../*
+  virtualmountpoint <%= dir %>
+  domain <%= dir %>
 <% end -%>
 <% end -%>
