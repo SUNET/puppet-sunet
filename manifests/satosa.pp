@@ -50,6 +50,16 @@ class sunet::satosa(
     }
   }
 
+  $json_config = hiera('satosa_json_config')
+  sort(keys($plugins)).each |$n| {
+    $conf = hiera($n)
+    $fn = $json_config[$n]
+    file { fn:
+      content => inline_template("<%= @conf.to_json %>\n"),
+      notify  => Service['sunet-satosa'],
+    }
+  }
+
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'allow_https' :
       iif           => $interface,
@@ -91,15 +101,6 @@ class sunet::satosa(
     sunet::snippets::keygen {'satosa_https':
       key_file  => '/etc/satosa/https.key',
       cert_file => '/etc/satosa/https.crt'
-    }
-  }
-
-  if ($enable_oidc) {
-    $client_id     = lookup('client_id')
-    $client_secret = lookup('client_secret')
-    file { '/etc/satosa/cdb.json':
-      ensure  => file,
-      content => template('sunet/satosa/cdb.json.erb')
     }
   }
 
