@@ -50,7 +50,7 @@ class sunet::satosa(
     }
   }
 
-  $json_config = hiera('satosa_json_config')
+  $json_config = lookup('satosa_json_config', undef, undef, [])
   sort(keys($plugins)).each |$n| {
     $conf = hiera($n)
     $fn = $json_config[$n]
