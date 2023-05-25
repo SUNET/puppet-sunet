@@ -1,5 +1,5 @@
 # SUNET Inventory Service
-class sunet::invent(
+class sunet::invent::client(
   String  $invent_dir            = '/opt/invent',
   String  $export_enpoint        = '',
   Integer $invent_retention_days = 30,
