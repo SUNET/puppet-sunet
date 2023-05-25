@@ -1,6 +1,7 @@
 # SUNET Inventory Service
 class sunet::invent(
   String  $invent_dir            = '/opt/invent',
+  String  $export_enpoint        = '',
   Integer $invent_retention_days = 30,
 ) {
   $host_os = String($::facts['operatingsystem'], "%d")
