@@ -3,7 +3,7 @@ class sunet::satosa(
   Optional[String] $dehydrated_name = undef,
   String           $image           = 'docker.sunet.se/satosa',
   String           $interface       = $::facts['interface_default'],
-  String           $tag             = '8.0.1',
+  String           $tag             = '8.2.0',
   Optional[String] $redirect_uri    = lookup('redirect_uri', undef, undef, ''),
   Boolean          $enable_oidc     = false,
 ) {
