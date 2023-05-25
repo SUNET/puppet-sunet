@@ -20,7 +20,7 @@ class sunet::knubbis::fleetlock_standalone(
   String        $cfssl_helper_version="v0.0.1",
   String        $etcdctl_helper_version="v0.0.1",
   String        $domain="",
-  Bool          $letsencrypt_prod=false,
+  Boolean       $letsencrypt_prod=false,
 ) {
 
     # A domain must be supplied by the user
