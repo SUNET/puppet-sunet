@@ -24,7 +24,7 @@ argon_memory = 65536
 argon_threads = 4
 password = "<%= @knubbis_fleetlock_secrets["conf"]["certmagic"]["password"] %>"
 etcd3_path = "se.sunet.knubbis/certmagic"
-letsencrypt_prod = false
+letsencrypt_prod = <%= @letsencrypt_prod %>
 email = "patlu@sunet.se"
 domains = ["<%= @domain %>"]
 
