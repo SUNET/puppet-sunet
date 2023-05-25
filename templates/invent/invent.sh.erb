@@ -57,7 +57,7 @@ ln -f -s "${filename}" "${latest}"
 # Clean out old facts
 find ${datadir} -type f -mtime +${retention_days} -delete 
 
-# Send data to inventory reciever
+# Send data to inventory receiver
 if [[ -x /usr/bin/curl ]] && [[ -n ${export_endpoint} ]]; then
   username=$(hostname -f)
   pwfile="/opt/invent/passwd"
