@@ -17,12 +17,12 @@ class sunet::invent::receiver (
 
   file { '/opt/receiver/db':
     ensure => directory,
-    owner => '998',
+    owner => '999',
   }
   $endpoints.each |$endpoint| {
     file { "/opt/receiver/${endpoint}":
       ensure => directory,
-      owner => '998',
+      owner => '999',
     }
   }
 
