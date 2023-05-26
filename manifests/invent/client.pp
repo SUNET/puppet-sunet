@@ -4,7 +4,7 @@ class sunet::invent::client(
   String  $export_enpoint        = '',
   Integer $invent_retention_days = 30,
 ) {
-  $host_os = String($::facts['operatingsystem'], "%d")
+  $host_os = String($facts['os']['name'], '%d')
   $awk = $host_os ? {
     alpine => 'gawk',
     default => 'awk',
@@ -24,7 +24,7 @@ class sunet::invent::client(
   -> sunet::scriptherder::cronjob { 'inventory':
     cmd      => "${script_dir}/invent.sh",
     job_name => 'gather_inventory',
-    user     => 'root',         
-    minute   =>  '*/10',          
+    user     => 'root',
+    minute   =>  '*/10',
   }
 }
