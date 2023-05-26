@@ -1,7 +1,7 @@
 # SUNET Inventory Service
 class sunet::invent::client(
   String  $invent_dir            = '/opt/invent',
-  String  $export_enpoint        = '',
+  String  $export_endpoint        = '',
   Integer $invent_retention_days = 30,
 ) {
   $host_os = String($facts['os']['name'], '%d')
