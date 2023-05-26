@@ -4,11 +4,6 @@ class sunet::invent::receiver (
   String $vhost = 'invent.sunet.se'
 ){
 
-  sunet::misc::system_user { 'invent':
-    group => 'invent',
-    uid => 999,
-    gid => 999,
-  }
   $endpoints = ['hosts', 'images']
   $nginx_dirs = [ 'acme', 'certs','conf','dhparam','html','vhost' ]
 
