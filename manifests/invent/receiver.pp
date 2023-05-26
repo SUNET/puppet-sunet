@@ -4,6 +4,9 @@ class sunet::invent::receiver (
   String $vhost = 'invent.sunet.se'
 ){
 
+  sunet::misc::system_user { 'invent':
+    group => 'invent',
+  }
   $endpoints = ['hosts', 'images']
   $nginx_dirs = [ 'acme', 'certs','conf','dhparam','html','vhost' ]
 
@@ -16,16 +19,18 @@ class sunet::invent::receiver (
   }
 
   file { '/opt/receiver/db':
-    ensure => directory
+    ensure => directory,
+    owner => 'invent',
   }
   $endpoints.each |$endpoint| {
     file { "/opt/receiver/${endpoint}":
-      ensure => directory
+      ensure => directory,
+      owner => 'invent',
     }
   }
 
   file { '/opt/receiver/nginx':
-    ensure => directory
+    ensure => directory,
   }
   $nginx_dirs.each |$dir| {
     file { "/opt/receiver/nginx/${dir}":
