@@ -25,6 +25,7 @@ class sunet::forgejo (
   # gitea generate secret SECRET_KEY
   $secret_key = hiera('secret_key')
   # SMTP Password from NOC
+  $smtp_user = split($domain, '[.]')[0]
   $smtp_password = hiera('smtp_password')
 
   # S3 credentials from openstack
