@@ -1,6 +1,6 @@
 # microk8s cluster node
 class sunet::microk8s::node(
-  String  $channel        = '1.25/stable',
+  String  $channel        = '1.27/stable',
   Boolean $mayastor       = true,
   Integer $failure_domain = 42,
 ) {
