@@ -8,7 +8,7 @@ class sunet::dockerhost(
   Boolean $run_docker_cleanup                 = true,
   Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
   String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd0c:d0c::/64'),  # default bridge
-  Variant[String, Array[String]] $docker_dns  = $::ipaddress_default,
+  Variant[String, Array[String]] $docker_dns  = $facts['facts['networking']['interfaces']['default']['ip']'],
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
@@ -55,7 +55,7 @@ class sunet::dockerhost(
     }
   }
 
-  if versioncmp($::operatingsystemrelease, '22.04') <= 0 or $::operatingsystem == 'Debian' {
+  if versioncmp($facts['facts['os']['release']['full']'], '22.04') <= 0 or $facts['facts['os']['name']'] == 'Debian' {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
       ensure => 'purged',
@@ -92,17 +92,17 @@ class sunet::dockerhost(
       notify => Exec['dockerhost_apt_get_update'],
     }
 
-    if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
+    if $facts['facts['os']['name']'] == 'Ubuntu' and $facts['facts['os']['release']['full']'] == '14.04' {
       $architecture = 'amd64'
     } else {
       $architecture = undef
     }
 
-    $distro = downcase($::operatingsystem)
+    $distro = downcase($facts['facts['os']['name']'])
     # new source
     apt::source {'docker_ce':
       location     => "https://download.docker.com/linux/${distro}",
-      release      => $::lsbdistcodename,
+      release      => $facts['facts['os']['distro']['codename']'],
       repos        => $docker_repo,
       key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
       architecture => $architecture,
@@ -167,12 +167,12 @@ class sunet::dockerhost(
     default => $docker_dns,
   }
 
-  if $tcp_bind and has_key($::tls_certificates, $::fqdn) and has_key($::tls_certificates[$::fqdn], 'infra_cert') {
+  if $tcp_bind and has_key($facts['tls_certificates'], $facts['facts['networking']['fqdn']']) and has_key($facts['tls_certificates[$::fqdn]'], 'infra_cert') {
     $_tcp_bind = $tcp_bind
     $tls_enable = true
     $tls_cacert = '/etc/ssl/certs/infra.crt'
-    $tls_cert   = $::tls_certificates[$::fqdn]['infra_cert']
-    $tls_key    = $::tls_certificates[$::fqdn]['infra_key']
+    $tls_cert   = $facts['tls_certificates[$::fqdn]['infra_cert']']
+    $tls_key    = $facts['tls_certificates[$::fqdn]['infra_key']']
   } else {
     $_tcp_bind = undef
     $tls_enable = undef
@@ -283,9 +283,9 @@ class sunet::dockerhost(
       ;
     }
 
-  if $::sunet_has_nrpe_d == 'yes' {
+  if $facts['sunet_has_nrpe_d'] == 'yes' {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
-    if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+    if $facts['facts['os']['name']'] == 'Ubuntu' and versioncmp($facts['facts['os']['release']['full']'], '15.04') >= 0 {
       $check_docker_containers_args = '--systemd'
     } else {
       $check_docker_containers_args = '--init_d'
@@ -367,7 +367,7 @@ class sunet::dockerhost(
         ;
     }
   } else {
-    if $::facts['operatingsystem'] == 'Ubuntu' {
+    if $facts['os']['name'] == 'Ubuntu' {
       ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => true, })
     }
   }
