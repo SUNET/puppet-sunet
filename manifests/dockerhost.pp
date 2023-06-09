@@ -357,7 +357,7 @@ class sunet::dockerhost(
     ensure_resource('class', 'sunet::unbound', { disable_resolved_stub => true, })
 
     file {
-      '/etc/unbound/unbound.conf.d/unbound.conf':  # configuration to listen to the $docker_dns IP
+      '/etc/unbound/unbound.conf.d/unbound.conf':  # configuration to listen to the $ipaddress_default IP
         ensure  => file,
         path    => '/etc/unbound/unbound.conf.d/unbound.conf',
         mode    => '0644',
