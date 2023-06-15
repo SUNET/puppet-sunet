@@ -1,7 +1,7 @@
 # microk8s cluster node
 class sunet::microk8s::node(
   String  $channel        = '1.27/stable',
-  Boolean $mayastor       = true,
+  Boolean $mayastor       = false,
   Integer $failure_domain = 42,
 ) {
   # Loop through peers and do things that require their ip:s
