@@ -14,3 +14,11 @@ class sunet::vc::standalone(
     group   =>  'root',
   }
 }
+
+file { '/opt/vc/compose/docker-compose.yml':
+  ensure  => file,
+  mode    => '0644',
+  owner   => 'root',
+  group   => 'root',
+  content =>  template("sunet/vc/docker-compose_mock.erb")
+}
