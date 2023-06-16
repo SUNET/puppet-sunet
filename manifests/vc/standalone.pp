@@ -19,7 +19,7 @@ class sunet::vc::standalone(
     mode    => '0644',
     owner   => 'root',
     group   => 'root',
-    content =>  template("sunet/vc/docker-compose_mock.erb")
+    content =>  template("sunet/vc/docker-compose_mock.yml.erb")
   }
 }
 
