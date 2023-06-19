@@ -19,5 +19,6 @@ services:
       - BOOTSTRAP=0
       - FORCE_BOOTSTRAP=0
     command:  "--wsrep_cluster_address=gcomm://<%= @wsrep_cluster_address %>"
+    entrypoint:  "/scripts/entrypoint.sh"
     tty: true
 
