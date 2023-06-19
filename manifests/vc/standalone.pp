@@ -30,7 +30,7 @@ class sunet::vc::standalone(
   }
 
   # Compose
-  sunet::docker_compose { 'forgejo':
+  sunet::docker_compose { 'vc':
     content          => template('sunet/v/docker-compose_mock.yml.erb'),
     service_name     => 'vc',
     compose_dir      => '/opt/vc/compose',
