@@ -1,0 +1,41 @@
+table ip nat {
+        chain output {
+		type nat hook output priority -100; policy accept;
+	}
+        chain prerouting {
+		type nat hook prerouting priority -100; policy accept;
+	}
+        chain postrouting {
+                type nat hook postrouting priority 100; policy accept;
+        }
+}
+table ip6 nat {
+        chain output {
+		type nat hook output priority -100; policy accept;
+	}
+        chain prerouting {
+		type nat hook prerouting priority -100; policy accept;
+	}
+        chain postrouting {
+                type nat hook postrouting priority 100; policy accept;
+        }
+}
+
+#
+# SNAT packages _from_ Podman.
+#
+add rule ip nat postrouting ip saddr { 172.16.0.0/12 } iifname cni-podman1 counter masquerade comment "SNAT traffic from Podman"
+add rule ip6 nat postrouting ip6 saddr { fd00::2/128 } iifname cni-podman1 counter masquerade comment "SNAT traffic from Podman"
+add rule ip6 nat postrouting ip6 saddr { fd0c::/16 } iifname cni-podman1 counter masquerade comment "SNAT traffic from Podman"
+
+#
+# Allow forwarding packages from podman
+#
+add rule inet filter forward ct state established counter accept
+add rule inet filter forward iifname cni-podman1 counter accept comment "Forward traffic from Podman"
+
+#
+# Allow ICMP to Podman. Necessary for path-mtu at least.
+#
+add rule inet filter forward oifname cni-podman1 ip protocol icmp counter accept comment "Allow ICMP to Podman"
+add rule inet filter forward oifname cni-podman1 ip6 nexthdr icmpv6 counter accept comment "Allow ICMP to Podman"

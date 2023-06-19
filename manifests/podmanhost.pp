@@ -10,5 +10,16 @@ class sunet::podmanhost(
     owner   => 'root',
     group   => 'root',
   }
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    ensure_resource ('class','sunet::nftables::init', {})
+    file {
+      '/etc/nftables/conf.d/200-sunet_podmanhost.nft':
+        ensure  => file,
+        mode    => '0400',
+        content => template('sunet/podmanhost/200-dockerhost_nftables.nft.erb'),
+        notify  => Service['nftables'],
+        ;
+    }
+  }
 
 }

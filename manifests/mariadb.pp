@@ -8,7 +8,6 @@ class sunet::mariadb(
 )
 {
   include sunet::scriptherder::init
-  ensure_resource ('class','sunet::nftables::init', {})
   ensure_resource ('class', 'sunet::security::allow_ssh', {
       allow_from_anywhere => false,
       mgmt_addresses      => ['130.242.125.68', '2001:6b0:8:4::68', '130.242.121.73', '2001:6b0:7:6::73'],
