@@ -1,5 +1,5 @@
 # Mariadb cluster class for SUNET
-define sunet::mariadb(
+class sunet::mariadb(
   String $wsrep_cluster_address,
   Array[String] $client_ips,
   Integer $id,
