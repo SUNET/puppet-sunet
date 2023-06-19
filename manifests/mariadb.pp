@@ -7,8 +7,9 @@ class sunet::mariadb(
   String $interface = 'ens3',
 )
 {
+  include sunet::scriptherder::init
 
-  $cluster_id = 1000 + $id
+  $server_id = 1000 + $id
   $mysql_root_password = lookup('mysql_root_password')
   $mysql_backup_password = lookup('mysql_backup_password')
   $mariadb_dir = '/opt/mariadb'
