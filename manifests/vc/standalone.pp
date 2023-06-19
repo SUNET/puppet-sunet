@@ -14,6 +14,13 @@ class sunet::vc::standalone(
     group   =>  'root',
   }
 
+  file { '/opt/vc/compose':
+    ensure  => directory,
+    mode    =>  '0755',
+    owner   =>  'root',
+    group   =>  'root',
+  }
+
   file { '/opt/vc/compose/docker-compose.yml':
     ensure  => file,
     mode    => '0644',
