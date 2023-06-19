@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+
+  db:
+    image: <%= @image %> 
+    restart: always
+    volumes:
+      - /opt/mariadb/backups:/backups
+      - /opt/mariadb/conf:/etc/mysql/mariadb.conf.d
+      - /opt/mariadb/datadir:/var/lib/mysql
+      - /opt/mariadb/init:/entrypoint-initdb.d
+      - /opt/mariadb/scripts:/scripts
+    network_mode: host
+    dns:
+      - 89.32.32.32
+    environment: 
+      - MYSQL_ROOT_PASSWORD=<%= @mysql_root_password %>
+      - BOOTSTRAP=0
+      - FORCE_BOOTSTRAP=0
+    command:  "--wsrep_cluster_address=gcomm://<%= @wsrep_cluster_address %>"
+    tty: true
+
