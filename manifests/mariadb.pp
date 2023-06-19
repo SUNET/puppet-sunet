@@ -28,8 +28,6 @@ class sunet::mariadb(
       port => $ports,
     }
   }
-  sunet::system_user {'mysql': username => 'mysql', group => 'mysql' }
-
 
   file { "${mariadb_dir}/conf/credentials.cnf":
     ensure  => present,
@@ -96,6 +94,6 @@ class sunet::mariadb(
   }
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
   $dirs.each |$dir| {
-    ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, owner => 'mysql', group => 'mysql' } )
+    ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, owner => 999, group => 999 } )
   }
 }
