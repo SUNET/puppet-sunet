@@ -1,6 +1,10 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::podmanhost(
 ) {
+  file { '/etc/sunet-nftables-opt-out':
+    ensure  => file,
+    content => '',
+  }
   include sunet::packages::podman
   include stdlib
   file { '/etc/containers/storage.conf':
@@ -10,16 +14,4 @@ class sunet::podmanhost(
     owner   => 'root',
     group   => 'root',
   }
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
-    ensure_resource ('class','sunet::nftables::init', {})
-    file {
-      '/etc/nftables/conf.d/200-sunet_podmanhost.nft':
-        ensure  => file,
-        mode    => '0400',
-        content => template('sunet/podmanhost/200-podmanhost_nftables.nft.erb'),
-        notify  => Service['nftables'],
-        ;
-    }
-  }
-
 }

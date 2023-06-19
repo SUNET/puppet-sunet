@@ -11,6 +11,9 @@ version=$(lsb_release -rs)
 test "$vendor" = "Debian" && dpkg --compare-versions "${version}" "ge" "11" && enabled="yes"
 test "$vendor" = "Ubuntu" && dpkg --compare-versions "${version}" "ge" "22.04" && enabled="yes"
 
+if [ -f /etc/sunet-nftables-opt-out ]; then
+    enabled="no"
+fi
 echo "sunet_nftables_enabled=${enabled}"
 
 # old name, kept for backwards compatibility
