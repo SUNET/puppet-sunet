@@ -33,27 +33,27 @@ class sunet::mariadb(
 
   file { "${mariadb_dir}/conf/credentials.cnf":
     ensure  => present,
-    content => template('mariadb/credentials.cnf.erb'),
+    content => template('sunet/mariadb/credentials.cnf.erb'),
     mode    => '0744',
   }
   file { "${mariadb_dir}/conf/my.cnf":
     ensure  => present,
-    content => template('mariadb/my.cnf.erb'),
+    content => template('sunet/mariadb/my.cnf.erb'),
     mode    => '0744',
   }
   file { '/usr/local/bin/purge-binlogs':
     ensure  => present,
-    content => template('mariadb/purge-binlogs.erb.sh'),
+    content => template('sunet/mariadb/purge-binlogs.erb.sh'),
     mode    => '0744',
   }
   file { "${mariadb_dir}/scripts/run_manual_backup_dump.sh":
     ensure  => present,
-    content => template('mariadb/run_manual_backup_dump.erb.sh'),
+    content => template('sunet/mariadb/run_manual_backup_dump.erb.sh'),
     mode    => '0744',
   }
   file { "${mariadb_dir}/scripts/entrypoint.sh":
     ensure  => present,
-    content => template('mariadb/entrypoint.erb.sh'),
+    content => template('sunet/mariadb/entrypoint.erb.sh'),
     mode    => '0744',
   }
   sunet::scriptherder::cronjob { 'purge_binlogs':
@@ -65,12 +65,12 @@ class sunet::mariadb(
   }
   file { '/usr/local/bin/cluster-size':
     ensure  => present,
-    content => template('mariadb/cluster-size.erb.sh'),
+    content => template('sunet/mariadb/cluster-size.erb.sh'),
     mode    => '0744',
   }
   file { '/usr/local/bin/cluster-status':
     ensure  => present,
-    content => template('mariadb/cluster-status.erb.sh'),
+    content => template('sunet/mariadb/cluster-status.erb.sh'),
     mode    => '0744',
   }
   file { '/etc/sudoers.d/99-size-test':
@@ -88,7 +88,7 @@ class sunet::mariadb(
     group   => 'root',
   }
   $podman_compose = sunet::podman_compose { 'mariadb_podman_compose':
-    content          => template('mariadb/podman-compose.yml.erb'),
+    content          => template('sunet/mariadb/podman-compose.yml.erb'),
     service_name     => 'mariadb',
     compose_dir      => '/opt/',
     compose_filename => 'podman-compose.yml',
