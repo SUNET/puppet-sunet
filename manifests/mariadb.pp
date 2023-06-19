@@ -96,6 +96,6 @@ class sunet::mariadb(
   }
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
   $dirs.each |$dir| {
-    ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory } )
+    ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, owner => 'mysql', group => 'mysql' } )
   }
 }
