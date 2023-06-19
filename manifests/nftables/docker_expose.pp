@@ -14,6 +14,7 @@ define sunet::nftables::docker_expose (
   String $dnat_v6_addr = 'fd00::2',
   Variant[Integer, String] $dnat_v6_port = $port,
 ) {
+  include stdlib
   $safe_name = regsubst($title, '[^0-9A-Za-z_]', '_', 'G')
 
   $allow_clients_v4 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 4) or $this == 'any' }
