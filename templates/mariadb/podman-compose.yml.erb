@@ -18,6 +18,7 @@ services:
       - MYSQL_ROOT_PASSWORD=<%= @mysql_root_password %>
       - BOOTSTRAP=0
       - FORCE_BOOTSTRAP=0
+    user: "999:999"
     command:  "--wsrep_cluster_address=gcomm://<%= @wsrep_cluster_address %>"
     entrypoint:  "/scripts/entrypoint.sh"
     tty: true

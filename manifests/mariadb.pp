@@ -34,26 +34,36 @@ class sunet::mariadb(
     ensure  => present,
     content => template('sunet/mariadb/credentials.cnf.erb'),
     mode    => '0744',
+    owner   => 999,
+    group   => 999,
   }
   file { "${mariadb_dir}/conf/my.cnf":
     ensure  => present,
     content => template('sunet/mariadb/my.cnf.erb'),
     mode    => '0744',
+    owner   => 999,
+    group   => 999,
   }
   file { '/usr/local/bin/purge-binlogs':
     ensure  => present,
     content => template('sunet/mariadb/purge-binlogs.erb.sh'),
     mode    => '0744',
+    owner   => 999,
+    group   => 999,
   }
   file { "${mariadb_dir}/scripts/run_manual_backup_dump.sh":
     ensure  => present,
     content => template('sunet/mariadb/run_manual_backup_dump.erb.sh'),
     mode    => '0744',
+    owner   => 999,
+    group   => 999,
   }
   file { "${mariadb_dir}/scripts/entrypoint.sh":
     ensure  => present,
     content => template('sunet/mariadb/entrypoint.erb.sh'),
     mode    => '0744',
+    owner   => 999,
+    group   => 999,
   }
   sunet::scriptherder::cronjob { 'purge_binlogs':
     cmd           => '/usr/local/bin/purge-binlogs',
