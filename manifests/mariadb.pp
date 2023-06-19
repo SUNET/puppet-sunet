@@ -8,6 +8,7 @@ class sunet::mariadb(
 )
 {
   include sunet::scriptherder::init
+  ensure_resource ('class','sunet::nftables::init', {})
 
   $server_id = 1000 + $id
   $mysql_root_password = lookup('mysql_root_password')
