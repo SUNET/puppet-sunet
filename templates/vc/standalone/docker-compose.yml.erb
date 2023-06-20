@@ -13,7 +13,7 @@ services:
     restart: always
     volumes:
       - ./cert:/cert:ro
-      - ./opt/vc/config.yaml:/config.yaml:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
       - redis
       - mongo
@@ -34,7 +34,7 @@ services:
     restart: always
     volumes:
       - ./cert:/cert:ro
-      - ./opt/vc/config.yaml:/config.yaml:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
       - redis
       - mongo
@@ -56,7 +56,7 @@ services:
     restart: always
     volumes:
       - ./cert:/cert:ro
-      - ./opt/vc/config.yaml:/config.yaml:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
       - redis
       - mongo
