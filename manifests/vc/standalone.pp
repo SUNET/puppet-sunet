@@ -7,19 +7,12 @@ class sunet::vc::standalone(
   #hash with basic_auth key/value
 ) {
 
-  file { '/opt/vc':
-    ensure  => directory,
-    mode    =>  '0755',
-    owner   =>  'root',
-    group   =>  'root',
-  }
-
-  file { '/opt/vc/compose':
-    ensure  => directory,
-    mode    =>  '0755',
-    owner   =>  'root',
-    group   =>  'root',
-  }
+#  file { '/opt/vc':
+#    ensure  => directory,
+#    mode    =>  '0755',
+#    owner   =>  'root',
+#    group   =>  'root',
+#  }
 
   file { '/opt/vc/config.yaml':
     ensure => file,
