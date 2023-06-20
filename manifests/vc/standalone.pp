@@ -21,6 +21,14 @@ class sunet::vc::standalone(
     group   =>  'root',
   }
 
+  file { '/opt/vc/config.yaml':
+    ensure => file,
+    mode   => '0400',
+    owner  => '1000000000',
+    group  => '1000000000',
+    content => template("sunet/vc/standalone/config.yaml.erb")
+   }
+
   #file { '/opt/vc/compose/docker-compose.yml':
   #  ensure  => file,
   #  mode    => '0644',
@@ -32,9 +40,9 @@ class sunet::vc::standalone(
   # Compose
   sunet::docker_compose { 'vc_standalone':
     content          => template('sunet/vc/standalone/docker-compose.yml.erb'),
-    service_name     => 'vc',
+    service_name     => 'vc-standalone',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
-    description      => 'VC service',
+    description      => 'VC-standalone service',
   }
 }
