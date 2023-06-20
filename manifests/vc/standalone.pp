@@ -41,7 +41,7 @@ class sunet::vc::standalone(
   sunet::docker_compose { 'vc_standalone':
     content          => template('sunet/vc/standalone/docker-compose.yml.erb'),
     service_name     => 'vc',
-    compose_dir      => '/opt/',
+    compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'VC-standalone service',
   }
