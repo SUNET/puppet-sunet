@@ -80,7 +80,7 @@ services:
       - vc-net
 
   mongo:
-    image: "mongo:<%= @mongo_version %>"
+    image: "mongo:<%= @mongodb_version %>"
     container_name: "vc_mongo"
     restart: always
     expose:
