@@ -81,7 +81,6 @@ services:
 
   mongo:
     image: mongo:4.0.10
-    image: "mongo:<%= @mongo_version %>"
     container_name: "vc_mongo"
     restart: always
     expose:
