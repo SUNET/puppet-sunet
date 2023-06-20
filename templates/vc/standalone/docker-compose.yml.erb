@@ -21,7 +21,7 @@ services:
       vc-net:
         ipv4_address: 172.16.50.10
     environment:
-      - "VC_CONFIG_YAML=/opt/vc/config.yaml"
+      - "VC_CONFIG_YAML=/config.yaml"
 
   verifier:
     container_name: "vc_verifier"
@@ -43,7 +43,7 @@ services:
       vc-net:
         ipv4_address: 172.16.50.11
     environment:
-      - "VC_CONFIG_YAML=/opt/vc/config.yaml"
+      - "VC_CONFIG_YAML=/config.yaml"
 
   datastore:
     container_name: "vc_datastore"
@@ -65,7 +65,7 @@ services:
       vc-net:
         ipv4_address: 172.16.50.12
     environment:
-      - "VC_CONFIG_YAML=/opt/vc/config.yaml"
+      - "VC_CONFIG_YAML=/config.yaml"
 
   redis:
     image: redis:alpine
