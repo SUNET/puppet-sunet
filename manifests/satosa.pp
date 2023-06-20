@@ -7,6 +7,9 @@ class sunet::satosa(
   Optional[String] $redirect_uri    = lookup('redirect_uri', undef, undef, ''),
   Boolean          $enable_oidc     = false,
 ) {
+
+  require sunet::dockerhost
+
   $proxy_conf = lookup('satosa_proxy_conf')
   $default_conf = {
     'STATE_ENCRYPTION_KEY'       => lookup('satosa_state_encryption_key'),
