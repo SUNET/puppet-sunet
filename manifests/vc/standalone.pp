@@ -33,7 +33,7 @@ class sunet::vc::standalone(
   sunet::docker_compose { 'vc':
     content          => template('sunet/vc/docker-compose_mock.yml.erb'),
     service_name     => 'vc',
-    compose_dir      => '/opt/vc/compose',
+    compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'VC service',
   }
