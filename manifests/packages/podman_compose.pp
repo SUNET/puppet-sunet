@@ -5,7 +5,7 @@ class sunet::packages::podman_compose(
   include stdlib
 
   exec { 'podman-compose':
-    command => 'pip install podman-compose',
+    command => 'python3 -m pip install podman-compose',
     unless  => 'test -f /usr/local/bin/podman-compose',
   }
 
