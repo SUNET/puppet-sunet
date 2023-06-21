@@ -11,7 +11,7 @@ define sunet::docker_compose (
   String           $mode = '0700',
   String           $owner = 'root',
   Optional[String] $start_command = undef,
-  Optional[String] $require,
+  Optional[String] $compose_require,
 ) {
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
@@ -38,8 +38,8 @@ define sunet::docker_compose (
     })
 
 
-    if $require {
-        $real_require = [ File[$compose_file], $require]
+    if $compose_require {
+        $real_require = [ File[$compose_file], $compose_require]
 
     }
     else

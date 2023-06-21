@@ -6,7 +6,7 @@ define sunet::docker_compose_service(
   Boolean          $pull_on_start = false,
   Array[String]    $service_extras = [],
   Optional[String] $start_command = undef,
-  Optional[Array]  $require,
+  Optional[Array]  $compose_require,
 ) {
   if ($::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0) or $::operatingsystem == 'Debian' {
     include sunet::systemd_reload
@@ -23,9 +23,9 @@ define sunet::docker_compose_service(
         ;
     }
 
-    if $require {
+    if $compose_require {
         $tmp_require = [ File["/etc/systemd/system/${_service_name}.service"] ]
-        $real_require = flatten($tmp_require, $require)
+        $real_require = flatten($tmp_require, $compose_require)
     }
     else
     {
