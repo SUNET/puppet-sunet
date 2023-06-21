@@ -11,7 +11,7 @@ define sunet::docker_compose (
   String           $mode = '0700',
   String           $owner = 'root',
   Optional[String] $start_command = undef,
-  Optional[String] $compose_require = undef,
+  Optional[Type[Resourse]] $compose_require = undef,
 ) {
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
