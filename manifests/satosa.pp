@@ -99,9 +99,17 @@ class sunet::satosa(
     compose_require  => Class['sunet::dockerhost'],
   }
 
+  if Service['sunet-satosa'] {
+      $real_service = Service['sunet-satosa'],
+  }
+  else
+  {
+      $real_service = undef,
+  }
+
   file {'/etc/satosa/proxy_conf.yaml':
     content => inline_template("<%= @merged_conf.to_yaml %>\n"),
-    notify  => Service['sunet-satosa'],
+    notify  => $real_service,
   }
   $plugins = lookup('satosa_config')
   sort(keys($plugins)).each |$n| {
@@ -109,7 +117,7 @@ class sunet::satosa(
     $fn = $plugins[$n]
     file { $fn:
       content => inline_template("<%= @conf.to_yaml %>\n"),
-      notify  => Service['sunet-satosa'],
+      notify  => $real_service,
     }
   }
 
@@ -119,7 +127,7 @@ class sunet::satosa(
     $fn = $json_configs[$n]
     file { $fn:
       content => inline_template("<%= @conf.to_json %>\n"),
-      notify  => Service['sunet-satosa'],
+      notify  => $real_service,
     }
   }
 }
