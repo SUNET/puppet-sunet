@@ -8,7 +8,7 @@ common:
 
 issuer:
   api_server:
-    addr: 172.16.50.10:8080
+    addr: vc_issuer:8080
   http_proxy:
   log:
     level:
@@ -26,8 +26,8 @@ issuer:
   
 datastore:
   api_server:
-    addr: 172.16.50.11:8080
+    addr: vc_datastore:8080
 
 verifier:
   api_server:
-    addr: 172.16.50.12:8080
+    addr: vc_verifier:8080
