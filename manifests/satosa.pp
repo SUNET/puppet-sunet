@@ -100,11 +100,11 @@ class sunet::satosa(
   }
 
   if Service['sunet-satosa'] {
-      $real_service = Service['sunet-satosa'],
+      $real_service = Service['sunet-satosa']
   }
   else
   {
-      $real_service = undef,
+      $real_service = undef
   }
 
   file {'/etc/satosa/proxy_conf.yaml':
