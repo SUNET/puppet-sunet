@@ -27,7 +27,7 @@ class sunet::vc::standalone(
     mode    => '0644',
     owner   => 'root',
     group   => 'root',
-    content =>  template("sunet/vc/haproxy.cfg.erb")
+    content =>  template("sunet/vc/standalone/haproxy.cfg.erb")
   }
 
   # Compose
