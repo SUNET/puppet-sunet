@@ -37,29 +37,6 @@ class sunet::satosa(
       }
     }
   }
-  file {'/etc/satosa/proxy_conf.yaml':
-    content => inline_template("<%= @merged_conf.to_yaml %>\n"),
-    notify  => Service['sunet-satosa'],
-  }
-  $plugins = lookup('satosa_config')
-  sort(keys($plugins)).each |$n| {
-    $conf = lookup($n)
-    $fn = $plugins[$n]
-    file { $fn:
-      content => inline_template("<%= @conf.to_yaml %>\n"),
-      notify  => Service['sunet-satosa'],
-    }
-  }
-
-  $json_configs = lookup('satosa_json_config', undef, undef, {})
-  sort(keys($json_configs)).each |$n| {
-    $conf = lookup($n)
-    $fn = $json_configs[$n]
-    file { $fn:
-      content => inline_template("<%= @conf.to_json %>\n"),
-      notify  => Service['sunet-satosa'],
-    }
-  }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'allow_https' :
@@ -120,5 +97,29 @@ class sunet::satosa(
     compose_filename => 'docker-compose.yml',
     description      => 'Satosa',
     compose_require  => Class['sunet::dockerhost'],
+  }
+
+  file {'/etc/satosa/proxy_conf.yaml':
+    content => inline_template("<%= @merged_conf.to_yaml %>\n"),
+    notify  => Service['sunet-satosa'],
+  }
+  $plugins = lookup('satosa_config')
+  sort(keys($plugins)).each |$n| {
+    $conf = lookup($n)
+    $fn = $plugins[$n]
+    file { $fn:
+      content => inline_template("<%= @conf.to_yaml %>\n"),
+      notify  => Service['sunet-satosa'],
+    }
+  }
+
+  $json_configs = lookup('satosa_json_config', undef, undef, {})
+  sort(keys($json_configs)).each |$n| {
+    $conf = lookup($n)
+    $fn = $json_configs[$n]
+    file { $fn:
+      content => inline_template("<%= @conf.to_json %>\n"),
+      notify  => Service['sunet-satosa'],
+    }
   }
 }
