@@ -8,8 +8,6 @@ class sunet::satosa(
   Boolean          $enable_oidc     = false,
 ) {
 
-  require sunet::dockerhost
-
   $proxy_conf = lookup('satosa_proxy_conf')
   $default_conf = {
     'STATE_ENCRYPTION_KEY'       => lookup('satosa_state_encryption_key'),
