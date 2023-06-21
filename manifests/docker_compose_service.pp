@@ -6,6 +6,7 @@ define sunet::docker_compose_service(
   Boolean          $pull_on_start = false,
   Array[String]    $service_extras = [],
   Optional[String] $start_command = undef,
+  Optional[Array]  $require,
 ) {
   if ($::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0) or $::operatingsystem == 'Debian' {
     include sunet::systemd_reload
@@ -18,15 +19,23 @@ define sunet::docker_compose_service(
     file {
       "/etc/systemd/system/${_service_name}.service":
         content => template('sunet/dockerhost/compose.service.erb'),
-        notify  => [Class['sunet::systemd_reload'],
-                    ],
+        notify  => [Class['sunet::systemd_reload'],],
         ;
     }
+
+    if $require {
+        $tmp_require = [ File["/etc/systemd/system/${_service_name}.service"] ]
+        $real_require = flatten($tmp_require, $require)
+    }
+    else
+    {
+        $real_require = [ File["/etc/systemd/system/${_service_name}.service"] ]
+    {
 
     service { $_service_name :
       ensure   => 'running',
       enable   => true,
-      require  => File["/etc/systemd/system/${_service_name}.service"],
+      require  => $real_require,
       provider => 'systemd',  # puppet is really bad at figuring this out
     }
   } else {
