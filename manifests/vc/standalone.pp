@@ -3,6 +3,7 @@ class sunet::vc::standalone(
   String  $mongodb_version="4.0.10",
   String  $mockca_sleep="20",
   String  $ca_token,
+  String  $interface="ens3",
   Boolean $production=false,
   #hash with basic_auth key/value
 ) {
