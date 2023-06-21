@@ -30,7 +30,7 @@ define sunet::docker_compose_service(
     else
     {
         $real_require = [ File["/etc/systemd/system/${_service_name}.service"] ]
-    {
+    }
 
     service { $_service_name :
       ensure   => 'running',
