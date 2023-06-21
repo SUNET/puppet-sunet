@@ -6,7 +6,7 @@ services:
     container_name: "vc_issuer"
     image: "docker.sunet.se/dc4eu/issuer:<%= @vc_version %>"
     healthcheck:
-      test: curl --fail http://vc_issuer:8080/issuer/health || exit 1
+      test: curl --fail http://issuer:8080/health || exit 1
       interval: 20s
       retries: 5
       timeout: 10s
@@ -18,8 +18,7 @@ services:
       - redis
       - mongo
     networks:
-      vc-net:
-        ipv4_address: 172.16.50.10
+      - vc-net
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -27,7 +26,7 @@ services:
     container_name: "vc_verifier"
     image: "docker.sunet.se/dc4eu/verifier:<%= @vc_version %>"
     healthcheck:
-      test: curl --fail http://vc_verifier:8080/verifier/health || exit 1
+      test: curl --fail http://verifier:8080/health || exit 1
       interval: 20s
       retries: 5
       timeout: 10s
@@ -40,8 +39,7 @@ services:
       - mongo
       - issuer
     networks:
-      vc-net:
-        ipv4_address: 172.16.50.11
+      - vc-net
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -49,7 +47,7 @@ services:
     container_name: "vc_datastore"
     image: "docker.sunet.se/dc4eu/datastore:<%= @vc_version %>"
     healthcheck:
-      test: curl --fail http://vc_datastore:8080/datastore/health || exit 1
+      test: curl --fail http://datastore:8080/health || exit 1
       interval: 20s
       retries: 5
       timeout: 10s
@@ -62,10 +60,20 @@ services:
       - mongo
       - issuer
     networks:
-      vc-net:
-        ipv4_address: 172.16.50.12
+      - vc-net
     environment:
       - "VC_CONFIG_YAML=config.yaml"
+
+  haproxy:
+    container_name: "vc_haproxy"
+    image: "haproxytech/haproxy-alpine:2.4"
+    ports:
+      - 80:80
+      - 8404:8404
+    volumes:
+      - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    networks:
+      - vc-net
 
   redis:
     image: redis:alpine
@@ -100,11 +108,10 @@ services:
       - issuer
       - verifier
     networks:
-      vc-net:
-        ipv4_address: 172.16.50.20
+      - vc-net
     environment:
       - "CA_SLEEP=<%= @mockca_sleep %>"
-      - "CA_ADDR=172.16.50.20:8080"
+      - "CA_ADDR=ca:8080"
 
 networks:
   vc-net:
