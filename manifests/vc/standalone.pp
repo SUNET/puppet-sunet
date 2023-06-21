@@ -22,13 +22,13 @@ class sunet::vc::standalone(
     content => template("sunet/vc/standalone/config.yaml.erb")
    }
 
-  #file { '/opt/vc/compose/docker-compose.yml':
-  #  ensure  => file,
-  #  mode    => '0644',
-  #  owner   => 'root',
-  #  group   => 'root',
-  #  content =>  template("sunet/vc/docker-compose_mock.yml.erb")
-  #}
+  file { '/opt/vc/haproxy.cfg':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'root',
+    group   => 'root',
+    content =>  template("sunet/vc/haproxy.cfg.erb")
+  }
 
   # Compose
   sunet::docker_compose { 'vc_standalone':
