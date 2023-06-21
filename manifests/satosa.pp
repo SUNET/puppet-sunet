@@ -119,5 +119,6 @@ class sunet::satosa(
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'Satosa',
+    compose_require  => Class['sunet::dockerhost'],
   }
 }
