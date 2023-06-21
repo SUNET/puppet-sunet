@@ -3,10 +3,19 @@ class sunet::satosa(
   Optional[String] $dehydrated_name = undef,
   String           $image           = 'docker.sunet.se/satosa',
   String           $interface       = $::facts['interface_default'],
-  String           $tag             = '8.2.0',
+  String           $satosa_tag      = '8.4.0',
   Optional[String] $redirect_uri    = lookup('redirect_uri', undef, undef, ''),
   Boolean          $enable_oidc     = false,
 ) {
+
+  if ($::facts['sunet_satosa_exists'] == 'yes') {
+    $service_to_notify = Service['sunet-satosa']
+  }
+  else
+  {
+    $service_to_notify = undef
+  }
+
   $proxy_conf = lookup('satosa_proxy_conf')
   $default_conf = {
     'STATE_ENCRYPTION_KEY'       => lookup('satosa_state_encryption_key'),
@@ -38,7 +47,7 @@ class sunet::satosa(
   }
   file {'/etc/satosa/proxy_conf.yaml':
     content => inline_template("<%= @merged_conf.to_yaml %>\n"),
-    notify  => Service['sunet-satosa'],
+    notify  => $service_to_notify,
   }
   $plugins = lookup('satosa_config')
   sort(keys($plugins)).each |$n| {
@@ -46,7 +55,7 @@ class sunet::satosa(
     $fn = $plugins[$n]
     file { $fn:
       content => inline_template("<%= @conf.to_yaml %>\n"),
-      notify  => Service['sunet-satosa'],
+      notify  => $service_to_notify,
     }
   }
 
@@ -56,7 +65,7 @@ class sunet::satosa(
     $fn = $json_configs[$n]
     file { $fn:
       content => inline_template("<%= @conf.to_json %>\n"),
-      notify  => Service['sunet-satosa'],
+      notify  => $service_to_notify,
     }
   }
 
