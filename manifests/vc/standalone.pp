@@ -38,4 +38,22 @@ class sunet::vc::standalone(
     compose_filename => 'docker-compose.yml',
     description      => 'VC-standalone service',
   }
+
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { 'web_http_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 80,
+    }
+    sunet::nftables::docker_expose { 'web_https_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 443,
+    }
+  } else {
+    sunet::misc::ufw_allow { 'web_ports':
+      from => 'any',
+      port => ['80', '443']
+    }
+  }
 }
