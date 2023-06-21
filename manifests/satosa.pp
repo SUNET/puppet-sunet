@@ -8,7 +8,7 @@ class sunet::satosa(
   Boolean          $enable_oidc     = false,
 ) {
 
-  if (Service['sunet-satosa']) {
+  if ($::facts['sunet_satosa_exists'] == 'yes') {
     $service_to_notify = Service['sunet-satosa']
   }
   else
