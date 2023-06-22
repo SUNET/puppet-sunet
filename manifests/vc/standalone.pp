@@ -57,8 +57,4 @@ class sunet::vc::standalone(
       port => ['80', '443']
     }
   }
-
-  sunet::pkcs11_ca {
-    
-  }
 }
