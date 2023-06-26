@@ -1,4 +1,4 @@
-class sunet::pkcs11_ca(
+class sunet::pkcs11_ca_pdf(
   #String $ca_url,
   #String $ca_dns_name,
   String $acme_root               = '/acme',
