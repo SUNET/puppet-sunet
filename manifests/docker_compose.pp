@@ -13,23 +13,36 @@ define sunet::docker_compose (
   String           $owner = 'root',
   Optional[String] $start_command = undef,
 ) {
-  $compose_file = "${compose_dir}/${service_name}/${compose_filename}"
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+      notice("sunet::docker_compose: No to_docker interface found, not installing ${service_name}")
+      $_install_service = false
+    } else {
+      $_install_service = true
+    }
+  } else {
+    $_install_service = true
+  }
 
-  # docker-compose uses dirname as project name, so we add $service_name and put the compose_file in there
-  ensure_resource('sunet::misc::create_dir', ["${compose_dir}/${service_name}"], { owner => $owner, group => $group, mode => $mode })
+  if $_install_service {
+    $compose_file = "${compose_dir}/${service_name}/${compose_filename}"
 
-  ensure_resource('file', $compose_file, {
-      ensure  => 'file',
-      mode    => '600',
-      content => $content,
-      require => Class[$docker_host_class],
-  })
+    # docker-compose uses dirname as project name, so we add $service_name and put the compose_file in there
+    ensure_resource('sunet::misc::create_dir', ["${compose_dir}/${service_name}"], { owner => $owner, group => $group, mode => $mode })
 
-  sunet::docker_compose_service { "${service_prefix}-${service_name}":
-    compose_file   => $compose_file,
-    description    => $description,
-    require        => File[$compose_file],
-    service_extras => $service_extras,
-    start_command  => $start_command,
+    ensure_resource('file', $compose_file, {
+        ensure  => 'file',
+        mode    => '600',
+        content => $content,
+        require => Class[$docker_host_class],
+    })
+
+    sunet::docker_compose_service { "${service_prefix}-${service_name}":
+      compose_file   => $compose_file,
+      description    => $description,
+      require        => File[$compose_file],
+      service_extras => $service_extras,
+      start_command  => $start_command,
+    }
   }
 }
