@@ -366,7 +366,7 @@ docker_setup_db() {
 
 	local rootLocalhostPass=
 	if [ -z "$MARIADB_ROOT_PASSWORD_HASH" ]; then
-		# handle MARIADB_ROOT_PASSWORD_HASH for root@localhost after /entrypoint-initdb.d
+		# handle MARIADB_ROOT_PASSWORD_HASH for root@localhost after /docker-entrypoint-initdb.d
 		rootLocalhostPass="SET PASSWORD FOR 'root'@'localhost'= PASSWORD('${rootPasswordEscaped}');"
 	fi
 
@@ -556,7 +556,7 @@ _main() {
 			docker_verify_minimum_env
 
 			# check dir permissions to reduce likelihood of half-initialized database
-			ls /entrypoint-initdb.d/ > /dev/null
+			ls /docker-entrypoint-initdb.d/ > /dev/null
 
 			docker_init_database_dir "$@"
 
@@ -565,8 +565,8 @@ _main() {
 			mysql_note "Temporary server started."
 
 			docker_setup_db
-			docker_process_init_files /entrypoint-initdb.d/*
-			# Wait until after /entrypoint-initdb.d is performed before setting
+			docker_process_init_files /docker-entrypoint-initdb.d/*
+			# Wait until after /docker-entrypoint-initdb.d is performed before setting
 			# root@localhost password to a hash we don't know the password for.
 			if [ -n "${MARIADB_ROOT_PASSWORD_HASH}" ]; then
 				mysql_note "Setting root@localhost password hash"
@@ -589,7 +589,11 @@ _main() {
 			docker_mariadb_upgrade "$@"
 		fi
 	fi
-	exec "$@"
+  if [[ ${FORCE_BOOTSTRAP} -eq 1 ]]; then
+    exec "$@" --wsrep_new_cluster
+  else
+    exec "$@"
+  fi
 }
 
 # If we are sourced from elsewhere, don't perform any further actions
