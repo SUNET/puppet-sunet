@@ -7,9 +7,6 @@ class sunet::mariadb(
   String $interface = 'ens3',
 )
 {
-  include sunet::scriptherder::init
-  include sunet::nftables::init
-
   $server_id = 1000 + $id
   $mysql_root_password = lookup('mysql_root_password')
   $mysql_backup_password = lookup('mysql_backup_password')
