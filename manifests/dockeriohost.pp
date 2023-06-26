@@ -35,7 +35,7 @@ class sunet::dockerhost(
       '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
         ensure  => absent,
     }
-    - > exec { 'remove_dockerio_service_dir':
+    -> exec { 'remove_dockerio_service_dir':
       command => 'rmdir /etc/systemd/system/docker.service.d/',
       onlyif  => 'ls -A /etc/systemd/system/docker.service.d/*',
     }
