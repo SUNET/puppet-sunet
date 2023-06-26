@@ -46,3 +46,4 @@ class sunet::dockerhost(
   package { 'docker-compose' :
     ensure  => latest,
   }
+}
