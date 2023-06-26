@@ -18,6 +18,10 @@ class sunet::mariadb(
   $mysql_root_password = lookup('mysql_root_password')
   $mysql_backup_password = lookup('mysql_backup_password')
   $mariadb_dir = '/opt/mariadb'
+  exec { 'fix_mariadb_dir_circular_dependency':
+    command => "mkdir -p ${mariadb_dir}",
+    unless  => "test -d ${mariadb_dir}",
+  }
   $ports = [3306, 4444, 4567, 4568]
 
   sunet::misc::ufw_allow { 'mariadb_ports':
@@ -99,6 +103,7 @@ class sunet::mariadb(
     description       => 'Mariadb server',
     docker_host_class => 'sunet::dockeriohost',
   }
+
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
   $dirs.each |$dir| {
     ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, owner => 999, group => 999 } )
