@@ -1,4 +1,4 @@
-class sunet::pkcs11_ca_pdf(
+class sunet::vc::pkcs11_ca_pdf(
   String $ca_url,
   #String $ca_dns_name,
   String $acme_root               = '/acme',
@@ -20,7 +20,7 @@ class sunet::pkcs11_ca_pdf(
 
   file { '/opt/pkcs11_ca/mk_keys.sh':
     ensure  => file,
-    content => template('sunet/pkcs11_ca/pdf/mk_keys.sh.erb'),
+    content => template('sunet/vc/ca/mk_keys.sh.erb'),
   }
 
   # Setup the pkcs11_ca keys
@@ -43,13 +43,11 @@ class sunet::pkcs11_ca_pdf(
     group   => '999'
   }
 
-
   sunet::docker_compose { 'pkcs11_ca':
-    content          => template('sunet/pkcs11_ca/pdf/docker-compose.yml.erb'),
+    content          => template('sunet/vc/ca/docker-compose.yml.erb'),
     service_name     => 'pkcs11_ca',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'PKCS11 CA',
   }
-
 }
