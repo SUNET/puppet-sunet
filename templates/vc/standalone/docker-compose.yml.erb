@@ -98,21 +98,6 @@ services:
     networks:
       - vc-net
 
-  #ca:
-  #  container_name: "vc_ca"
-  #  image: docker.sunet.se/dc4eu/mockca:latest
-  #  restart: always
-  #  depends_on:
-  #    - redis
-  #    - mongo
-  #    - issuer
-  #    - verifier
-  #  networks:
-  #    - vc-net
-  #  environment:
-  #    - "CA_SLEEP=<%= @mockca_sleep %>"
-  #    - "CA_ADDR=ca:8080"
-
 networks:
   vc-net:
     driver: bridge
