@@ -26,7 +26,7 @@ class sunet::dockeriohost(
         ensure  => file,
         mode    => '0444',
         content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
-        notify  => $service_to_notify,
+        notify  => Service['docker'],
     }
     file {
       '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
