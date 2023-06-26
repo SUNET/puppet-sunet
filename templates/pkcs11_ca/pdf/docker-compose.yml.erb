@@ -1,11 +1,9 @@
+---
 version: "3.3"
-# Require docker-compose version 1.29
-# version: "3.9"
+
 services:
   ca:
-    build:
-      context: .
-      dockerfile: containers/ca/Dockerfile
+    image: docker.sunet.se/dc4eu/pkcs11_ca:<%= @ca_version %>"
     ports:
       - "8005:8005"
     depends_on:
@@ -15,16 +13,10 @@ services:
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
-    # Require docker-compose version 1.29 and version: "3.3" in this file at the top
-    # mem_limit: "512m"
-    # mem_reservation: "128m"
-    # cpus: "1.75"
     volumes:
       - ./data/hsm_tokens:/var/lib/softhsm/tokens
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    # dns:
-    #   - 89.32.32.32
     environment:
       - CA_URL=<%= @ca_url %>
       - ACME_ROOT=<%= @acme_root %>
@@ -38,51 +30,30 @@ services:
       - POSTGRES_PORT=<%= @postgres_port %>
       - POSTGRES_DATABASE=<%= @postgres_database %>
       - POSTGRES_TIMEOUT=<%= @postgres_timeout %>
+
   postgres:
-    # build:
-    # context: .
-    # dockerfile: containers/postgres/Dockerfile
     image: <%= @postgres_image %>:<%= @postgres_version %>
     restart: always
-    # read_only: true
-    # cap_drop: [ALL]
-    # security_opt:
-    #   - no-new-privileges:true
-    # Require docker-compose version 1.299 and version: "3.3" in this file at the top
-    # mem_limit: "1g"
-    # mem_reservation: "128m"
-    # cpus: "1.75"
     volumes:
       - ./data/db_data:/var/lib/postgresql/data
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    # dns:
-    #   - 89.32.32.32
     environment:
       - POSTGRES_DB=<%= @postgres_database %>
       - POSTGRES_USER=<%= @postgres_user %>
       - POSTGRES_PASSWORD=<%= @postgres_password %>
-  test1:
-    build:
-      context: .
-      dockerfile: containers/test/Dockerfile
+
+  pdfsign:
+    image: docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>"
+    ports:
+      - "8006:8006"
     depends_on:
       - "ca"
-    restart: "no"
-    # read_only: true
+    restart: always
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
-    # Require docker-compose version 1.29 and version: "3.3" in this file at the top
-    # mem_limit: "256m"
-    # mem_reservation: "128m"
-    # cpus: "1.0"
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    # dns:
-    #   - 89.32.32.32
     environment:
-      - CA_URL=<%= @ca_url %>
-      - ACME_ROOT=<%= @acme_root %>
-      - PKCS11_SIGN_API_TOKEN=<%= @pkcs11_sign_api_token %>
-    entrypoint: ['true']
+      - CA_URL=ca
