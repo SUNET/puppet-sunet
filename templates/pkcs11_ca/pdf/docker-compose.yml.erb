@@ -3,7 +3,7 @@ version: "3.3"
 
 services:
   ca:
-    image: docker.sunet.se/dc4eu/pkcs11_ca:<%= @ca_version %>"
+    image: "docker.sunet.se/dc4eu/pkcs11_ca:<%= @ca_version %>"
     ports:
       - "8005:8005"
     depends_on:
@@ -18,7 +18,7 @@ services:
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
     environment:
-      #- CA_URL=<%= @ca_url %>
+      - CA_URL=<%= @ca_url %>
       - ACME_ROOT=<%= @acme_root %>
       - PKCS11_SIGN_API_TOKEN=<%= @pkcs11_sign_api_token %>
       - PKCS11_TOKEN=<%= @pkcs11_token %>
@@ -44,7 +44,7 @@ services:
       - POSTGRES_PASSWORD=<%= @postgres_password %>
 
   pdfsign:
-    image: docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>"
+    image: "docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>"
     ports:
       - "8006:8006"
     depends_on:
@@ -56,4 +56,4 @@ services:
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
     environment:
-      - CA_URL=ca
+      - CA_URL=<%= @ca_url %>

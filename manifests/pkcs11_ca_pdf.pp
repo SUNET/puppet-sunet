@@ -1,5 +1,5 @@
 class sunet::pkcs11_ca_pdf(
-  #String $ca_url,
+  String $ca_url,
   #String $ca_dns_name,
   String $acme_root               = '/acme',
   String $pkcs11_sign_api_token   = lookup('pkcs11_sign_api_token'), 
@@ -18,15 +18,6 @@ class sunet::pkcs11_ca_pdf(
 ) {
   include stdlib
 
-
-  ## clone down the pkcs11 code
-  #exec { 'pkcs11_ca_clone':
-  #  command     => '/usr/bin/git clone https://github.com/SUNET/pkcs11_ca.git',
-  #  cwd         => '/opt',
-  #  unless => '/usr/bin/ls pkcs11_ca 2> /dev/null',
-  #}
-
-  # Update the detup variables
   file { '/opt/pkcs11_ca/mk_keys.sh':
     ensure  => file,
     content => template('sunet/pkcs11_ca/pdf/mk_keys.sh.erb'),
@@ -51,8 +42,6 @@ class sunet::pkcs11_ca_pdf(
     owner   => 'root',
     group   => '999'
   }
-
-  #chmod 644 data/tls_key*.key
 
 
   sunet::docker_compose { 'pkcs11_ca':
