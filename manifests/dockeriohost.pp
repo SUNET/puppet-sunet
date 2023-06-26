@@ -1,5 +1,5 @@
 # Install docker from https://get.docker.com/ubuntu
-class sunet::dockerhost(
+class sunet::dockeriohost(
 ) {
   include stdlib
 
