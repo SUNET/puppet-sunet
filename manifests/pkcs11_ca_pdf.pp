@@ -32,11 +32,10 @@ class sunet::pkcs11_ca_pdf(
     content => template('sunet/pkcs11_ca/pdf/mk_keys.sh.erb'),
   }
 
-  # Setup the pkcs11_ca system
-  exec { 'pkcs11_ca_deploy':
-    command     => '/usr/bin/bash ./deploy.sh',
+  # Setup the pkcs11_ca keys
+  exec { 'mk_keys':
+    command     => '/usr/bin/bash ./mk_keys.sh',
     cwd         => '/opt/pkcs11_ca',
-    #unless => '/usr/bin/ls data/db_data 2> /dev/null',
   }
 
   file { '/opt/pkcs11_ca/data/hsm_tokens':
