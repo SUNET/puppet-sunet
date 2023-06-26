@@ -64,11 +64,11 @@ services:
     networks:
       - ca-net
 
-  networks:
-    ca-net:
-      driver: bridge
-      driver_opts:
-        com.docker.network.bridge.name: br-ca
+networks:
+  ca-net:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-ca
     ipam:
       driver: default
       config:
