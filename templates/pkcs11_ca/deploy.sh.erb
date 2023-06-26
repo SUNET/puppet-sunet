@@ -1,5 +1,16 @@
 #!/bin/bash
 
+function t {
+    urls="https://ca:8005 https://ca:443 https://ca"
+
+    for url in $urls; do
+        if [[ $url = "<%= @ca_url %>" ]]; then
+            exit 0
+        fi
+    done
+    exit 1
+}
+
 # For production replace the selfsigned TLS cert with your cert at ./data/tls_certificate.pem
 
 # Generate trusted keys
@@ -40,12 +51,13 @@ then
 
     # Add the tls cert and key
     openssl ecparam -name prime256v1 -genkey -noout -out data/tls_key.key
-    python3 -c '
-import os, sys
-if os.environ["<%= @ca_url %>"] not in ["https://ca:8005", "https://ca:443", "https://ca"]:
-  sys.exit(1)
-'
-    if [ $? -eq 0 ]
+   # python3 -c '
+#import os, sys
+#if os.environ["<%= @ca_url %>"] not in ["https://ca:8005", "https://ca:443", "https://ca"]:
+#  sys.exit(1)
+#'
+t res
+    if [ $res -eq 0 ]
     then
         openssl req -subj "/C=SE/CN=<%= @ca_dns_name %>" -addext "subjectAltName = DNS:<%= @ca_dns_name %>" -new -x509 -key data/tls_key.key -out data/tls_certificate.pem -days 1026
     else
@@ -76,13 +88,14 @@ sleep 3
 echo -e "Running tests\n"
 sleep 2
 
-python3 -c '
-import os, sys
-if os.environ["CA_URL"] in ["https://ca:8005", "https://ca:443", "https://ca"]:
-  sys.exit(0)
-sys.exit(1)
-'
-if [ $? -eq 0 ]
+#python3 -c '
+#import os, sys
+#if os.environ["CA_URL"] in ["https://ca:8005", "https://ca:443", "https://ca"]:
+#  sys.exit(0)
+#sys.exit(1)
+#'
+t res
+if [ $res -eq 0 ]
 then
     docker run --env "CA_URL=${CA_URL}" --env "PKCS11_SIGN_API_TOKEN=${PKCS11_SIGN_API_TOKEN}" --env "ACME_ROOT=${ACME_ROOT}" --network pkcs11_ca_default pkcs11_ca_test1 || exit 1
     echo -e "\nService ONLINE at ${CA_URL} inside the docker network pkcs11_ca_default"
