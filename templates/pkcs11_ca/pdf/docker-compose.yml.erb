@@ -18,7 +18,7 @@ services:
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
     environment:
-      - CA_URL=<%= @ca_url %>
+      #- CA_URL=<%= @ca_url %>
       - ACME_ROOT=<%= @acme_root %>
       - PKCS11_SIGN_API_TOKEN=<%= @pkcs11_sign_api_token %>
       - PKCS11_TOKEN=<%= @pkcs11_token %>

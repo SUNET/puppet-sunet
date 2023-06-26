@@ -64,7 +64,7 @@ then
 
 
     
-    openssl req -subj "/C=SE/CN=<%= @ca_dns_name %>" -addext "subjectAltName = DNS:<%= @ca_dns_name %>" -new -x509 -key data/tls_key.key -out data/tls_certificate.pem -days 1026
+    #openssl req -subj "/C=SE/CN=<%= @ca_dns_name %>" -addext "subjectAltName = DNS:<%= @ca_dns_name %>" -new -x509 -key data/tls_key.key -out data/tls_certificate.pem -days 1026
 #    python3 -c '
 #import os, sys
 #if os.environ["<%= @ca_url %>"] not in ["https://ca:8005", "https://ca:443", "https://ca"]:
