@@ -2,6 +2,7 @@
 class sunet::nftables::init(
   Boolean $default_log = true,
 ) {
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
     package { 'nftables':
         ensure => 'present',
     }
@@ -39,4 +40,29 @@ class sunet::nftables::init(
         ensure => 'running',
         enable => true,
     }
+  } else {
+    package { 'nftables':
+        ensure => 'absent',
+    }
+    if ($default_log) {
+      file { '/etc/nftables/conf.d/999-log.nft':
+        ensure => 'absent',
+      }
+    }
+
+    file { '/etc/nftables/conf.d/':
+        ensure => 'absent',
+    }
+    -> file { '/etc/nftables/':
+        ensure => 'absent',
+    }
+
+    file { '/etc/nftables.conf':
+        ensure => 'absent',
+    }
+
+    service { 'nftables':
+        ensure => 'disabled',
+    }
+  }
 }
