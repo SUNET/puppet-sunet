@@ -7,6 +7,7 @@ define sunet::docker_compose (
   String           $service_prefix = 'sunet',
   Array[String]    $service_extras = [],
   String           $compose_filename = "${service_name}.yml",
+  String           $docker_host_class = 'sunet::dockerhost',
   String           $group = 'root',
   String           $mode = '0700',
   String           $owner = 'root',
@@ -33,7 +34,7 @@ define sunet::docker_compose (
         ensure  => 'file',
         mode    => '600',
         content => $content,
-        require => Class['sunet::dockerhost'],
+        require => Class[$docker_host_class],
     })
 
     sunet::docker_compose_service { "${service_prefix}-${service_name}":
