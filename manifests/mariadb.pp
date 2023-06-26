@@ -25,9 +25,19 @@ class sunet::mariadb(
   }
   $ports = [3306, 4444, 4567, 4568]
 
-  sunet::misc::ufw_allow { 'mariadb_ports':
-    from => $client_ips,
-    port => $ports,
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    $ports.each |$port| {
+      sunet::nftables::docker_expose { "mariadb_${port}_port":
+        iif           => $interface,
+        allow_clients => $client_ips,
+        port          => $port,
+      }
+    }
+  } else {
+    sunet::misc::ufw_allow { 'mariadb_ports':
+      from => $client_ips,
+      port => $ports,
+    }
   }
 
   file { "${mariadb_dir}/conf/credentials.cnf":
