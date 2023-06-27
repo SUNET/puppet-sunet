@@ -30,8 +30,6 @@ services:
       - POSTGRES_PORT=<%= @postgres_port %>
       - POSTGRES_DATABASE=<%= @postgres_database %>
       - POSTGRES_TIMEOUT=<%= @postgres_timeout %>
-    networks:
-      - ca-net
 
   postgres:
     image: <%= @postgres_image %>:<%= @postgres_version %>
@@ -44,8 +42,6 @@ services:
       - POSTGRES_DB=<%= @postgres_database %>
       - POSTGRES_USER=<%= @postgres_user %>
       - POSTGRES_PASSWORD=<%= @postgres_password %>
-    networks:
-      - ca-net
 
   pdfsign:
     image: "docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>"
@@ -61,16 +57,8 @@ services:
       - /dev/shm:ro,noexec,nosuid,nodev
     environment:
       - CA_URL=<%= @ca_url %>
-    networks:
-      - ca-net
 
 networks:
-  ca-net:
+  default:
+    name: vc_default
     external: true
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.name: br-ca
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.51.0/24
