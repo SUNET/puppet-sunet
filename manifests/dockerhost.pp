@@ -11,8 +11,6 @@ class sunet::dockerhost(
   Variant[String, Array[String]] $docker_dns  = ['89.32.32.32', $facts['networking']['interfaces']['default']['ip'] ],
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
-  String $compose_image                       = 'docker.sunet.se/library/docker-compose',
-  String $compose_version                     = '1.24.0',
   Optional[Array[String]] $tcp_bind           = undef,
   Boolean $write_daemon_config                = false,
   Boolean $enable_ipv6                        = false,
@@ -115,6 +113,9 @@ class sunet::dockerhost(
       require => Exec['dockerhost_apt_get_update'],
     }
   }
+
+  # no need to run compose in docker, lets just install the one from the repos
+  include sunet::packages::docker_compose
 
   # At this point the docker service should be started,
   # and if we are running with nftables, the to_docker interface should be there,
@@ -241,10 +242,6 @@ class sunet::dockerhost(
       path    => '/etc/logrotate.d/docker-containers',
       mode    => '0644',
       content => template('sunet/dockerhost/logrotate_docker-containers.erb'),
-  }
-  file { '/usr/local/bin/docker-compose':
-      mode    => '0755',
-      content => template('sunet/dockerhost/docker-compose.erb'),
   }
 
   if $facts['sunet_has_nrpe_d'] == 'yes' {
