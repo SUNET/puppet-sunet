@@ -66,6 +66,7 @@ services:
 
 networks:
   ca-net:
+    external: true
     driver: bridge
     driver_opts:
       com.docker.network.bridge.name: br-ca
