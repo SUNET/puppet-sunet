@@ -8,7 +8,7 @@ class sunet::dockerhost(
   Boolean $run_docker_cleanup                 = true,
   Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
   String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd0c:d0c::/64'),  # default bridge
-  Variant[String, Array[String]] $docker_dns  = ['89.32.32.32', $facts['networking']['interfaces']['ip'] ],
+  Variant[String, Array[String]] $docker_dns  = ['89.32.32.32', $facts['networking']['ip'] ],
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
   Optional[Array[String]] $tcp_bind           = undef,
