@@ -104,7 +104,7 @@ class sunet::mariadb(
     compose_dir       => '/opt/',
     compose_filename  => 'docker-compose.yml',
     description       => 'Mariadb server',
-    docker_host_class => 'sunet::dockeriohost',
+    docker_host_class => 'sunet::dockerhost',
   }
 
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
