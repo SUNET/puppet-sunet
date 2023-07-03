@@ -96,9 +96,9 @@ services:
       - ca_postgres
     restart: always
     read_only: true
-    cap_drop: [ALL]
-    security_opt:
-      - no-new-privileges:true
+    #cap_drop: [ALL]
+    #security_opt:
+    #  - no-new-privileges:true
     volumes:
       - ./data/hsm_tokens:/var/lib/softhsm/tokens
     tmpfs:
@@ -138,9 +138,9 @@ services:
     depends_on:
       - ca_ca
     restart: always
-    cap_drop: [ALL]
-    security_opt:
-      - no-new-privileges:true
+    #cap_drop: [ALL]
+    #security_opt:
+    #  - no-new-privileges:true
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
     environment:
