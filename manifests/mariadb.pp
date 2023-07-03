@@ -99,12 +99,11 @@ class sunet::mariadb(
     group   => 'root',
   }
   $docker_compose = sunet::docker_compose { 'mariadb_docker_compose':
-    content           => template('sunet/mariadb/docker-compose.yml.erb'),
-    service_name      => 'mariadb',
-    compose_dir       => '/opt/',
-    compose_filename  => 'docker-compose.yml',
-    description       => 'Mariadb server',
-    docker_host_class => 'sunet::dockerhost',
+    content          => template('sunet/mariadb/docker-compose.yml.erb'),
+    service_name     => 'mariadb',
+    compose_dir      => '/opt/',
+    compose_filename => 'docker-compose.yml',
+    description      => 'Mariadb server',
   }
 
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
