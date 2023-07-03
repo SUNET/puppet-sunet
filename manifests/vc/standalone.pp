@@ -41,6 +41,13 @@ class sunet::vc::standalone(
     content =>  template("sunet/vc/standalone/haproxy.cfg.erb")
   }
 
+  file { '/opt/pkcs11_ca':
+    ensure => directory,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+  }
+
   file { '/opt/pkcs11_ca/mk_keys.sh':
     ensure  => file,
     mode    => '0744',
@@ -59,14 +66,14 @@ class sunet::vc::standalone(
     ensure  => directory,
     mode    => '0755',
     owner   => 'root',
-    group   => '1500'
+    group   => '1500',
   }
 
   file { '/opt/pkcs11_ca/data/db_data': 
     ensure  => directory,
     mode    => '0755',
     owner   => 'root',
-    group   => '999'
+    group   => '999',
   }
 
 
