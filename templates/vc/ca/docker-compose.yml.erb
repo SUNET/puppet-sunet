@@ -17,8 +17,6 @@ services:
       - ./data/hsm_tokens:/var/lib/softhsm/tokens
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    networks:
-      - ca-vc_net
     environment:
       - CA_URL=<%= @ca_url %>
       - ACME_ROOT=<%= @acme_root %>
@@ -40,8 +38,6 @@ services:
       - ./data/db_data:/var/lib/postgresql/data
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    networks:
-      - vc-ca_net
     environment:
       - POSTGRES_DB=<%= @postgres_database %>
       - POSTGRES_USER=<%= @postgres_user %>
@@ -59,11 +55,10 @@ services:
       - no-new-privileges:true
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    networks:
-      - vc-ca_net
     environment:
       - CA_URL=<%= @ca_url %>
 
 networks:
-  vc-ca_net:
-    external: true
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-ca
