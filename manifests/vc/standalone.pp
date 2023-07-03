@@ -12,7 +12,7 @@ class sunet::vc::standalone(
   String $pkcs11_token            = 'my_test_token_1',
   String $pkcs11_pin              = lookup('pkcs11_pin'), 
   String $pkcs11_module           = '/usr/lib/softhsm/libsofthsm2.so',
-  String $postgres_host           = 'postgres',
+  String $postgres_host           = 'ca_postgres',
   String $postgres_database       = 'pkcs11_testdb1',
   String $postgres_user           = 'pkcs11_testuser1',
   String $postgres_password       = lookup('postgres_password'), 
