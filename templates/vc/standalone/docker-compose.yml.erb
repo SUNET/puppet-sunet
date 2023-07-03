@@ -1,5 +1,5 @@
 ---
-version: "3"
+version: "3.3"
 
 services:
   issuer:
@@ -17,6 +17,8 @@ services:
     depends_on:
       - redis
       - mongo
+    networks:
+      - vc-ca_net
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -36,6 +38,8 @@ services:
       - redis
       - mongo
       - issuer
+    networks:
+      - vc-ca_net
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -55,6 +59,8 @@ services:
       - redis
       - mongo
       - issuer
+    networks:
+      - vc-ca_net
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -64,6 +70,8 @@ services:
     ports:
       - 80:80
       - 8404:8404
+    networks:
+      - vc-ca_net
     volumes:
       - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
 
@@ -75,6 +83,8 @@ services:
       - 6379
     volumes:
       - redis_data:/data
+    networks:
+      - vc-ca_net
     command: redis-server --appendonly yes
 
   mongo:
@@ -83,13 +93,14 @@ services:
     restart: always
     expose:
       - 27017
+    networks:
+      - vc-ca_net
     volumes:
       - mongo_data:/data
 
 networks:
-  default:
-    driver_opts:
-      com.docker.network.bridge.name: br-vc
+  vc-ca_net:
+    external: true
 
 volumes:
   redis_data:
