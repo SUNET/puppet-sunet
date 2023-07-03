@@ -69,7 +69,7 @@ if [ -z "$backup_mount_point" ]; then
     exit 1
 fi
 
-echo "using volume array: " "${volume_array[@]}"
+echo "using volume array:" "${volume_array[@]}"
 echo "etcd backup mount point: $backup_mount_point"
 echo "etcd data mount point: $data_mount_point"
 echo "etcd host directory: $data_host_dir"
