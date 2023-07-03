@@ -28,8 +28,8 @@ class sunet::vc::standalone(
   file { '/opt/vc/config.yaml':
     ensure => file,
     mode   => '0400',
-    owner  => '1000000000',
-    group  => '1000000000',
+    owner  => 'root',
+    group  => 'root',
     content => template("sunet/vc/standalone/config.yaml.erb")
    }
 
@@ -43,7 +43,10 @@ class sunet::vc::standalone(
 
   file { '/opt/pkcs11_ca/mk_keys.sh':
     ensure  => file,
-    content => template('sunet/vc/ca/mk_keys.sh.erb'),
+    mode    => '0744',
+    owner   => 'root',
+    group   => 'root',
+    content => template('sunet/vc/standalone/mk_keys.sh.erb'),
   }
 
   # Setup the pkcs11_ca keys
