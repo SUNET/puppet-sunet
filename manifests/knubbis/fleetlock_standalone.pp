@@ -185,6 +185,14 @@ class sunet::knubbis::fleetlock_standalone(
                 content => file("sunet/knubbis/fleetlock_standalone/knubbis-fleetlock_standalone-backup")
             }
 
+            file { '/usr/local/sbin/knubbis-fleetlock_standalone-restore':
+                ensure => file,
+                mode   => '0755',
+                owner  => 'root',
+                group  => 'root',
+                content => file("sunet/knubbis/fleetlock_standalone/knubbis-fleetlock_standalone-restore")
+            }
+
             sunet::scriptherder::cronjob { "knubbis-fleetlock_standalone-backup":
                 cmd => "/usr/local/sbin/knubbis-fleetlock_standalone-backup",
                 minute      => '27',
