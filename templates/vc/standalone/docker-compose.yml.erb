@@ -15,8 +15,8 @@ services:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
-      - redis
-      - mongo
+      - vc_redis
+      - vc_mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -33,9 +33,9 @@ services:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
-      - redis
-      - mongo
-      - issuer
+      - vc_redis
+      - vc_mongo
+      - vc_issuer
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -52,9 +52,9 @@ services:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
-      - redis
-      - mongo
-      - issuer
+      - vc_redis
+      - vc_mongo
+      - vc_issuer
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -93,7 +93,7 @@ services:
     ports:
       - "8005:8005"
     depends_on:
-      - "postgres"
+      - ca_postgres
     restart: always
     read_only: true
     cap_drop: [ALL]
@@ -136,7 +136,7 @@ services:
     ports:
       - "8006:8006"
     depends_on:
-      - "ca"
+      - ca_ca
     restart: always
     cap_drop: [ALL]
     security_opt:
