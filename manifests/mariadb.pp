@@ -16,13 +16,16 @@ class sunet::mariadb(
     unless  => "test -d ${mariadb_dir}",
   }
   $ports = [3306, 4444, 4567, 4568]
-
+  $protocols = ['tcp', 'udp']
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     $ports.each |$port| {
-      sunet::nftables::docker_expose { "mariadb_${port}_port":
-        iif           => $interface,
-        allow_clients => $client_ips,
-        port          => $port,
+      $protocols.each|$proto| {
+        sunet::nftables::docker_expose { "mariadb_${proto}_${port}_port":
+          iif           => $interface,
+          allow_clients => $client_ips,
+          port          => $port,
+          proto         => $proto,
+        }
       }
     }
   } else {
