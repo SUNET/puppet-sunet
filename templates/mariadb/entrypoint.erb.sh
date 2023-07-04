@@ -590,6 +590,9 @@ _main() {
 		fi
 	fi
   if [[ ${FORCE_BOOTSTRAP} -eq 1 ]]; then
+    if [[ -f /var/lib/mysql/grastate.dat ]]; then
+      sed -i 's/safe_to_bootstrap: 0/safe_to_bootstrap: 1/' /var/lib/mysql/grastate.dat 
+    fi
     exec "$@" --wsrep_new_cluster
   else
     exec "$@"

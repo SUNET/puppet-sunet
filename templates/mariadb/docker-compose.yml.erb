@@ -18,6 +18,7 @@ services:
       - "4568:4568"
     dns:
       - 89.32.32.32
+    network_mode: host
     environment: 
       - MYSQL_ROOT_PASSWORD=<%= @mysql_root_password %>
       - FORCE_BOOTSTRAP=0
