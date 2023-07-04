@@ -17,19 +17,9 @@ class sunet::mariadb(
   }
   $ports = [3306, 4444, 4567, 4568]
 
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
-    $ports.each |$port| {
-      sunet::nftables::docker_expose { "mariadb_${port}_port":
-        iif           => $interface,
-        allow_clients => $client_ips,
-        port          => $port,
-      }
-    }
-  } else {
-    sunet::misc::ufw_allow { 'mariadb_ports':
-      from => $client_ips,
-      port => $ports,
-    }
+  sunet::misc::ufw_allow { 'mariadb_ports':
+    from => $client_ips,
+    port => $ports,
   }
 
   file { "${mariadb_dir}/conf/credentials.cnf":
@@ -98,13 +88,12 @@ class sunet::mariadb(
     owner   => 'root',
     group   => 'root',
   }
-  $docker_compose = sunet::docker_compose { 'mariadb_docker_compose':
-    content           => template('sunet/mariadb/docker-compose.yml.erb'),
-    service_name      => 'mariadb',
-    compose_dir       => '/opt/',
-    compose_filename  => 'docker-compose.yml',
-    description       => 'Mariadb server',
-    docker_host_class => 'sunet::dockerhost',
+  $podman_compose = sunet::podman_compose { 'mariadb_podman_compose':
+    content          => template('sunet/mariadb/compose.yml.erb'),
+    service_name     => 'mariadb',
+    compose_dir      => '/opt/',
+    compose_filename => 'podman-compose.yml',
+    description      => 'Mariadb server',
   }
 
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
