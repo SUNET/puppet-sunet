@@ -90,8 +90,8 @@ services:
   ca_ca:
     image: "docker.sunet.se/dc4eu/pkcs11_ca:<%= @ca_version %>"
     container_name: "ca_ca"
-    ports:
-      - "8005:8005"
+    #ports:
+    #  - "8005:8005"
     depends_on:
       - ca_postgres
     restart: always
@@ -132,9 +132,9 @@ services:
   
   ca_pdfsign:
     image: "docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>"
+    #ports:
     container_name: "ca_pdfsign"
-    ports:
-      - "8006:8006"
+    #  - "8006:8006"
     depends_on:
       - ca_ca
     restart: always
