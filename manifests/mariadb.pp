@@ -15,6 +15,7 @@ class sunet::mariadb(
     command => "mkdir -p ${mariadb_dir}",
     unless  => "test -d ${mariadb_dir}",
   }
+  $listen_address = $facts['networking']['ip']
   $ports = [3306, 4444, 4567, 4568]
   $protocols = ['tcp', 'udp']
   if $::facts['sunet_nftables_enabled'] == 'yes' {

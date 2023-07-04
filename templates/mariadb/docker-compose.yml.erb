@@ -23,7 +23,7 @@ services:
       - MYSQL_ROOT_PASSWORD=<%= @mysql_root_password %>
       - FORCE_BOOTSTRAP=0
     user: "999:999"
-    command:  "--wsrep_cluster_address=gcomm://<%= @wsrep_cluster_address %>"
+    command:  --wsrep_cluster_address=gcomm://<%= @wsrep_cluster_address %> --wsrep_provider_options="gmcast.listen_addr=tcp://<%= @listen_address %>:4567" --wsrep_node_address=<%= @listen_address %> --bind-address=<%= @listen_address %>
     entrypoint:  "/scripts/entrypoint.sh"
     tty: true
 
