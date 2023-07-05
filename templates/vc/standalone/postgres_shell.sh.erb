@@ -1,0 +1,9 @@
+# This script is manage by ccosmos/puppet, edits are futile.
+
+# Since we do not want postgres to be installed on dockerhost, this script needs to executed within a docker container with postgres installed.
+
+#!/usr/bin/env bash
+
+set -e
+
+psql -h localhost -U <%= @postgres_user %> -p <%= @postgres_port %> <%= @postgres_database %>

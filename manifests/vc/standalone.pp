@@ -56,6 +56,14 @@ class sunet::vc::standalone(
     content => template('sunet/vc/standalone/mk_keys.sh.erb'),
   }
 
+  file { '/opt/pkcs11_ca/postgres_shell.sh':
+    ensure  => file,
+    mode    => '0744',
+    owner   => 'root',
+    group   => 'root',
+    content => template('sunet/vc/standalone/postgres_shell.sh.erb'),
+  }
+
   # Setup the pkcs11_ca keys
   exec { 'mk_keys':
     command     => '/usr/bin/bash ./mk_keys.sh',

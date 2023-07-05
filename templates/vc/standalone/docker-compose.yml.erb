@@ -123,6 +123,7 @@ services:
     restart: always
     volumes:
       - ./data/db_data:/var/lib/postgresql/data
+      - /opt/pkcs11_ca/postgres_shell.sh:/
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
     environment:
