@@ -1,7 +1,7 @@
 proxy_cache_path  /opt/ levels=1:2    keys_zone=CACHE:10m inactive=24h  max_size=1g;
 server {
   listen 80;
-  server_name files.social-test.sunet.se;
+  server_name files.<%= @vhost %>;
   root /var/www/html;
 
   keepalive_timeout 30;
