@@ -81,6 +81,11 @@ class sunet::mastodon::web(
       mode   => '0751',
     }
   }
+  file { '/opt/mastodon_web/files-nginx-www-root/':
+    ensure => 'directory',
+    recurse => true,
+    source => 'puppet:///modules/sunet/mastodon/www',
+  }
   $nginx_dirs = ['acme', 'certs', 'conf', 'dhparam', 'html', 'vhost']
   $nginx_dirs.each | $dir| {
     file { "/opt/mastodon_web/nginx/${dir}":
