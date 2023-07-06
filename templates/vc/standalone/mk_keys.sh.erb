@@ -78,7 +78,7 @@ then
 #        openssl req -subj "/C=SE/CN=<%= @ca_dns_name %>" -addext "subjectAltName = DNS:<%= @ca_dns_name %>, DNS:localhost" -new -x509 -key data/tls_key.key -out data/tls_certificate.pem -days 1026
 #    fi
 
-    chmod 644 data/tls_key*.key
+   # chmod 644 data/tls_key*.key
 fi
 
 
