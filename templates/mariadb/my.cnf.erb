@@ -40,6 +40,7 @@ wsrep_gtid_domain_id            = 1000 # same on all Galera nodes in the same se
 wsrep_gtid_mode                 = ON
 wsrep_log_conflicts             = ON
 wsrep_on                        = ON
+wsrep_node_address              = '<%= @docker_ip %>'
 wsrep_sst_receive_address       = '<%= @node_ip %>'
 wsrep_provider                  = /usr/lib/galera/libgalera_smm.so
 wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0" # gmcast.segment same on all Galera nodes in the same segment
