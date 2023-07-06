@@ -8,6 +8,7 @@ class sunet::mariadb(
 )
 {
   $server_id = 1000 + $id
+  $node_ip = $facts['networking']['ip']
   $mysql_root_password = lookup('mysql_root_password')
   $mysql_backup_password = lookup('mysql_backup_password')
   $mariadb_dir = '/opt/mariadb'
