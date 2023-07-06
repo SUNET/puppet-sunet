@@ -88,11 +88,11 @@ class sunet::mariadb(
     owner   => 'root',
     group   => 'root',
   }
-  $podman_compose = sunet::podman_compose { 'mariadb_podman_compose':
+  $podman_compose = sunet::docker_compose { 'mariadb_docker_compose':
     content          => template('sunet/mariadb/compose.yml.erb'),
     service_name     => 'mariadb',
     compose_dir      => '/opt/',
-    compose_filename => 'podman-compose.yml',
+    compose_filename => 'docker-compose.yml',
     description      => 'Mariadb server',
   }
 
