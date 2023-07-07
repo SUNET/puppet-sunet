@@ -3,38 +3,27 @@ class sunet::mariadb(
   String $wsrep_cluster_address,
   Array[String] $client_ips,
   Integer $id,
-  String $image= 'mariadb:11',
   String $interface = 'ens3',
 )
 {
+  include sunet::packages::mariadb_server
   $server_id = 1000 + $id
-  $node_ip = $facts['networking']['ip']
-  $docker_ip = '172.19.0.2'
   $mysql_root_password = lookup('mysql_root_password')
   $mysql_backup_password = lookup('mysql_backup_password')
-  $mariadb_dir = '/opt/mariadb'
-  exec { 'fix_mariadb_dir_circular_dependency':
-    command => "mkdir -p ${mariadb_dir}",
-    unless  => "test -d ${mariadb_dir}",
-  }
   $ports = [3306, 4444, 4567, 4568]
-
-  $ports.each|$port| {
-    sunet::nftables::docker_expose { "mariadb_${port}" :
-      iif           => $interface,
-      allow_clients => $client_ips,
-      port          => $port,
-    }
+  sunet::misc::ufw_allow { 'mariadb_ports':
+    from => $client_ips,
+    port => $ports,
   }
 
-  file { "${mariadb_dir}/conf/credentials.cnf":
+  file { '/etc/mysql/conf.d/credentials.cnf':
     ensure  => present,
     content => template('sunet/mariadb/credentials.cnf.erb'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
   }
-  file { "${mariadb_dir}/conf/my.cnf":
+  file { '/etc/mysql/conf.d/mysql.cnf':
     ensure  => present,
     content => template('sunet/mariadb/my.cnf.erb'),
     mode    => '0744',
@@ -48,16 +37,9 @@ class sunet::mariadb(
     owner   => 999,
     group   => 999,
   }
-  file { "${mariadb_dir}/scripts/run_manual_backup_dump.sh":
+  file { '/usr/local/bin/run_manual_backup_dump':
     ensure  => present,
     content => template('sunet/mariadb/run_manual_backup_dump.erb.sh'),
-    mode    => '0744',
-    owner   => 999,
-    group   => 999,
-  }
-  file { "${mariadb_dir}/scripts/entrypoint.sh":
-    ensure  => present,
-    content => template('sunet/mariadb/entrypoint.erb.sh'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
@@ -92,17 +74,5 @@ class sunet::mariadb(
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
-  }
-  $podman_compose = sunet::docker_compose { 'mariadb_docker_compose':
-    content          => template('sunet/mariadb/compose.yml.erb'),
-    service_name     => 'mariadb',
-    compose_dir      => '/opt/',
-    compose_filename => 'docker-compose.yml',
-    description      => 'Mariadb server',
-  }
-
-  $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
-  $dirs.each |$dir| {
-    ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, owner => 999, group => 999 } )
   }
 }
