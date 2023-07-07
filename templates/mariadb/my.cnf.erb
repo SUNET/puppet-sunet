@@ -1,7 +1,7 @@
 [mysqld]
 
 # General
-bind-address            = 0.0.0.0
+bind_address            = 0.0.0.0
 binlog_format           = ROW
 character_set_server    = utf8mb4
 collation_server        = utf8mb4_general_ci
@@ -38,6 +38,8 @@ transaction_isolation           = 'READ-COMMITTED'
 # Galera
 wsrep_cluster_address           = "gcomm://<%= @wsrep_cluster_address %>"
 wsrep_cluster_name              = "MariaDB_Cluster"
+wsrep_node_address              = "<%= @wsrep_node_address %>"
+wsrep_node_name                 = "<%= @wsrep_node_name %>"
 wsrep_gtid_domain_id            = 1000 # same on all Galera nodes in the same segment
 wsrep_gtid_mode                 = ON
 wsrep_log_conflicts             = ON

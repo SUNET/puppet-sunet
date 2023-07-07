@@ -7,6 +7,8 @@ class sunet::mariadb(
 )
 {
   include sunet::packages::mariadb_server
+  $wsrep_node_address = $facts['networking']['ip']
+  $wsrep_node_name = $facts['networking']['fqdn']
   $server_id = 1000 + $id
   $mysql_root_password = lookup('mysql_root_password')
   $mysql_backup_password = lookup('mysql_backup_password')
