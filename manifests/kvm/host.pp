@@ -1,6 +1,6 @@
 class sunet::kvm::host(
-  Hash   $vms          = {},
-  String $nat_bridge_interface = undef,
+  Variant[String, Boolean] $nat_bridge_interface = false,
+  Hash                     $vms                   = {},
 ) {
 
   file {
