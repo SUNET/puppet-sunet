@@ -72,7 +72,7 @@ class sunet::server (
     file { '/usr/local/bin/sunet-reinstall':
       ensure  => file,
       mode    => '0755',
-      content => template('sunet/cloudimage/sunet-reinstall.erb'),
+      content => template('sunet/kvm/sunet-reinstall.erb'),
     }
     sunet::scriptherder::cronjob { 'sunet_reinstall':
       # sleep 150 to avoid running at the same time as the cronjob fetching new certificates
