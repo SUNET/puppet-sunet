@@ -7,6 +7,7 @@ class sunet::mariadb(
 )
 {
   include sunet::packages::mariadb_server
+  include sunet::packages::mariadb_backup
   $wsrep_node_address = $facts['networking']['ip']
   $wsrep_node_name = $facts['networking']['fqdn']
   $server_id = 1000 + $id
