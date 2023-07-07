@@ -33,12 +33,22 @@ class sunet::mariadb(
     owner   => 999,
     group   => 999,
   }
+  file { '/etc/mysql/02-backup_user.sql':
+    ensure  => present,
+    content => template('sunet/mariadb/02-backup_user.sql.erb'),
+    mode    => '0640',
+  }
   file { '/usr/local/bin/purge-binlogs':
     ensure  => present,
     content => template('sunet/mariadb/purge-binlogs.erb.sh'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
+  }
+  file { '/usr/local/bin/bootstrap_cluster':
+    ensure  => present,
+    content => template('sunet/mariadb/bootstrap_cluster.erb.sh'),
+    mode    => '0640',
   }
   file { '/usr/local/bin/run_manual_backup_dump':
     ensure  => present,
