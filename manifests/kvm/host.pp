@@ -44,11 +44,7 @@ class sunet::kvm::host(
   }
 
   if $nat_bridge_interface {
-    if
-      $facts['sunet_nftables_opt_in'] == 'yes'
-    or
-      ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0)
-    {
+    if $facts['sunet_nftables_opt_in'] == 'yes' or ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0) { # lint:ignore:140chars
       file { '/usr/local/bin/sunet-kvm-modify-forwardmode':
           content => file('sunet/kvmhost/sunet-modify-kvm-forwardmode'),
           mode    => '0755',
