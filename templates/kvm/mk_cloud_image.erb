@@ -21,6 +21,21 @@ pool_name="<%= @pool_name %>"
 rng="<%= @rng %>"
 install_options="<%= @install_options %>"
 sb_args="<%= @sb_args %>"
+os_info=""
+
+if ! echo "${install_options}" | grep -q -- '--osinfo'; then
+    os_info_base="--osinfo "
+    image_file=$(basename "${src_image}")
+    dist=$(echo "${image_file}" | cut -d - -f1)
+
+    if [ "${dist}" == "debian" ]; then
+		version=$(echo "${image_file}" | cut -d - -f2)
+        os_info="${os_info_base} ${dist}${version}"
+    else
+        # Assuming Ubuntu at this point since their images doesn't include dist name.
+        os_info="${os_info_base} ubuntu${dist}"
+    fi
+fi
 
 cd "${images_dir}"
 
@@ -104,4 +119,5 @@ eval virt-install -r ${mem} -n ${hostname} --vcpus=${cpus} --autostart --memball
     ${local_disk_arg} \
     ${network} \
     ${install_options} \
+    "${os_info}" \
     ${sb_args}
