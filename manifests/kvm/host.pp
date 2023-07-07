@@ -56,6 +56,7 @@ class sunet::kvm::host(
 
       sunet::nftables::kvm_nat { 'sunet::kvm::host': bridge_name => $nat_bridge_interface }
     }
+  }
 
   create_resources('sunet::kvm::cloudimage', $vms)
 
