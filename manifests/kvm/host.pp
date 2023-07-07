@@ -12,6 +12,7 @@ class sunet::kvm::host(
     'cpu-checker',
     'libvirt-clients',
     'libvirt-daemon-system',
+    'mtools',
     'numad',
     'ovmf',
     'qemu-system',
