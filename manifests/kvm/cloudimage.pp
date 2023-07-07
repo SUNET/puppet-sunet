@@ -76,7 +76,7 @@ define sunet::kvm::cloudimage (
   $network_config = "${script_dir}/${name}/${name}_network-config"
 
   if $secure_boot {
-    if str2bool($::sunet_kvmhost_can_secureboot) {
+    if str2bool($facts['sunet_kvmhost_can_secureboot']) {
       $sb_args = '--boot=uefi,loader_secure=yes,loader=/usr/share/OVMF/OVMF_CODE.secboot.fd,nvram_template=/usr/share/OVMF/OVMF_VARS.ms.fd --machine=q35 --features smm=on'
     } else {
       # The ovmf package in Ubuntu 18.04 did not include the boot loader and NVRAM content to
@@ -106,32 +106,32 @@ define sunet::kvm::cloudimage (
     $init_script:
       content => template("sunet/cloudimage/mk_cloud_image.erb"),
       require => File[$script_dir],
-      mode    => "0750",
+      mode    => '0750',
       ;
     $meta_data:
       content => template("sunet/cloudimage/meta_data.erb"),
       require => File[$script_dir],
-      mode    => "0750",
+      mode    => '0750',
       ;
     $user_data:
       content => template("sunet/cloudimage/user_data.erb"),
       require => File[$script_dir],
-      mode    => "0750",
+      mode    => '0750',
       ;
     $network_config:
       content => template($network_template),
       require => File[$script_dir],
-      mode    => "0750",
+      mode    => '0750',
       ;
-  } ->
+  }
 
   exec { "${name}_fetch_image":
-     command => "wget -O${image_src} ${image_url}",
-     onlyif  => "test ! -s ${image_src}"
-  } ->
+    command => "wget -O${image_src} ${image_url}",
+    onlyif  => "test ! -s ${image_src}"
+  }
 
   exec { "${name}_init":
-     command => "bash $init_script",
-     onlyif  => "test ! -f ${images_dir}/${name}.img"
+    command => "bash ${init_script}",
+    onlyif  => "test ! -f ${images_dir}/${name}.img"
   }
 }
