@@ -104,17 +104,17 @@ define sunet::kvm::cloudimage (
       mode   => '0755',
       ;
     $init_script:
-      content => template("sunet/cloudimage/mk_cloud_image.erb"),
+      content => template('sunet/kvm/mk_cloud_image.erb'),
       require => File[$script_dir],
       mode    => '0750',
       ;
     $meta_data:
-      content => template("sunet/cloudimage/meta_data.erb"),
+      content => template('sunet/kvm/meta_data.erb'),
       require => File[$script_dir],
       mode    => '0750',
       ;
     $user_data:
-      content => template("sunet/cloudimage/user_data.erb"),
+      content => template('sunet/kvm/user_data.erb'),
       require => File[$script_dir],
       mode    => '0750',
       ;

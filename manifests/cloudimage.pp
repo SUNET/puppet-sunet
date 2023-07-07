@@ -104,7 +104,7 @@ define sunet::cloudimage (
 
   $network_template = $network_ver ? {
     '1' => 'sunet/cloudimage/network_config.erb',
-    '2' => 'sunet/cloudimage/network_config-v2.erb',
+    '2' => 'sunet/kvm/network_config-v2.erb',
   }
   file {
     "${script_dir}/${name}":
@@ -112,17 +112,17 @@ define sunet::cloudimage (
       mode   => '0755',
       ;
     $init_script:
-      content => template("sunet/cloudimage/mk_cloud_image.erb"),
+      content => template("sunet/kvm/mk_cloud_image.erb"),
       require => File[$script_dir],
       mode    => "0750",
       ;
     $meta_data:
-      content => template("sunet/cloudimage/meta_data.erb"),
+      content => template("sunet/kvm/meta_data.erb"),
       require => File[$script_dir],
       mode    => "0750",
       ;
     $user_data:
-      content => template("sunet/cloudimage/user_data.erb"),
+      content => template("sunet/kvm/user_data.erb"),
       require => File[$script_dir],
       mode    => "0750",
       ;
