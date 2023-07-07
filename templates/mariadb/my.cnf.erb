@@ -19,7 +19,7 @@ gtid_ignore_duplicates  = ON
 gtid_strict_mode        = ON
 log_bin                 = binlog
 log_slave_updates       = ON
-server_id               = <%= @server_id %> 
+server_id               = <%= @server_id %>
 
 # Innodb
 innodb_autoinc_lock_mode        = 2
@@ -36,6 +36,7 @@ innodb_write_io_threads         = 4    # CPU dependent
 transaction_isolation           = 'READ-COMMITTED'
 
 # Galera
+wsrep_cluster_address           = "gcomm://<%= @wsrep_cluster_address %>"
 wsrep_cluster_name              = "MariaDB_Cluster"
 wsrep_gtid_domain_id            = 1000 # same on all Galera nodes in the same segment
 wsrep_gtid_mode                 = ON
