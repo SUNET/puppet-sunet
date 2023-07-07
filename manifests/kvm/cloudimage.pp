@@ -30,41 +30,6 @@ define sunet::kvm::cloudimage (
   Optional[String]         $tagpattern      = undef,
 )
 {
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 {
-    $kvm_package = 'qemu-system-x86'
-  } elsif $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
-    $kvm_package = 'qemu-kvm'
-  } else {
-    $kvm_package = 'kvm'  # old name
-  }
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 {
-    # Manages CPU affinity for virtual CPUs. Seems to be required on new KVM hosts in eduid,
-    # to keep the VMs from crashing.
-    $numad_package = 'numad'
-  } else {
-    $numad_package = []
-  }
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '19.10') >= 0 {
-    $libvirt_package = 'libvirt-daemon-system'
-  } else {
-    $libvirt_package = 'libvirt-bin'
-  }
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 {
-    # virsh command has been broken out of the libvirt-package for Jammy
-    $virt_extra = 'libvirt-clients'
-  } else {
-    $virt_extra = []
-  }
-  ensure_resource('package', flatten(['cpu-checker',
-                                      'mtools',
-                                      'dosfstools',
-                                      $kvm_package,
-                                      $libvirt_package,
-                                      $virt_extra,
-                                      'virtinst',
-                                      'ovmf',  # for UEFI booting virtual machines
-                                      $numad_package,
-                                      ]), {ensure => 'installed'})
 
   $image_url_a = split($image_url, '/')
   $image_name = $image_url_a[-1]

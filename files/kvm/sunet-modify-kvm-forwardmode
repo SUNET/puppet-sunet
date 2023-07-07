@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+command_name=$(basename "$0")
+
+if [ "$#" -ne 3 ]; then
+    echo "usage: $command_name <network-name> <mode-from> <mode-to>"
+    exit 1
+fi
+
+name=$1
+mode_from=$2
+mode_to=$3
+
+# calling net-dumpxml with --inactive is based on information about "virsh net-edit" in man page
+virsh net-define <(virsh net-dumpxml "$name" --inactive | sed "s,<forward mode='$mode_from'/>,<forward mode='$mode_to'/>,")
