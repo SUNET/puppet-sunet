@@ -94,10 +94,6 @@ define sunet::kvm::cloudimage (
     mode   => '0755',
   })
 
-  $network_template = $network_ver ? {
-    '1' => 'sunet/cloudimage/network_config.erb',
-    '2' => 'sunet/cloudimage/network_config-v2.erb',
-  }
   file {
     "${script_dir}/${name}":
       ensure => 'directory',
@@ -119,7 +115,7 @@ define sunet::kvm::cloudimage (
       mode    => '0750',
       ;
     $network_config:
-      content => template($network_template),
+      content => template('sunet/kvm/network_config-v2.erb'),
       require => File[$script_dir],
       mode    => '0750',
       ;
