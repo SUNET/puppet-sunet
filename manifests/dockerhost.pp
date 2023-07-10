@@ -104,15 +104,17 @@ class sunet::dockerhost(
     }
   }
 
-  if $docker_version =~ /^\d.*/ {
-    # if it looks like a version number (as opposed to 'latest', 'installed', ...)
-    # then pin it so that automatic/manual dist-upgrades don't touch the docker package
-    apt::pin { 'docker package':
-      packages => $docker_package_name,
-      version  => $docker_version,
-      priority => 920,  # upgrade, but do not downgrade
-      notify   => Exec['dockerhost_apt_get_update'],
-    }
+  apt::pin { 'Pin docker repo':
+    packages => '*',
+    priority => -10,
+    origin   => 'download.docker.com'
+  }
+  # Clean up old pinning
+  file {'/etc/apt/preferences.d/docker-ce-cli.pref':
+    ensure => 'absent',
+  }
+  file {'/etc/apt/preferences.d/docker_package.pref':
+    ensure => 'absent',
   }
 
   exec { 'dockerhost_apt_get_update':
@@ -125,20 +127,11 @@ class sunet::dockerhost(
     ensure  => $docker_version,
     require => Exec['dockerhost_apt_get_update'],
   }
-
-  if $docker_version =~ /^\d.*/ and $docker_version !~ /^1[78]/ and $docker_version !~ /5:18.0[12345678]/ {
-    notice("Docker version ${docker_version} has a docker-ce-cli package, pinning it")
-    apt::pin { 'docker-ce-cli':
-      packages => 'docker-ce-cli',
-      version  => $docker_version,
-      priority => 920,  # upgrade, but do not downgrade
-      notify   => Exec['dockerhost_apt_get_update'],
-    }
-    package { 'docker-ce-cli' :
-      ensure  => $docker_version,
-      require => Exec['dockerhost_apt_get_update'],
-    }
+  package { 'docker-ce-cli' :
+    ensure  => $docker_version,
+    require => Exec['dockerhost_apt_get_update'],
   }
+
   # Make it possible to not set a class::docker DNS at all by passing in the empty string
   $_docker_dns = $docker_dns ? {
     ''      => undef,
