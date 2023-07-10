@@ -40,9 +40,7 @@ class sunet::security::configure_sshd (
   } else {
     $set_port = undef
   }
-  if versioncmp($facts['puppetversion'], '7.23.0') <= 0 {
-    include augeas
-  }
+  include augeas
   augeas { 'sshd_config':
     context => '/files/etc/ssh/sshd_config',
     changes => flatten([
