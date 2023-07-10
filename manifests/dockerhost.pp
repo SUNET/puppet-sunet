@@ -254,6 +254,12 @@ class sunet::dockerhost(
       ;
     }
 
+    file { '/usr/local/bin/docker-upgrade':
+        ensure => 'present',
+        mode   => '0755',
+        source => 'puppet:///modules/sunet/docker/docker-upgrade',
+    }
+
   if $facts['sunet_has_nrpe_d'] == 'yes' {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
     $check_docker_containers_args = '--systemd'
