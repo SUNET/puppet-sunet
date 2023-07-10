@@ -40,7 +40,10 @@ class sunet::security::configure_sshd (
   } else {
     $set_port = undef
   }
-
+  if $::operatingsystem == 'Debian' and versioncmp($::operatingsystemrelease, '12') >= 0 {
+    # These packages are needed to run the other things in this manifest on modern Debian
+    include sunet::packages::puppet_module_camptocamp_augeas
+  }
   include augeas
   augeas { 'sshd_config':
     context => '/files/etc/ssh/sshd_config',
