@@ -95,12 +95,11 @@ class sunet::dockerhost(
     $distro = downcase($facts['os']['name'])
     # new source
     apt::source {'docker_ce':
-      location     => "https://download.docker.com/linux/${distro}",
-      release      => $facts['os']['distro']['codename'],
-      repos        => $docker_repo,
-      key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
-      architecture => $architecture,
-      notify       => Exec['dockerhost_apt_get_update'],
+      location => "https://download.docker.com/linux/${distro}",
+      release  => $facts['os']['distro']['codename'],
+      repos    => $docker_repo,
+      key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
+      notify   => Exec['dockerhost_apt_get_update'],
     }
   }
 
