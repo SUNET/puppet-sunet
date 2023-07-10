@@ -1,7 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
   String $docker_version,
-  String $docker_package_name                 = 'docker-engine',  # facilitate transition to new docker-ce package
+  String $docker_package_name                 = 'docker-ce',  # facilitate transition to new docker-ce package
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
@@ -92,12 +92,6 @@ class sunet::dockerhost(
       notify => Exec['dockerhost_apt_get_update'],
     }
 
-    if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
-      $architecture = 'amd64'
-    } else {
-      $architecture = undef
-    }
-
     $distro = downcase($::operatingsystem)
     # new source
     apt::source {'docker_ce':
@@ -132,35 +126,19 @@ class sunet::dockerhost(
     require => Exec['dockerhost_apt_get_update'],
   }
 
-  if $docker_package_name == 'docker-ce' {
-    # also need to hold the docker-ce-cli package at the same version
-    if $docker_version =~ /^\d.*/ and $docker_version !~ /^1[78]/ and $docker_version !~ /5:18.0[12345678]/ {
-      notice("Docker version ${docker_version} has a docker-ce-cli package, pinning it")
-      apt::pin { 'docker-ce-cli':
-        packages => 'docker-ce-cli',
-        version  => $docker_version,
-        priority => 920,  # upgrade, but do not downgrade
-        notify   => Exec['dockerhost_apt_get_update'],
-      }
-      package { 'docker-ce-cli' :
-        ensure  => $docker_version,
-        require => Exec['dockerhost_apt_get_update'],
-      }
-    } else {
-      notice("Docker version ${docker_version} does not have a docker-ce-cli package")
+  if $docker_version =~ /^\d.*/ and $docker_version !~ /^1[78]/ and $docker_version !~ /5:18.0[12345678]/ {
+    notice("Docker version ${docker_version} has a docker-ce-cli package, pinning it")
+    apt::pin { 'docker-ce-cli':
+      packages => 'docker-ce-cli',
+      version  => $docker_version,
+      priority => 920,  # upgrade, but do not downgrade
+      notify   => Exec['dockerhost_apt_get_update'],
+    }
+    package { 'docker-ce-cli' :
+      ensure  => $docker_version,
+      require => Exec['dockerhost_apt_get_update'],
     }
   }
-
-  $docker_command = $docker_package_name ? {
-    'docker-ce' => 'dockerd',  # docker-ce has a new dockerd executable
-    default     => undef,
-  }
-
-  $daemon_subcommand = $docker_package_name ? {
-    'docker-ce' => '',  # docker-ce removed the 'daemon' in '/usr/bin/docker daemon'
-    default     => undef,
-  }
-
   # Make it possible to not set a class::docker DNS at all by passing in the empty string
   $_docker_dns = $docker_dns ? {
     ''      => undef,
@@ -224,8 +202,8 @@ class sunet::dockerhost(
       manage_kernel               => false,
       use_upstream_package_source => false,
       extra_parameters            => $_extra_parameters,
-      docker_command              => $docker_command,
-      daemon_subcommand           => $daemon_subcommand,
+      docker_command              => 'dockerd',
+      daemon_subcommand           => '',
       require                     => Package[$docker_package_name],
     }
   } else {
@@ -236,8 +214,8 @@ class sunet::dockerhost(
       use_upstream_package_source => false,
       dns                         => $_docker_dns,
       extra_parameters            => $_extra_parameters,
-      docker_command              => $docker_command,
-      daemon_subcommand           => $daemon_subcommand,
+      docker_command              => 'dockerd',
+      daemon_subcommand           => '',
       tcp_bind                    => $_tcp_bind,
       tls_enable                  => $tls_enable,
       tls_cacert                  => $tls_cacert,
