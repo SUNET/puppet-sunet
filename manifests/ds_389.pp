@@ -12,7 +12,7 @@ class sunet::ds_389(
   $dir_manager_password = lookup('dir_manager_password')
   # Composefile
   sunet::docker_compose { '389_ds':
-    content          => template('sunet/ds_389/docker-compose.yml.erb'),
+    content          => template('sunet/ds_389/docker-compose.erb.yml'),
     service_name     => 'ds_389',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
