@@ -19,15 +19,22 @@ class sunet::mariadb(
   }
 
   file { '/etc/mysql/conf.d/credentials.cnf':
+    ensure  => absent,
+  }
+  file { '/etc/mysql/conf.d/mysql.cnf':
+    ensure  => absent,
+  }
+
+  file { '/etc/mysql/mariadb.conf.d/99-sunet-credentials.cnf':
     ensure  => present,
-    content => template('sunet/mariadb/credentials.cnf.erb'),
+    content => template('sunet/mariadb/99-sunet-credentials.cnf.erb'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
   }
-  file { '/etc/mysql/conf.d/mysql.cnf':
+  file { '/etc/mysql/mariadb.conf.d/99-sunet-my.cnf':
     ensure  => present,
-    content => template('sunet/mariadb/my.cnf.erb'),
+    content => template('sunet/mariadb/99-sunet-my.cnf.erb'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
