@@ -1,6 +1,6 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  String $docker_version,
+  String $docker_version                      = 'installed',
   String $docker_package_name                 = 'docker-ce',  # facilitate transition to new docker-ce package
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver                             = undef,
