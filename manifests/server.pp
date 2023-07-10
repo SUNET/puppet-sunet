@@ -19,7 +19,6 @@ class sunet::server (
     # These packages are needed to run the other things in this manifest on modern Debian
     include sunet::packages::cron
     include sunet::packages::puppet_module_puppetlabs_cron_core
-    include sunet::packages::puppet_module_camptocamp_augeas
   }
   if $fail2ban {
     # Configure fail2ban to lock out SSH scanners
