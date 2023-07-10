@@ -106,7 +106,7 @@ class sunet::dockerhost(
 
   apt::pin { 'Pin docker repo':
     packages => '*',
-    priority => -10,
+    priority => 1,
     origin   => 'download.docker.com'
   }
   # Clean up old pinning
