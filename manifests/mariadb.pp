@@ -3,52 +3,39 @@ class sunet::mariadb(
   String $wsrep_cluster_address,
   Array[String] $client_ips,
   Integer $id,
-  String $image= 'mariadb:11',
   String $interface = 'ens3',
 )
 {
+  include sunet::packages::mariadb_server
+  include sunet::packages::mariadb_backup
+  $wsrep_node_address = $facts['networking']['ip']
+  $wsrep_node_name = $facts['networking']['fqdn']
   $server_id = 1000 + $id
-  $mysql_root_password = lookup('mysql_root_password')
   $mysql_backup_password = lookup('mysql_backup_password')
-  $mariadb_dir = '/opt/mariadb'
-  exec { 'fix_mariadb_dir_circular_dependency':
-    command => "mkdir -p ${mariadb_dir}",
-    unless  => "test -d ${mariadb_dir}",
-  }
-  $listen_address = $facts['networking']['ip']
   $ports = [3306, 4444, 4567, 4568]
-  $protocols = ['tcp', 'udp']
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
-    $ports.each |$port| {
-      $protocols.each|$proto| {
-        sunet::nftables::docker_expose { "mariadb_${proto}_${port}_port":
-          iif           => $interface,
-          allow_clients => $client_ips,
-          port          => $port,
-          proto         => $proto,
-        }
-      }
-    }
-  } else {
-    sunet::misc::ufw_allow { 'mariadb_ports':
-      from => $client_ips,
-      port => $ports,
-    }
+  sunet::misc::ufw_allow { 'mariadb_ports':
+    from => $client_ips,
+    port => $ports,
   }
 
-  file { "${mariadb_dir}/conf/credentials.cnf":
+  file { '/etc/mysql/mariadb.conf.d/99-sunet-credentials.cnf':
     ensure  => present,
-    content => template('sunet/mariadb/credentials.cnf.erb'),
+    content => template('sunet/mariadb/99-sunet-credentials.cnf.erb'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
   }
-  file { "${mariadb_dir}/conf/my.cnf":
+  file { '/etc/mysql/mariadb.conf.d/99-sunet-my.cnf':
     ensure  => present,
-    content => template('sunet/mariadb/my.cnf.erb'),
+    content => template('sunet/mariadb/99-sunet-my.cnf.erb'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
+  }
+  file { '/etc/mysql/02-backup_user.sql':
+    ensure  => present,
+    content => template('sunet/mariadb/02-backup_user.sql.erb'),
+    mode    => '0640',
   }
   file { '/usr/local/bin/purge-binlogs':
     ensure  => present,
@@ -57,16 +44,14 @@ class sunet::mariadb(
     owner   => 999,
     group   => 999,
   }
-  file { "${mariadb_dir}/scripts/run_manual_backup_dump.sh":
+  file { '/usr/local/bin/bootstrap_cluster':
+    ensure  => present,
+    content => template('sunet/mariadb/bootstrap_cluster.erb.sh'),
+    mode    => '0744',
+  }
+  file { '/usr/local/bin/run_manual_backup_dump':
     ensure  => present,
     content => template('sunet/mariadb/run_manual_backup_dump.erb.sh'),
-    mode    => '0744',
-    owner   => 999,
-    group   => 999,
-  }
-  file { "${mariadb_dir}/scripts/entrypoint.sh":
-    ensure  => present,
-    content => template('sunet/mariadb/entrypoint.erb.sh'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
@@ -101,17 +86,5 @@ class sunet::mariadb(
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
-  }
-  $docker_compose = sunet::docker_compose { 'mariadb_docker_compose':
-    content          => template('sunet/mariadb/docker-compose.yml.erb'),
-    service_name     => 'mariadb',
-    compose_dir      => '/opt/',
-    compose_filename => 'docker-compose.yml',
-    description      => 'Mariadb server',
-  }
-
-  $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
-  $dirs.each |$dir| {
-    ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, owner => 999, group => 999 } )
   }
 }
