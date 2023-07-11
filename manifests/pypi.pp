@@ -19,7 +19,7 @@ class sunet::pypi (
     file { $home:
       ensure  => directory,
       owner   => 'root',
-      group   => 'root',
+      group   => $user,
       recurse => false,
     }
 
