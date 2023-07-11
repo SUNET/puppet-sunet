@@ -7,8 +7,12 @@ class sunet::pypi (
       shell      => '/bin/false',
       managehome => true,
       home       => '/opt/pypi',
-    } ->
+    }
 
+    ensure_resource('service', 'ssh', {
+        ensure => 'running',
+        enable => true,
+    })
     # OpenSSH require that the home dir is owned by root in
     # order to allow chrooting the connecting user to it.
     file { "${home}":
