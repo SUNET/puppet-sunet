@@ -4,7 +4,7 @@ class sunet::ds_389(
   String $dir_suffix,
   String $interface = 'ens3',
   String $dir_admin_username = 'admin',
-  String $ds_image  = '389ds/dirserver',
+  String $ds_image  = 'docker.io/389ds/dirsrv',
   String $ds_tag    = '2.4',
 )
 {
