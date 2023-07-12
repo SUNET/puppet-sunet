@@ -18,7 +18,7 @@ class sunet::ds_389(
     compose_filename => 'docker-compose.yml',
     description      => '389 DS',
   }
-  $ports = [389, 636]
+  $ports = [3389, 3636]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "ldap_port_${port}":
       allow_clients => $client_ips,
