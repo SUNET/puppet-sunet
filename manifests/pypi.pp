@@ -2,6 +2,7 @@
 class sunet::pypi (
     $user   = 'pypi',
     $home   = '/opt/pypi',
+    $servicename = 'pypi.sunet.se',
 ) {
     user {'pypi_user':
       name       => $user,
