@@ -27,6 +27,8 @@ class sunet::ds_389(
   }
   file { '/opt/ds_389/data':
     ensure => directory,
+    owner  => 389,
+    group  => 389,
   }
 
 }
