@@ -7,10 +7,7 @@ services:
     image: <%= @ds_image %>:<%= @ds_tag %>
     hostname: <%= @hostname %>
     volumes:
-      - /opt/ds_389/data:/var/lib/dirsrv:Z
-      - /opt/ds_389/config:/etc/dirsrv:Z
-      - /opt/ds_389/logs:/var/log/dirsrv:Z
-      - /opt/ds_389/certs:/certs:Z
+      - /opt/ds_389/data:/data
     environment:
       DIR_SUFFIX: <%= @dir_suffix %>
       DIR_ADMIN_USERNAME: "<%= @dir_admin_username %>"
@@ -18,7 +15,7 @@ services:
       DIR_ADMIN_UID: "15000"
       DIR_USERS_HOME: "/users"
     ports:
-      - 389:389
-      - 636:636
+      - 3389:3389
+      - 3636:3636
     restart: always
 

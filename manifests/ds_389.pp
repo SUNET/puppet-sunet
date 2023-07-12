@@ -4,8 +4,8 @@ class sunet::ds_389(
   String $dir_suffix,
   String $interface = 'ens3',
   String $dir_admin_username = 'admin',
-  String $ds_image  = 'docker.io/389ds/dirsrv',
-  String $ds_tag    = '2.4',
+  String $ds_image  = 'quay.io/389ds/dirsrv',
+  String $ds_tag    = 'c9s',
 )
 {
   $hostname = $facts['networking']['fqdn']
@@ -25,11 +25,8 @@ class sunet::ds_389(
       port          =>  $port,
     }
   }
-  $directories = ['data', 'config', 'logs', 'certs']
-  $directories.each|$dir| {
-    file { "/opt/ds_389/${dir}":
-      ensure => directory,
-    }
+  file { '/opt/ds_389/data':
+    ensure => directory,
   }
 
 }
