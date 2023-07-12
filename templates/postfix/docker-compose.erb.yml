@@ -1,0 +1,16 @@
+# Adapted from https://github.com/michel4j/389ds/blob/master/docker-compose.yml
+
+version: "3.7"
+
+services:
+  ldap:
+    image: <%= @postfix_image %>:<%= @postfix_tag %>
+    hostname: <%= @hostname %>
+    volumes:
+      - /opt/postfix/config:/config
+    ports:
+      - 25:25
+      - 587:587
+      - 993:993
+    restart: always
+

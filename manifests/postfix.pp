@@ -3,8 +3,8 @@ class sunet::postfix(
   Array[String] $client_ips,
   String $interface = 'ens3',
   String $dir_admin_username = 'admin',
-  String $postfix_image  = 'quay.io/389ds/dirsrv',
-  String $postfix_tag    = 'c9s',
+  String $postfix_image  = 'docker.sunet.se/mail/postfix',
+  String $postfix_tag    = '3.7.5-2-SUNET-1',
 )
 {
   $hostname = $facts['networking']['fqdn']
@@ -16,7 +16,7 @@ class sunet::postfix(
     compose_filename => 'docker-compose.yml',
     description      => 'Postfix',
   }
-  $ports = []
+  $ports = [25, 587, 993]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => $client_ips,
