@@ -8,6 +8,7 @@ declare -a sites
 if [[ ${fqdn} == *sto1v2* ]]; then
   home_base="sto1v2"
   replica_id=1
+  sites=("sto3" "sto4")
 fi
 if [[ ${fqdn} == *sto3* ]]; then
   home_base="sto3"
