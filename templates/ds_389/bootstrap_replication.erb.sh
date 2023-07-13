@@ -16,7 +16,7 @@ dsconf -D "cn=Directory Manager" -w "${dir_manager_password}" ldap://localhost:3
 dsconf -D "cn=Directory Manager" ldap://localhost:3389 replication enable --suffix="dc=sunet,dc=dev" \
   --role="supplier" --replica-id="${replica_id}" --bind-dn="cn=replication manager,cn=config" --bind-passwd="${repl_manager_password}"
 
-if [[ ${fqdn} == *sto1v2* ]]; then
+if [[ ${fqdn} == *sto4* ]]; then
   index=2
   for site in sto1v2 sto3; do
     dsconf -D "cn=Directory Manager" ldap://localhost:3389 repl-agmt create --suffix="dc=sunet,dc=dev" \
