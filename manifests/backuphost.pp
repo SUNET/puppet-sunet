@@ -3,7 +3,7 @@ class sunet::backuphost(
   String        $chroot,
   String        $mountpoint,
   String        $user   = 'backup',
-  Array[String] $allow_clients = hiera('backup_pfx'),
+  Array[String] $allow_clients = lookup('backup_pfx'),
 ) {
   # parameters for sunet/backuphost/cron_free_diskspace.erb
   $free_diskspace_basedir = "${chroot}/incoming"

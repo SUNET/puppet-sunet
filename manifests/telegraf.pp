@@ -1,5 +1,5 @@
 class sunet::telegraf($repo = 'stable') {
-  $token = safe_hiera('influxdb_v2_token','NOT_SET_IN_HIERA');
+  $token = safe_hiera('influxdb_v2_token');
   if ($token == 'NOT_SET_IN_HIERA') {
      warning("Waiting to get influxdb_v2_token from hiera before configuring telegraf")
   } else {

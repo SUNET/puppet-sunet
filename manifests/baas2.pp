@@ -34,8 +34,8 @@ class sunet::baas2(
 ) {
 
   # MUST be set properly in hiera to continue
-  $baas_password = hiera('baas_password', 'NOT_SET_IN_HIERA')
-  $baas_encryption_password = hiera('baas_encryption_password', 'NOT_SET_IN_HIERA')
+  $baas_password = safe_hiera('baas_password')
+  $baas_encryption_password = safe_hiera('baas_encryption_password')
 
   if $nodename and $baas_password != 'NOT_SET_IN_HIERA' and $baas_encryption_password != 'NOT_SET_IN_HIERA' {
 
