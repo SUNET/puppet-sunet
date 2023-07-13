@@ -1,7 +1,7 @@
 # Run naemon with Thruk
 class sunet::naemon_monitor(
   String $domain,
-  String $influx_password = hiera('influx_password'),
+  String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
   Array $resolvers = [],
@@ -46,7 +46,7 @@ class sunet::naemon_monitor(
 
   class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
 
-  if hiera('shib_key',undef) != undef {
+  if lookup('shib_key', undef, undef, undef) != undef {
     sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
     # assume cert is in cosmos repo (overlay)
   }
@@ -55,6 +55,9 @@ class sunet::naemon_monitor(
   $thruk_users_string = inline_template('READONLY_USERS=<%- @thruk_users.each do |user| -%><%= user %>,<%- end -%>')
   $thruk_env = [ $thruk_admins_string, $thruk_users_string ]
 
+  if $influx_password == '' {
+    err('ERROR: influx password not set')
+  }
   $influx_env =  [ 'INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux']
   $nagflux_env =  [ "INFLUXDB_ADMIN_PASSWORD=${influx_password}" ]
 

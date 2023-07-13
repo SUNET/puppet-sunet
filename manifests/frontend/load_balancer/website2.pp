@@ -11,7 +11,7 @@ define sunet::frontend::load_balancer::website2(
     notice("Instance name: ${instance} is longer than 12 characters and will not work in docker bridge networking, please rename instance.")
   }
   $site_name = pick($config['site_name'], $instance)
-  $haproxy_template_dir = hiera('haproxy_template_dir', $instance)
+  $haproxy_template_dir = lookup('haproxy_template_dir', undef, undef, $instance)
 
   if ! has_key($config, 'tls_certificate_bundle') {
     # Put suitable certificate path in $config['tls_certificate_bundle']
@@ -58,7 +58,7 @@ define sunet::frontend::load_balancer::website2(
     'frontend_fqdn' => $::fqdn,
   })
 
-  $local_config = hiera_hash('sunet_frontend_local', {})
+  $local_config = lookup('sunet_frontend_local', undef, undef, {})
   $config4 = deep_merge($config3, $local_config)
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
                                               "${confdir}/${instance}/certs",
