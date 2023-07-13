@@ -1,5 +1,5 @@
 class sunet::hsm_client($luna_version="6.2") {
-   $pkcs11pin = hiera('pkcs11pin',"")
+   $pkcs11pin = lookup('pkcs11pin', undef, undef, '')
    sunet::snippets::reinstall::keep {['/etc/luna','/etc/Chrystoki.conf.d']: } ->
    file {['/etc/luna','/etc/luna/cert']: ensure => directory } ->
    sunet::docker_run {"hsm_client_hsmproxy":

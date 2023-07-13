@@ -16,7 +16,7 @@ define sunet::misc::create_key_file (
     default => $path,
   }
 
-  $key_content = hiera($hiera_key, 'NOT_SET_IN_HIERA')
+  $key_content = safe_hiera($hiera_key)
 
   if $key_content == 'NOT_SET_IN_HIERA' {
     warning ("Key file data key '${hiera_key}' not set in hiera")
