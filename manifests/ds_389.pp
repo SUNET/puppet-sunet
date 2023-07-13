@@ -3,7 +3,6 @@ class sunet::ds_389(
   Array[String] $client_ips,
   String $dir_suffix,
   String $interface = 'ens3',
-  String $dir_admin_username = 'admin',
   String $ds_image  = 'quay.io/389ds/dirsrv',
   String $ds_tag    = 'c9s',
 )

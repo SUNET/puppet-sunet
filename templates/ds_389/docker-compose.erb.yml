@@ -9,11 +9,8 @@ services:
     volumes:
       - /opt/ds_389/data:/data
     environment:
-      DIR_SUFFIX: <%= @dir_suffix %>
-      DIR_ADMIN_USERNAME: "<%= @dir_admin_username %>"
-      DIR_MANAGER_PASSWORD: "<%= @dir_manager_password %>"
-      DIR_ADMIN_UID: "15000"
-      DIR_USERS_HOME: "/users"
+      DS_SUFFIX_NAME: <%= @dir_suffix %>
+      DS_DM_PASSWORD: "<%= @dir_manager_password %>"
     ports:
       - 3389:3389
       - 3636:3636
