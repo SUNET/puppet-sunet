@@ -9,7 +9,7 @@ class sunet::ds_389(
 )
 {
   $hostname = $facts['networking']['fqdn']
-  $dir_manager_password = lookup('dir_manager_password')
+  $dir_manager_password = lookup('dir_manager_password', undef, undef, undef)
   # Composefile
   sunet::docker_compose { '389_ds':
     content          => template('sunet/ds_389/docker-compose.erb.yml'),
