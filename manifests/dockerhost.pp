@@ -90,6 +90,7 @@ class sunet::dockerhost(
       }
     apt::key { 'docker_ce':
       id     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
+      server => 'https://does-not-exists-but-is-required.example.com',
       source => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
       notify => Exec['dockerhost_apt_get_update'],
     }
