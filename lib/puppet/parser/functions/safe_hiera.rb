@@ -2,7 +2,7 @@
 
 module Puppet
   module Parser
-    # This is a wrapped around the standard hiera() function to log warnings whenever
+    # This is a wrapped around the standard lookup() function to log warnings whenever
     # the resulting value is 'NOT_SET_IN_HIERA'.
     #
     # We use that as default value in lots of places where we don't want a missing
@@ -15,7 +15,7 @@ module Puppet
                   function_hiera([args[0], 'NOT_SET_IN_HIERA'])
                 else
                   # Puppet >= 3.8
-                  call_function('hiera', [args[0], 'NOT_SET_IN_HIERA'])
+                  call_function('lookup', [args[0], Puppet::Pops::Types::PDataType, Nil, 'NOT_SET_IN_HIERA'])
                 end
         if value == 'NOT_SET_IN_HIERA'
           warning("#{args[0]} not set in Hiera")

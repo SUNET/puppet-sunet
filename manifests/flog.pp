@@ -1,6 +1,6 @@
 class sunet::flog {
 
-   $postgres_password = hiera('flog_postgres_password', 'NOT_SET_IN_HIERA')
+   $postgres_password = safe_hiera('flog_postgres_password')
 
    file {'/var/docker':
        ensure => 'directory',

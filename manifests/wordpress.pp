@@ -28,7 +28,7 @@ define sunet::wordpress (
       undef   => "${name}",
       default => $mysql_db_name
    }
-   $pwd = hiera("${name}_db_password")
+   $pwd = lookup("${name}_db_password", undef, undef, undef)
    ensure_resource('file',["/data/${name}","/data/${name}/html","/data/${name}/credentials"], {ensure => directory})
    sunet::docker_run { "${name}_wordpress":
       image       => $wordpress_image,
