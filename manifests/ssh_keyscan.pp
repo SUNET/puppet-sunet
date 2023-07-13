@@ -8,7 +8,7 @@ class sunet::ssh_keyscan(
   exec {'sunet_ssh-keyscan':
     command     => "ssh-keyscan -f ${hostsfile} > ${keyfile}.scan && mv ${keyfile}.scan ${keyfile}",
     refreshonly => false,
-    subscribe   => File[$hostsfile],
+    subscribe   => Concat[$hostsfile],
   }
 
   concat {$hostsfile:
