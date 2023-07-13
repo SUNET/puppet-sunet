@@ -6,7 +6,7 @@ module Puppet
     # the resulting value is 'NOT_SET_IN_HIERA'.
     #
     # We use that as default value in lots of places where we don't want a missing
-    # value to interrupt puppet completely (because it makes for a moment 22 problem
+    # value to interrupt puppet completely (because it makes for a catch 22 problem
     # in bootstrapping new machines).
     module Functions
       newfunction(:safe_hiera, type: :rvalue) do |args|
