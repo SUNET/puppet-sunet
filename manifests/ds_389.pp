@@ -21,7 +21,8 @@ class sunet::ds_389(
   $ports.each|$port| {
     sunet::nftables::docker_expose { "ldap_port_${port}":
       allow_clients => $client_ips,
-      port          =>  $port,
+      port          => $port,
+      iif           => $interface,
     }
   }
   file { '/opt/ds_389/data':
