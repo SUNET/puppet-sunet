@@ -4,7 +4,7 @@ class sunet::satosa(
   String           $image           = 'docker.sunet.se/satosa',
   String           $interface       = $::facts['interface_default'],
   String           $satosa_tag      = '8.4.0',
-  Optional[String] $redirect_uri    = lookup('redirect_uri', undef, undef, ''),
+  Optional[String] $redirect_uri    = lookup('redirect_uri', ''),
   Boolean          $enable_oidc     = false,
 ) {
 
@@ -34,7 +34,7 @@ class sunet::satosa(
     content  => file('sunet/md-signer2.crt')
   })
   ['backend','frontend','metadata'].each |$id| {
-    if lookup("satosa_${id}_key",undef, undef,undef) != undef {
+    if lookup("satosa_${id}_key", undef) != undef {
       sunet::snippets::secret_file { "/etc/satosa/${id}.key": hiera_key => "satosa_${id}_key" }
       # assume cert is in cosmos repo
     } else {
@@ -59,7 +59,7 @@ class sunet::satosa(
     }
   }
 
-  $json_configs = lookup('satosa_json_config', undef, undef, {})
+  $json_configs = lookup('satosa_json_config', {})
   sort(keys($json_configs)).each |$n| {
     $conf = lookup($n)
     $fn = $json_configs[$n]

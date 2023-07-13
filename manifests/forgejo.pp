@@ -17,27 +17,27 @@ class sunet::forgejo (
     env    => ['ACME_URL=http://acme-c.sunet.se'],
   }
   # gitea generate secret INTERNAL_TOKEN
-  $internal_token = hiera('internal_token')
+  $internal_token = lookup('internal_token')
   # gitea generate secret JWT_SECRET
-  $jwt_secret = hiera('jwt_secret')
+  $jwt_secret = lookup('jwt_secret')
   # gitea generate secret JWT_SECRET
-  $lfs_jwt_secret = hiera('lfs_jwt_secret')
+  $lfs_jwt_secret = lookup('lfs_jwt_secret')
   # gitea generate secret SECRET_KEY
-  $secret_key = hiera('secret_key')
+  $secret_key = lookup('secret_key')
   # SMTP Password from NOC
   $smtp_user = split($domain, '[.]')[0]
-  $smtp_password = hiera('smtp_password')
+  $smtp_password = lookup('smtp_password')
 
   # S3 credentials from openstack
-  $s3_secret_key = hiera('s3_secret_key')
-  $s3_access_key = hiera('s3_access_key')
+  $s3_secret_key = lookup('s3_secret_key')
+  $s3_access_key = lookup('s3_access_key')
   $s3_host = 's3.sto4.safedc.net'
 
   # GPG password
-  $platform_sunet_se_gpg_password = hiera('platform_sunet_se_gpg_password')
+  $platform_sunet_se_gpg_password = lookup('platform_sunet_se_gpg_password')
 
   # White list for email domains for account creation
-  $email_domain_whitelist = hiera('email_domain_whitelist')
+  $email_domain_whitelist = lookup('email_domain_whitelist')
   # Nginx stuff
   file{ '/opt/nginx':
     ensure => directory,

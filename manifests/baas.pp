@@ -17,15 +17,15 @@ class sunet::baas(
 ) {
 
   # Both these MUST be set properly in hiera to continue
-  $baas_password = hiera('baas_password', 'NOT_SET_IN_HIERA')
-  $backup_dirs_not_empty = hiera('dirs_to_backup','NOT_SET_IN_HIERA')
+  $baas_password = safe_hiera('baas_password')
+  $backup_dirs_not_empty = safe_hiera('dirs_to_backup')
 
   # This is silly but somehow you must know if BaaS has been installed already, if not you may break an already existing installation.
   $control_file='/opt/tivoli/tsm/client/install_successful'
 
   if $baas_password != 'NOT_SET_IN_HIERA' and $backup_dirs_not_empty != 'NOT_SET_IN_HIERA' and $nodename {
     # These 2 rows to get a single string of all directories to backup + extras (flags normally)
-    $dirs_to_backup_array = concat(hiera('dirs_to_backup','NOT_SET_IN_HIERA'), $extra)
+    $dirs_to_backup_array = concat(safe_hiera('dirs_to_backup'), $extra)
     $dirs_to_backup = join($dirs_to_backup_array, ' ')
 
     exec {'Create temp directory':

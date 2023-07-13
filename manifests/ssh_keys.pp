@@ -26,7 +26,7 @@ define sunet::ssh_keys(
   if $database {
     $keydb = $database
   } else {
-    $keydb = lookup($key_database_name, undef, undef, undef)
+    $keydb = lookup($key_database_name, undef)
   }
   if $keydb =~ Hash[String, Hash] {
     each ($config) | String $username, Array[String] $keys | {

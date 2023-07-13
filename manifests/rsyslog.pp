@@ -1,13 +1,13 @@
 class sunet::rsyslog(
   $daily_rotation = true,
-  $syslog_servers = hiera_array('syslog_servers',[]),
-  $relp_syslog_servers = hiera_array('relp_syslog_servers',[]),
+  $syslog_servers = lookup('syslog_servers', []),
+  $relp_syslog_servers = lookup('relp_syslog_servers', []),
   $single_log_file = true,
-  $syslog_enable_remote = safe_hiera('syslog_enable_remote','true'),
-  $udp_port = hiera('udp_port',undef),
-  $udp_client = hiera('udp_client',"any"),
-  $tcp_port = hiera('tcp_port',undef),
-  $tcp_client = hiera('tcp_client',"any"),
+  $syslog_enable_remote = lookup('syslog_enable_remote', 'true'),
+  $udp_port = lookup('udp_port', undef),
+  $udp_client = lookup('udp_client', 'any'),
+  $tcp_port = lookup('tcp_port', undef),
+  $tcp_client = lookup('tcp_client', 'any'),
   $traditional_file_format = false,
 ) {
   include stdlib

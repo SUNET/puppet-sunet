@@ -10,9 +10,9 @@ class sunet::nagios(
   $procsc          = 200,
 ) {
 
-  $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
-  $nagios_ip_v6 = hiera('nagios_ip_v6', '2001:948:4:6::111')
-  $nrpe_clients = hiera_array('nrpe_clients',['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
+  $nagios_ip_v4 = lookup('nagios_ip_v4', '109.105.111.111')
+  $nagios_ip_v6 = lookup('nagios_ip_v6', '2001:948:4:6::111')
+  $nrpe_clients = lookup('nrpe_clients', ['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
   #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
   $allowed_hosts = join($nrpe_clients,',')
 
