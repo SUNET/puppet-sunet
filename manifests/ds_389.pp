@@ -30,6 +30,14 @@ class sunet::ds_389(
     owner  => 389,
     group  => 389,
   }
+  file { '/usr/local/bin/bootstrap_replication':
+    ensure  => file,
+    content => template('sunet/ds_389/bootstrap_replication.erb.sh'),
+    mode    => '0740',
+    owner   => 'root',
+    group   => 'root',
+
+  }
 
   $ds_commands = ['ds-logpipe.py', 'dsconf', 'dsctl', 'ds-replcheck', 'dscreate', 'dsidm' ]
   $ds_commands.each|$command|{
