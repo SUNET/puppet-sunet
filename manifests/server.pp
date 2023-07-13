@@ -86,4 +86,10 @@ class sunet::server (
   if $facts['dmi']['product']['name'] == 'OpenStack Compute' {
     class { 'sunet::iaas::server': }
   }
+
+  # Set up ssh_authorized_keys
+  $ssh_authorized_keys = hiera_hash('ssh_authorized_keys', undef)
+  if is_hash($ssh_authorized_keys) {
+    create_resources('ssh_authorized_key', $ssh_authorized_keys)
+  }
 }
