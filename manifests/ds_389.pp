@@ -34,7 +34,7 @@ class sunet::ds_389(
   $ds_commands.each|$command|{
     file {"/usr/local/bin/${command}":
       ensure  => file,
-      content => inline_template("#!/bin/bash\ndocker exec -ti ds_389_ldap_1 ${command} \${@}"),
+      content => inline_template("#!/bin/bash\ndocker exec -ti ds_389_ldap_1 ${command} \"\${@}\""),
       owner   => 'root',
       group   => 'root',
       mode    => '0744',
