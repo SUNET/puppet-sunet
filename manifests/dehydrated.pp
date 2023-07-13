@@ -9,7 +9,7 @@ class sunet::dehydrated(
   Integer $server_port = 80,
   Integer $ssh_port = 22,
 ) {
-  $conf = hiera_hash('dehydrated')
+  $conf = lookup('dehydrated', undef, undef, undef)
   if $conf !~ Hash {
     fail("Hiera key 'dehydrated' is not a hash")
   }
