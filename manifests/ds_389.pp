@@ -31,4 +31,14 @@ class sunet::ds_389(
     group  => 389,
   }
 
+  $ds_commands = ['ds-logpipe.py', 'dsconf', 'dsctl', 'ds-replcheck', 'dscreate', 'dsidm' ]
+  $ds_commands.each|$command|{
+    file {"/usr/local/bin/${command}":
+      ensure  => file,
+      content => inline_template("#!/bin/bash\ndocker exec -ti ds_389_ldap_1 ${command} \${@}"),
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0744',
+    }
+  }
 }
