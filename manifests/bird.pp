@@ -62,7 +62,10 @@ class sunet::bird(
     ensure => 'running',
     enable => true,
   }
-  ufw::allow { 'allow-bird-bgp-tcp': ip => 'any', port => '179', proto => 'tcp' }
+
+  sunet::nftables::rule { 'allow-bird-bgp-tcp':
+      rule => "add rule inet filter input tcp dport 179 counter accept comment \"allow-bird-bgp-tcp\""
+  }
 
   #
   # Nagios monitoring of BGP peers
