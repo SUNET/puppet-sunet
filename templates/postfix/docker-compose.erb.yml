@@ -3,7 +3,7 @@
 version: "3.7"
 
 services:
-  ldap:
+  postfix:
     image: <%= @postfix_image %>:<%= @postfix_tag %>
     hostname: <%= @hostname %>
     volumes:
