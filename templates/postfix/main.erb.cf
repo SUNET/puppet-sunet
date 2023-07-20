@@ -1,6 +1,6 @@
 # See /usr/share/postfix/main.cf.dist for a commented, more complete version
 
-
+maillog_file = /dev/stdout
 # Debian specific:  Specifying a file name will cause the first
 # line of that file to be used as the name.  The Debian default
 # is /etc/mailname.
