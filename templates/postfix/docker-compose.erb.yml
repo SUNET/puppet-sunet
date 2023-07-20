@@ -9,8 +9,7 @@ services:
     volumes:
       - /opt/postfix/config:/config
     ports:
-      - 25:25
+      - 1525:1525
       - 587:587
-      - 993:993
     restart: always
 

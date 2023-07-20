@@ -18,7 +18,7 @@ class sunet::postfix(
     compose_filename => 'docker-compose.yml',
     description      => 'Postfix',
   }
-  $ports = [25, 587, 993]
+  $ports = [1525, 587]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => $client_ips,
