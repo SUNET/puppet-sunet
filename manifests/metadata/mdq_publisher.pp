@@ -49,7 +49,7 @@ class sunet::metadata::mdq_publisher(
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
-    content => template('swamid/mdq_publisher/check-metadata.erb'),
+    content => template('sunet/metadata/check-metadata.erb'),
   })
   sunet::scriptherder::cronjob { 'check-metadata':
     cmd           => "/usr/bin/check-metadata.sh /var/www/html/md ${valid_until} ${validate_cert} ${extra_entitites}",
