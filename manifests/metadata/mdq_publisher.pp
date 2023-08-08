@@ -3,6 +3,9 @@ class sunet::metadata::mdq_publisher(
   String $dir='/var/www/html',
   Optional[String] $cert_name=undef,
   Optional[Array] $env=[],
+  Optional[Integer] $valid_until=12,
+  Optional[String] $valid_cert='/var/www/html/md/md-signer2.crt',
+  Optional[String] $extra_entities='',
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
@@ -47,6 +50,19 @@ class sunet::metadata::mdq_publisher(
       filename     => '/var/www/html/entities/index.html', # yes this is correct
       warning_age  => '600',
       critical_age => '86400'
+  }
+  ensure_resource('file', '/usr/bin/check-metadata.sh', {
+    ensure  => 'file',
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    content => template('sunet/metadata/check-metadata.erb'),
+  })
+  sunet::scriptherder::cronjob { 'check-metadata':
+    cmd           => "/usr/bin/check-metadata.sh /var/www/html/md ${valid_until} ${valid_cert} ${extra_entities}",
+    minute        => '*/15',
+    ok_criteria   => ['exit_status=0', 'max_age=2h'],
+    warn_criteria => ['exit_status=1', 'max_age=5h'],
   }
   file {'/etc/ssl/mdq':
     ensure => 'directory'
