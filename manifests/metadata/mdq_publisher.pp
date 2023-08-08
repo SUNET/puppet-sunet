@@ -1,7 +1,7 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
   String $dir='/var/www/html',
-  Optional[String] $certName=undef,
+  Optional[String] $cert_name=undef,
   Optional[Array] $env=[],
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
@@ -51,14 +51,14 @@ class sunet::metadata::mdq_publisher(
   file {'/etc/ssl/mdq':
     ensure => 'directory'
   }
-  if ($certName != undef) {
+  if ($cert_name != undef) {
     file {'/etc/ssl/mdq/privkey.pem':
       ensure => 'link',
-      target => "/etc/ssl/private/${certName}.key"
+      target => "/etc/ssl/private/${cert_name}.key"
     }
     file {'/etc/ssl/mdq/cert.pem':
       ensure => 'link',
-      target => "/etc/ssl/certs/${certName}.crt"
+      target => "/etc/ssl/certs/${cert_name}.crt"
     }
   } else {
     exec { "${title}_key":
