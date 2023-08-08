@@ -62,13 +62,13 @@ class sunet::metadata::mdq_publisher(
     }
   } else {
     exec { "${title}_key":
-      command => "openssl genrsa -out /etc/ssl/mdq/privkey.pem 4096",
-      onlyif  => "test ! -f /etc/ssl/mdq/privkey.pem",
+      command => 'openssl genrsa -out /etc/ssl/mdq/privkey.pem 4096',
+      onlyif  => 'test ! -f /etc/ssl/mdq/privkey.pem',
       creates => '/etc/ssl/mdq/privkey.pem'
-   } ->
-   exec { "${title}_cert":
+   }
+   -> exec { "${title}_cert":
       command => "openssl req -x509 -sha256 -new -days 3650 -subj \"/CN=${title}\" -key /etc/ssl/mdq/privkey.pem -out /etc/ssl/mdq/cert.pem",
-      onlyif  => "test ! -f /etc/ssl/mdq/cert.pem -a -f /etc/ssl/mdq/privkey.pem",
+      onlyif  => 'test ! -f /etc/ssl/mdq/cert.pem -a -f /etc/ssl/mdq/privkey.pem',
       creates => '/etc/ssl/mdq/cert.pem'
    }
   }
