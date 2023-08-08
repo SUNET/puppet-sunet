@@ -92,9 +92,10 @@ class sunet::metadata::mdq_publisher(
       port          => 443,
       iif           => $facts['networking']['primary'],
     }
-  }
-  sunet::misc::ufw_allow { 'allow-https':
-    from => 'any',
-    port => '443'
+  } else {
+    sunet::misc::ufw_allow { 'allow-https':
+      from => 'any',
+      port => '443'
+    }
   }
 }
