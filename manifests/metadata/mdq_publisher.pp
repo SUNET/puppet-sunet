@@ -57,10 +57,17 @@ class sunet::metadata::mdq_publisher(
     ok_criteria   => ['exit_status=0', 'max_age=2h'],
     warn_criteria => ['exit_status=1', 'max_age=5h'],
   }
+  file {'/etc/ssl/mdq':
+    ensure => 'directory'
+  }
   if ($cert_name != undef) {
-    file {'/etc/ssl/mdq':
+    file {'/etc/ssl/mdq/privkey.pem':
       ensure => 'link',
-      target => "/etc/dehydrated/certs/${cert_name}/"
+      target => "/etc/ssl/private/${cert_name}.key"
+    }
+    file {'/etc/ssl/mdq/cert.pem':
+      ensure => 'link',
+      target => "/etc/ssl/certs/${cert_name}.crt"
     }
   } else {
     file {'/etc/ssl/mdq':
