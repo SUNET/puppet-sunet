@@ -1,11 +1,11 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
   String $dir='/var/www/html',
-  Optional[String] $certName=undef,
+  Optional[String] $cert_name=undef,
   Optional[Array] $env=[],
-  Optional[Integer] $validUntil=12,
-  Optional[String] $validateCert="/var/www/html/md/md-signer2.crt",
-  Optional[String] $extraEntities="",
+  Optional[Integer] $valid_until=12,
+  Optional[String] $validate_cert='/var/www/html/md/md-signer2.crt',
+  Optional[String] $extra_entitites='',
 ) {
 
   $signers = hiera('signers')
@@ -52,37 +52,37 @@ class sunet::metadata::mdq_publisher(
     content => template('swamid/mdq_publisher/check-metadata.erb'),
   })
   sunet::scriptherder::cronjob { 'check-metadata':
-    cmd           => "/usr/bin/check-metadata.sh /var/www/html/md $validUntil $validateCert $extraEntities",
+    cmd           => "/usr/bin/check-metadata.sh /var/www/html/md ${valid_until} ${validate_cert} ${extra_entitites}",
     minute        => '*/15',
     ok_criteria   => ['exit_status=0', 'max_age=2h'],
     warn_criteria => ['exit_status=1', 'max_age=5h'],
   }
-  if ($certName != undef) {
+  if ($cert_name != undef) {
     file {'/etc/ssl/mdq':
       ensure => 'link',
-      target => "/etc/dehydrated/certs/${certName}/"
+      target => "/etc/dehydrated/certs/${cert_name}/"
     }
   } else {
     file {'/etc/ssl/mdq':
       ensure => 'directory'
-    } ->
-    exec { "${title}_key":
-      command => "openssl genrsa -out /etc/ssl/mdq/privkey.pem 4096",
-      onlyif  => "test ! -f /etc/ssl/mdq/privkey.pem",
+    }
+    -> exec { "${title}_key":
+      command => 'openssl genrsa -out /etc/ssl/mdq/privkey.pem 4096',
+      onlyif  => 'test ! -f /etc/ssl/mdq/privkey.pem',
       creates => '/etc/ssl/mdq/privkey.pem'
-   } ->
-   exec { "${title}_cert":
-      command => "openssl req -x509 -sha256 -new -days 3650 -subj \"/CN=${title}\" -key /etc/ssl/mdq/privkey.pem -out /etc/ssl/mdq/cert.pem",
-      onlyif  => "test ! -f /etc/ssl/mdq/cert.pem -a -f /etc/ssl/mdq/privkey.pem",
+  }
+  -> exec { "${title}_cert":
+      command => "openssl req -x509 -sha256 -new -days 3650 -subj \"/CN=${title}\" -key /etc/ssl/mdq/privkey.pem -out /etc/ssl/mdq/cert.pem", # lint:ignore:140chars
+      onlyif  => 'test ! -f /etc/ssl/mdq/cert.pem -a -f /etc/ssl/mdq/privkey.pem',
       creates => '/etc/ssl/mdq/cert.pem'
-   }
+  }
   }
   sunet::docker_run { 'swamid-mdq-publisher':
     image               => 'docker.sunet.se/swamid/mdq-publisher',
     imagetag            => 'latest',
-    hostname            => $hostname,
+    hostname            => $facts['networking']['fdqn'],
     volumes             => [
-      "/etc/ssl/mdq:/etc/certs",
+      '/etc/ssl/mdq:/etc/certs',
       '/var/www/html:/var/www/html'
     ],
     env                 => $env,
