@@ -67,7 +67,7 @@ class sunet::metadata::mdq_publisher(
       creates => '/etc/ssl/mdq/privkey.pem'
     }
     -> exec { "${title}_cert":
-      command => "openssl req -x509 -sha256 -new -days 3650 -subj \"/CN=${title}\" -key /etc/ssl/mdq/privkey.pem -out /etc/ssl/mdq/cert.pem",
+      command => "openssl req -x509 -sha256 -new -days 3650 -subj \"/CN=${title}\" -key /etc/ssl/mdq/privkey.pem -out /etc/ssl/mdq/cert.pem", # lint:ignore:140chars
       onlyif  => 'test ! -f /etc/ssl/mdq/cert.pem -a -f /etc/ssl/mdq/privkey.pem',
       creates => '/etc/ssl/mdq/cert.pem'
     }
@@ -75,7 +75,7 @@ class sunet::metadata::mdq_publisher(
   sunet::docker_run { 'swamid-mdq-publisher':
     image               => 'docker.sunet.se/swamid/mdq-publisher',
     imagetag            => 'latest',
-    hostname            => $hostname,
+    hostname            => $facts['networking']['fqdn'],
     volumes             => [
       '/etc/ssl/mdq:/etc/certs',
       '/etc/ssl:/etc/ssl',
