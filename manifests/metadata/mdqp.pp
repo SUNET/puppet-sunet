@@ -2,7 +2,7 @@
 class sunet::metadata::mdqp(
   String $imagetag='latest',
   Integer $runs_per_hour=4,
-  String $mdq_service='https://md.nordu.net',
+  String $mdq_service='https://mds.swamid.se',
 ) {
       $image_tag = "docker.sunet.se/mdqp:${imagetag}"
       docker::image { $image_tag :  # make it possible to use the same docker image more than once on a node
