@@ -28,7 +28,7 @@ class sunet::metadata::mdqp(
         ]: ensure => latest
       }
       file { '/opt/mdqp/mdqp-wrapper':
-        content => template('swamid/mdqp/mdqp-wrapper.erb'),
+        content => template('sunet/metadata/mdqp-wrapper.erb'),
         mode    => '0755',
         }
       sunet::scriptherder::cronjob { 'mdqp-wrapper':
