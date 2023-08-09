@@ -26,7 +26,7 @@ class sunet::metadata::mdq_publisher(
         ro                 => false,
         ssh_key            => $ssh_key,
         ssh_key_type       => $ssh_key_type,
-        use_sunet_ssh_keys => false,
+        use_sunet_ssh_keys => true,
       }
     }
 
