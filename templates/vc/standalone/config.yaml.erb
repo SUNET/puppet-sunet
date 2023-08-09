@@ -17,6 +17,8 @@ issuer:
     token: "<%= @ca_token %>"
     key_label: Ladok-sign-v1
     key_type: secp256r1
+    location: "<%= @ca_location %>"
+    reason: "<%= @ca_reason %>"
   key_value:
     db: 3
     addr: vc_redis:6379
