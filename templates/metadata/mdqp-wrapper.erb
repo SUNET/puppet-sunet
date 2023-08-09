@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -e
+
+lock_file="/tmp/mdqp-lock"
+remove_lock() {
+    if [ -f ${lock_file} ];then
+        rm ${lock_file}
+    fi
+}
+
+trap "remove_lock" ERR
+
+if [ -f ${lock_file} ]; then
+    echo "Another signing process is running better exit here"
+    exit 1
+else
+    echo $$ > "${lock_file}"
+fi
+
+get_parts() {
+    local operation="${1}"
+    if test -z "$operation"; then
+        echo "Empty operation" 1>&2
+        exit 1
+    fi
+    parts="$(find "/opt/mdqp/${1}".d/ -mindepth 1 -maxdepth 1 \
+        -type f -executable -name '[0-9]*' \! -name \*~ | sort)"
+    echo "${parts}"
+}
+
+# Pre parts like fetching and prepairing metadata
+parts=$(get_parts "pre")
+for part in ${parts}; do
+    echo "Running pre-part: ${part}"
+    "${part}" "$@"
+done
+
+# Main stuff like fetching the metadata from MDQ
+cmd="docker run --rm --net pyff_default -e MDQ_SERVICE=<%= @mdq_service %> -e RPH=<%= @runs_per_hour %> -v /opt/mdqp/work:/work <%= @image_tag %> /mdqp.py"
+echo "Running main code: $cmd"
+eval $cmd
+
+# Post parts like rsyncing metadata to fronts
+parts=$(get_parts "post")
+for part in ${parts}; do
+    echo "Running post-part: ${part}"
+    "${part}" "$@"
+done
+
+remove_lock
