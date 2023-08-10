@@ -34,7 +34,7 @@ class sunet::vc::standalone(
     managehome => false
   }
 
-  file { '/var/log/sunet':
+  file { '/var/log/sunet/pkcs11':
     ensure => directory,
     mode    => '0755',
     owner   => 'sunet',
