@@ -66,6 +66,12 @@ class sunet::forgejo (
     uid   => $uid,
     gid   => $gid,
   }
+  # Parent Data directory
+  -> file{ '/opt/forgejo':
+    ensure => directory,
+    owner  => 'git',
+    group  => 'git',
+  }
   # Data directory
   -> file{ '/opt/forgejo/data':
     ensure => directory,
