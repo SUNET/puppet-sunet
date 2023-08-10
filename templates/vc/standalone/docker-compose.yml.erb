@@ -126,9 +126,9 @@ services:
     volumes:
       - /opt/pkcs11_ca/data/db_data:/var/lib/postgresql/data
       - /opt/pkcs11_ca/postgres_shell.sh:/root/postgres_shell.sh
-      tmpfs:
+    tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-      environment:
+    environment:
       - "POSTGRES_DB=<%= @postgres_database %>"
       - "POSTGRES_USER=<%= @postgres_user %>"
       - "POSTGRES_PASSWORD=<%= @postgres_password %>"
