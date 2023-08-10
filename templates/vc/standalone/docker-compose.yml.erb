@@ -138,6 +138,8 @@ services:
     container_name: "ca_pdfsign"
     volumes:
       - /var/log/sunet/pkcs11:/var/log/sunet
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
     depends_on:
       - ca_ca
     restart: always
