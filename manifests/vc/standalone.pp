@@ -27,6 +27,21 @@ class sunet::vc::standalone(
   #hash with basic_auth key/value
 ) {
 
+  sunet::misc::system_user { 'sunet':
+    username   => 'sunet',
+    group      => 'sunet',
+    shell      => '/bin/false',
+    managehome => false
+  }
+
+  file { '/var/log/sunet':
+    ensure => directory,
+    mode    => '0755',
+    owner   => 'sunet',
+    group   => 'sunet',
+  }
+
+
 
   file { '/opt/vc/config.yaml':
     ensure => file,
@@ -86,6 +101,8 @@ class sunet::vc::standalone(
     owner   => 'root',
     group   => '999',
   }
+
+
 
 
   # Compose

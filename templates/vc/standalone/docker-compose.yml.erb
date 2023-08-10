@@ -126,18 +126,18 @@ services:
     volumes:
       - /opt/pkcs11_ca/data/db_data:/var/lib/postgresql/data
       - /opt/pkcs11_ca/postgres_shell.sh:/root/postgres_shell.sh
-    tmpfs:
+      tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
-    environment:
+      environment:
       - "POSTGRES_DB=<%= @postgres_database %>"
       - "POSTGRES_USER=<%= @postgres_user %>"
       - "POSTGRES_PASSWORD=<%= @postgres_password %>"
-  
+      
   ca_pdfsign:
     image: "docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>"
-    #ports:
     container_name: "ca_pdfsign"
-    #  - "8006:8006"
+    volumes:
+      - /var/log/sunet/pkcs11:/var/log/sunet
     depends_on:
       - ca_ca
     restart: always
