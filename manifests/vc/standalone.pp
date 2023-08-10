@@ -34,11 +34,11 @@ class sunet::vc::standalone(
     managehome => false
   }
 
-  file { '/var/log/sunet/pkcs11':
+  file { '/var/log/sunet':
     ensure => directory,
-    mode    => '0755',
-    owner   => 'sunet',
+    mode    => '0770',
     group   => 'sunet',
+    require =>  [ Group['sunet'] ],
   }
 
 
