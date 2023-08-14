@@ -283,9 +283,7 @@ def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-loc
         )
 
         if prefix_bytes != PREFIX_EXPECTED_BYTES:
-            raise ValueError(
-                "unexpected start of IDX entry, expected: '{PREFIX_EXPECTED_BYTES}', actual: '{prefix_bytes'}"  # pylint:disable=line-too-long
-            )
+            raise ValueError(f"unexpected start of IDX entry at index {entry_index}")
 
         servername = servername_bytes.decode(encoding="utf-8").rstrip("\x00")
         nodename = nodename_bytes.decode(encoding="utf-8").rstrip("\x00")
