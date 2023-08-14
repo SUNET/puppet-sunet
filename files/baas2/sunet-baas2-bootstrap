@@ -252,7 +252,7 @@ def set_dsmc_password(password: str) -> None:
         raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
 
 
-def read_index_file(path: str) -> Dict[str, Any]:
+def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-locals
     """parse a TSM.IDX file"""
     with open(path, "rb") as fileobj:
         data = fileobj.read()
@@ -268,7 +268,7 @@ def read_index_file(path: str) -> Dict[str, Any]:
 
     entry_index = 0
     while entry_index < num_entries:
-        # Set the entry offset in the file based on what entry we are one,
+        # Set the entry offset in the file based on what entry we are on,
         # starting with 0 for the first entry and then going forward.
         prefix_offset = entry_index * ENTRY_SIZE
 
@@ -283,30 +283,33 @@ def read_index_file(path: str) -> Dict[str, Any]:
         )
 
         if prefix_bytes != PREFIX_EXPECTED_BYTES:
-            raise ValueError(
-                "unexpected start of IDX entry, expected: '{PREFIX_EXPECTED_BYTES}', actual: '{prefix_bytes'}"  # pylint:disable=line-too-long
-            )
+            raise ValueError(f"unexpected start of IDX entry at index {entry_index}")
 
         servername = servername_bytes.decode(encoding="utf-8").rstrip("\x00")
         nodename = nodename_bytes.decode(encoding="utf-8").rstrip("\x00")
         label = label_bytes.decode(encoding="utf-8").rstrip("\x00")
-
-        # Go to next entry
-        entry_index += 1
-
-        # Prior to adding the parsed entry we should have the same number of
-        # entries as "current parsed index"
-        if len(index_data["entries"]) != index:
-            raise RuntimeError(
-                f"mismatch in number of found entries {len(index_data['entries'])} compared to the current index we parsed: {index}"  # pylint:disable=line-too-long
-            )
 
         index_data["entries"].append(
             {
                 "servername": servername,
                 "nodename": nodename,
                 "label": label,
+                "index": index,
             }
+        )
+
+        # Go to next entry
+        entry_index += 1
+
+    # Create a set containing the unique index numbers we have seen
+    unique_indexes = {entry["index"] for entry in index_data["entries"]}
+
+    # Make sure the number of entries matches the number of unique index values
+    # we have seen, otherwise there are duplicate index values present and this
+    # is unexpected.
+    if len(unique_indexes) != len(index_data["entries"]):
+        raise RuntimeError(
+            f'mismatch between number of unique index values we have parsed ({len(unique_indexes)}) compared to the number of entries: {len(index_data["entries"])}'  # pylint:disable=line-too-long
         )
 
     return index_data
@@ -415,7 +418,7 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
 
 
 def set_encrypt_password(password_db: str, password: str) -> None:
-    """The goal of this function is the configure the password used for encryption"""
+    """The goal of this function is to configure the password used for encryption"""
 
     dsm_opt_path = "/opt/tivoli/tsm/client/ba/bin/dsm.opt"
     dsm_sys_path = "/opt/tivoli/tsm/client/ba/bin/dsm.sys"
@@ -442,6 +445,13 @@ def set_encrypt_password(password_db: str, password: str) -> None:
     if len(index_data["entries"]) > 1:
         print("more than one entry already exists, nothing to add")
         sys.exit(0)
+
+    # Verify index 1 is not already present in the idx file
+    for entry in index_data["entries"]:
+        if entry["index"] == 1:
+            raise RuntimeError(
+                "we expected to add an entry with index 1 but it's already taken, this is unexpected"  # pylint:disable=line-too-long
+            )
 
     add_kdb_entry(password_db, label, password)
 
