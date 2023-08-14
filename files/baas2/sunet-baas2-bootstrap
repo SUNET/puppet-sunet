@@ -311,7 +311,7 @@ def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-loc
     # is unexpected.
     if len(unique_indexes) != len(index_data["entries"]):
         raise RuntimeError(
-            f'mismatch between number of unique index values ({len(unique_indexes)}) we have parsed compared to the number of entries: {len(index_data["entries"])}'  # pylint:disable=line-too-long
+            f'mismatch between number of unique index values we have parsed ({len(unique_indexes)}) compared to the number of entries: {len(index_data["entries"])}'  # pylint:disable=line-too-long
         )
 
     return index_data
