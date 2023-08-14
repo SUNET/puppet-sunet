@@ -62,7 +62,7 @@ def have_schedule() -> bool:
     return False
 
 
-def last_scheduled_start_time() -> datetime.datetime | None:
+def last_scheduled_start_time() -> datetime.datetime:
     """return the time we last logged a started scheduled backup"""
     returned_timestamp = None
     with open("/var/log/dsmsched.log", "r", encoding="utf-8") as fileobj:
@@ -76,7 +76,7 @@ def last_scheduled_start_time() -> datetime.datetime | None:
     return returned_timestamp
 
 
-def last_error_time() -> datetime.datetime | None:
+def last_error_time() -> datetime.datetime:
     """return the last time we saw an error logged"""
     returned_timestamp = None
     with open("/var/log/dsmerror.log", "r", encoding="utf-8") as fileobj:
