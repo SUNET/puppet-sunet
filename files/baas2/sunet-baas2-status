@@ -3,12 +3,12 @@
 # pylint:enable=invalid-name
 """ Check dsmc logs and other information and exit non-zero if something bad is detected """
 
+import datetime
+import os
+import re
 import shlex
 import subprocess
 import sys
-import re
-import datetime
-import os
 
 
 def write_schedule_cache(cache_file: str) -> None:

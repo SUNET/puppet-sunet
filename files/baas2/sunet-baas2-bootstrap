@@ -15,15 +15,14 @@ pylint sunet-baas2-bootstrap
 mypy --strict sunet-baas2-bootstrap
 """
 import argparse
-import subprocess
-import shlex
-import struct
-import sys
 import os
 import os.path
-import tarfile
+import shlex
 import shutil
-
+import struct
+import subprocess
+import sys
+import tarfile
 from typing import Any, Dict, List, Union
 
 # Discovered by running "hexdump -C /etc/adsm/TSM.IDX"
