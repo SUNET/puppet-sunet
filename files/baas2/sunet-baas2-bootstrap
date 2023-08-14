@@ -15,15 +15,14 @@ pylint sunet-baas2-bootstrap
 mypy --strict sunet-baas2-bootstrap
 """
 import argparse
-import subprocess
-import shlex
-import struct
-import sys
 import os
 import os.path
-import tarfile
+import shlex
 import shutil
-
+import struct
+import subprocess
+import sys
+import tarfile
 from typing import Any, Dict, List, Union
 
 # Discovered by running "hexdump -C /etc/adsm/TSM.IDX"
@@ -365,7 +364,7 @@ def build_index_entry(index: int, servername: str, nodename: str, label: str) ->
     return entry
 
 
-def get_servername(path: str) -> str | None:
+def get_servername(path: str) -> Union[str, None]:
     """Extract servername from dsm.opt"""
     servername = None
     with open(path, "r", encoding="utf-8") as fileobj:
@@ -377,7 +376,7 @@ def get_servername(path: str) -> str | None:
     return servername
 
 
-def get_nodename(path: str) -> str | None:
+def get_nodename(path: str) -> Union[str, None]:
     """Extract nodename from dsm.sys"""
     # TODO(patlu): Only support one nodename, if someone uses more than one
     # SERVERNAME stanza this will break.
@@ -509,7 +508,7 @@ def main() -> None:
 
 
 def handle_installation(
-    args: argparse.Namespace, installed_version: str | None, download_dir: str
+    args: argparse.Namespace, installed_version: Union[str, None], download_dir: str
 ) -> None:
     """Overall handler for installing the TSM client"""
     if installed_version != args.version:
