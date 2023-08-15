@@ -20,6 +20,13 @@ class sunet::naemon_monitor(
 ){
 
   require stdlib
+  if ($::facts['sunet_naemon_monitor_exists'] == 'yes') {
+    $service_to_notify = Service['sunet-naemon_monitor']
+  }
+  else
+  {
+    $service_to_notify = undef
+  }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
       sunet::nftables::docker_expose { 'allow_http' :
@@ -224,7 +231,7 @@ class sunet::naemon_monitor(
     manage_service      => false,
     cfgdir              => '/etc/naemon/conf.d/nagioscfg',
     host_template       => 'naemon-host',
-    service             => 'sunet-naemon_monitor',
+    service             => $service_to_notify,
     single_ip           => true,
     require             => File['/etc/naemon/conf.d/nagioscfg/'],
   }
