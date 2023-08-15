@@ -11,7 +11,7 @@ class sunet::scriptherder::init (
   Boolean $nrpe             = true,
   Boolean $nrpe_sudo        = true,
   String  $scriptherder_dir = '/var/cache/scriptherder',
-  Integer $keep_days        = hiera('scriptherder_delete_older_than', 6),
+  Integer $keep_days        = lookup('scriptherder_delete_older_than', Integer, undef, 6),
 ) {
   if $install {
     if $::facts['operatingsystem'] == 'Ubuntu' and versioncmp($::facts['operatingsystemrelease'], '18.04') < 0 {

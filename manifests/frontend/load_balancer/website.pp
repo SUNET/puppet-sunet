@@ -12,7 +12,7 @@ define sunet::frontend::load_balancer::website(
   }
   $site_name = pick($config['site_name'], $instance)
   $monitor_group = pick($config['monitor_group'], 'default')
-  $haproxy_template_dir = hiera('haproxy_template_dir', $instance)
+  $haproxy_template_dir = lookup('haproxy_template_dir', undef, undef, $instance)
 
   # Figure out what certificate to pass to the haproxy container
   if ! has_key($config, 'tls_certificate_bundle') {
@@ -94,7 +94,7 @@ define sunet::frontend::load_balancer::website(
   # This group is created by the exabgp package, but Puppet requires this before create_dir below
   ensure_resource('group', 'exabgp', {ensure => 'present'})
 
-  $local_config = hiera_hash('sunet_frontend_local', undef)
+  $local_config = lookup('sunet_frontend_local', undef, undef, undef)
   $config4 = deep_merge($config3, $local_config)
   # Setup directory where the 'config' container will read configuration data for this instance
   ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
