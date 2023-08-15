@@ -289,13 +289,13 @@ define sunet::dehydrated::client_define(
     default => $ssh_id,
   }
  if $manage_ssh_key {
-    $key_path = find_file("${home}/.ssh/id_${_ssh_id}")
+    $key_path = "${home}/.ssh/id_${_ssh_id}"
     if lookup("${_ssh_id}_ssh_key", undef, undef, undef) {
       ensure_resource('sunet::snippets::secret_file', "$key_path", {
       hiera_key => "${_ssh_id}_ssh_key",
       })
     }else{
-      if (!$key_path){
+      if (!find_file($key_path)){
         if (!lookup("${_ssh_id}_ssh_key", undef, undef, undef)){
           sunet::snippets::ssh_keygen($key_path)
         }
