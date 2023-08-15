@@ -294,11 +294,12 @@ define sunet::dehydrated::client_define(
       ensure_resource('sunet::snippets::secret_file', "$key_path", {
       hiera_key => "${_ssh_id}_ssh_key",
       })
-    }
-    else{
+    }else{
       if (!$key_path){
-        if not hiera_key
+        if (!lookup("${_ssh_id}_ssh_key", undef, undef, undef)){
           sunet::snippets::ssh_keygen($key_path)
+        }
+      }
     }
   }
   if $single_domain {
