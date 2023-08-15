@@ -296,7 +296,7 @@ define sunet::dehydrated::client_define(
       })
     }else{
       if (!find_file($key_path)){
-        sunet::snippets::ssh_keygen{$key_path} #This will not overwrite an existing key
+        sunet::snippets::ssh_keygen{$key_path:} #This will not overwrite an existing key
       }
     }
   }
