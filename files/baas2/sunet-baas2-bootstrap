@@ -446,17 +446,20 @@ def set_encrypt_password(password_db: str, password: str) -> None:
         print("more than one entry already exists, nothing to add")
         sys.exit(0)
 
-    # Verify index 1 is not already present in the idx file
+    # We expect to use index 1 for the encryption secret
+    encryption_index = 1
+
+    # Verify encryption index is not already present in the IDX file
     for entry in index_data["entries"]:
-        if entry["index"] == 1:
+        if entry["index"] == encryption_index:
             raise RuntimeError(
-                "we expected to add an entry with index 1 but it's already taken, this is unexpected"  # pylint:disable=line-too-long
+                f"we expected to add an entry with index {encryption_index} but it's already taken, this is unexpected"  # pylint:disable=line-too-long
             )
 
     add_kdb_entry(password_db, label, password)
 
     entry = build_index_entry(
-        index=1, servername=servername, nodename=nodename, label=label
+        index=encryption_index, servername=servername, nodename=nodename, label=label
     )
 
     updated_index_data = index_data["raw_data"] + entry
