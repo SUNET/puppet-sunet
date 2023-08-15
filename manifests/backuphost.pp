@@ -3,7 +3,7 @@ class sunet::backuphost(
   String        $chroot,
   String        $mountpoint,
   String        $user   = 'backup',
-  Array[String] $allow_clients = hiera('backup_pfx'),
+  Array[String] $allow_clients = lookup('backup_pfx', Array[String], undef, ['130.242.125.68', '130.242.121.73']),
 ) {
   # parameters for sunet/backuphost/cron_free_diskspace.erb
   $free_diskspace_basedir = "${chroot}/incoming"
@@ -92,7 +92,7 @@ class sunet::backuphost(
     warn_criteria => ['exit_status=1'],
   }
 
-  $ssh_key_db = lookup('backup_ssh_keys')
+  $ssh_key_db = lookup('backup_ssh_keys', undef, undef, undef)
   if is_hash($ssh_key_db) {
     sunet::ssh_keys { 'backuphost':
       config   => { $user => keys($ssh_key_db) },

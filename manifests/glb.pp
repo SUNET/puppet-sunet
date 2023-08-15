@@ -12,7 +12,7 @@ class sunet::glb(
       ensure => 'directory'
    }
 
-   $geodns_key = safe_hiera('geodns_license',undef)
+   $geodns_key = safe_hiera('geodns_license')
 
    if $geodns_key != 'NOT_SET_IN_HIERA' {
 
