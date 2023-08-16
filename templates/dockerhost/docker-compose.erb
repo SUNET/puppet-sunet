@@ -16,6 +16,13 @@
 set -e
 
 IMAGE="<%= @compose_image %>:<%= @compose_version %>"
+docker_image="<%= @compose_in_docker_image %>"
+docker_version="<%= @compose_in_docker_version %>"
+
+if [[ -n ${docker_image} ]] && [[ -n ${docker_version} ]]; then
+  IMAGE="${docker_image}:${docker_version}"
+  docker_mode="compose"
+fi
 
 # Setup options for connecting to docker host
 if [ -z "$DOCKER_HOST" ]; then
@@ -105,4 +112,4 @@ if docker info --format '{{json .SecurityOptions}}' 2>/dev/null | grep -q 'name=
 fi
 
 # shellcheck disable=SC2086
-exec docker run --rm $DOCKER_RUN_OPTIONS $DOCKER_ADDR $COMPOSE_OPTIONS $ENV_OPTIONS $VOLUMES -w "$(pwd)" $IMAGE "$@"
+exec docker run --rm $DOCKER_RUN_OPTIONS $DOCKER_ADDR $COMPOSE_OPTIONS $ENV_OPTIONS $VOLUMES -w "$(pwd)" $IMAGE ${docker_mode} "$@"
