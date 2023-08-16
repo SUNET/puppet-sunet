@@ -1,13 +1,15 @@
-# 389 ds class for SUNET
+# freeIPIA class for SUNET
 class sunet::freeipa(
   Array[String] $client_ips,
   String $dir_suffix,
   String $interface = 'ens3',
   String $freeipa_image  = 'quay.io/freeipa/freeipa-server',
   String $freeipa_tag    = 'fedora-38',
+  String $virtual_host   = 'dc.sunet.dev',
 )
 {
   $hostname = $facts['networking']['fqdn']
+  $ip_address = $facts['networking']['ip']
   $dir_manager_password = lookup('dir_manager_password')
   # Composefile
   sunet::docker_compose { 'freeipa':
@@ -15,9 +17,9 @@ class sunet::freeipa(
     service_name     => 'freeipa',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
-    description      => '389 DS',
+    description      => 'FreeIPA',
   }
-  $ports = [3389, 3636]
+  $ports = [53,80,88,123,389,443,464,636]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "ldap_port_${port}":
       allow_clients => $client_ips,

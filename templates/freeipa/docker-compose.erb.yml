@@ -7,25 +7,33 @@ services:
     image: <%= @freeipa_image %>:<%= @freeipa_tag %>
     hostname: <%= @hostname %>
     volumes:
+      - /sys/fs/cgroup/freeipa.scope:/sys/fs/cgroup:rw
+      - /dev/urandom:/dev/random:ro
       - /opt/freeipa/data:/data
+    tmpfs:
+      - /run
+      - /tmp
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    init: false
+    cgroup: host
+    security_opt:
+      - seccomp=unconfined
     environment:
       IPA_SERVER_HOSTNAME: <%= @hostname %>
       IPA_SERVER_INSTALL_OPTS: -U -r <%= @dir_suffix %>
-      IPA_SERVER_IP: 192.168.1.33
+      IPA_SERVER_IP: <%= @ip_address %>
       PASSWORD: "<%= @dir_manager_password %>"
       VIRTUAL_PROTO: https
-      VIRTUAL_HOST: <%= @hostname %>
+      VIRTUAL_HOST: <%= @virtual_host %>
       VIRTUAL_PORT: 443
     ports:
-      - 53/udp:53/udp
       - 53:53
       - 80:80
-      - 88/udp:88/udb
       - 88:88
-      - 123/udp:123/udp
+      - 123:123
       - 389:389
       - 443:443
-      - 464/udp:464/udp
       - 464:464
       - 636:636
     restart: always
