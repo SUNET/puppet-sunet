@@ -29,7 +29,7 @@ services:
     environment:
       IPA_SERVER_IP: <%= @ip_address %>
       VIRTUAL_PROTO: https
-      VIRTUAL_HOST: <%= @hostname %>
+      VIRTUAL_HOST: <%= @virtual_host %>
       VIRTUAL_PORT: 443
       TZ: "Europe/Stockholm"
     extra_hosts:
