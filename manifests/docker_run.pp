@@ -6,7 +6,7 @@ define sunet::docker_run(
   Array[String] $ports       = [],
   Array[String] $expose      = [],
   Array[String] $env         = [],
-  String $net                = lookup('sunet_docker_default_net', String, undef 'docker'),
+  String $net                = lookup('sunet_docker_default_net', String, undef, 'docker'),
   Optional[String] $command  = undef,
   Optional[String] $hostname = undef,
   $depends                   = [],  # should be array of strings, but need to fix usage first
