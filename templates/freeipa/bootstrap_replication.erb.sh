@@ -26,13 +26,13 @@ if [[ -z ${replica_id} ]]; then
   exit 1
 fi
 
-dsconf -D "cn=Directory Manager" -w "${dir_manager_password}" ldap://localhost:3389 backend create --suffix="dc=sunet,dc=dev" --be-name="sunet"
+dsconf -D "cn=Directory Manager" -w "${dir_manager_password}" ldap://localhost:389 backend create --suffix="dc=sunet,dc=dev" --be-name="sunet"
 dsconf -D "cn=Directory Manager" ldap://localhost:3389 replication enable --suffix="dc=sunet,dc=dev" \
   --role="supplier" --replica-id="${replica_id}" --bind-dn="cn=replication manager,cn=config" --bind-passwd="${repl_manager_password}"
 
 for site in "${sites[@]}"; do
-  dsconf -D "cn=Directory Manager" ldap://localhost:3389 repl-agmt create --suffix="dc=sunet,dc=dev" \
-    --host="internal-${site}-test-ldap-1.${domain}" --port=3636 --conn-protocol=LDAPS \
+  dsconf -D "cn=Directory Manager" ldap://localhost:389 repl-agmt create --suffix="dc=sunet,dc=dev" \
+    --host="internal-${site}-test-ldap-1.${domain}" --port=636 --conn-protocol=LDAPS \
     --bind-dn="cn=replication manager,cn=config" --bind-passwd="${repl_manager_password}" \
     --bind-method=SIMPLE --init "${home_base}-to-${site}"
 done

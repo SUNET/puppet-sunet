@@ -1,0 +1,32 @@
+# Adapted from https://github.com/michel4j/389ds/blob/master/docker-compose.yml
+
+version: "3.7"
+
+services:
+  ldap:
+    image: <%= @freeipa_image %>:<%= @freeipa_tag %>
+    hostname: <%= @hostname %>
+    volumes:
+      - /opt/freeipa/data:/data
+    environment:
+      IPA_SERVER_HOSTNAME: <%= @hostname %>
+      IPA_SERVER_INSTALL_OPTS: -U -r <%= @dir_suffix %>
+      IPA_SERVER_IP: 192.168.1.33
+      PASSWORD: "<%= @dir_manager_password %>"
+      VIRTUAL_PROTO: https
+      VIRTUAL_HOST: <%= @hostname %>
+      VIRTUAL_PORT: 443
+    ports:
+      - 53/udp:53/udp
+      - 53:53
+      - 80:80
+      - 88/udp:88/udb
+      - 88:88
+      - 123/udp:123/udp
+      - 389:389
+      - 443:443
+      - 464/udp:464/udp
+      - 464:464
+      - 636:636
+    restart: always
+
