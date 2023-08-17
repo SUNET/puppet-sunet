@@ -1,16 +1,15 @@
 # freeIPIA class for SUNET
 class sunet::freeipa(
-  Array[String] $client_ips,
-  String $dir_suffix,
   String $interface = 'ens3',
   String $freeipa_image  = 'quay.io/freeipa/freeipa-server',
   String $freeipa_tag    = 'fedora-38',
-  String $virtual_host   = 'dc.sunet.dev',
+  String $hostname   = 'dc.sunet.dev',
+  String $domain   = 'sunet.dev',
+  String $realm   = 'SUNET.DEV',
 )
 {
-  $hostname = $facts['networking']['fqdn']
   $ip_address = $facts['networking']['ip']
-  $dir_manager_password = lookup('dir_manager_password')
+  $password = lookup('dir_manager_password')
   # Composefile
   sunet::docker_compose { 'freeipa':
     content          => template('sunet/freeipa/docker-compose.erb.yml'),
@@ -22,7 +21,7 @@ class sunet::freeipa(
   $ports = [53,80,88,123,389,443,464,636]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "ldap_port_${port}":
-      allow_clients => $client_ips,
+      allow_clients => 'any',
       port          => $port,
       iif           => $interface,
     }
@@ -45,7 +44,7 @@ class sunet::freeipa(
   $ds_commands.each|$command|{
     file {"/usr/local/bin/${command}":
       ensure  => file,
-      content => inline_template("#!/bin/bash\ndocker exec -ti freeipa_ldap_1 ${command} \"\${@}\""),
+      content => inline_template("#!/bin/bash\ndocker exec -ti freeipa-ldap-1 ${command} \"\${@}\""),
       owner   => 'root',
       group   => 'root',
       mode    => '0744',
