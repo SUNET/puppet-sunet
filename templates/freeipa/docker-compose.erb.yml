@@ -43,6 +43,7 @@ services:
       - --http-pin=<%= @password %>
       - --dirsrv-pin=<%= @password %>
       - --ds-password=<%= @password %>
+      - --no-ntp
       - --unattended
     ports:
       - 53:53
