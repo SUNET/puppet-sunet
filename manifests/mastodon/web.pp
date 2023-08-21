@@ -10,6 +10,7 @@ class sunet::mastodon::web(
   String $redis_port               = '6379',
   String $redis_user               = 'admin',
   String $s3_bucket                = 'mastodon',
+  String $s3_alias_path            = '/swift/v1/f7ddf8916b054d22a4b8245e1df640ea',
   String $s3_hostname              = 's3.sto3.safedc.net',
   String $s3_port                  = '443',
   String $saml_idp_sso_target_url  = 'https://idp-proxy-social.sunet.se/idp/sso',
@@ -36,7 +37,6 @@ class sunet::mastodon::web(
   $vapid_private_key=safe_hiera('vapid_private_key')
 
   # Interpolated variables
-  $s3_endpoint = "https://${s3_hostname}:${s3_port}"
   $temp_array = split($vhost, '[.]')
   $smtp_user = $temp_array[0]
   $smtp_from_address = "${smtp_user}@sunet.se"
@@ -58,6 +58,13 @@ class sunet::mastodon::web(
     mode    => '0640',
     content => template('sunet/mastodon/web/mastodon.env.erb'),
   }
+  -> file { '/opt/mastodon_web/files-nginx-vhost.conf':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    content => template('sunet/mastodon/web/files-nginx-vhost.conf.erb'),
+  }
   -> file { '/usr/local/bin/tootctl':
     ensure  => file,
     owner   => 'root',
@@ -73,6 +80,11 @@ class sunet::mastodon::web(
       group  => 'root',
       mode   => '0751',
     }
+  }
+  file { '/opt/mastodon_web/files-nginx-www-root/':
+    ensure => 'directory',
+    recurse => true,
+    source => 'puppet:///modules/sunet/mastodon/www',
   }
   $nginx_dirs = ['acme', 'certs', 'conf', 'dhparam', 'html', 'vhost']
   $nginx_dirs.each | $dir| {
