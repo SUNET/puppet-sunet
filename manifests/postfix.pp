@@ -4,6 +4,7 @@ class sunet::postfix(
   String $interface = 'ens3',
   String $postfix_image  = 'docker.sunet.se/mail/postfix',
   String $postfix_tag    = '3.7.5-2-SUNET-1',
+  String $db_host        = 'internal-sto3-test-mail-1.mail.sunet.se',
 )
 {
   $hostname = $facts['networking']['fqdn']
@@ -29,13 +30,19 @@ class sunet::postfix(
   file { '/opt/postfix/config':
     ensure => directory,
   }
-  file { '/opt/postfix/config/main.cf':
-    ensure  => file,
-    content =>  template('sunet/postfix/main.erb.cf')
-  }
-  file { '/opt/postfix/config/master.cf':
-    ensure  => file,
-    content =>  template('sunet/postfix/master.erb.cf')
+  $config_files = [
+    'main',
+    'master',
+    'mysql-virtual-alias-maps',
+    'mysql-virtual-email2email',
+    'mysql-virtual-mailbox-domains',
+    'mysql-virtual-mailbox-maps'
+  ]
+  $config_files.each |$file| {
+    file { "/opt/postfix/config/${file}.cf":
+      ensure  => file,
+      content =>  template("sunet/postfix/${file}.erb.cf")
+    }
   }
 
 }
