@@ -1,6 +1,5 @@
 # 389 ds class for SUNET
 class sunet::postfix(
-  Array[String] $client_ips,
   String $interface = 'ens3',
   String $postfix_image  = 'docker.sunet.se/mail/postfix',
   String $postfix_tag    = '3.7.5-2-SUNET-1',
@@ -18,10 +17,10 @@ class sunet::postfix(
     compose_filename => 'docker-compose.yml',
     description      => 'Postfix',
   }
-  $ports = [1525, 587]
+  $ports = [25, 587]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
-      allow_clients => $client_ips,
+      allow_clients => 'any',
       port          =>  $port,
     }
   }

@@ -8,8 +8,14 @@ services:
     hostname: <%= @hostname %>
     volumes:
       - /opt/postfix/config:/config
+    command:
+      - postfix
+      - -v
+      - -c
+      - /config
+      - start-fg
     ports:
-      - 1525:1525
+      - 25:25
       - 587:587
     restart: always
 
