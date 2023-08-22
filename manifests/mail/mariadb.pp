@@ -1,5 +1,6 @@
 # Sunet mail db class
 class sunet::mail::mariadb () {
+  $postfix_password = safe_hiera('postfix_password')
   file { '/opt/mariadb/':
     ensure  => directory,
   }

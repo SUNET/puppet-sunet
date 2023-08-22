@@ -21,3 +21,5 @@ CREATE TABLE `mailserver`.`virtual_aliases` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (domain_id) REFERENCES virtual_domains(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE USER `postfix`@`%` IDENTIFIED BY '<%= @postfix_password %>';
+GRANT ALL ON mailserver.* to `postfix`@`%`;
