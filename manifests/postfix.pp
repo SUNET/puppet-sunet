@@ -22,7 +22,8 @@ class sunet::postfix(
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
-      port          =>  $port,
+      port          => $port,
+      iif           => $interface,
     }
   }
   file { '/opt/postfix/config':
