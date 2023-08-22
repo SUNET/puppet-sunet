@@ -16,12 +16,12 @@ smtp      inet  n       -       y       -       -       smtpd
 #tlsproxy  unix  -       -       y       -       0       tlsproxy
 # Choose one: enable submission for loopback clients only, or for any client.
 #127.0.0.1:submission inet n -   y       -       -       smtpd
-#submission inet n       -       y       -       -       smtpd
-#  -o syslog_name=postfix/submission
-#  -o smtpd_tls_security_level=encrypt
-#  -o smtpd_sasl_auth_enable=yes
-#  -o smtpd_tls_auth_only=yes
-#  -o smtpd_reject_unlisted_recipient=no
+submission inet n       -       y       -       -       smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_tls_security_level=encrypt
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_tls_auth_only=yes
+  -o smtpd_reject_unlisted_recipient=no
 #     Instead of specifying complex smtpd_<xxx>_restrictions here,
 #     specify "smtpd_<xxx>_restrictions=$mua_<xxx>_restrictions"
 #     here, and specify mua_<xxx>_restrictions in main.cf (where
