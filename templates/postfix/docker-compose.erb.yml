@@ -15,7 +15,7 @@ services:
       - /config
       - start-fg
     ports:
-      - 25:25
+      - "25:25"
       - 587:587
     restart: always
 
