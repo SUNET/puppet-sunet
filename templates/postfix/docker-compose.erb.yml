@@ -9,11 +9,7 @@ services:
     volumes:
       - /opt/postfix/config:/config
     command:
-      - postfix
-      - -v
-      - -c
-      - /config
-      - start-fg
+      - /start.sh
     ports:
       - "25:25"
       - 587:587
