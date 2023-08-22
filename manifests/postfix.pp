@@ -7,6 +7,7 @@ class sunet::postfix(
   String $db_host        = 'internal-sto3-test-mail-1.mail.sunet.se',
 )
 {
+  $db_password = safe_hiera('db_password')
   $hostname = $facts['networking']['fqdn']
   # FIXME: Use acme certs
   $smtpd_tls_cert_file='/etc/ssl/certs/ssl-cert-snakeoil.pem'
