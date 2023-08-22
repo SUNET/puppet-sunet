@@ -3,7 +3,7 @@ class sunet::postfix(
   String $domain = 'sunet.dev',
   String $interface = 'ens3',
   String $postfix_image  = 'docker.sunet.se/mail/postfix',
-  String $postfix_tag    = '3.7.5-2-SUNET-1',
+  String $postfix_tag    = 'SUNET-1',
   String $db_host        = 'internal-sto3-test-mail-1.mail.sunet.se',
 )
 {
