@@ -1,5 +1,6 @@
 # 389 ds class for SUNET
 class sunet::postfix(
+  String $domain = 'sunet.dev',
   String $interface = 'ens3',
   String $postfix_image  = 'docker.sunet.se/mail/postfix',
   String $postfix_tag    = '3.7.5-2-SUNET-1',
