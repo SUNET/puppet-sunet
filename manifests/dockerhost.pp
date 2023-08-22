@@ -16,8 +16,8 @@ class sunet::dockerhost(
   Optional[Array[String]] $tcp_bind           = undef,
   Boolean $write_daemon_config                = false,
   Boolean $enable_ipv6                        = false,
-  Optional[String] $compose_in_docker_version,
-  Optional[String] $compose_in_docker_image,
+  Optional[String] $compose_in_docker_version = undef,
+  Optional[String] $compose_in_docker_image   = undef,
 ) {
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
