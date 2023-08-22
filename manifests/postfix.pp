@@ -4,7 +4,7 @@ class sunet::postfix(
   String $interface = 'ens3',
   String $postfix_image  = 'docker.sunet.se/mail/postfix',
   String $postfix_tag    = 'SUNET-1',
-  String $db_host        = 'internal-sto3-test-mail-1.mail.sunet.se',
+  String $db_host        = 'internal-sto3-test-db-1.mail.sunet.se',
 )
 {
   $db_password = safe_hiera('db_password')
