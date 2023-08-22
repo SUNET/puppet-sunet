@@ -1,0 +1,5 @@
+user = postfix
+password = <%= @db_password %>
+hosts = <%= @db_host %>
+dbname = mailserver
+query = SELECT 1 FROM virtual_users WHERE email='%s'
