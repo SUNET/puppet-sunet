@@ -15,7 +15,7 @@ class sunet::postfix(
   $config = lookup($my_environment)
   $db_hosts = join($config['db_hosts'], ' ')
 
-  $db_password = safe_hiera('db_password')
+  $db_password = lookup('db_password')
 
 
   # FIXME: Use acme certs
