@@ -1,14 +1,23 @@
 # 389 ds class for SUNET
 class sunet::postfix(
-  String $domain = 'sunet.dev',
-  String $interface = 'ens3',
-  String $postfix_image  = 'docker.sunet.se/mail/postfix',
-  String $postfix_tag    = 'SUNET-1',
-  String $db_host        = 'internal-sto3-test-db-1.mail.sunet.se',
+  String $domain                 = 'sunet.dev',
+  String $interface              = 'ens3',
+  String $postfix_image          = 'docker.sunet.se/mail/postfix',
+  String $postfix_tag            = 'SUNET-1',
 )
 {
-  $db_password = safe_hiera('db_password')
+
   $hostname = $facts['networking']['fqdn']
+  # This looks esoteric, a longer example for parsing the hostname is available here:
+  # https://wiki.sunet.se/display/sunetops/Platform+naming+standards#Platformnamingstandards-Parsingthename
+  $my_environment = split(split($hostname, '[.]')[0],'[-]')[2]
+
+  $config = lookup($my_environment)
+  $db_hosts = join($config['db_hosts'], ' ')
+
+  $db_password = safe_hiera('db_password')
+
+
   # FIXME: Use acme certs
   $smtpd_tls_cert_file='/etc/ssl/certs/ssl-cert-snakeoil.pem'
   $smtpd_tls_key_file='/etc/ssl/private/ssl-cert-snakeoil.key'
