@@ -1,8 +1,8 @@
 # Mariadb cluster class for SUNET
 class sunet::mariadb(
   String $wsrep_cluster_address,
-  Array[String] $client_ips,
   Integer $id,
+  Array[String] $client_ips = 'any',
   String $interface = 'ens3',
 )
 {
