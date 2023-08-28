@@ -67,5 +67,12 @@ class sunet::mail::dovecot(
       content =>  template("sunet/mail/dovecot/${file}.erb.conf")
     }
   }
+  $commands = ['doveadm', 'doveconf', 'dovecot', 'dovecot-sysreport']
+  $commands.each |$command| {
+    file { "/usr/local/bin/${command}":
+      ensure  => file,
+      content =>  inline_template("#!/bin/bash\ndocker exec -ti dovecot_dovecot_1 ${command} \${@}\n")
+    }
+  }
 
 }
