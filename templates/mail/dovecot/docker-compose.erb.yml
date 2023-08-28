@@ -3,7 +3,7 @@
 version: "3.7"
 
 services:
-  postfix:
+  dovecot:
     image: <%= @dovecot_image %>:<%= @dovecot_tag %>
     hostname: <%= @hostname %>
     volumes:
@@ -15,5 +15,6 @@ services:
     ports:
       - "143:143"
       - 993:993
+      - 12345:12345
     restart: always
 
