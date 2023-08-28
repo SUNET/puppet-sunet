@@ -2,7 +2,7 @@
 class sunet::mariadb(
   String $wsrep_cluster_address,
   Integer $id,
-  Array[String] $client_ips = 'any',
+  Array[String] $client_ips = ['any'],
   String $interface = 'ens3',
 )
 {
