@@ -1,9 +1,10 @@
-# 389 ds class for SUNET
-class sunet::postfix(
+# Dovecot for SUNET mail
+class sunet::mail::dovecot(
+  String $replication_partner,
   String $domain                 = 'sunet.dev',
   String $interface              = 'ens3',
-  String $postfix_image          = 'docker.sunet.se/mail/postfix',
-  String $postfix_tag            = 'SUNET-1',
+  String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
+  String $dovecot_tag            = 'SUNET-1',
 )
 {
 
@@ -13,23 +14,24 @@ class sunet::postfix(
   $my_environment = split(split($hostname, '[.]')[0],'[-]')[2]
 
   $config = lookup($my_environment)
-  $db_hosts = join($config['db_hosts'], ' ')
+  $db_hosts = join($config['db_hosts'], ' host=')
 
   $db_password = lookup('db_password')
+  $db_password = lookup('replication_password')
 
 
   # FIXME: Use acme certs
-  $smtpd_tls_cert_file='/etc/ssl/certs/ssl-cert-snakeoil.pem'
-  $smtpd_tls_key_file='/etc/ssl/private/ssl-cert-snakeoil.key'
+  $ssl_cert='/etc/ssl/certs/ssl-cert-snakeoil.pem'
+  $ssl_key='/etc/ssl/private/ssl-cert-snakeoil.key'
   # Composefile
-  sunet::docker_compose { 'postfix':
-    content          => template('sunet/postfix/docker-compose.erb.yml'),
-    service_name     => 'postfix',
+  sunet::docker_compose { 'dovecot':
+    content          => template('sunet/mail/dovecot/docker-compose.erb.yml'),
+    service_name     => 'dovecot',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
-    description      => 'Postfix',
+    description      => 'Dovecot',
   }
-  $ports = [25, 587]
+  $ports = [143, 993]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
@@ -37,21 +39,20 @@ class sunet::postfix(
       iif           => $interface,
     }
   }
-  file { '/opt/postfix/config':
+  file { '/opt/dovecot/mail':
+    ensure => directory,
+  }
+  file { '/opt/dovecot/config':
     ensure => directory,
   }
   $config_files = [
-    'main',
-    'master',
-    'mysql-virtual-alias-maps',
-    'mysql-virtual-email2email',
-    'mysql-virtual-mailbox-domains',
-    'mysql-virtual-mailbox-maps'
+    'dovecot',
+    'dovecot-sql',
   ]
   $config_files.each |$file| {
-    file { "/opt/postfix/config/${file}.cf":
+    file { "/opt/dovecot/config/${file}.conf":
       ensure  => file,
-      content =>  template("sunet/postfix/${file}.erb.cf")
+      content =>  template("sunet/dovecot/${file}.erb.conf")
     }
   }
 

@@ -1,0 +1,19 @@
+# Adapted from https://github.com/michel4j/389ds/blob/master/docker-compose.yml
+
+version: "3.7"
+
+services:
+  postfix:
+    image: <%= @dovecot_image %>:<%= @dovecot_tag %>
+    hostname: <%= @hostname %>
+    volumes:
+      - /opt/dovecot/config:/etc/dovecot/
+      - /opt/dovecot/mail:/var/mail/
+    command:
+      - /usr/sbin/dovecot
+      - -F
+    ports:
+      - "143:143"
+      - 993:993
+    restart: always
+
