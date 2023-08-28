@@ -52,7 +52,7 @@ class sunet::mail::dovecot(
   $config_files.each |$file| {
     file { "/opt/dovecot/config/${file}.conf":
       ensure  => file,
-      content =>  template("sunet/dovecot/${file}.erb.conf")
+      content =>  template("sunet/mail/dovecot/${file}.erb.conf")
     }
   }
 
