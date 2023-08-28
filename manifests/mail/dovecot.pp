@@ -41,6 +41,18 @@ class sunet::mail::dovecot(
   }
   file { '/opt/dovecot/mail':
     ensure => directory,
+    owner  => 'mail',
+    group  => 'mail',
+  }
+  file { '/opt/dovecot/mail/vhosts':
+    ensure => directory,
+    owner  => 'mail',
+    group  => 'mail',
+  }
+  file { "/opt/dovecot/mail/${domain}":
+    ensure => directory,
+    owner  => 'mail',
+    group  => 'mail',
   }
   file { '/opt/dovecot/config':
     ensure => directory,
