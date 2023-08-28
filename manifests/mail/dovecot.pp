@@ -17,7 +17,7 @@ class sunet::mail::dovecot(
   $db_hosts = join($config['db_hosts'], ' host=')
 
   $db_password = lookup('db_password')
-  $db_password = lookup('replication_password')
+  $replication_password = lookup('replication_password')
 
 
   # FIXME: Use acme certs
