@@ -7,6 +7,9 @@
 #
 
 require 'ipaddr'
+def debug(*arguments)
+  call_function('debug', arguments)
+end
 
 Puppet::Functions.create_function(:is_ipaddr) do
   def is_ipaddr(*arguments)
