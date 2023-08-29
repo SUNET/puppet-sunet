@@ -8,7 +8,7 @@ define sunet::ssh_keyscan::host (
   $hostsfile = '/etc/ssh/sunet_keyscan_hosts.txt'
   ensure_resource('class','sunet::ssh_keyscan', {hostsfile => $hostsfile})
   $the_address = $address ? {
-    undef   => dnsLookup($title),
+    undef   => dns_lookup($title),
     default => [$address]
   }
   validate_array($the_address)
