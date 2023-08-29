@@ -9,7 +9,7 @@ module Puppet
     # value to interrupt puppet completely (because it makes for a catch 22 problem
     # in bootstrapping new machines).
     module Functions
-      newfunction(:safe_hiera, type=> :rvalue) do |args|
+      newfunction(:safe_hiera, type => :rvalue) do |args|
         value = if Facter.value(:puppetversion).start_with? '3.7.'
                   # Puppet 3.7
                   function_hiera([args[0], 'NOT_SET_IN_HIERA'])
