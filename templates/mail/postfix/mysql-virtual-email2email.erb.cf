@@ -2,4 +2,4 @@ user = postfix
 password = <%= @db_password %>
 hosts = <%= @db_hosts %>
 dbname = mailserver
-query = SELECT email FROM virtual_users WHERE email=%s
+query = SELECT email FROM virtual_users WHERE email='%s'
