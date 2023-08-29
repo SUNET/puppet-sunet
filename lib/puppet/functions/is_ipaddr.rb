@@ -34,22 +34,26 @@ Puppet::Functions.create_function(:is_ipaddr) do
         false
       end
       unless this_addr
-        debug("#{this} is not an IP address")
+        my_debug("#{this} is not an IP address")
         return false
       end
 
       if ipver == 4 && !this_addr.ipv4?
-        debug("#{this} is not an IPv4 address")
+        my_debug("#{this} is not an IPv4 address")
         return false
       end
 
       if ipver == 6 && !this_addr.ipv6?
-        debug("#{this} is not an IPv6 address")
+        my_debug("#{this} is not an IPv6 address")
         return false
       end
     end
 
-    debug("All inputs #{addr} found to be IP (#{ipver}) address(es).")
+    my_debug("All inputs #{addr} found to be IP (#{ipver}) address(es).")
     true
+  end
+
+  def my_debug(*arguments)
+    call_function('debug', arguments)
   end
 end
