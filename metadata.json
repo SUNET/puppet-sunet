@@ -9,7 +9,13 @@
   "issues_url": "https://github.com/SUNET/puppet-sunet/issues",
   "description": "Slices and dices - mostly ubuntu",
   "dependencies": [
-    { "name": "puppetlabs/stdlib" },
-    { "name": "puppetlabs/concat" }
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">= 4.25.0"
+    },
+    {
+      "name": "puppetlabs/concat",
+      "version_requirement": ">= 4.1.0"
+    }
   ]
 }
