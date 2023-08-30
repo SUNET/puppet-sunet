@@ -47,4 +47,9 @@ recipient_delimiter = +
 inet_interfaces = all
 inet_protocols = all
 
+# Authentication
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+
 virtual_transport = lmtp:imap.sunet.dev:24
