@@ -3,8 +3,6 @@ class sunet::ssh_keyscan(
   String $hostsfile,
   String $keyfile = '/etc/ssh/ssh_known_hosts',
 ) {
-  require stdlib
-  require concat
   exec {'sunet_ssh-keyscan':
     command     => "ssh-keyscan -f ${hostsfile} > ${keyfile}.scan && mv ${keyfile}.scan ${keyfile}",
     refreshonly => false,

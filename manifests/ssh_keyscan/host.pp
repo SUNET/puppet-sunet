@@ -3,8 +3,6 @@ define sunet::ssh_keyscan::host (
   Array $aliases = [],
   Optional[String] $address = undef,
 ) {
-  require stdlib
-  require concat
   $hostsfile = '/etc/ssh/sunet_keyscan_hosts.txt'
   ensure_resource('class','sunet::ssh_keyscan', {hostsfile => $hostsfile})
   $the_address = $address ? {
