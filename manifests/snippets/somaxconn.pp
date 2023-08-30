@@ -1,6 +1,5 @@
 # somaxconn
 define sunet::snippets::somaxconn($maxconn=512) {
-  require stdlib
   $cfg = "/etc/sysctl.d/${title}_somaxconn.conf";
   file { $cfg:
     ensure  => file,
