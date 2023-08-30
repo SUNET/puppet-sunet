@@ -4,7 +4,6 @@
 # Bonding requires setup in /etc/network/interfaces as well.
 #
 define sunet::snippets::ethernet_bonding() {
-  require stdlib
   if $facts['is_virtual'] == 'false' and $facts['os']['name'] == 'Ubuntu' {
     if $facts['os']['release']['full'] <= '12.04' {
       package {'ifenslave': ensure => 'present' }

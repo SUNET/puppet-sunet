@@ -1,6 +1,5 @@
 # Disable bridge nf
 define sunet::snippets::disable_bridge_nf() {
-  require stdlib
   augeas { 'server_bridge_nf_config':
     context => '/files/etc/sysctl.d/10-bridge-nf.conf',
     changes => [

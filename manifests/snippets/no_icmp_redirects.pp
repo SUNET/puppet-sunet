@@ -1,6 +1,5 @@
 # No icmp redirects
 define sunet::snippets::no_icmp_redirects($order=10) {
-  require stdlib
   $cfg = "/etc/sysctl.d/${order}_${title}.conf";
   file { $cfg:
     ensure  => file,
