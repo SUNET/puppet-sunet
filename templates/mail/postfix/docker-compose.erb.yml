@@ -11,6 +11,8 @@ services:
       - 'ACME_URL=http://acme-c.sunet.se/'
   postfix:
     image: <%= @postfix_image %>:<%= @postfix_tag %>
+    dns:
+      - 89.32.32.32
     hostname: <%= @hostname %>
     volumes:
       - /opt/postfix/config:/config

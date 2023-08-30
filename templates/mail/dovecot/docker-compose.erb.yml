@@ -13,6 +13,8 @@ services:
       - 'ACME_URL=http://acme-c.sunet.se/'
   dovecot:
     image: <%= @dovecot_image %>:<%= @dovecot_tag %>
+    dns:
+      - 89.32.32.32
     hostname: <%= @hostname %>
     volumes:
       - /opt/dovecot/config:/etc/dovecot/
