@@ -14,6 +14,7 @@ services:
     hostname: <%= @hostname %>
     volumes:
       - /opt/postfix/config:/config
+      - /etc/dehydrated/certs/:/certs
     command:
       - /start.sh
     ports:

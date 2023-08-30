@@ -20,9 +20,8 @@ class sunet::mail::dovecot(
   $replication_password = lookup('replication_password')
 
 
-  # FIXME: Use acme certs
-  $ssl_cert='/etc/ssl/certs/ssl-cert-snakeoil.pem'
-  $ssl_key='/etc/ssl/private/ssl-cert-snakeoil.key'
+  $ssl_cert="/certs/imap.${domain}.crt"
+  $ssl_key="/certs/imap.${domain}.key"
   # Composefile
   sunet::docker_compose { 'dovecot':
     content          => template('sunet/mail/dovecot/docker-compose.erb.yml'),

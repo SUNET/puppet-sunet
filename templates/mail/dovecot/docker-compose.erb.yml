@@ -17,6 +17,7 @@ services:
     volumes:
       - /opt/dovecot/config:/etc/dovecot/
       - /opt/dovecot/mail:/var/mail/
+      - /etc/dehydrated/certs/:/certs
     command:
       - /usr/sbin/dovecot
       - -F

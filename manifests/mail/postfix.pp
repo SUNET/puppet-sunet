@@ -18,9 +18,8 @@ class sunet::mail::postfix(
   $db_password = lookup('db_password')
 
 
-  # FIXME: Use acme certs
-  $smtpd_tls_cert_file='/etc/ssl/certs/ssl-cert-snakeoil.pem'
-  $smtpd_tls_key_file='/etc/ssl/private/ssl-cert-snakeoil.key'
+  $smtpd_tls_cert_file="/certs/smtp.${domain}.crt"
+  $smtpd_tls_key_file="/certs/smtp.${domain}.key"
   # Composefile
   sunet::docker_compose { 'postfix':
     content          => template('sunet/mail/postfix/docker-compose.erb.yml'),
