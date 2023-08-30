@@ -1,6 +1,5 @@
 # keygen
 define sunet::snippets::keygen($key_file=undef,$cert_file=undef,$size=4096,$days=3650) {
-  require stdlib
   exec { "${title}_key":
     command => "openssl genrsa -out ${key_file} ${size}",
     onlyif  => "test ! -f ${key_file}",

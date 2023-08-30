@@ -7,7 +7,6 @@ define sunet::snippets::secret_file(
   $mode      = '0400',
   $base64    = false
 ) {
-  require stdlib
   $thefile = $path ? {
     undef    => $name,
     default  => $path

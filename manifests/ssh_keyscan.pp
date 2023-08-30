@@ -1,6 +1,3 @@
-require stdlib
-require concat
-
 class sunet::ssh_keyscan(
   String $hostsfile,
   String $keyfile = '/etc/ssh/ssh_known_hosts',
