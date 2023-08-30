@@ -1,8 +1,5 @@
 # Create/start a KVM virtual machine
 # inspired by http://blogs.thehumanjourney.net/oaubuntu/entry/kvm_vmbuilder_puppet_really_automated
-
-require stdlib
-
 define sunet::kvm_base(
   $repo,
   $tagpattern,
