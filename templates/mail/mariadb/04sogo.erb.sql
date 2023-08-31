@@ -46,9 +46,9 @@
 --   MySQL4Encoding = "utf8mb4";
 --
 ------------------------------------------------------------
-CREATE DATABASE sogo;
+CREATE DATABASE IF NOT EXISTS sogo;
 USE sogo;
-CREATE TABLE sogo_acl (
+CREATE TABLE IF NOT EXISTS sogo_acl (
 	c_folder_id int(11)      NOT NULL,
 	c_object    varchar(255) NOT NULL,
 	c_uid       varchar(255) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE sogo_acl (
 	KEY sogo_acl_c_uid_idx (c_uid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
-CREATE TABLE sogo_alarms_folder (
+CREATE TABLE IF NOT EXISTS sogo_alarms_folder (
 	c_path          varchar(255) NOT NULL,
 	c_name          varchar(255) NOT NULL,
 	c_uid           varchar(255) NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE sogo_alarms_folder (
 	c_alarm_date    int(11)      NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
-CREATE TABLE sogo_cache_folder (
+CREATE TABLE IF NOT EXISTS sogo_cache_folder (
 	c_uid          varchar(255) NOT NULL,
 	c_path         varchar(255) NOT NULL,
 	c_parent_path  varchar(255) DEFAULT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE sogo_cache_folder (
 	PRIMARY KEY (c_uid,c_path)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
-CREATE TABLE sogo_folder_info (
+CREATE TABLE IF NOT EXISTS sogo_folder_info (
 	c_folder_id      bigint(20)    unsigned NOT NULL AUTO_INCREMENT,
 	c_path           varchar(255)  NOT NULL,
 	c_path1          varchar(255)  NOT NULL,
@@ -95,7 +95,7 @@ CREATE TABLE sogo_folder_info (
 	UNIQUE KEY c_folder_id (c_folder_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
-CREATE TABLE sogo_quick_appointment (
+CREATE TABLE IF NOT EXISTS sogo_quick_appointment (
 	c_folder_id      int(11)       NOT NULL,
 	c_name           varchar(255)  NOT NULL,
 	c_uid            varchar(255)  NOT NULL,
@@ -123,7 +123,7 @@ CREATE TABLE sogo_quick_appointment (
 	PRIMARY KEY (c_folder_id,c_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
-CREATE TABLE sogo_quick_contact (
+CREATE TABLE IF NOT EXISTS sogo_quick_contact (
 	c_folder_id       int(11)      NOT NULL,
 	c_name            varchar(255) NOT NULL,
 	c_givenname       varchar(255) DEFAULT NULL,
@@ -141,7 +141,7 @@ CREATE TABLE sogo_quick_contact (
 	PRIMARY KEY (c_folder_id,c_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
-CREATE TABLE sogo_sessions_folder (
+CREATE TABLE IF NOT EXISTS sogo_sessions_folder (
 	c_id           varchar(255) NOT NULL,
 	c_value        varchar(255) NOT NULL,
 	c_creationdate int(11)      NOT NULL,
@@ -149,7 +149,7 @@ CREATE TABLE sogo_sessions_folder (
 	PRIMARY KEY (c_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
-CREATE TABLE sogo_store (
+CREATE TABLE IF NOT EXISTS sogo_store (
 	c_folder_id    int(11)      NOT NULL,
 	c_name         varchar(255) NOT NULL DEFAULT '',
 	c_content      mediumtext   NOT NULL,
@@ -160,11 +160,19 @@ CREATE TABLE sogo_store (
 	PRIMARY KEY (c_folder_id,c_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 
-CREATE TABLE sogo_user_profile (
+CREATE TABLE IF NOT EXISTS sogo_user_profile (
 	c_uid      varchar(255) NOT NULL,
 	c_defaults longtext,
 	c_settings longtext,
 	PRIMARY KEY (c_uid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
-CREATE USER `sogo`@`%` IDENTIFIED BY '<%= @sogo_password %>';
+CREATE TABLE IF NOT EXISTS sogo_users (
+	c_uid       varchar(255) NOT NULL,
+	c_name      varchar(255) NOT NULL DEFAULT '',
+	c_password  varchar(255) NOT NULL DEFAULT '',
+	c_cn        varchar(255) NOT NULL DEFAULT '',
+	c_mail      text         DEFAULT NULL,
+	PRIMARY KEY (c_uid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
+CREATE USER IF NOT EXISTS `sogo`@`%` IDENTIFIED BY '<%= @sogo_password %>';
 GRANT ALL ON sogo.* to `sogo`@`%`;
