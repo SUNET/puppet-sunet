@@ -46,7 +46,7 @@
 --   MySQL4Encoding = "utf8mb4";
 --
 ------------------------------------------------------------
-CREATE DATABASE sogo IF NOT EXISTS;
+CREATE DATABASE sogo;
 USE sogo;
 CREATE TABLE sogo_acl (
 	c_folder_id int(11)      NOT NULL,
