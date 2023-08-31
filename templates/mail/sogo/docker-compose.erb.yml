@@ -1,0 +1,24 @@
+version: "3.7"
+
+services:
+  always-https:
+    image: docker.sunet.se/always-https
+    dns:
+      - 89.32.32.32
+    ports:
+      - '80:80'
+    environment:
+      - 'ACME_URL=http://acme-c.sunet.se/'
+  postfix:
+    image: <%= @sogo_image %>:<%= @sogo_tag %>
+    dns:
+      - 89.32.32.32
+    hostname: <%= @hostname %>
+    volumes:
+      - /opt/sogo/config:/etc/sogo
+      - /etc/dehydrated/certs/mail.<%= @domain %>/cert.pem:/usr/local/apache2/conf/server.crt
+      - /etc/dehydrated/certs/mail.<%= @domain %>/privkey.pem:/usr/local/apache2/conf/server.key
+    ports:
+      - 443:443
+    restart: always
+
