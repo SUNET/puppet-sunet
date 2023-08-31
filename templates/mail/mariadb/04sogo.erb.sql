@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS sogo_users (
 	c_name      varchar(255) NOT NULL DEFAULT '',
 	c_password  varchar(255) NOT NULL DEFAULT '',
 	c_cn        varchar(255) NOT NULL DEFAULT '',
-	c_mail      text         DEFAULT NULL,
+	mail        text         DEFAULT NULL,
 	PRIMARY KEY (c_uid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 ROW_FORMAT=DYNAMIC;
 CREATE USER IF NOT EXISTS `sogo`@`%` IDENTIFIED BY '<%= @sogo_password %>';
