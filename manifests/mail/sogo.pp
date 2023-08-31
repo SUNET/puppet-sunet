@@ -2,8 +2,8 @@
 class sunet::mail::sogo(
   String $domain                 = 'sunet.dev',
   String $interface              = 'ens3',
-  String $postfix_image          = 'docker.sunet.se/mail/sogo',
-  String $postfix_tag            = 'SUNET-1',
+  String $sogo_image          = 'docker.sunet.se/mail/sogo',
+  String $sogo_tag            = 'SUNET-1',
 )
 {
 
