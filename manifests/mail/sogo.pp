@@ -13,7 +13,11 @@ class sunet::mail::sogo(
   $my_environment = split(split($hostname, '[.]')[0],'[-]')[2]
 
   $config = lookup($my_environment)
-  $db_hosts = join($config['db_hosts'], ' ')
+  $db_hosts = $config['db_hosts']
+  $db_ips = $db_hosts.map |$host| {
+    $addrs = dns_lookup($host)
+    $addrs[0]
+  }
 
   $db_password = lookup('db_password')
 

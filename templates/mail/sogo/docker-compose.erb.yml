@@ -9,7 +9,7 @@ services:
       - '80:80'
     environment:
       - 'ACME_URL=http://acme-c.sunet.se/'
-  postfix:
+  web:
     image: <%= @sogo_image %>:<%= @sogo_tag %>
     dns:
       - 89.32.32.32
@@ -18,6 +18,12 @@ services:
       - /opt/sogo/config:/etc/sogo
       - /etc/dehydrated/certs/mail.<%= @domain %>/cert.pem:/usr/local/apache2/conf/server.crt
       - /etc/dehydrated/certs/mail.<%= @domain %>/privkey.pem:/usr/local/apache2/conf/server.key
+  <%- unless @db_ips.empty? -%>
+    extra_hosts:
+    <%- @db_ips.each do |ip| -%>
+      - "sogo-db: <%= ip %>"
+    <%- end -%>
+  <%- end -%>
     ports:
       - 443:443
     restart: always
