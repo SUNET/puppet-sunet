@@ -47,6 +47,9 @@ recipient_delimiter = +
 inet_interfaces = all
 inet_protocols = all
 
+# Relay via mailfilter
+relayhost = <%= @relay_hosts %>
+
 # Authentication
 smtpd_sasl_type = dovecot
 smtpd_sasl_path = inet:imap.<%= @domain %>:12346

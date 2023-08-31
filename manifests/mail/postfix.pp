@@ -4,6 +4,7 @@ class sunet::mail::postfix(
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
+  Array[String] $relay_servers   = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
 )
 {
 
@@ -14,7 +15,7 @@ class sunet::mail::postfix(
 
   $config = lookup($my_environment)
   $db_hosts = join($config['db_hosts'], ' ')
-
+  $relay_hosts = join($relay_servers, ', ')
   $db_password = lookup('db_password')
 
 
