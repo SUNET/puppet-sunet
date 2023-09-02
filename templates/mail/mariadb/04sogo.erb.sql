@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS sogo_quick_contact (
 
 CREATE TABLE IF NOT EXISTS sogo_sessions_folder (
 	c_id           varchar(255) NOT NULL,
-	c_value        varchar(255) NOT NULL,
+	c_value        varchar(8192) NOT NULL,
 	c_creationdate int(11)      NOT NULL,
 	c_lastseen     int(11)      NOT NULL,
 	PRIMARY KEY (c_id)
