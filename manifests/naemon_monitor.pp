@@ -19,8 +19,6 @@ class sunet::naemon_monitor(
   Optional[String] $default_host_group = undef,
 ){
 
-  require stdlib
-
   if $::facts['sunet_nftables_enabled'] == 'yes' {
       sunet::nftables::docker_expose { 'allow_http' :
       iif           => $interface,

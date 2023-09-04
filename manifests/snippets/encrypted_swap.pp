@@ -1,6 +1,5 @@
 # Encrypted swap
 define sunet::snippets::encrypted_swap() {
-  require stdlib
 
   package { 'ecryptfs-utils':
     ensure => 'installed'
