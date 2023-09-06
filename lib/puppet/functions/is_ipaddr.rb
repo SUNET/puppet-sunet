@@ -10,7 +10,7 @@ require 'ipaddr'
 
 Puppet::Functions.create_function(:is_ipaddr) do
   def is_ipaddr(*arguments)
-    err('Invalid use of function is_ipaddr') if arguments.empty? || arguments.size > 2
+    my_err('Invalid use of function is_ipaddr') if arguments.empty? || arguments.size > 2
 
     addr = arguments[0]
     ipver = arguments[1]
@@ -18,12 +18,12 @@ Puppet::Functions.create_function(:is_ipaddr) do
     addr = [addr] if addr.instance_of? String
 
     unless addr.instance_of? Array
-      err("First argument to is_ipaddr is not a string or array: #{addr}")
+      my_err("First argument to is_ipaddr is not a string or array: #{addr}")
       return false
     end
 
     if arguments.size == 2 && !ipver.is_a?(Integer)
-      err("Second argument to is_ipaddr is not an integer: #{ipver}")
+      my_err("Second argument to is_ipaddr is not an integer: #{ipver}")
       return false
     end
 
@@ -55,5 +55,8 @@ Puppet::Functions.create_function(:is_ipaddr) do
 
   def my_debug(*arguments)
     call_function('debug', arguments)
+  end
+  def my_err(*arguments)
+    call_function('err', arguments)
   end
 end
