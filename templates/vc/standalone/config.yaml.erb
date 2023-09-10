@@ -5,14 +5,14 @@ common:
   production: <%= @production %>
   basic_auth:
     ladok: xyz
+  log:
+    level:
+    folder_path: "/var/log/sunet"
 
 issuer:
   api_server:
     addr: vc_issuer:8080
   http_proxy:
-  log:
-    level:
-    folder_path: "/var/log/sunet"
   ca:
     addr: "<%= @ca_pdfsign_url %>"
     token: "<%= @ca_token %>"
