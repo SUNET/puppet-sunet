@@ -14,6 +14,7 @@ services:
     volumes:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
     depends_on:
       - vc_redis
       - vc_mongo
@@ -34,6 +35,7 @@ services:
     volumes:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
     depends_on:
       - vc_redis
       - vc_mongo
@@ -53,6 +55,7 @@ services:
     volumes:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
     depends_on:
       - vc_redis
       - vc_mongo
