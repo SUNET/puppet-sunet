@@ -19,8 +19,8 @@ class sunet::mail::postfix(
   $db_password = lookup('db_password')
 
 
-  $smtpd_tls_cert_file="/certs/smtp.${domain}.crt"
-  $smtpd_tls_key_file="/certs/smtp.${domain}.key"
+  $smtpd_tls_cert_file="/certs/smtp.${domain}/fullchain.pem"
+  $smtpd_tls_key_file="/certs/smtp.${domain}/privkey.pem"
   # Composefile
   sunet::docker_compose { 'postfix':
     content          => template('sunet/mail/postfix/docker-compose.erb.yml'),

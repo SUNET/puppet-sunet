@@ -20,8 +20,8 @@ class sunet::mail::dovecot(
   $replication_password = lookup('replication_password')
 
 
-  $ssl_cert="/certs/imap.${domain}.crt"
-  $ssl_key="/certs/imap.${domain}.key"
+  $ssl_cert="/certs/imap.${domain}/fullchain.pem"
+  $ssl_key="/certs/imap.${domain}/privkey.pem"
   # Composefile
   sunet::docker_compose { 'dovecot':
     content          => template('sunet/mail/dovecot/docker-compose.erb.yml'),
