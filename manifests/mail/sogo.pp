@@ -14,7 +14,7 @@ class sunet::mail::sogo(
   # SOGoSAML2IdpMetadataLocation
   $idp_metadata='/etc/sogo/metadata.xml'
   # SOGoSAML2IdpPublicKeyLocation
-  $idp_pubkey='/etc/sogo/idp-pubkey.pem'
+  $idp_pubkey='/etc/sogo/idp-cert.pem'
   # SOGoSAML2IdpCertificateLocation
   $idp_cert='/etc/sogo/idp-cert.pem'
   # SOGoSAML2LoginAttribute
