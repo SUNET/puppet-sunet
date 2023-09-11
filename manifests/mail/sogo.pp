@@ -21,9 +21,8 @@ class sunet::mail::sogo(
 
   $db_password = lookup('db_password')
 
-
-  $ssl_cert="/certs/mail.${domain}.crt"
-  $ssl_key="/certs/mail.${domain}.key"
+  $ssl_cert="/certs/imap.${domain}/fullchain.pem"
+  $ssl_key="/certs/imap.${domain}/privkey.pem"
   # Composefile
   sunet::docker_compose { 'sogo':
     content          => template('sunet/mail/sogo/docker-compose.erb.yml'),
