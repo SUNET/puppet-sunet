@@ -5,6 +5,7 @@ class sunet::mail::postfix(
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
   Array[String] $relay_servers   = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
+  Array[String] $webfronts       = ['192.121.208.200', '89.45.237.97', '89.46.21.22'],
 )
 {
 
