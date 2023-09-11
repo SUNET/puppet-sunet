@@ -18,7 +18,7 @@ class sunet::mail::sogo(
   # SOGoSAML2IdpCertificateLocation
   $idp_cert='/etc/sogo/idp-cert.pem'
   # SOGoSAML2LoginAttribute
-  $saml_attribute='subject-id'
+  $saml_attribute='urn:oasis:names:tc:SAML:attribute:subject-id'
 
   $hostname = $facts['networking']['fqdn']
   # This looks esoteric, a longer example for parsing the hostname is available here:
