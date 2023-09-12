@@ -17,7 +17,8 @@ services:
     ports:
       - "443:443"
     volumes:
-      - /etc/dehydrated/certs/mail.<%= @domain %>:/etc/nginx/certs:ro
+      - /etc/dehydrated/certs/mail.<%= @domain %>/fullchain.pem:/etc/nginx/certs/mail.<%= @domain %>.crt:ro
+      - /etc/dehydrated/certs/mail.<%= @domain %>/privkey.pem:/etc/nginx/certs/mail.<%= @domain %>.key:ro
       - /opt/roundcube/nginx/conf:/etc/nginx/conf.d
       - /opt/roundcube/nginx/dhparam:/etc/nginx/dhparam
       - /opt/roundcube/nginx/html:/usr/share/nginx/html
