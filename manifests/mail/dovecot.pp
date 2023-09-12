@@ -56,6 +56,7 @@ class sunet::mail::dovecot(
   }
   $config_files = [
     'dovecot',
+    'dovecot-oauth2',
     'dovecot-sql',
   ]
   $config_files.each |$file| {
