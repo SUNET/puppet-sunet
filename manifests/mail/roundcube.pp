@@ -20,6 +20,9 @@ class sunet::mail::roundcube(
   }
 
   $roundcube_password = lookup('roundcube_password')
+  $des_key = lookup('des_key')
+  $oauth_client_id = lookup('oauth_client_id')
+  $oauth_client_secret = lookup('oauth_client_secret')
 
   # Composefile
   sunet::docker_compose { 'roundcube':
@@ -39,6 +42,10 @@ class sunet::mail::roundcube(
   }
   file { '/opt/roundcube/config':
     ensure => directory,
+  }
+  file { '/opt/roundcube/config/config.inc.php':
+    ensure  => file,
+    content =>  template('roundcube/config.inc.erb.php')
   }
 
 }
