@@ -45,7 +45,7 @@ class sunet::mail::roundcube(
   }
   file { '/opt/roundcube/config/config.inc.php':
     ensure  => file,
-    content =>  template('roundcube/config.inc.erb.php')
+    content =>  template('sunet/mail/roundcube/config.inc.erb.php')
   }
 
 }
