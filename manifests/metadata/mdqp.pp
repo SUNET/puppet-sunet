@@ -5,7 +5,8 @@ class sunet::metadata::mdqp(
   String $mdq_service='https://mds.swamid.se',
 ) {
 
-      ensure_resource('package',['jq','xmlstarlet '],{ensure => present})
+      include sunet::package::jq
+      include sunet::package::xmlstarlet
 
       $image_tag = "docker.sunet.se/mdqp:${imagetag}"
       docker::image { $image_tag :  # make it possible to use the same docker image more than once on a node
