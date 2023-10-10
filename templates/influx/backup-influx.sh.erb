@@ -17,7 +17,7 @@ INFLUXv2="/usr/local/bin/influx"
 BACKUP_DIR="/var/lib/influxdb/backup"
 BACKUP_FLAGS="--skip-verify --host https://127.0.0.1:8086"
 # FIXME: WARNING: We're currently using admin token for backups, searched a lot for a reason WHY this has to be an all-access token(!?) but got no good answers from Influxv2-sources.
-BACKUP_TOKEN="<%= scope.function_safe_hiera(['backup_token']) %>"
+BACKUP_TOKEN="<%= scope.call_function('safe_hiera',['backup_token']) %>"
 
 # Clear target dir to avoid duplicates
 /bin/rm $BACKUP_DIR/today/*
