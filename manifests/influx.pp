@@ -2,16 +2,54 @@
 # related to influxdb. The previuos generation relied on server
 # specific configuration specified in cosmos-site.pp in nunoc-ops.
 
-# @param nodename          The nodename registered in the IBM system for this server
-# @param tcpserveraddress  The address of the TSM server we are sending backup data to
-# @param monitor_backups   If we should monitor scheduled backups
-# @param version           The version of the client to install
-# @param backup_dirs       Specific directories to backup, default is to backup everything
+# @param servername        The fqdn of the server or servicename?
+# @param tcpserveraddress  The version of the influx container to run
 class sunet::influx(
-  String        $servername='',
+  String        $servicename='',
+  String        $influxdb_version='latest',
 ) {
 
-/*
+  sunet::docker_run { 'influxdb2':
+    image    => 'docker.sunet.se/docker-influxdb2',
+    imagetag => $influxdb_version,
+    volumes  => [
+      '/etc/dehydrated:/etc/dehydrated',
+      '/var/lib/influxdb:/var/lib/influxdb',
+      '/usr/local/bin/backup-influx.sh:/usr/local/bin/backup-influx.sh:ro',
+    ],
+    env      => ["HOSTNAME=${servicename}"],
+    ports    => ['8086:8086'],
+  }
 
-*/
+  # Port 8086 is used to access influxdb2 container
+  sunet::nftables::docker_expose { 'allow-influxdb2' :
+    allow_clients => 'any',
+    port          => '8086',
+    proto         => 'tcp',
+    iif           => "${interface_default}",
+  }
+
+  sunet::docker_run { 'always-https':
+    image => 'docker.sunet.se/always-https',
+    ports => ['80:80'],
+    env   => ['ACME_URL=http://acme-c.sunet.se/'],
+  }
+
+  # Create a script used to do backups of influxdb
+  file {'/usr/local/bin/backup-influx.sh':
+      ensure  => file,
+      path    => '/usr/local/bin/backup-influx.sh',
+      mode    => '0500',
+      owner   => 'root',
+      content => template('sunet/influx/backup-influx.sh.erb')
+  }
+
+  # Create cronjob to execute influxdb backup script
+  sunet::scriptherder::cronjob { 'influx-backup':
+    cmd           => 'docker exec influxdb2 /usr/local/bin/backup-influx.sh',
+    minute        => '22',
+    hour          => '2',
+    ok_criteria   => ['exit_status=0', 'max_age=25h'],
+    warn_criteria => ['exit_status=1', 'max_age=50h'],
+  }
 }
