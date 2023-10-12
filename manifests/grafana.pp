@@ -21,14 +21,14 @@ class sunet::grafana(
       path    => '/etc/grafana/grafana.ini',
       mode    => '0440',
       owner   => 'grafana',
-      content => template('nunoc/grafana/grafana.ini.erb')
+      content => template('sunet/grafana/grafana.ini.erb')
   }
   file {'/etc/grafana/provisioning/datasources/grafana2influxdb.yaml':
       ensure  => file,
       path    => '/etc/grafana/provisioning/datasources/grafana2influxdb.yaml',
       mode    => '0440',
       owner   => 'grafana',
-      content => template('nunoc/grafana/grafana2influxdb.yaml.erb')
+      content => template('sunet/grafana/grafana2influxdb.yaml.erb')
   }
 
   sunet::docker_run {"grafana":
