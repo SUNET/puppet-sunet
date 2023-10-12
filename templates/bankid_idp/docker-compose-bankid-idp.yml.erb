@@ -1,0 +1,26 @@
+version: '3.2'
+
+services:
+  pyff:
+    image: docker.sunet.se/bankid-idp:<%= @imagetag %>
+<% unless @resolvers.empty? -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+<% unless @environments.empty? -%>
+    environment:
+<% @environments.each do |environment| -%>
+      - <%= environment %>
+<% end -%>
+<% end -%>
+<% unless @volumes.empty? -%>
+    volumes:
+<% end -%>
+      - '/opt/metadata:/opt/metadata'
+<%- @volumes.each do |extra_volume| -%>
+      - "<%= extra_volume %>"
+<%- end -%>
+    ports:
+      - "<%= @port %>:<%= @port %>"
