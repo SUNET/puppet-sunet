@@ -21,14 +21,6 @@ class sunet::influx(
     ports    => ['8086:8086'],
   }
 
-  # Port 8086 is used to access influxdb2 container
-  sunet::nftables::docker_expose { 'allow-influxdb2' :
-    allow_clients => 'any',
-    port          => '8086',
-    proto         => 'tcp',
-    iif           => "${interface_default}",
-  }
-
   sunet::docker_run { 'always-https':
     image => 'docker.sunet.se/always-https',
     ports => ['80:80'],
@@ -51,5 +43,44 @@ class sunet::influx(
     hour          => '2',
     ok_criteria   => ['exit_status=0', 'max_age=25h'],
     warn_criteria => ['exit_status=1', 'max_age=50h'],
+  }
+
+  # nftables
+    sunet::misc::ufw_allow { 'allow_http':
+    from => 'any',
+    port => '80',
+    proto => 'tcp',
+  }
+
+  sunet::misc::ufw_allow { 'allow_https':
+    from => 'any',
+    port => '443',
+    proto => 'tcp',
+  }
+
+  sunet::misc::ufw_allow { 'allow_https':
+    from => 'any',
+    port => '8086',
+    proto => 'tcp',
+  }
+
+  sunet::nftables::docker_expose { 'allow_http' :
+    allow_clients => 'any',
+    port          => '80',
+    iif           => "${interface_default}",
+  }
+
+  sunet::nftables::docker_expose { 'allow_https' :
+    allow_clients => 'any',
+    port          => '443',
+    iif           => "${interface_default}",
+  }
+
+  # Port 8086 is used to access influxdb2 container
+  sunet::nftables::docker_expose { 'allow-influxdb2' :
+    allow_clients => 'any',
+    port          => '8086',
+    proto         => 'tcp',
+    iif           => "${interface_default}",
   }
 }
