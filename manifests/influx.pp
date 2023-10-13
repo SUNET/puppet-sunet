@@ -58,7 +58,7 @@ class sunet::influx(
     proto => 'tcp',
   }
 
-  sunet::misc::ufw_allow { 'allow_https':
+  sunet::misc::ufw_allow { 'allow_influx':
     from => 'any',
     port => '8086',
     proto => 'tcp',
