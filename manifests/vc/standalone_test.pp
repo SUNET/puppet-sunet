@@ -100,6 +100,10 @@ class sunet::vc::standalone::test(
     group   => '999',
   }
 
+  sunet::ssh_keys { 'vcops':
+    config => lookup('vcops_ssh_config', undef, undef, {}),
+  }
+
 
   # Compose
   sunet::docker_compose { 'vc_standalone':
