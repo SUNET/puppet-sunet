@@ -66,22 +66,22 @@ services:
 
   registry:
     container_name: "vc_registry"
-      image: "docker.sunet.se/dc4eu/registry:<%= @vc_version %>"
-      healthcheck:
-        test: curl --fail http://vc_registry:8080/health || exit 1
-        interval: 20s
-        retries: 5
-        timeout: 10s
-      restart: always
-      volumes:
-        - ./cert:/cert:ro
-        - /opt/vc/config.yaml:/config.yaml:ro
-        - /var/log/sunet:/var/log/sunet
-      depends_on:
-        - vc_redis
-        - vc_mongo
-      environment:
-        - "VC_CONFIG_YAML=config.yaml"
+    image: "docker.sunet.se/dc4eu/registry:<%= @vc_version %>"
+    healthcheck:
+      test: curl --fail http://vc_registry:8080/health || exit 1
+      interval: 20s
+      retries: 5
+      timeout: 10s
+    restart: always
+    volumes:
+      - ./cert:/cert:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - vc_redis
+      - vc_mongo
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
 
   vc_haproxy:
     container_name: "vc_haproxy"
