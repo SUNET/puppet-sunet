@@ -1,4 +1,4 @@
-class sunet::vc::standalone::mura(
+class sunet::vc::standalone::test(
   String  $vc_version="latest",
   String  $mongodb_version="4.0.10",
   String  $mockca_sleep="20",
@@ -103,7 +103,6 @@ class sunet::vc::standalone::mura(
   sunet::ssh_keys { 'vcops':
     config => lookup('vcops_ssh_config', undef, undef, {}),
   }
-
 
   # Compose
   sunet::docker_compose { 'vc_standalone':
