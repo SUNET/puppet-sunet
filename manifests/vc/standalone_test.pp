@@ -1,4 +1,4 @@
-class sunet::vc::standalone(
+class sunet::vc::standalone::test(
   String  $vc_version="latest",
   String  $mongodb_version="4.0.10",
   String  $mockca_sleep="20",
@@ -46,7 +46,7 @@ class sunet::vc::standalone(
     mode   => '0400',
     owner  => 'root',
     group  => 'root',
-    content => template("sunet/vc/standalone/config.yaml.erb")
+    content => template("sunet/vc/standalone/test/config.yaml.erb")
    }
 
   file { '/opt/vc/haproxy.cfg':
@@ -54,7 +54,7 @@ class sunet::vc::standalone(
     mode    => '0644',
     owner   => 'root',
     group   => 'root',
-    content =>  template("sunet/vc/standalone/haproxy.cfg.erb")
+    content =>  template("sunet/vc/standalone/test/haproxy.cfg.erb")
   }
 
   file { '/opt/pkcs11_ca':
@@ -103,7 +103,7 @@ class sunet::vc::standalone(
 
   # Compose
   sunet::docker_compose { 'vc_standalone':
-    content          => template('sunet/vc/standalone/docker-compose.yml.erb'),
+    content          => template('sunet/vc/standalone/test/docker-compose.yml.erb'),
     service_name     => 'vc',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',

@@ -1,0 +1,185 @@
+---
+version: "3.3"
+
+services:
+  vc_issuer:
+    container_name: "vc_issuer"
+    image: "docker.sunet.se/dc4eu/issuer:<%= @vc_version %>"
+    healthcheck:
+      test: curl --fail http://vc_issuer:8080/health || exit 1
+      interval: 20s
+      retries: 5
+      timeout: 10s
+    restart: always
+    volumes:
+      - ./cert:/cert:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - vc_redis
+      - vc_mongo
+      - vc_registry
+      - ca_ca
+      - ca_pdfsign
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  vc_verifier:
+    container_name: "vc_verifier"
+    image: "docker.sunet.se/dc4eu/verifier:<%= @vc_version %>"
+    healthcheck:
+      test: curl --fail http://vc_verifier:8080/health || exit 1
+      interval: 20s
+      retries: 5
+      timeout: 10s
+    restart: always
+    volumes:
+      - ./cert:/cert:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - vc_redis
+      - vc_mongo
+      - vc_issuer
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  vc_datastore:
+    container_name: "vc_datastore"
+    image: "docker.sunet.se/dc4eu/datastore:<%= @vc_version %>"
+    healthcheck:
+      test: curl --fail http://vc_datastore:8080/health || exit 1
+      interval: 20s
+      retries: 5
+      timeout: 10s
+    restart: always
+    volumes:
+      - ./cert:/cert:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - vc_redis
+      - vc_mongo
+      - vc_issuer
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  registry:
+    container_name: "vc_registry"
+      image: "docker.sunet.se/dc4eu/registry:<%= @vc_version %>"
+      healthcheck:
+        test: curl --fail http://vc_registry:8080/health || exit 1
+        interval: 20s
+        retries: 5
+        timeout: 10s
+      restart: always
+      volumes:
+        - ./cert:/cert:ro
+        - /opt/vc/config.yaml:/config.yaml:ro
+        - /var/log/sunet:/var/log/sunet
+      depends_on:
+        - vc_redis
+        - vc_mongo
+      environment:
+        - "VC_CONFIG_YAML=config.yaml"
+
+  vc_haproxy:
+    container_name: "vc_haproxy"
+    image: "haproxytech/haproxy-alpine:2.4"
+    ports:
+      - 80:80
+      - 8404:8404
+    volumes:
+      - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+
+  vc_redis:
+    image: redis:alpine
+    container_name: "vc_redis"
+    restart: always
+    expose:
+      - 6379
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  vc_mongo:
+    image: "mongo:<%= @mongodb_version %>"
+    container_name: "vc_mongo"
+    restart: always
+    expose:
+      - 27017
+    volumes:
+      - mongo_data:/data
+
+
+  ca_ca:
+    image: "docker.sunet.se/dc4eu/pkcs11_ca:<%= @ca_version %>"
+    container_name: "ca_ca"
+    #ports:
+    #  - "8005:8005"
+    depends_on:
+      - ca_postgres
+    restart: always
+    read_only: true
+    #cap_drop: [ALL]
+    #security_opt:
+    #  - no-new-privileges:true
+    volumes:
+      - /opt/pkcs11_ca/data/hsm_tokens:/var/lib/softhsm/tokens
+      - /opt/pkcs11_ca/data/trusted_keys:/app/trusted_keys
+    tmpfs:
+      - /dev/shm:ro,noexec,nosuid,nodev
+    environment:
+      - "CA_URL=<%= @ca_url %>"
+      - "ACME_ROOT=<%= @acme_root %>"
+      - "PKCS11_SIGN_API_TOKEN=<%= @pkcs11_sign_api_token %>"
+      - "PKCS11_TOKEN=<%= @pkcs11_token %>"
+      - "PKCS11_PIN=<%= @pkcs11_pin %>"
+      - "PKCS11_MODULE=<%= @pkcs11_module %>"
+      - "POSTGRES_HOST=<%= @postgres_host %>"
+      - "POSTGRES_USER=<%= @postgres_user %>"
+      - "POSTGRES_PASSWORD=<%= @postgres_password %>"
+      - "POSTGRES_PORT=<%= @postgres_port %>"
+      - "POSTGRES_DATABASE=<%= @postgres_database %>"
+      - "POSTGRES_TIMEOUT=<%= @postgres_timeout %>"
+  
+  ca_postgres:
+    image: "<%= @postgres_image %>:<%= @postgres_version %>"
+    container_name: "ca_postgres"
+    restart: always
+    volumes:
+      - /opt/pkcs11_ca/data/db_data:/var/lib/postgresql/data
+      - /opt/pkcs11_ca/postgres_shell.sh:/root/postgres_shell.sh
+    tmpfs:
+      - /dev/shm:ro,noexec,nosuid,nodev
+    environment:
+      - "POSTGRES_DB=<%= @postgres_database %>"
+      - "POSTGRES_USER=<%= @postgres_user %>"
+      - "POSTGRES_PASSWORD=<%= @postgres_password %>"
+      
+  ca_pdfsign:
+    image: "docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>"
+    container_name: "ca_pdfsign"
+    volumes:
+      - /var/log/sunet/pkcs11:/var/log/sunet
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    depends_on:
+      - ca_ca
+    restart: always
+    #cap_drop: [ALL]
+    #security_opt:
+    #  - no-new-privileges:true
+    tmpfs:
+      - /dev/shm:ro,noexec,nosuid,nodev
+    environment:
+      - CA_URL=<%= @ca_url %>
+
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-vc_ca
+
+volumes:
+  redis_data:
+  mongo_data:
