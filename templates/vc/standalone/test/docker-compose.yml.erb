@@ -64,7 +64,7 @@ services:
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-  registry:
+  vc_registry:
     container_name: "vc_registry"
     image: "docker.sunet.se/dc4eu/registry:<%= @vc_version %>"
     healthcheck:
