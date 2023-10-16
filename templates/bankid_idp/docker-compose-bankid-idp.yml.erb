@@ -18,7 +18,6 @@ services:
 <% unless @volumes.empty? -%>
     volumes:
 <% end -%>
-      - '/opt/metadata:/opt/metadata'
 <%- @volumes.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
