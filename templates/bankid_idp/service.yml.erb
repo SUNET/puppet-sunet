@@ -4,20 +4,20 @@ server:
 spring:
   config:
     activate:
-      on-profile: '<%= scope.call_function('safe_hiera', ['bankidp_profile']) %>'
+      on-profile: '<%= scope.call_function('safe_hiera', ['bankidp_spring_config_profile']) %>'
   redis:
-    host: '<%= scope.call_function('safe_hiera', ['bankidp_redis_host']) %>'
+    host: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_host']) %>'
     port: 6379
-    password: '<%= scope.call_function('safe_hiera', ['bankidp_redis_password']) %>'
+    password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_password']) %>'
     ssl: false
     ssl-ext:
       enable-hostname-verification: true
       credential:
         resource: file:/opt/bankid-idp/config/redis/redis.p12
-        password: '<%= scope.call_function('safe_hiera', ['bankidp_redis_p12_password']) %>'
+        password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
       trust:
         resource: file:/opt/bankid-idp/config/redis/trust.p12
-        password: '<%= scope.call_function('safe_hiera', ['bankidp_redis_p12_password']) %>'
+        password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
 tomcat:
   ajp:
     enabled: true
