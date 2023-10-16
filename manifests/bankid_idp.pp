@@ -10,7 +10,7 @@ class sunet::bankid_idp(
 
   sunet::docker_compose { 'bankid-idp':
     content          => template('sunet/bankid_idp/docker-compose-bankid-idp.yml.erb'),
-    service_name     => 'pyff',
+    service_name     => 'bankid_idp',
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'Freja ftw',
