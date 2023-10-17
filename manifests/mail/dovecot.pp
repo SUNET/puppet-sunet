@@ -36,6 +36,13 @@ class sunet::mail::dovecot(
   $oauth_client_secret = lookup('oauth_client_secret')
 
 
+  $nextcloud_salt = lookup('nextcloud_salt')
+  $nextcloud_db = 'nextcloud'
+  $nextcloud_db_user ='nextcloud'
+  $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
+  $nextcloud_mysql_server = 'intern-db1.sunet.drive.test.sunet.se'
+
+
   $ssl_cert="/certs/imap.${domain}/fullchain.pem"
   $ssl_key="/certs/imap.${domain}/privkey.pem"
   # Composefile
@@ -81,6 +88,11 @@ class sunet::mail::dovecot(
       content =>  template("sunet/mail/dovecot/${file}.erb.conf")
     }
   }
+  file { '/opt/dovecot/config/nextcloud-auth.lua':
+    ensure  => file,
+    content =>  template('sunet/mail/dovecot/nextcloud-auth.erb.lua')
+  }
+
   $commands = ['doveadm', 'doveconf', 'dovecot', 'dovecot-sysreport']
   $commands.each |$command| {
     file { "/usr/local/bin/${command}":
