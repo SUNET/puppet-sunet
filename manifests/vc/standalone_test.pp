@@ -43,7 +43,7 @@ class sunet::vc::standalone_test(
 
   file { '/opt/vc/config.yaml':
     ensure => file,
-    mode   => '0500',
+    mode   => '0600',
     owner  => 'root',
     group  => 'root',
     content => template("sunet/vc/standalone/test/config.yaml.erb")
