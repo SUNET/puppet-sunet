@@ -22,6 +22,9 @@ frontend stats
 frontend myfrontend
     bind :80
 
+    timeout http-request 10s                                                                                                                                                                                                                   
+    timeout http-keep-alive 4s 
+
     use_backend issuer if { path /issuer } || { path_beg /issuer/ }
     use_backend verifier if { path /verifier } || { path_beg /verifier/ }
     use_backend datastore if { path /datastore } || { path_beg /datastore/ }
