@@ -23,6 +23,10 @@ services:
       - ca_pdfsign
     environment:
       - "VC_CONFIG_YAML=config.yaml"
+      - "HTTP_PROXY=vc-test-1.sunet.se"
+      - "http_proxy=vc-test-1.sunet.se"
+      - "HTTPS_PROXY=vc-test-1.sunet.se"
+      - "https_proxy=vc-test-1.sunet.se"
 
   vc_verifier:
     container_name: "vc_verifier"
