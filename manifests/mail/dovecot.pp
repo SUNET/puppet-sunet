@@ -34,6 +34,7 @@ class sunet::mail::dovecot(
   $replication_password = lookup('replication_password')
   $oauth_client_id = lookup('oauth_client_id')
   $oauth_client_secret = lookup('oauth_client_secret')
+  $master_password = lookup('master_password')
 
 
   $nextcloud_salt = lookup('nextcloud_salt')
