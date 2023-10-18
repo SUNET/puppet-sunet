@@ -1,5 +1,0 @@
-user = postfix
-password = <%= @db_password %>
-hosts = <%= @db_hosts %>
-dbname = mailserver
-query = SELECT destination FROM virtual_aliases WHERE source='%s'

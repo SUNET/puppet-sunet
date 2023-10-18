@@ -1,5 +1,5 @@
-user = postfix
-password = <%= @db_password %>
+user = <%= @nextcloud_db_user %>
+password = <%= @nextcloud_mysql_password %>
 hosts = <%= @db_hosts %>
-dbname = mailserver
-query = SELECT 1 FROM virtual_domains WHERE name='%s'
+dbname = <%= @nextcloud_db %> 
+query = SELECT 1 WHERE '<%= @domain %>' = '%s'

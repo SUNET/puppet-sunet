@@ -17,8 +17,9 @@ class sunet::mail::postfix(
   $config = lookup($my_environment)
   $db_hosts = join($config['db_hosts'], ' ')
   $relay_hosts = join($relay_servers, ', ')
-  $db_password = lookup('db_password')
-
+  $nextcloud_db = 'nextcloud'
+  $nextcloud_db_user ='nextcloud'
+  $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
 
   $smtpd_tls_cert_file="/certs/smtp.${domain}/fullchain.pem"
   $smtpd_tls_key_file="/certs/smtp.${domain}/privkey.pem"
@@ -44,7 +45,6 @@ class sunet::mail::postfix(
   $config_files = [
     'main',
     'master',
-    'mysql-virtual-alias-maps',
     'mysql-virtual-email2email',
     'mysql-virtual-mailbox-domains',
     'mysql-virtual-mailbox-maps'
