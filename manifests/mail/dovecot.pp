@@ -35,6 +35,7 @@ class sunet::mail::dovecot(
   $master_password = lookup('master_password')
 
 
+  $db_hosts = join($config['db_hosts'], ' host=')
   $nextcloud_salt = lookup('nextcloud_salt')
   $nextcloud_db = 'nextcloud'
   $nextcloud_db_user ='nextcloud'
@@ -78,7 +79,7 @@ class sunet::mail::dovecot(
   }
   $config_files = [
     'dovecot',
-    'dovecot-oauth2',
+    'dovecot-sql',
   ]
   $config_files.each |$file| {
     file { "/opt/dovecot/config/${file}.conf":
