@@ -134,8 +134,13 @@ class sunet::forgejo (
       port => ['80', '443', '22022'],
     }
   }
+  file{ '/opt/forgejo/import-secret-key.sh':
+    ensure  => file,
+    content => template('sunet/forgejo/import-secret-key.erb.sh'),
+    mode    => '0700',
+  }
   # Import gpg key
-  exec{ 'import_gpg_key':
-    command => "echo ${platform_sunet_se_gpg_key} | gpg --import"
+  -> exec{ 'import_gpg_key':
+    command => '/opt/forgejo/import-secret-key.sh'
   }
 }
