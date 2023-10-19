@@ -288,10 +288,10 @@ define sunet::dehydrated::client_define(
     undef   => $domain,
     default => $ssh_id,
   }
- if $manage_ssh_key {
+  if $manage_ssh_key {
     $key_path = "${home}/.ssh/id_${_ssh_id}"
     if lookup("${_ssh_id}_ssh_key", undef, undef, undef) { #Key is in secrets, write it to host
-      ensure_resource('sunet::snippets::secret_file', "$key_path", {
+      ensure_resource('sunet::snippets::secret_file', $key_path, {
       hiera_key => "${_ssh_id}_ssh_key",
       })
     }else{
