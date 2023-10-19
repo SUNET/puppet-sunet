@@ -20,7 +20,6 @@ services:
 <%- @volumes.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
-      - "<%= @port %>:<%= @port %>"
 <% end -%>
 <% unless @ports.empty? -%>
     ports:
