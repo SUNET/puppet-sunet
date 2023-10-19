@@ -3,7 +3,7 @@ class sunet::bankid_idp(
   Array $environments = [],
   Array $resolvers = [],
   Array $volumes = [],
-  Integer $port = 443,
+  Array $ports = [],
   String $imagetag='latest',
 ) {
 
