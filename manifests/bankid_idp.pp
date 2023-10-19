@@ -2,8 +2,8 @@
 class sunet::bankidp(
   Array $environments_extras = [],
   Array $resolvers = [],
-  Array $volumes = [],
-  Array $ports = [],
+  Array $volumes_extras = [],
+  Array $ports_extras = [],
   String $imagetag='latest',
   String $spring_profiles_active = 'sandbox',
   String $server_servlet_context_path = '/bankid/idp',

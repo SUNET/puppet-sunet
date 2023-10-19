@@ -21,12 +21,14 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/opt/bankidp:<%= @bankid_home %>"
-<%- @volumes.each do |extra_volume| -%>
+<%- @volumes_extras.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
-<% unless @ports.empty? -%>
+<% unless @ports_extras.empty? -%>
     ports:
-<%- @ports.each do |port| -%>
+      - "8012:8012"
+      - "8082:8082"
+<%- @ports_extras.each do |port| -%>
       - "<%= port %>"
 <%- end -%>
 <% end -%>
