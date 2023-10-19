@@ -1,12 +1,17 @@
 # Run bankid-idp with compose
 class sunet::bankid_idp(
-  Array $environments = [],
+  Array $environments_extras = [],
   Array $resolvers = [],
   Array $volumes = [],
   Array $ports = [],
   String $imagetag='latest',
+  String $spring_profiles_active = 'sandbox',
+  String $server_servlet_context_path = '/bankid/idp',
+  String $saml_idp_base_url = 'https://sandbox.swedenconnect.se/bankid/idp',
+  String $tz = 'Europe/Stockholm',
+  String $bankid_home = '/opt/bankid',
+  String $spring_config_import = '/config/sandbox.yml'
 ) {
-
 
     file { '/opt/bankid/config/service.yml':
       content => template('sunet/bankid_idp/service.yml.erb'),

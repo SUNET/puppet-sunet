@@ -9,14 +9,18 @@ services:
       - <%= resolver %>
 <% end -%>
 <% end -%>
-<% unless @environments.empty? -%>
     environment:
-<% @environments.each do |environment| -%>
+      - TZ=<%= @tz %>
+      - SPRING_PROFILES_ACTIVE=<%= @spring_profiles_active %>
+      - SERVER_SERVLET_CONTEXT_PATH=<%= @server_servlet_context_path %>
+      - SAML_IDP_BASE_URL=<%= @saml_idp_base_url %>
+      - SPRING_CONFIG_IMPORT=<%= @bankid_home %><%= @spring_config_import %>
+<% @environments_extras.each do |environment| -%>
       - <%= environment %>
-<% end -%>
 <% end -%>
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
+      - "/opt/bankid:<%= @bankid_home %>"
 <%- @volumes.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
