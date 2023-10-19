@@ -1,5 +1,5 @@
 # Run bankid-idp with compose
-class sunet::bankid_idp(
+class sunet::bankidp(
   Array $environments_extras = [],
   Array $resolvers = [],
   Array $volumes = [],
@@ -9,19 +9,19 @@ class sunet::bankid_idp(
   String $server_servlet_context_path = '/bankid/idp',
   String $saml_idp_base_url = 'https://sandbox.swedenconnect.se/bankid/idp',
   String $tz = 'Europe/Stockholm',
-  String $bankid_home = '/opt/bankid',
-  String $spring_config_import = '/config/sandbox.yml'
+  String $bankid_home = '/opt/bankidp',
+  String $spring_config_import = '/config/service.yml'
 ) {
 
-    file { '/opt/bankid/config/service.yml':
-      content => template('sunet/bankid_idp/service.yml.erb'),
+    file { '/opt/bankidp/config/service.yml':
+      content => template('sunet/bankidp/service.yml.erb'),
       mode    => '0755',
     }
 
 
-  sunet::docker_compose { 'bankid-idp':
-    content          => template('sunet/bankid_idp/docker-compose-bankid-idp.yml.erb'),
-    service_name     => 'bankid_idp',
+  sunet::docker_compose { 'bankidp':
+    content          => template('sunet/bankidp/docker-compose-bankid-idp.yml.erb'),
+    service_name     => 'bankidp',
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'Freja ftw',
