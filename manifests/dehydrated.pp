@@ -294,7 +294,7 @@ define sunet::dehydrated::client_define(
       ensure_resource('sunet::snippets::secret_file', $key_path, {
       hiera_key => "${_ssh_id}_ssh_key",
       })
-    }else{
+    } else {
       if (!find_file($key_path)){
         sunet::snippets::ssh_keygen{$key_path:} #This will not overwrite an existing key
       }
