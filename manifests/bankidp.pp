@@ -13,7 +13,7 @@ class sunet::bankidp(
   String $spring_config_import = '/config/service.yml'
 ) {
 
-    ensure_resource('sunet::misc::create_dir', '/opt/bankidp/config/')
+    ensure_resource('sunet::misc::create_dir', '/opt/bankidp/config/', { owner => 'root', group => 'root', mode => '0750'})
     file { '/opt/bankidp/config/service.yml':
       content => template('sunet/bankidp/service.yml.erb'),
       mode    => '0755',
