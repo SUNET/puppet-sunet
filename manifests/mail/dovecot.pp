@@ -16,6 +16,7 @@ class sunet::mail::dovecot(
                                     '2001:6b0:6c::402/128'
                                   ],
   String $domain                 = 'sunet.dev',
+  String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
   String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
   String $dovecot_tag            = 'SUNET-1',
