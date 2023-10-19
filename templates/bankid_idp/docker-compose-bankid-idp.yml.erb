@@ -15,12 +15,11 @@ services:
       - <%= environment %>
 <% end -%>
 <% end -%>
-<% unless @volumes.empty? -%>
     volumes:
+      - "/etc/localtime:/etc/localtime:ro"
 <%- @volumes.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
-<% end -%>
 <% unless @ports.empty? -%>
     ports:
 <%- @ports.each do |port| -%>
