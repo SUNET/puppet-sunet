@@ -1,7 +1,7 @@
 version: '3.2'
 
 services:
-  pyff:
+  app:
     image: docker.sunet.se/bankid-idp:<%= @imagetag %>
 <% unless @resolvers.empty? -%>
     dns:
@@ -20,7 +20,7 @@ services:
 <% end -%>
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "/opt/bankidp:<%= @bankid_home %>"
+      - "/opt/bankid:<%= @bankid_home %>"
 <%- @volumes_extras.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
@@ -31,4 +31,13 @@ services:
 <%- @ports_extras.each do |port| -%>
       - "<%= port %>"
 <%- end -%>
+
+  redis:
+    image: redis:7-bullseye
+    volumes:
+      - /opt/redis/:/data
+    command: redis-server /data/server.conf
+    ports:
+      - "6379:6379"
+    restart: always
 <% end -%>
