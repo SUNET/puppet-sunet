@@ -31,7 +31,7 @@ services:
 <%- @ports_extras.each do |port| -%>
       - "<%= port %>"
 <%- end -%>
-
+<% end -%>
   redis:
     image: redis:7-bullseye
     volumes:
@@ -40,4 +40,3 @@ services:
     ports:
       - "6379:6379"
     restart: always
-<% end -%>
