@@ -45,7 +45,6 @@ class sunet::mail::postfix(
   $config_files = [
     'main',
     'master',
-    'mysql-virtual-email2email',
     'mysql-virtual-mailbox-domains',
     'mysql-virtual-mailbox-maps'
   ]
