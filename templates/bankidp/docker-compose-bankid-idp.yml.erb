@@ -20,7 +20,7 @@ services:
 <% end -%>
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
-      - "/opt/bankid:<%= @bankid_home %>"
+      - "/opt/bankidp:<%= @bankid_home %>"
 <%- @volumes_extras.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
