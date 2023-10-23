@@ -7,7 +7,6 @@ class sunet::bankidp(
   String $imagetag='latest',
   String $spring_profiles_active = 'sandbox',
   String $server_servlet_context_path = '/bankid/idp',
-  String $saml_idp_base_url = 'https://sandbox.swedenconnect.se/bankid/idp',
   String $tz = 'Europe/Stockholm',
   String $bankid_home = '/opt/bankidp',
   String $spring_config_import = '/config/service.yml'
