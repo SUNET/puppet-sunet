@@ -23,6 +23,13 @@ class sunet::mail::postfix(
 
   $smtpd_tls_cert_file="/certs/smtp.${domain}/fullchain.pem"
   $smtpd_tls_key_file="/certs/smtp.${domain}/privkey.pem"
+
+  package { 'exim4-base':
+    ensure => absent,
+    provider => 'apt',
+  }
+
+
   # Composefile
   sunet::docker_compose { 'postfix':
     content          => template('sunet/mail/postfix/docker-compose.erb.yml'),
