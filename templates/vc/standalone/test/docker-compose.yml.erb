@@ -5,22 +5,20 @@ services:
   vc_issuer:
     container_name: "vc_issuer"
     image: "docker.sunet.se/dc4eu/issuer:<%= @vc_version %>"
-    healthcheck:
-      test: curl --fail http://vc_issuer:8080/health || exit 1
-      interval: 20s
-      retries: 5
-      timeout: 10s
     restart: always
     volumes:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
+    links:
+      - vc_haproxy
     depends_on:
       - vc_redis
       - vc_mongo
       - vc_registry
       - ca_ca
       - ca_pdfsign
+      - vc_haproxy
     environment:
       - "VC_CONFIG_YAML=config.yaml"
       - "HTTP_PROXY=vc-test-1.sunet.se"
@@ -32,20 +30,18 @@ services:
   vc_verifier:
     container_name: "vc_verifier"
     image: "docker.sunet.se/dc4eu/verifier:<%= @vc_version %>"
-    healthcheck:
-      test: curl --fail http://vc_verifier:8080/health || exit 1
-      interval: 20s
-      retries: 5
-      timeout: 10s
     restart: always
     volumes:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
+    links:
+      - vc_haproxy
     depends_on:
       - vc_redis
       - vc_mongo
       - vc_issuer
+      - vc_haproxy
     environment:
       - "VC_CONFIG_YAML=config.yaml"
       - "HTTP_PROXY=vc-test-1.sunet.se"
@@ -57,20 +53,18 @@ services:
   vc_datastore:
     container_name: "vc_datastore"
     image: "docker.sunet.se/dc4eu/datastore:<%= @vc_version %>"
-    healthcheck:
-      test: curl --fail http://vc_datastore:8080/health || exit 1
-      interval: 20s
-      retries: 5
-      timeout: 10s
     restart: always
     volumes:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
+    links:
+      - vc_haproxy
     depends_on:
       - vc_redis
       - vc_mongo
       - vc_issuer
+      - vc_haproxy
     environment:
       - "VC_CONFIG_YAML=config.yaml"
       - "HTTP_PROXY=vc-test-1.sunet.se"
@@ -82,19 +76,17 @@ services:
   vc_registry:
     container_name: "vc_registry"
     image: "docker.sunet.se/dc4eu/registry:<%= @vc_version %>"
-    healthcheck:
-      test: curl --fail http://vc_registry:8080/health || exit 1
-      interval: 20s
-      retries: 5
-      timeout: 10s
     restart: always
     volumes:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
+    links:
+      - vc_haproxy
     depends_on:
       - vc_redis
       - vc_mongo
+      - vc_haproxy
     environment:
       - "VC_CONFIG_YAML=config.yaml"
       - "HTTP_PROXY=vc-test-1.sunet.se"
