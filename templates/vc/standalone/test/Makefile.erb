@@ -5,4 +5,4 @@ docker-pull:
 	docker pull docker.sunet.se/dc4eu/verifier:<%= @vc_version %>
 
 dev-release: docker-pull
-	systemctl restart sunet-vc.sunet
+	systemctl restart sunet-vc.service
