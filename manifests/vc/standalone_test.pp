@@ -27,6 +27,8 @@ class sunet::vc::standalone_test(
   #hash with basic_auth key/value
 ) {
 
+  package { 'make': ensure => 'installed' }
+
   sunet::misc::system_user { 'sunet':
     username   => 'sunet',
     group      => 'sunet',
