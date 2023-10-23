@@ -17,6 +17,7 @@ services:
       - 89.32.32.32
     hostname: <%= @hostname %>
     volumes:
+      - /opt/dovecot/config/ssmtp.conf:/etc/ssmtp/ssmtp.conf
       - /opt/dovecot/config:/etc/dovecot/
       - /opt/dovecot/mail:/var/mail/
       - /etc/dehydrated/certs/:/certs

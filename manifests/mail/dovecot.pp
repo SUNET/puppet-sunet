@@ -92,6 +92,10 @@ class sunet::mail::dovecot(
     ensure  => file,
     content =>  template('sunet/mail/dovecot/nextcloud-auth.erb.lua')
   }
+  file { '/opt/dovecot/config/ssmtp.conf':
+    ensure  => file,
+    content => template('sunet/mail/dovecot/ssmtp.erb.conf'),
+  }
 
   $commands = ['doveadm', 'doveconf', 'dovecot', 'dovecot-sysreport']
   $commands.each |$command| {
