@@ -113,6 +113,14 @@ class sunet::vc::standalone_test(
     description      => 'VC-standalone service',
   }
 
+  file { '/opt/vc/tls-readme.txt':
+    ensure  => file,
+    mode    => '0744',
+    owner   => 'root',
+    group   => 'root',
+    content => template('sunet/vc/standalone/test/tls-readme.txt.erb'),
+  }
+
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'web_http_port' :
       iif           => $interface,

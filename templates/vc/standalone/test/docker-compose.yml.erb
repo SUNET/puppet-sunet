@@ -92,9 +92,11 @@ services:
     image: "haproxytech/haproxy-alpine:2.4"
     ports:
       - 80:80
+      - 443:443
       - 8404:8404
     volumes:
       - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /opt/vc/cert/tls-cert-key.pem:/usr/local/etc/haproxy/tls-cert-key.pem:ro
 
   vc_redis:
     image: redis:alpine
