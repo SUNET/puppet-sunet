@@ -100,6 +100,14 @@ class sunet::vc::standalone_test(
     group   => '999',
   }
 
+  file { '/opt/vc/Makefile':
+    ensure => file,
+    mode => '0744',
+    owner => 'root',
+    group => 'root',
+    content => template("sunet/vc/standalone/test/Makefile.erb")
+  }
+
   sunet::ssh_keys { 'vcops':
     config => lookup('vcops_ssh_config', undef, undef, {}),
   }

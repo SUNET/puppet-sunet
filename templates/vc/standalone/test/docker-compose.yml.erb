@@ -27,6 +27,7 @@ services:
       - "http_proxy=vc-test-1.sunet.se"
       - "HTTPS_PROXY=vc-test-1.sunet.se"
       - "https_proxy=vc-test-1.sunet.se"
+      - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8"
 
   vc_verifier:
     container_name: "vc_verifier"
@@ -47,6 +48,11 @@ services:
       - vc_issuer
     environment:
       - "VC_CONFIG_YAML=config.yaml"
+      - "HTTP_PROXY=vc-test-1.sunet.se"
+      - "http_proxy=vc-test-1.sunet.se"
+      - "HTTPS_PROXY=vc-test-1.sunet.se"
+      - "https_proxy=vc-test-1.sunet.se"
+      - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8"
 
   vc_datastore:
     container_name: "vc_datastore"
@@ -67,6 +73,11 @@ services:
       - vc_issuer
     environment:
       - "VC_CONFIG_YAML=config.yaml"
+      - "HTTP_PROXY=vc-test-1.sunet.se"
+      - "http_proxy=vc-test-1.sunet.se"
+      - "HTTPS_PROXY=vc-test-1.sunet.se"
+      - "https_proxy=vc-test-1.sunet.se"
+      - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8"
 
   vc_registry:
     container_name: "vc_registry"
@@ -86,6 +97,11 @@ services:
       - vc_mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
+      - "HTTP_PROXY=vc-test-1.sunet.se"
+      - "http_proxy=vc-test-1.sunet.se"
+      - "HTTPS_PROXY=vc-test-1.sunet.se"
+      - "https_proxy=vc-test-1.sunet.se"
+      - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8"
 
   vc_haproxy:
     container_name: "vc_haproxy"
