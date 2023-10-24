@@ -18,6 +18,21 @@ class sunet::bankidp(
     }
 
 
+
+  $signing_cert = $prod ? {
+    true => 'md-signer2.crt',
+    false => 'swamid-qa.crt',
+  }
+
+  file { '/opt/bankidp/config/certificates/' + $signing_cert:
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    content => file('sunet/bankidp/' + $signing_cert)
+  }
+
+
+
   sunet::docker_compose { 'bankidp':
     content          => template('sunet/bankidp/docker-compose-bankid-idp.yml.erb'),
     service_name     => 'bankidp',
