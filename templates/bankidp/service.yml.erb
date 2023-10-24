@@ -2,19 +2,24 @@ server:
   port: 8082
 
 spring:
-  redis:
-    host: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_host']) %>'
-    port: 6379
-    password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_password']) %>'
-    ssl: false
-    ssl-ext:
-      enable-hostname-verification: true
-      credential:
-        resource: file:/opt/bankid-idp/config/redis/redis.p12
-        password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
-      trust:
-        resource: file:/opt/bankid-idp/config/redis/trust.p12
-        password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
+  data:
+    redis:
+      host: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_host']) %>'
+      port: 6379
+      ssl:
+        enabled: false
+      #password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_password']) %>'
+      #ssl: false
+      #ssl-ext:
+      #  enable-hostname-verification: true
+      #  credential:
+      #    resource: file:/opt/bankidp/config/redis/redis.p12
+      #    password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
+      #  trust:
+      #    resource: file:/opt/bankidp/config/redis/trust.p12
+      #    password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
+      #
+
 bankid:
   session:
     module: redis
