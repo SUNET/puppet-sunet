@@ -1,4 +1,4 @@
-class sunet::vc::standalone::mock(
+class sunet::vc::standalone_mock(
   String  $vc_version="latest",
   String  $mongodb_version="4.0.10",
   String  $mockca_sleep="20",
