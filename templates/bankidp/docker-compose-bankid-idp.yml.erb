@@ -23,8 +23,7 @@ services:
 <%- end -%>
 <% unless @ports_extras.empty? -%>
     ports:
-      - "8012:8012"
-      - "8082:8082"
+      - "443:8082"
 <%- @ports_extras.each do |port| -%>
       - "<%= port %>"
 <%- end -%>
