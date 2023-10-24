@@ -27,13 +27,13 @@ bankid:
     repository: "redistimeseries"
     log-file: ${BANKID_INSTALL_DIR}/bankid-idp/target/audit.log
 
-    <% if @prod == true -%>
+<% if @prod == true %>
   server-root-certificate: classpath:bankid-trust-prod.crt
   service-url: https://appapi2.bankid.com/rp/v6.0
-    <% else -%>
+<% else %>
   server-root-certificate: classpath:bankid-trust-test.crt
   service-url: https://appapi2.test.bankid.com/rp/v6.0
-    <% end -%>
+<% end %>
 
   ui:
     provider:
@@ -66,13 +66,13 @@ saml:
     entity-id: '<%= scope.call_function('safe_hiera', ['bankidp_saml_base_url'])  %>'
     base-url: '<%= scope.call_function('safe_hiera', ['bankidp_saml_base_url'])  %>'
     metadata-providers:
-    <% if @prod == true -%>
+<% if @prod == true %>
       - location: https://mds.swamid.se
         validation-certificate: file:/opt/bankidp/config/certificates/md-signer2.crt
-    <% else -%>
+<% else %>
       - location: https://mds.swamid.se/qa
         validation-certificate: file:/opt/bankidp/config/certificates/swamid-qa.crt
-    <% end -%>
+<% end -%>
         backup-location: /opt/bankidp/config/metadata/mdq-backup
         mdq: true
     credentials:
