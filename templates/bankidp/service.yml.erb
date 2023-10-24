@@ -53,13 +53,16 @@ bankid:
         text: "*Tänk på!* Logga aldrig in med ditt BankID då någon ringer och ber dig logga in."
         format: simple-markdown-v1
   relying-parties:
-    - id: "test-rp"
+    - id: "sunet"
+      entity-ids:
+       - "https://ladok3-00.ladok.umu.se/student-sp"
+       - "https://ladok3-demo-00.its.umu.se/student-sp"
+       - "https://release-check.qa.swamid.se/shibboleth"
       credential:
         name: "test-cred"
-        resource: file:/opt/bankid/testcertificate.p12
+        resource: file:/opt/bankidp/config/sunet3.p12
         alias: "ALIAS"
-        password: "qwerty123"
-        type: "PKCS12"
+        password: "qwerty123
 
 saml:
   idp:
