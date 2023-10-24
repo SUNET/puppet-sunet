@@ -66,9 +66,15 @@ saml:
     entity-id: '<%= scope.call_function('safe_hiera', ['bankidp_saml_base_url'])  %>'
     base-url: '<%= scope.call_function('safe_hiera', ['bankidp_saml_base_url'])  %>'
     metadata-providers:
-      - location: https://eid.svelegtest.se/metadata/mdx/role/sp.xml
-        backup-location: ${BACKUP_DIR}/metadata/metadata-backup.xml
-        validation-certificate: file:/opt/bankid-idp/config/certificates/sandbox-metadata.crt
+    <% if @prod == true -%>
+      - location: https://mds.swamid.se
+        validation-certificate: file:/opt/bankidp/config/certificates/md-signer2.crt
+    <% else -%>
+      - location: https://mds.swamid.se/qa
+        validation-certificate: file:/opt/bankidp/config/certificates/swamid-qa.crt
+    <% end -%>
+        backup-location: /opt/bankidp/config/metadata/mdq-backup
+        mdq: true
     credentials:
       sign:
         resource: file:/opt/bankid-idp/config/idp-keystore.jks
