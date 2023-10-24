@@ -31,6 +31,10 @@ class sunet::vc::standalone_mock(
     content =>  template("sunet/vc/standalone/mock/haproxy.cfg.erb")
   }
 
+  sunet::ssh_keys { 'vcops':
+    config => lookup('vcops_ssh_config', undef, undef, {}),
+  }
+
   # Compose
   sunet::docker_compose { 'vc_standalone':
     content          => template('sunet/vc/standalone/mock/docker-compose.yml.erb'),
