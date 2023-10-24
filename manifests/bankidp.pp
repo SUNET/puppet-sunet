@@ -24,11 +24,11 @@ class sunet::bankidp(
     false => 'swamid-qa.crt',
   }
 
-  file { '/opt/bankidp/config/certificates/' + $signing_cert:
+  file { "/opt/bankidp/config/certificates/${signing_cert}":
     ensure  => 'file',
     mode    => '0755',
     owner   => 'root',
-    content => file('sunet/bankidp/' + $signing_cert)
+    content => file("sunet/bankidp/${signing_cert}")
   }
 
 
