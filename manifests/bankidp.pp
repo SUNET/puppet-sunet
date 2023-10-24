@@ -9,7 +9,8 @@ class sunet::bankidp(
   String $server_servlet_context_path = '/bankid/idp',
   String $tz = 'Europe/Stockholm',
   String $bankid_home = '/opt/bankidp',
-  String $spring_config_import = '/config/service.yml'
+  String $spring_config_import = '/config/service.yml',
+  Boolean $prod = true,
 ) {
 
     ensure_resource('sunet::misc::create_dir', '/opt/bankidp/config/', { owner => 'root', group => 'root', mode => '0750'})
