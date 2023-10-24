@@ -11,8 +11,6 @@ services:
 <% end -%>
     environment:
       - TZ=<%= @tz %>
-      - SPRING_PROFILES_ACTIVE=<%= @spring_profiles_active %>
-      - SERVER_SERVLET_CONTEXT_PATH=<%= @server_servlet_context_path %>
       - SPRING_CONFIG_IMPORT=<%= @bankid_home %><%= @spring_config_import %>
 <% @environments_extras.each do |environment| -%>
       - <%= environment %>
