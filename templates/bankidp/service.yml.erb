@@ -2,9 +2,6 @@ server:
   port: 8082
 
 spring:
-  config:
-    activate:
-      on-profile: '<%= scope.call_function('safe_hiera', ['bankidp_spring_config_profile']) %>'
   redis:
     host: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_host']) %>'
     port: 6379
@@ -18,13 +15,6 @@ spring:
       trust:
         resource: file:/opt/bankid-idp/config/redis/trust.p12
         password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
-tomcat:
-  ajp:
-    enabled: true
-    secret-required: true
-    secret: '<%= scope.call_function('safe_hiera', ['bankidp_tomcat_password']) %>'
-    port: 8012
-
 bankid:
   session:
     module: redis
@@ -46,8 +36,6 @@ bankid:
       name:
         sv: "Sweden Connect"
         en: "Sweden Connect"
-    override:
-      directory-path: "/opt/bankid-idp/config/overrides/"
     user-error:
       contact-email: operations@swedenconnect.se
       show-contact-information: false
