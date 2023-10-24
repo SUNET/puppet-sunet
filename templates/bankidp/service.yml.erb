@@ -78,17 +78,17 @@ saml:
     credentials:
       sign:
         resource: file:/opt/bankid-idp/config/idp-keystore.jks
-        alias: SIGNALIAS
+        alias: METADATA
         password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
         type: JKS
       encrypt:
         resource: file:/opt/bankid-idp/config/idp-keystore.jks
-        alias: ENCRYPTALIAS
+        alias: METADATA
         password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
         type: JKS
       metadata-sign:
         resource: file:/opt/bankid-idp/config/idp-keystore.jks
-        alias: METADATAALIAS
+        alias: METADATA
         password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
         type: JKS
     metadata:
