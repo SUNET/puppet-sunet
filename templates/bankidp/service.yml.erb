@@ -25,7 +25,7 @@ bankid:
     module: redis
   audit:
     repository: "redistimeseries"
-    log-file: ${BANKID_INSTALL_DIR}/bankid-idp/target/audit.log
+    log-file: /opt/bankidp/logs/audit.log
 
 <% if @prod == true %>
   server-root-certificate: classpath:bankid-trust-prod.crt
@@ -37,7 +37,7 @@ bankid:
 
   ui:
     provider:
-      svg-logotype: file:/opt/bankid-idp/config/logo-notext.svg
+      svg-logotype: file:/opt/bankidp/config/logo-notext.svg
       name:
         sv: "Sweden Connect"
         en: "Sweden Connect"
@@ -80,17 +80,17 @@ saml:
         mdq: true
     credentials:
       sign:
-        resource: file:/opt/bankid-idp/config/idp-keystore.jks
+        resource: file:/opt/bankidp/config/idp-keystore.jks
         alias: METADATA
         password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
         type: JKS
       encrypt:
-        resource: file:/opt/bankid-idp/config/idp-keystore.jks
+        resource: file:/opt/bankidp/config/idp-keystore.jks
         alias: METADATA
         password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
         type: JKS
       metadata-sign:
-        resource: file:/opt/bankid-idp/config/idp-keystore.jks
+        resource: file:/opt/bankidp/config/idp-keystore.jks
         alias: METADATA
         password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
         type: JKS
