@@ -21,9 +21,9 @@ services:
 <%- @volumes_extras.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
-<% unless @ports_extras.empty? -%>
     ports:
       - "443:8082"
+<% unless @ports_extras.empty? -%>
 <%- @ports_extras.each do |port| -%>
       - "<%= port %>"
 <%- end -%>
