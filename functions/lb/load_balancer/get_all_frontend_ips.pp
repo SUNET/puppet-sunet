@@ -1,5 +1,5 @@
 # Get a list of all the instances frontend addresses
-function sunet::lb::load_balancers::get_all_frontend_ips(
+function sunet::lb::load_balancer::get_all_frontend_ips(
   Hash[String, Any] $config,
 ) >> Array[String] {
   if ! has_key($config, 'frontends') {
