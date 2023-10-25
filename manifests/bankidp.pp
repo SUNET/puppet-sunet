@@ -40,4 +40,8 @@ class sunet::bankidp(
     compose_filename => 'docker-compose.yml',
     description      => 'Freja ftw',
   }
+  
+  sunet::rediscluster {
+    numnodes         => 2
+  }
 }
