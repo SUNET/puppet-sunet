@@ -19,7 +19,7 @@ class sunet::metadata::pyff_compose(
   Boolean $manage_signing_key = false,
 ) {
 
-  $pkcs11pin = hiera('pkcs11pin','')
+  $pkcs11pin = lookup('pkcs11pin', undef, undef, '')
 
   if $manage_signing_key {
     exec {$pyff_credentialsdir:

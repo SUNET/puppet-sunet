@@ -5,7 +5,7 @@
 class sunet::lb::load_balancer(
   String  $router_id   = $ipaddress_default,
   String  $basedir     = '/opt/frontend',
-  Integer $base_uidgid = hiera('sunet_frontend_load_balancer_base_uidgid', 800),
+  Integer $base_uidgid = lookup('sunet_frontend_load_balancer_base_uidgid', undef, undef, 800),
   Integer $frontend    = $base_uidgid + 0,
   Integer $fe_api      = $base_uidgid + 1,
   Integer $fe_monitor  = $base_uidgid + 2,
