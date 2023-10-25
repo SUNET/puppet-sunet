@@ -153,29 +153,29 @@ define sunet::lb::load_balancer::website(
   ensure_resource('file', '/usr/local/bin/start-frontend', {
     ensure  => 'file',
     mode    => '0755',
-    content => template('sunet/frontend/start-frontend.erb'),
+    content => template('sunet/lb/start-frontend.erb'),
   })
 
   ensure_resource('file', "${scriptdir}/haproxy-start.sh", {
     ensure  => 'file',
     mode    => '0755',
-    content => template('sunet/frontend/haproxy-start.sh.erb'),
+    content => template('sunet/lb/haproxy-start.sh.erb'),
   })
 
   ensure_resource('file', "${scriptdir}/configure-container-network", {
     ensure  => 'file',
     mode    => '0755',
-    content => template('sunet/frontend/configure-container-network.erb'),
+    content => template('sunet/lb/configure-container-network.erb'),
   })
 
   ensure_resource('file', "${scriptdir}/frontend-config", {
     ensure  => 'file',
     mode    => '0755',
-    content => template('sunet/frontend/frontend-config.erb'),
+    content => template('sunet/lb/frontend-config.erb'),
   })
 
   sunet::docker_compose { "frontend-${instance}":
-    content          => template('sunet/frontend/docker-compose_template.erb'),
+    content          => template('sunet/lb/docker-compose_template.erb'),
     service_prefix   => 'frontend',
     service_name     => $instance,
     compose_dir      => "${basedir}/compose",
@@ -224,7 +224,7 @@ define sunet::lb::load_balancer::website(
     ensure_resource('file', "/etc/nftables/conf.d/700-frontend-${instance}.nft", {
       ensure  => 'file',
       mode    => '0400',
-      content => template('sunet/frontend/700-frontend-instance_nftables.nft.erb'),
+      content => template('sunet/lb/700-frontend-instance_nftables.nft.erb'),
       notify  => Service['nftables'],
     })
   }
