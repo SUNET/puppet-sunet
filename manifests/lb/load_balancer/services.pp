@@ -35,7 +35,7 @@ class sunet::lb::load_balancer::services(
     ;
   }
 
-  configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
+  sunet::lb::load_balancer::configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
 
   sunet::exabgp::molly_guard { $name :
     service_name => 'exabgp',
@@ -54,7 +54,7 @@ class sunet::lb::load_balancer::services(
   }
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'frontend-api' :
-      allow_clients => get_all_backend_ips($config),
+      allow_clients => sunet::lb::load_balancer::get_all_backend_ips($config),
       port          => $api_port,
     }
   }
@@ -77,21 +77,21 @@ class sunet::lb::load_balancer::services(
   # Variables used in compose file.
   #   NOTE: For this (scope lookup) to work, this code has to be a class and not a define!
   #
-  $api_image = get_config($config, 'api_image', 'docker.sunet.se/sunetfrontend-api')
-  $api_imagetag = get_config($config, 'api_imagetag', 'latest')
+  $api_image = sunet::lb::load_balancer::get_config($config, 'api_image', 'docker.sunet.se/sunetfrontend-api')
+  $api_imagetag = sunet::lb::load_balancer::get_config($config, 'api_imagetag', 'latest')
   $api_basedir = "${basedir}/api"
   #
-  $exabgp_image = get_config($config, 'exabgp_image', 'docker.sunet.se/sunet/docker-sunet-exabgp')
-  $exabgp_imagetag = get_config($config, 'exabgp_imagetag', 'latest')
+  $exabgp_image = sunet::lb::load_balancer::get_config($config, 'exabgp_image', 'docker.sunet.se/sunet/docker-sunet-exabgp')
+  $exabgp_imagetag = sunet::lb::load_balancer::get_config($config, 'exabgp_imagetag', 'latest')
   $exabgp_volumes = [
     "${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
     "${monitor_dir}:${monitor_dir}:ro",
   ]
   #
-  $telegraf_image = get_config($config, 'telegraf_image', 'docker.sunet.se/eduid/telegraf')
-  $telegraf_imagetag = get_config($config, 'telegraf_imagetag', 'stable')
+  $telegraf_image = sunet::lb::load_balancer::get_config($config, 'telegraf_image', 'docker.sunet.se/eduid/telegraf')
+  $telegraf_imagetag = sunet::lb::load_balancer::get_config($config, 'telegraf_imagetag', 'stable')
   $telegraf_basedir = "${basedir}/telegraf"
-  $telegraf_volumes = get_config($config, 'telegraf_volumes', [])
+  $telegraf_volumes = sunet::lb::load_balancer::get_config($config, 'telegraf_volumes', [])
   #
   sunet::docker_compose {'frontend_compose':
     service_name => 'frontend',
@@ -102,53 +102,3 @@ class sunet::lb::load_balancer::services(
 
 }
 
-# Create resources for Exabgp peers
-define configure_peers($router_id, $peers)
-{
-  $defaults = {
-    router_id => $router_id,
-  }
-  create_resources('sunet::lb::load_balancer::peer', $peers, $defaults)
-}
-
-# Convenience function to load a value from the load_balancer section of the config
-function get_config(
-  Hash[String, Hash] $config,
-  String $name,
-  $default = undef
-) {
-  has_key($config['load_balancer'], $name) ? {
-    true  => $config['load_balancer'][$name],
-    false => $default,
-  }
-}
-
-# Get a list of all the instances backends - they should all be able to contact the API
-function get_all_backend_ips(
-  Hash[String, Hash] $config,
-) >> Array[String] {
-  if has_key($config['load_balancer'], 'websites') {
-    $websites = $config['load_balancer']['websites']
-  } elsif has_key($config['load_balancer'], 'websites2') {
-    # name used during migration
-    $websites = $config['load_balancer']['websites2']
-  } else {
-    fail('Load balancer config contains neither "websites" nor "websites2"')
-  }
-
-  $all_ips = map($websites) | $instance_name, $v1 | {
-    if has_key($v1, 'backends') {
-      map($v1['backends']) | $backend_name, $v2 | {
-        map($v2) | $backend_fqdn, $v3 | {
-          has_key($v3, 'ips') ? {
-            true => $v3['ips'],
-            false => []
-          }
-        }
-      }
-    }
-  }
-
-  $uniq = flatten($all_ips).unique
-  $uniq
-}
