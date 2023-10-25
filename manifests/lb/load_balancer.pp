@@ -47,7 +47,7 @@ class sunet::lb::load_balancer(
     ensure_resource('sunet::misc::create_dir', [$confdir, $scriptdir],
                     { owner => 'root', group => 'root', mode => '0755' })
 
-    configure_websites { 'websites':
+    sunet::lb::load_balancer::configure_websites { 'websites':
       websites  => $websites,
       basedir   => $basedir,
       confdir   => $confdir,
@@ -72,18 +72,5 @@ class sunet::lb::load_balancer(
                 "out=${snakeoil_bundle}",
                 ],
     group  => 'ssl-cert',
-  }
-}
-
-# Create a sunet::lb::load_balancer::website resource for every website in the config
-define configure_websites(Hash[String, Hash] $websites, String $basedir, String $confdir, String $scriptdir)
-{
-  each($websites) | $site, $config | {
-    create_resources('sunet::lb::load_balancer::website', {$site => {}}, {
-      'basedir'         => $basedir,
-      'confdir'         => $confdir,
-      'scriptdir'       => $scriptdir,
-      'config'          => $config,
-      })
   }
 }
