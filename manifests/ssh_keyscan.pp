@@ -19,4 +19,3 @@ class sunet::ssh_keyscan(
     order   => '10',
   }
 }
-

@@ -1,4 +1,4 @@
-# Keyscan host
+# ssh_keyscan::host
 define sunet::ssh_keyscan::host (
   Array $aliases = [],
   Optional[String] $address = undef,
