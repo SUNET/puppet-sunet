@@ -16,7 +16,7 @@ class sunet::metadata::mdq_publisher(
     ensure_resource ('class','sunet::nftables::init', {})
   }
 
-  $signers = hiera('signers')
+  $signers = lookup('signers')
   $signers.each |$signer_name, $signer| {
     $signer_ip = $signer['ipnumber']
     $ssh_key = $signer['ssh_key']

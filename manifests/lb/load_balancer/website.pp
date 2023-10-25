@@ -12,7 +12,7 @@ define sunet::lb::load_balancer::website(
   }
   $site_name = pick($config['site_name'], $instance)
   $monitor_group = pick($config['monitor_group'], 'default')
-  $haproxy_template_dir = hiera('haproxy_template_dir', $instance)
+  $haproxy_template_dir = lookup('haproxy_template_dir', undef, undef, $instance)
 
   # Figure out what certificate to pass to the haproxy container
   if ! has_key($config, 'tls_certificate_bundle') {
