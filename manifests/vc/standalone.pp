@@ -101,21 +101,24 @@ class sunet::vc::standalone(
     group   => '999',
   }
 
-  schedule { 'update_letsencrypt_time':
+  schedule { 'letsencrypt_renew_schedule':
     period => monthly,
     repeat => 1,
   }
 
-  exec { 'install_letsencrypt':
-    command     => "apt-get update && apt-get install python3-certbot-dns-standalone unzip -y && cd /etc && unzip letsencrypt.zip",
-    cwd         => '/opt',
+  $letsencrypt_deps = [ 'python3-certbot-dns-standalone', 'unzip' ]
+  package { $letsencrypt_deps: ensure => 'installed' }
+
+  exec { 'install_letsencrypt_files':
+    command     => "unzip letsencrypt.zip",
+    cwd         => '/etc',
     unless => '/usr/bin/ls /etc/letsencrypt 2> /dev/null',
   }
 
-  exec { 'update_letsencrypt_cert':
+  exec { 'renew_letsencrypt_cert':
     command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem",
     cwd         => '/opt',
-    schedule => 'update_letsencrypt_time',
+    schedule => 'update_letsencrypt_schedule',
   }
  
   sunet::ssh_keys { 'vcops':
