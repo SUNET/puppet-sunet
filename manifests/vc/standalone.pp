@@ -101,11 +101,6 @@ class sunet::vc::standalone(
     group   => '999',
   }
 
-  schedule { 'letsencrypt_renew_schedule':
-    period => monthly,
-    repeat => 1,
-  }
-
   $letsencrypt_deps = [ 'python3-certbot-dns-standalone', 'unzip' ]
   package { $letsencrypt_deps: ensure => 'installed' }
 
@@ -115,12 +110,11 @@ class sunet::vc::standalone(
     unless => '/usr/bin/ls /etc/letsencrypt 2> /dev/null',
   }
 
-  exec { 'renew_letsencrypt_cert':
+  cron::job { 'renew_letsencrypt_cert':
     command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem",
-    cwd         => '/opt',
-    schedule => 'update_letsencrypt_schedule',
+    month       => '*/2',
   }
- 
+
   sunet::ssh_keys { 'vcops':
     config => lookup('vcops_ssh_config', undef, undef, {}),
   }
