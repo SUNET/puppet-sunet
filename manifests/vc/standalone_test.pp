@@ -23,7 +23,8 @@ class sunet::vc::standalone_test(
   String $postgres_version		    = '15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c',
   String $ca_version              = "latest",
   String $ca_reason               = "Ladok",
-  String $ca_location             = "Tidan"
+  String $ca_location             = "Tidan",
+  String $letsencrypt_account_thumbprint             = lookup('letsencrypt_account_thumbprint')
   #hash with basic_auth key/value
 ) {
 
@@ -108,6 +109,23 @@ class sunet::vc::standalone_test(
     owner => 'root',
     group => 'root',
     content => template("sunet/vc/standalone/test/Makefile.erb")
+  }
+
+  schedule { 'update_letsencrypt_time':
+    period => monthly,
+    repeat => 1,
+  }
+
+  exec { 'install_letsencrypt':
+    command     => "apt-get update && apt-get install python3-certbot-dns-standalone unzip -y && cd /etc && unzip letsencrypt.zip",
+    cwd         => '/opt',
+    unless => '/usr/bin/ls /etc/letsencrypt 2> /dev/null',
+  }
+
+  exec { 'update_letsencrypt_cert':
+    command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem",
+    cwd         => '/opt',
+    schedule => 'update_letsencrypt_time',
   }
 
   sunet::ssh_keys { 'vcops':
