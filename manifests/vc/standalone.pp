@@ -23,7 +23,8 @@ class sunet::vc::standalone(
   String $postgres_version		    = '15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c',
   String $ca_version              = "latest",
   String $ca_reason               = "Ladok",
-  String $ca_location             = "Tidan"
+  String $ca_location             = "Tidan",
+  String $letsencrypt_account_thumbprint             = lookup('letsencrypt_account_thumbprint')
   #hash with basic_auth key/value
 ) {
 
@@ -100,6 +101,27 @@ class sunet::vc::standalone(
     group   => '999',
   }
 
+  file { '/opt/vc/cert':
+    ensure  => directory,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+  }
+
+  $letsencrypt_deps = [ 'python3-certbot-dns-standalone', 'unzip' ]
+  package { $letsencrypt_deps: ensure => 'installed' }
+
+  exec { 'install_letsencrypt_files':
+    command     => "unzip letsencrypt.zip",
+    cwd         => '/etc',
+    unless => '/usr/bin/ls /etc/letsencrypt 2> /dev/null',
+  }
+
+  cron::job { 'renew_letsencrypt_cert':
+    command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem",
+    month       => '*/2',
+  }
+
   sunet::ssh_keys { 'vcops':
     config => lookup('vcops_ssh_config', undef, undef, {}),
   }
@@ -112,6 +134,7 @@ class sunet::vc::standalone(
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'VC-standalone service',
+    subscribe        => 'renew_letsencrypt_cert',
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
