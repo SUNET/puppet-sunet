@@ -9,9 +9,9 @@ class sunet::lb::load_balancer::services(
   #
   # Exabgp, runs as a service - not in Docker (because it needs to run in the hosts network namespace)
   #
-  sunet::exabgp::package { 'exabgp': }
+  sunet::lb::exabgp::package { 'exabgp': }
 
-  sunet::exabgp::config { 'exabgp_config':
+  sunet::lb::exabgp::config { 'exabgp_config':
     config         => '/etc/exabgp/exabgp.conf',
     monitor        => '/etc/exabgp/monitor',
     notify         => Service['exabgp'],
@@ -37,7 +37,7 @@ class sunet::lb::load_balancer::services(
 
   sunet::lb::load_balancer::configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
 
-  sunet::exabgp::molly_guard { $name :
+  sunet::lb::exabgp::molly_guard { $name :
     service_name => 'exabgp',
   }
 
