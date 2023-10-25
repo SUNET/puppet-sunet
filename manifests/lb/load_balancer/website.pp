@@ -212,7 +212,7 @@ define sunet::lb::load_balancer::website(
     # NEW way, configure forwarding and IPv6 NAT (for haproxy to reach ipv6-only backends) using
     # an nftables drop-in file.
 
-    $frontend_ips = sunet::lb::load_balancers::get_all_frontend_ips($config)
+    $frontend_ips = sunet::lb::load_balancer::get_all_frontend_ips($config)
 
     # Variables used in template
     #
