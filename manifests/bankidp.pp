@@ -11,6 +11,7 @@ class sunet::bankidp(
   Boolean $prod = true,
   Boolean $app_node = false,
   Boolean $redis_node = false,
+  String $instance,
 ) {
   if $app_node {
     ensure_resource('sunet::misc::create_dir', '/opt/bankidp/config/', { owner => 'root', group => 'root', mode => '0750'})
