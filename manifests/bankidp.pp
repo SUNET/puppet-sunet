@@ -41,7 +41,7 @@ class sunet::bankidp(
     }
   }
   if $redis_node {
-    sunet::rediscluster {
+    sunet::rediscluster { 'redis-cluster':
       numnodes         => 2
     }
   }
