@@ -117,7 +117,7 @@ class sunet::vc::standalone(
     unless => '/usr/bin/ls /etc/letsencrypt 2> /dev/null',
   }
 
-  cron::job { 'renew_letsencrypt_cert':
+  cron { 'renew_letsencrypt_cert':
     command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem",
     month       => '*/2',
   }
