@@ -11,7 +11,7 @@ define sunet::lb::register(
     '/usr/local/bin/sunetfrontend-register':
       ensure  => 'file',
       mode    => '0755',
-      content => template('sunet/frontend/sunetfrontend-register.erb')
+      content => template('sunet/lb/sunetfrontend-register.erb')
       ;
   } ->
 

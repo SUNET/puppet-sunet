@@ -15,7 +15,7 @@ class sunet::lb::register_sites_array(
     '/usr/local/bin/sunetfrontend-register':
       ensure  => 'file',
       mode    => '0755',
-      content => template('sunet/frontend/sunetfrontend-register.erb')
+      content => template('sunet/lb/sunetfrontend-register.erb')
       ;
   }
   $sites.each | $site | {
