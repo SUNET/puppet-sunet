@@ -1,0 +1,13 @@
+#!/bin/bash
+
+<% if @match %>
+curl -s <%= @check_url %> | grep -q <%= @match %>
+<% else %>
+curl -o /dev/null -s <%= @check_url %>
+<% end %>
+
+if [[ $? -eq 0 ]]; then
+    echo announce route <%= @route %>
+else
+    echo withdraw route <%= @route %>
+fi
