@@ -1,5 +1,6 @@
 # Install exabgp as a package
 define sunet::lb::exabgp::package() {
+  include sunet::systemd_reload
   ensure_resource('package', 'exabgp', {ensure => 'installed'})
 
   # Make exabgp run as non-root
