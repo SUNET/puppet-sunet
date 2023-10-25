@@ -34,7 +34,7 @@ define sunet::lb::load_balancer::peer(
     default => hiera($password_hiera_key, undef)
   }
 
-  sunet::exabgp::neighbor { "peer_${name}":
+  sunet::lb::exabgp::neighbor { "peer_${name}":
     local_as      => $as,
     local_address => $_local_ip,
     peer_as       => $as,
