@@ -11,9 +11,9 @@ common:
 
 issuer:
   api_server:
-    addr: vc_issuer:8080
+    addr: :8080
   rpc_server:
-    addr: vc_issuer:8090
+    addr: :8090
   http_proxy:
   ca:
     addr: "<%= @ca_pdfsign_url %>"
@@ -44,21 +44,21 @@ issuer:
   
 datastore:
   api_server:
-    addr: vc_datastore:8080
+    addr: :8080
   rpc_server:
-    addr: vc_datastore:8090
+    addr: :8090
 
 verifier:
   api_server:
-    addr: vc_verifier:8080
+    addr: :8080
   rpc_server:
-    addr: vc_verifier:8090
+    addr: :8090
 
 registry:
   api_server:
-    addr: vc_registry:8080
+    addr: :8080
+  rpc_server:
+    addr: :8090
   smt:
     update_periodicity: 5
     init_leaf: 575cea4a-5725-11ee-8287-2b486b7ace28
-  rpc_server:
-    addr: vc_registry:8090

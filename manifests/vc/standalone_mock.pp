@@ -1,4 +1,4 @@
-class sunet::vc::standalone::mock(
+class sunet::vc::standalone_mock(
   String  $vc_version="latest",
   String  $mongodb_version="4.0.10",
   String  $mockca_sleep="20",
@@ -29,6 +29,10 @@ class sunet::vc::standalone::mock(
     owner   => 'root',
     group   => 'root',
     content =>  template("sunet/vc/standalone/mock/haproxy.cfg.erb")
+  }
+
+  sunet::ssh_keys { 'vcops':
+    config => lookup('vcops_ssh_config', undef, undef, {}),
   }
 
   # Compose

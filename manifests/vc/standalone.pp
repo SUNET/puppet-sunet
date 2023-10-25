@@ -117,6 +117,10 @@ class sunet::vc::standalone(
     cwd         => '/opt',
     schedule => 'update_letsencrypt_time',
   }
+ 
+  sunet::ssh_keys { 'vcops':
+    config => lookup('vcops_ssh_config', undef, undef, {}),
+  }
 
 
   # Compose

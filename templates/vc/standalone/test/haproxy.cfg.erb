@@ -37,13 +37,13 @@ backend issuer
 
 backend verifier
     http-request replace-path /verifier(/)?(.*) /\2
-    server verifier_server vc_verifier:8080 resolvers docker_resolver resolve-prefer ipv4
+    server issuer_server vc_verifier:8080 resolvers docker_resolver resolve-prefer ipv4
 
 backend datastore
     http-request replace-path /datastore(/)?(.*) /\2
-    server datastore_server vc_datastore:8080 resolvers docker_resolver resolve-prefer ipv4
+    server issuer_server vc_datastore:8080 resolvers docker_resolver resolve-prefer ipv4
 
 backend registry
     http-request replace-path /registry(/)?(.*) /\2
-    server registry_server vc_registry:8080 resolvers docker_resolver resolve-prefer ipv4
+    server issuer_server vc_registry:8080 resolvers docker_resolver resolve-prefer ipv4
 
