@@ -101,6 +101,13 @@ class sunet::vc::standalone(
     group   => '999',
   }
 
+  file { '/opt/vc/cert':
+    ensure  => directory,
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+  }
+
   $letsencrypt_deps = [ 'python3-certbot-dns-standalone', 'unzip' ]
   package { $letsencrypt_deps: ensure => 'installed' }
 
@@ -127,7 +134,7 @@ class sunet::vc::standalone(
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'VC-standalone service',
-    subscribe        => 'update_letsencrypt_cert',
+    subscribe        => 'renew_letsencrypt_cert',
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
