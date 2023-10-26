@@ -117,6 +117,11 @@ class sunet::vc::standalone(
     unless => '/usr/bin/ls /etc/letsencrypt 2> /dev/null',
   }
 
+  exec { 'renew_letsencrypt_cert_first_run':
+    command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem && touch /etc/letsencrypt/first_run",
+    unless => '/usr/bin/ls /etc/letsencrypt/first_run 2> /dev/null',
+  }
+
   cron { 'renew_letsencrypt_cert':
     command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem",
     month       => '*/2',
