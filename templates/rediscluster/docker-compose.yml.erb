@@ -13,7 +13,11 @@ services:
       - 89.46.21.29
       - 89.32.32.32
 <% if @hostmode == true %>
-      network_mode: host
+    network_mode: host
+<% else %>
+    ports:
+      - "<%= redisport %>:<%= redisport %>"
+      - "<%= joinport %>:<%= joinport %>"
 <% end %>
     volumes:
       - /opt/redis/node-<%= i %>:/data
