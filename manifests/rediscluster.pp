@@ -31,9 +31,11 @@ class sunet::rediscluster(
       ensure  => present,
       content => template('sunet/rediscluster/server.conf.erb'),
     }
-    -> sunet::misc::ufw_allow { "redis_port_${i}":
-      from => 'any',
-      port => [$redisportnum,$clusterportnum],
+    $ports = [$redisportnum, $clusterportnum]
+    $ports.each|$port| {
+      sunet::nftables::docker_expose { "redis_port_${port}":
+        port          =>  $port,
+      }
     }
   }
 }
