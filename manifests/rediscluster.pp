@@ -1,6 +1,8 @@
 # A cluster class
 class sunet::rediscluster(
   Integer $numnodes = 3,
+  Integer $hostmode = false,
+  String $cluster_announce_ip = "",
 )
 {
   include stdlib
