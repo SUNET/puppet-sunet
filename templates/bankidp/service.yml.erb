@@ -6,7 +6,7 @@ spring:
     redis:
       cluster:
         nodes:
-          <% @redises.each do |host| -%>
+          <% @redises.each do |host| %>
           - <%= host %>:6379
           <%- end -%>
       ssl:
