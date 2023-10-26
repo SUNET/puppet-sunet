@@ -134,7 +134,7 @@ class sunet::vc::standalone(
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'VC-standalone service',
-    subscribe        => File['/opt/vc/cert/tls-cert-key.pem'],
+    subscribe        => Cron['renew_letsencrypt_cert'],
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
