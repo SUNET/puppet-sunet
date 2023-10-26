@@ -9,6 +9,7 @@ class sunet::bankidp(
   String $tz = 'Europe/Stockholm',
   String $bankid_home = '/opt/bankidp',
   String $spring_config_import = '/config/service.yml',
+  String $service_name = 'bankidp.qa.swamid.se',
   Boolean $prod = true,
   Boolean $app_node = false,
   Boolean $redis_node = false,
@@ -18,6 +19,15 @@ class sunet::bankidp(
   $redises = $facts['bankid_cluster_info']['redises']
 
   if $app_node {
+    class { 'sunet::frontend::register_sites':
+      'sites' => {
+        $service_name => {
+          'frontends' => ['se-fre-lb-1.sunet.se', 'se-tug-lb-1.sunet.se'],
+          'port'      => '443',
+        }
+      }
+    }
+  }
     ensure_resource('sunet::misc::create_dir', '/opt/bankidp/config/', { owner => 'root', group => 'root', mode => '0750'})
     file { '/opt/bankidp/config/service.yml':
       content => template('sunet/bankidp/service.yml.erb'),
