@@ -1,7 +1,7 @@
 # A cluster class
 class sunet::rediscluster(
   Integer $numnodes = 3,
-  Integer $hostmode = false,
+  Boolean $hostmode = false,
   String $cluster_announce_ip = "",
 )
 {
