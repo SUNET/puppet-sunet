@@ -35,6 +35,7 @@ class sunet::rediscluster(
     $ports.each|$port| {
       sunet::nftables::docker_expose { "redis_port_${port}":
         port          =>  $port,
+        allow_clients => 'any',
       }
     }
   }
