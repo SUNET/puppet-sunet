@@ -56,7 +56,7 @@ class sunet::bankidp(
   if $redis_node {
     class { 'sunet::rediscluster':
       numnodes         => 2,
-      cluster_announce_ip => $fqdn
+      cluster_announce_ip => $facts['ipaddress_default']
     }
   }
 }
