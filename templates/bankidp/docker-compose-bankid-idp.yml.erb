@@ -18,6 +18,7 @@ services:
     volumes:
       - "/etc/localtime:/etc/localtime:ro"
       - "/opt/bankidp:<%= @bankid_home %>"
+      - "/etc/ssl:/etc/ssl:ro"
 <%- @volumes_extras.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
