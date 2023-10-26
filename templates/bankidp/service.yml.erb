@@ -5,7 +5,7 @@ spring:
   data:
     redis:
         cluster:
-          nodes:<% @redises.each do |host| -%><%= host %>:6379,<%- end -%>
+          nodes: <% @redises.each do |host| -%><%= host %>:6379,<%- end %>
       ssl:
         enabled: false
       #password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_password']) %>'
