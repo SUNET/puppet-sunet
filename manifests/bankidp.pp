@@ -13,6 +13,10 @@ class sunet::bankidp(
   Boolean $app_node = false,
   Boolean $redis_node = false,
 ) {
+
+  $apps = $facts['bankid_cluster_info']['apps']
+  $redises = $facts['bankid_cluster_info']['redises']
+
   if $app_node {
     ensure_resource('sunet::misc::create_dir', '/opt/bankidp/config/', { owner => 'root', group => 'root', mode => '0750'})
     file { '/opt/bankidp/config/service.yml':
