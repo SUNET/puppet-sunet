@@ -20,14 +20,13 @@ class sunet::bankidp(
 
   if $app_node {
     class { 'sunet::frontend::register_sites':
-      'sites' => {
+      sites => {
         $service_name => {
-          'frontends' => ['se-fre-lb-1.sunet.se', 'se-tug-lb-1.sunet.se'],
-          'port'      => '443',
+          frontends => ['se-fre-lb-1.sunet.se', 'se-tug-lb-1.sunet.se'],
+          port      => '443',
         }
       }
     }
-  }
     ensure_resource('sunet::misc::create_dir', '/opt/bankidp/config/', { owner => 'root', group => 'root', mode => '0750'})
     file { '/opt/bankidp/config/service.yml':
       content => template('sunet/bankidp/service.yml.erb'),
