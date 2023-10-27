@@ -16,12 +16,13 @@ class sunet::dockerhost(
   Optional[Array[String]] $tcp_bind           = undef,
   Boolean $write_daemon_config                = false,
   Boolean $enable_ipv6                        = false,
+  Boolean $advanced_network                   = false,
 ) {
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
   include stdlib
 
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
+  if $::facts['sunet_nftables_enabled'] == 'yes' and $advanced_network == false {
     # Hackishly create the /etc/systemd/system/docker.service.d/ directory before the docker service is installed.
     # If we do this using 'file', the docker class will fail because of a duplicate declaration.
     exec { "create_${name}_service_dir":
@@ -171,7 +172,7 @@ class sunet::dockerhost(
     ]).join(' ')
 
 
-  if $write_daemon_config {
+  if $write_daemon_config or $advanced_network {
     if $docker_network =~ String[1] {
       $default_address_pools = $docker_network
     } else {
