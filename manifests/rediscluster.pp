@@ -33,10 +33,8 @@ class sunet::rediscluster(
     }
     $ports = [$redisportnum, $clusterportnum]
     $ports.each|$port| {
-      sunet::nftables::docker_expose { "redis_port_${port}":
-        iif           => 'ens3',
-        port          =>  $port,
-        allow_clients => 'any',
+      sunet::nftables::rule { "redis_port_${port}":
+        rule => "add rule inet filter input tcp dport $port counter accept comment \"allow-redis-$port\""
       }
     }
   }
