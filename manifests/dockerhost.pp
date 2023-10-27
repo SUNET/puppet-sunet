@@ -171,6 +171,10 @@ class sunet::dockerhost(
     $ipv6_parameters,
     ]).join(' ')
 
+  $iptables = $advanced_network ? {
+    true      => false,
+    false     => true,
+  }
 
   if $write_daemon_config {
     if $docker_network =~ String[1] {
@@ -188,11 +192,6 @@ class sunet::dockerhost(
         mode    => '0644',
         content => template('sunet/dockerhost/daemon.json.erb'),
         ;
-    }
-
-    $iptables = $advanced_network ? {
-      true      => false,
-      false     => true,
     }
 
     # Docker rejects options specified both from command line and in daemon.json
