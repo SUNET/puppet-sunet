@@ -1,0 +1,17 @@
+version: "3.7"
+
+services:
+  jenkins_agent:
+    container_name: jenkins_agent
+    restart: always
+    image: <%= @jenkins_image %>:<%= @jenkins_tag %>
+    dns:
+      - 89.32.32.32
+    volumes:
+      - /opt/jenkinsagent/var:/var/lib/jenkins
+    environment:
+      - JSECRET=<%= @jsecret %>
+    command:
+      - <%= @agentname %>
+      - -url
+      - <%= @url %>
