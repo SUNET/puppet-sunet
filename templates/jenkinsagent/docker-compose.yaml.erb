@@ -11,7 +11,10 @@ services:
       - /opt/jenkinsagent/var:/var/lib/jenkins
     environment:
       - JSECRET=<%= @jsecret %>
+    ports:
+      - "5595:5595"
     command:
+      - <%= @jsecret %>
       - <%= @agentname %>
       - -url
       - <%= @url %>
