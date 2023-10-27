@@ -198,7 +198,7 @@ class sunet::dockerhost(
     # Docker rejects options specified both from command line and in daemon.json
     class {'docker':
       ip_forward                  => $iptables,
-      ipt_masq                    => $iptables,
+      ip_masq                     => $iptables,
       iptables                    => $iptables,
       manage_package              => false,
       manage_kernel               => false,
@@ -211,7 +211,7 @@ class sunet::dockerhost(
   } else {
     class {'docker':
       ip_forward                  => $iptables,
-      ipt_masq                    => $iptables,
+      ip_masq                     => $iptables,
       iptables                    => $iptables,
       storage_driver              => $storage_driver,
       manage_package              => false,
