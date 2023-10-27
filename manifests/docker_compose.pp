@@ -12,17 +12,14 @@ define sunet::docker_compose (
   String           $owner = 'root',
   Optional[String] $start_command = undef,
 ) {
-  $_install_service = false
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-    if has_key($::facts['networking']['interfaces'], 'to_docker') {
-      $_install_service = true
-    } else {
+    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
       notice("sunet::docker_compose: No to_docker interface found, not installing ${service_name}")
+      $_install_service = false
+    } else {
+      $_install_service = true
     }
   } else {
-    $_install_service = true
-  }
-  if $::facts['dockerhost_advanced_network'] == 'yes' {
     $_install_service = true
   }
 
