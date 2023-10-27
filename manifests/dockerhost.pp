@@ -172,7 +172,7 @@ class sunet::dockerhost(
     ]).join(' ')
 
 
-  if $write_daemon_config or $advanced_network {
+  if $write_daemon_config {
     if $docker_network =~ String[1] {
       $default_address_pools = $docker_network
     } else {
@@ -190,8 +190,16 @@ class sunet::dockerhost(
         ;
     }
 
+    $iptables = $advanced_network ? {
+      true      => false,
+      false     => true,
+    }
+
     # Docker rejects options specified both from command line and in daemon.json
     class {'docker':
+      ip_forward                  => $iptables,
+      ipt_masq                    => $iptables,
+      iptables                    => $iptables,
       manage_package              => false,
       manage_kernel               => false,
       use_upstream_package_source => false,
@@ -202,6 +210,9 @@ class sunet::dockerhost(
     }
   } else {
     class {'docker':
+      ip_forward                  => $iptables,
+      ipt_masq                    => $iptables,
+      iptables                    => $iptables,
       storage_driver              => $storage_driver,
       manage_package              => false,
       manage_kernel               => false,
