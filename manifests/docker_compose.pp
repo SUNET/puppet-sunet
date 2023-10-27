@@ -23,7 +23,7 @@ define sunet::docker_compose (
     $_install_service = true
   }
 
-  if $_install_service {
+  if $_install_service or $::facts['dockerhost_advanced_network'] == 'yes' {
     $compose_file = "${compose_dir}/${service_name}/${compose_filename}"
 
     # docker-compose uses dirname as project name, so we add $service_name and put the compose_file in there
