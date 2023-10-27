@@ -15,6 +15,7 @@ class sunet::rediscluster(
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'Redis Cluster',
+
   }
   file {'/etc/sysctl.d/55-vm-overcommit.conf':
     ensure  => present,
