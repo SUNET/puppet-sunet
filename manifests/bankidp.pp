@@ -21,6 +21,12 @@ class sunet::bankidp(
   sunet::ici_ca::rp { 'infra': }
 
   if $app_node {
+
+    $customers = lookup('bankidp_customers', undef, undef, undef)
+    sort(keys($customers)).each |$name| {
+      sunet::snippets::secret_file { "${bankid_home}/credentials/${name}.key": hiera_key => "bankid_customers[${name}]['key']" }
+    }
+
     class { 'sunet::frontend::register_sites':
       sites => {
         $service_name => {
