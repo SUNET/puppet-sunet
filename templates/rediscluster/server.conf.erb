@@ -10,7 +10,7 @@ cluster-require-full-coverage no
 loglevel warning
 <% if @tls%>
 port 0
-tlsport <%= @redisportnum %>
+tls-port <%= @redisportnum %>
 tls-replication yes
 tls-cluster yes
 tls-cert-file /etc/ssl/certs/<%= @fqdn %>_infra.crt
