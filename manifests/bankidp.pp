@@ -26,6 +26,11 @@ class sunet::bankidp(
     $customers = lookup('bankidp_customers', undef, undef, undef)
     sort(keys($customers)).each |$name| {
       sunet::snippets::secret_file { "${bankid_home}/credentials/${name}.key": hiera_key => "bankidp_customers.${name}.key" }
+      $password = lookup("bankidp_customers.${name}.password", undef, undef, undef)
+      exec { "build_${name}.p12":
+        command => "openssl pkcs12 -export -in /opt/bankidp/credentials/${name}.pem -inkey /opt/bankidp/credentials/${name}.key -name '${name}-bankid' -out /opt/bankidp/credentials/${name}.p12 -passin pass:${password} -passout pass:qwerty123",
+        onlyif  => "test ! -f ${bankid_home}/credentals/${name}.p12"
+      }
     }
 
     class { 'sunet::frontend::register_sites':
