@@ -33,7 +33,7 @@ class sunet::bankidp(
       }
     }
 
-    exec { 'ca.p12':
+    exec { 'infra.p12':
       command => 'openssl pkcs12 -export -in /etc/ssl/certs/infra.crt -nokeys -name infra -out /etc/ssl/certs/infra.p12  -passout pass:qwerty123',
       onlyif  => 'test ! -f /etc/ssl/certs/infra.p12'
     }
