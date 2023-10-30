@@ -22,6 +22,7 @@ class sunet::bankidp(
 
   if $app_node {
 
+    ensure_resource('sunet::misc::create_dir', '/opt/bankidp/credentials/', { owner => 'root', group => 'root', mode => '0750'})
     $customers = lookup('bankidp_customers', undef, undef, undef)
     sort(keys($customers)).each |$name| {
       sunet::snippets::secret_file { "${bankid_home}/credentials/${name}.key": hiera_key => "bankid_customers.${name}.key" }
