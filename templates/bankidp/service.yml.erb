@@ -11,6 +11,8 @@ spring:
           keystore:
             private-key: file:/etc/ssl/private/<%= @fqdn %>_infra.key
             certificate: file:/etc/ssl/certs/<%= @fqdn %>_infra.crt
+          truststore:
+            certificate: file:/etc/ssl/certs/infra.crt
   data:
     redis:
       cluster:
