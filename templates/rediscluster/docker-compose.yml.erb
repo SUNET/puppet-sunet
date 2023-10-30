@@ -21,7 +21,7 @@ services:
 <% end %>
     volumes:
       - /opt/redis/node-<%= i %>:/data
-<% if @tls == true %>
+<% if @tls == true -%>
       - /etc/ssl:/etc/ssl
 <% end %>
     command: redis-server /data/server.conf

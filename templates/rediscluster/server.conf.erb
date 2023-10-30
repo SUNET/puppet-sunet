@@ -13,8 +13,8 @@ port 0
 tlsport <%= @redisportnum %>
 tls-replication yes
 tls-cluster yes
-tls-cert-file /etc/ssl/certs/{::fqdn}_infra.crt
-tls-key-file /etc/ssl/private/{::fqdn}_infra.key
+tls-cert-file /etc/ssl/certs/<%= @fqdn %>_infra.crt
+tls-key-file /etc/ssl/private/<%= @fqdn %>_infra.key
 tls-ca-cert-file /etc/ssl/certs/infra.crt
 <% else %>
 port <%= @redisportnum %>
