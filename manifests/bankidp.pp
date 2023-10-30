@@ -38,6 +38,11 @@ class sunet::bankidp(
       onlyif  => 'test ! -f /etc/ssl/certs/infra.p12'
     }
 
+    exec { "${facts['networking']['fqdn']}_infra.p12":
+      command => "openssl pkcs12 -export -in /etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt -inkey /etc/ssl/private/${facts['networking']['fqdn']}_infra.pem -name 'infra' -out /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12 -passout pass:qwerty123",
+      onlyif  => "test ! -f /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
+    }
+
     class { 'sunet::frontend::register_sites':
       sites => {
         $service_name => {
