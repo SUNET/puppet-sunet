@@ -19,18 +19,8 @@ spring:
           - <%= host %>:6379
           <%- end -%>
       ssl:
-        enabled: false
-      #password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_password']) %>'
-      #ssl: false
-      #ssl-ext:
-      #  enable-hostname-verification: true
-      #  credential:
-      #    resource: file:/opt/bankidp/config/redis/redis.p12
-      #    password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
-      #  trust:
-      #    resource: file:/opt/bankidp/config/redis/trust.p12
-      #    password: '<%= scope.call_function('safe_hiera', ['bankidp_spring_redis_p12_password']) %>'
-      #
+        enabled: true
+        bundle: infra
 
 bankid:
   session:
