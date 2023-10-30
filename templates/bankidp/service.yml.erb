@@ -65,16 +65,18 @@ bankid:
         text: "*Tänk på!* Logga aldrig in med ditt BankID då någon ringer och ber dig logga in."
         format: simple-markdown-v1
   relying-parties:
-    - id: "sunet"
+<% @customers.each do | customer, value | -%>
+    - id: "<%= customer %>"
       entity-ids:
-       - "https://ladok3-00.ladok.umu.se/student-sp"
-       - "https://ladok3-demo-00.its.umu.se/student-sp"
-       - "https://release-check.qa.swamid.se/shibboleth"
+<% value["entity_ids"].each do | entityid | -%>
+       - "<%= entityid %>"
+<% end -%>
       credential:
-        name: "test-cred"
-        resource: file:/opt/bankidp/config/sunet3.p12
-        alias: "ALIAS"
+        name: "<%= customer %>"
+        resource: file:<%= @bankid_home %>/credentials/<%= customer %>.p12
+        alias: "<%= customer %>-bankid"
         password: "qwerty123"
+<% end %>
 
 saml:
   idp:
