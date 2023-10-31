@@ -7,7 +7,7 @@ class sunet::tabbyml(
   include sunet::packages::nvidia_container_toolkit
   include sunet::packages::nvidia_cuda_drivers
   sunet::docker_compose { 'tabbyml':
-    content          => template('sunet/tabbyml/docker-compose.erb.yml'),
+    content          => template('sunet/tabbyml/docker-compose.yml.erb'),
     service_name     => 'tabbyml',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
