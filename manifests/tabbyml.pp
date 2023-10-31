@@ -5,7 +5,7 @@ class sunet::tabbyml(
   String $vhost       = 'tabby-lab.sunet.se',
 ) {
   include sunet::packages::nvidia_container_toolkit
-  include sunet::packages::nvidia_cuda_driver
+  include sunet::packages::nvidia_cuda_drivers
   sunet::docker_compose { 'tabbyml':
     content          => template('sunet/tabbyml/docker-compose.erb.yml'),
     service_name     => 'tabbyml',
