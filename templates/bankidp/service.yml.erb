@@ -24,6 +24,10 @@ spring:
       ssl:
         enabled: true
       ssl-ext:
+        # redis or java require IP addresses in cert if verifcation is turned on
+        # Caused by: java.util.concurrent.CompletionException:
+        # javax.net.ssl.SSLHandshakeException: No subject alternative names
+        # matching IP address 89.46.20.236 found
         enable-hostname-verification: false
         credential:
           resource: file:/etc/ssl/private/<%= @fqdn %>_infra.p12
