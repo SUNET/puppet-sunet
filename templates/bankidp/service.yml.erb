@@ -22,7 +22,15 @@ spring:
           - <%= host %>:6379
           <%- end -%>
       ssl:
-        bundle: infra
+        enabled: true
+      ssl-ext:
+        enable-hostname-verification: false
+        credential:
+          resource: file:/etc/ssl/private/<%= @fqdn %>_infra.p12
+          password: qwerty123
+        trust:
+          resource: file:/etc/ssl/certs/infra.p12
+          password: qwerty123
 
 bankid:
   session:
