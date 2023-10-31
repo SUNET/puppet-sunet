@@ -33,8 +33,12 @@ class sunet::bankidp(
       }
     }
 
+    package {'openjdk-17-jre-headless':
+      ensure => latest
+    }
+
     exec { 'infra.p12':
-      command => 'openssl pkcs12 -export -in /etc/ssl/certs/infra.crt -nokeys -name infra -out /etc/ssl/certs/infra.p12  -passout pass:qwerty123',
+      command => 'keytool -import -noprompt -deststorepass qwerty123 -file /etc/ssl/certs/infra.crt -keystore /etc/ssl/certs/infra.p12',
       onlyif  => 'test ! -f /etc/ssl/certs/infra.p12'
     }
 
