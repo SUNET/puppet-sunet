@@ -7,11 +7,11 @@ class sunet::packages::nvidia_cuda_drivers {
   $minor = $facts['os']['distro']['release']['minor']
   $cuda_keyring = 'cuda-keyring_1.0-1_all.deb'
   exec { 'nvidia-cuda-drivers-keyring':
-    cmd    => "curl https://developer.download.nvidia.com/compute/cuda/repos/${distro}${major}${minor}/x86_64/${cuda_keyring} -o /tmp/${cuda_keyring} && dpkg -i /tmp/${cuda_keyring}",
-    unless => "test -f /tmp/${cuda_keyring}"
+    command => "curl https://developer.download.nvidia.com/compute/cuda/repos/${distro}${major}${minor}/x86_64/${cuda_keyring} -o /tmp/${cuda_keyring} && dpkg -i /tmp/${cuda_keyring}",
+    unless  => "test -f /tmp/${cuda_keyring}"
   }
   exec { 'nvidia-cuda-drivers-update':
-    cmd     => 'apt update',
+    command => 'apt update',
     require => Exec['nvidia-cuda-drivers-keyring']
   }
   package { 'cuda-drivers':
