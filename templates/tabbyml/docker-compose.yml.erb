@@ -51,7 +51,7 @@ services:
   tabby:
     restart: always
     image: tabbyml/tabby
-    command: serve --model TabbyML/<%= @tabby_model %> --device cuda:
+    command: serve --model TabbyML/<%= @tabby_model %> --device cuda
     networks:
       - internal_network
     volumes:

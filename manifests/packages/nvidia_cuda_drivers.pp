@@ -19,8 +19,8 @@ class sunet::packages::nvidia_cuda_drivers {
     require  => Exec['nvidia-cuda-drivers-update']
   }
   file_line { 'cuda_env_path':
-    path  => '/etc/environment',
-    line  => 'PATH=/opt/nvidia/nsight-compute/bin${PATH:+:${PATH}}',
+    path  => '/etc/profile',
+    line  => 'PATH=/opt/nvidia/nsight-compute/bin:${PATH}',
     match => '^PATH=',
   }
 }
