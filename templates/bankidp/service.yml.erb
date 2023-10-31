@@ -15,6 +15,7 @@ spring:
             certificate: file:/etc/ssl/certs/infra.crt
   data:
     redis:
+      password: '<%= scope.call_function('safe_hiera', ['bankidp_redis_password'])  %>''
       cluster:
         nodes:
           <%- @redises.each do |host| -%>
