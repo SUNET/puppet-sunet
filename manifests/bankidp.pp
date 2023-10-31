@@ -73,6 +73,13 @@ class sunet::bankidp(
       content => file("sunet/bankidp/${signing_cert}")
     }
 
+    file { '/opt/bankidp/config/sunet.svg':
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      content => file('sunet/bankidp/sunet.svg')
+    }
+
     sunet::docker_compose { 'bankidp':
       content          => template('sunet/bankidp/docker-compose-bankid-idp.yml.erb'),
       service_name     => 'bankidp',
