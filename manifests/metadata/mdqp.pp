@@ -4,6 +4,10 @@ class sunet::metadata::mdqp(
   Integer $runs_per_hour=4,
   String $mdq_service='https://mds.swamid.se',
 ) {
+
+      include sunet::packages::jq
+      include sunet::packages::xmlstarlet
+
       $image_tag = "docker.sunet.se/mdqp:${imagetag}"
       docker::image { $image_tag :  # make it possible to use the same docker image more than once on a node
         ensure  => 'present',
