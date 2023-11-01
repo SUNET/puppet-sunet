@@ -52,7 +52,7 @@ services:
     restart: always
     image: tabbyml/tabby
     command: serve --model TabbyML/<%= @tabby_model %> --device cuda
-      container_name: tabby
+    container_name: tabby
     dns:
       - 89.32.32.32
     networks:
