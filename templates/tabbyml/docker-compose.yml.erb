@@ -5,9 +5,6 @@ services:
   nginx:
     image: docker.io/nginxproxy/nginx-proxy:latest
     container_name: nginx
-    networks:
-      - internal_network
-      - external_network
     dns:
       - 89.32.32.32
     ports:
@@ -29,8 +26,6 @@ services:
   acme:
     image: docker.io/nginxproxy/acme-companion:latest
     container_name: acme
-    networks:
-      - external_network
     dns:
       - 89.32.32.32
     volumes:
@@ -55,8 +50,6 @@ services:
     container_name: tabby
     dns:
       - 89.32.32.32
-    networks:
-      - internal_network
     volumes:
       - /opt/tabbyml/data:/data
     environment:
@@ -71,8 +64,3 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-
-networks:
-  external_network:
-  internal_network:
-    internal: true
