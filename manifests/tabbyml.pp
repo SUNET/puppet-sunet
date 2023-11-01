@@ -5,7 +5,7 @@ class sunet::tabbyml(
   String $vhost       = 'tabby-lab.sunet.se',
 ) {
   $vhost_password = lookup('vhost_password')
-  $repsitories = lookup('repositories', undef, undef, [])
+  $repositories = lookup('repositories', undef, undef, [])
   include sunet::packages::apache2_utils
   include sunet::packages::git
   include sunet::packages::git_lfs
