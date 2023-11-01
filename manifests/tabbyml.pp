@@ -23,4 +23,8 @@ class sunet::tabbyml(
       iif           => $interface,
     }
   }
+  exec { 'git_clone_code_llama':
+    command => 'git clone https://huggingface.co/TabbyML/CodeLlama-13B /opt/tabbyml/data/models/TabbyML/CodeLlama-13B',
+    unless  => 'test -d /opt/tabbyml/data/models/TabbyML/CodeLlama-13B'
+  }
 }
