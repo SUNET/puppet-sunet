@@ -64,7 +64,6 @@ services:
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=8080
       - LETSENCRYPT_HOST=<%= @vhost %>
-      - ES_ENABLED=false
     deploy:
       resources:
         reservations:
