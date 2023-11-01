@@ -53,6 +53,7 @@ services:
       - 89.32.32.32
     volumes:
       - /opt/tabbyml/data:/data
+      - /opt/tabbyml/config.toml:/root/.tabby/config.toml
     environment:
       - VIRTUAL_HOST=<%= @vhost %>
       - VIRTUAL_PATH=/

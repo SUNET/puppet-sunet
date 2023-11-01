@@ -5,6 +5,7 @@ class sunet::tabbyml(
   String $vhost       = 'tabby-lab.sunet.se',
 ) {
   $vhost_password = lookup('vhost_password')
+  $repsitories = lookup('repositories', undef, undef, [])
   include sunet::packages::apache2_utils
   include sunet::packages::git
   include sunet::packages::git_lfs
@@ -35,5 +36,9 @@ class sunet::tabbyml(
   -> exec { 'htpasswd_tabby':
     command => "htpasswd -b -c /opt/tabbyml/nginx/htpasswd/${vhost} tabby ${vhost_password}",
     unless  => "test -f /opt/tabbyml/nginx/htpasswd/${vhost}",
+  }
+  file {'/opt/tabbyml/config.toml':
+    ensure  => 'file',
+    content => template('sunet/tabbyml/config.toml.erb'),
   }
 }
