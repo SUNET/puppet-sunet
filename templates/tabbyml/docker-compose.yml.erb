@@ -16,11 +16,11 @@ services:
     labels:
       com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
     volumes:
-      - /opt/mastodon_web/nginx/certs:/etc/nginx/certs:ro
-      - /opt/mastodon_web/nginx/conf:/etc/nginx/conf.d
-      - /opt/mastodon_web/nginx/dhparam:/etc/nginx/dhparam
-      - /opt/mastodon_web/nginx/html:/usr/share/nginx/html
-      - /opt/mastodon_web/nginx/vhost:/etc/nginx/vhost.d
+      - /opt/tabby/nginx/certs:/etc/nginx/certs:ro
+      - /opt/tabby/nginx/conf:/etc/nginx/conf.d
+      - /opt/tabby/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/tabby/nginx/html:/usr/share/nginx/html
+      - /opt/tabby/nginx/vhost:/etc/nginx/vhost.d
       - /var/run/docker.sock:/tmp/docker.sock:ro
     environment:
       - ENABLE_IPV6=true
@@ -34,12 +34,12 @@ services:
     dns:
       - 89.32.32.32
     volumes:
-      - /opt/mastodon_web/nginx/acme:/etc/acme.sh
-      - /opt/mastodon_web/nginx/certs:/etc/nginx/certs:rw
-      - /opt/mastodon_web/nginx/conf:/etc/nginx/conf.d
-      - /opt/mastodon_web/nginx/dhparam:/etc/nginx/dhparam
-      - /opt/mastodon_web/nginx/html:/usr/share/nginx/html
-      - /opt/mastodon_web/nginx/vhost:/etc/nginx/vhost.d:rw
+      - /opt/tabby/nginx/acme:/etc/acme.sh
+      - /opt/tabby/nginx/certs:/etc/nginx/certs:rw
+      - /opt/tabby/nginx/conf:/etc/nginx/conf.d
+      - /opt/tabby/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/tabby/nginx/html:/usr/share/nginx/html
+      - /opt/tabby/nginx/vhost:/etc/nginx/vhost.d:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - NGINX_PROXY_CONTAINER=nginx
@@ -52,6 +52,9 @@ services:
     restart: always
     image: tabbyml/tabby
     command: serve --model TabbyML/<%= @tabby_model %> --device cuda
+      container_name: tabby
+    dns:
+      - 89.32.32.32
     networks:
       - internal_network
     volumes:
