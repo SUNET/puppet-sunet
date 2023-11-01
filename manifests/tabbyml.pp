@@ -4,6 +4,8 @@ class sunet::tabbyml(
   String $tabby_model = 'CodeLlama-13B',
   String $vhost       = 'tabby-lab.sunet.se',
 ) {
+  $vhost_password = lookup('vhost_password')
+  include sunet::packages::apache2_utils
   include sunet::packages::git
   include sunet::packages::git_lfs
   include sunet::packages::nvidia_container_toolkit
@@ -26,5 +28,12 @@ class sunet::tabbyml(
   exec { 'git_clone_code_llama':
     command => 'git clone https://huggingface.co/TabbyML/CodeLlama-13B /opt/tabbyml/data/models/TabbyML/CodeLlama-13B',
     unless  => 'test -d /opt/tabbyml/data/models/TabbyML/CodeLlama-13B'
+  }
+  file {'/opt/tabbyml/nginx/htpasswd':
+    ensure  => 'directory'
+  }
+  -> exec { 'htpasswd_tabby':
+    command => "htpasswd -b /opt/tabbyml/nginx/htpasswd/${vhost} tabby ${vhost_password}",
+    unless  => "test -f /opt/tabbyml/nginx/htpasswd/${vhost}",
   }
 }
