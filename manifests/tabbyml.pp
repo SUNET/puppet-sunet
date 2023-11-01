@@ -33,7 +33,7 @@ class sunet::tabbyml(
     ensure  => 'directory'
   }
   -> exec { 'htpasswd_tabby':
-    command => "htpasswd -b /opt/tabbyml/nginx/htpasswd/${vhost} tabby ${vhost_password}",
+    command => "htpasswd -b -c /opt/tabbyml/nginx/htpasswd/${vhost} tabby ${vhost_password}",
     unless  => "test -f /opt/tabbyml/nginx/htpasswd/${vhost}",
   }
 }
