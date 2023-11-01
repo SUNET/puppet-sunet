@@ -4,6 +4,8 @@ class sunet::tabbyml(
   String $tabby_model = 'CodeLlama-13B',
   String $vhost       = 'tabby-lab.sunet.se',
 ) {
+  include sunet::packages::git
+  include sunet::packages::git_lfs
   include sunet::packages::nvidia_container_toolkit
   include sunet::packages::nvidia_cuda_drivers
   sunet::docker_compose { 'tabbyml':
