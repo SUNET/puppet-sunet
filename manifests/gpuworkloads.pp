@@ -3,8 +3,11 @@ class sunet::gpuworkloads(
   String $interface   = 'enp2s0',
   String $tabby_model = 'CodeLlama-13B',
   String $tabby_vhost       = 'tabby-lab.sunet.se',
+  String $localai_vhost       = 'localai-lab.sunet.se',
+  String $localai_tag       = 'v1.40.0-cublas-cuda12-ffmpeg',
 ) {
   $tabby_vhost_password = lookup('tabby_vhost_password')
+  $localai_vhost_password = lookup('localai_vhost_password')
   $repositories = lookup('tabby_repositories', undef, undef, [])
   include sunet::packages::apache2_utils
   include sunet::packages::git
