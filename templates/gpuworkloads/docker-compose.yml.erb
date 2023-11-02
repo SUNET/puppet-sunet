@@ -13,12 +13,12 @@ services:
     labels:
       com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
     volumes:
-      - /opt/tabbyml/nginx/htpasswd:/etc/nginx/htpasswd 
-      - /opt/tabbyml/nginx/certs:/etc/nginx/certs:ro
-      - /opt/tabbyml/nginx/conf:/etc/nginx/conf.d
-      - /opt/tabbyml/nginx/dhparam:/etc/nginx/dhparam
-      - /opt/tabbyml/nginx/html:/usr/share/nginx/html
-      - /opt/tabbyml/nginx/vhost:/etc/nginx/vhost.d
+      - /opt/gpuworkloads/nginx/htpasswd:/etc/nginx/htpasswd 
+      - /opt/gpuworkloads/nginx/certs:/etc/nginx/certs:ro
+      - /opt/gpuworkloads/nginx/conf:/etc/nginx/conf.d
+      - /opt/gpuworkloads/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/gpuworkloads/nginx/html:/usr/share/nginx/html
+      - /opt/gpuworkloads/nginx/vhost:/etc/nginx/vhost.d
       - /var/run/docker.sock:/tmp/docker.sock:ro
     environment:
       - ENABLE_IPV6=true
@@ -30,12 +30,12 @@ services:
     dns:
       - 89.32.32.32
     volumes:
-      - /opt/tabbyml/nginx/acme:/etc/acme.sh
-      - /opt/tabbyml/nginx/certs:/etc/nginx/certs:rw
-      - /opt/tabbyml/nginx/conf:/etc/nginx/conf.d
-      - /opt/tabbyml/nginx/dhparam:/etc/nginx/dhparam
-      - /opt/tabbyml/nginx/html:/usr/share/nginx/html
-      - /opt/tabbyml/nginx/vhost:/etc/nginx/vhost.d:rw
+      - /opt/gpuworkloads/nginx/acme:/etc/acme.sh
+      - /opt/gpuworkloads/nginx/certs:/etc/nginx/certs:rw
+      - /opt/gpuworkloads/nginx/conf:/etc/nginx/conf.d
+      - /opt/gpuworkloads/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/gpuworkloads/nginx/html:/usr/share/nginx/html
+      - /opt/gpuworkloads/nginx/vhost:/etc/nginx/vhost.d:rw
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - NGINX_PROXY_CONTAINER=nginx
@@ -52,13 +52,13 @@ services:
     dns:
       - 89.32.32.32
     volumes:
-      - /opt/tabbyml/data:/data
-      - /opt/tabbyml/config.toml:/root/.tabby/config.toml
+      - /opt/gpuworkloads/tabby:/data
+      - /opt/gpuworkloads/tabby-config.toml:/root/.tabby/config.toml
     environment:
-      - VIRTUAL_HOST=<%= @vhost %>
+      - VIRTUAL_HOST=<%= @tabby_vhost %>
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=8080
-      - LETSENCRYPT_HOST=<%= @vhost %>
+      - LETSENCRYPT_HOST=<%= @tabby_vhost %>
     deploy:
       resources:
         reservations:
