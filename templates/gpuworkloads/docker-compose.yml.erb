@@ -55,10 +55,10 @@ services:
       - /opt/gpuworkloads/tabby:/data
       - /opt/gpuworkloads/tabby-config.toml:/root/.tabby/config.toml
     environment:
+      - LETSENCRYPT_HOST=<%= @tabby_vhost %>
       - VIRTUAL_HOST=<%= @tabby_vhost %>
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=8080
-      - LETSENCRYPT_HOST=<%= @tabby_vhost %>
     deploy:
       resources:
         reservations:
@@ -81,10 +81,14 @@ services:
     volumes:
       - /opt/gpuworkloads/localai:/models
     environment:
+      - BUILD_TYPE=cublas
+      - GALLERIES=[{"name":"model-gallery", "url":"github:go-skynet/model-gallery/index.yaml"}, {"url": "github:go-skynet/model-gallery/huggingface.yaml","name":"huggingface"}]
+      - LETSENCRYPT_HOST=<%= @localai_vhost %>
+      - MODELS_PATH=/models
+      - THREADS=2
       - VIRTUAL_HOST=<%= @localai_vhost %>
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=8080
-      - LETSENCRYPT_HOST=<%= @localai_vhost %>
     deploy:
       resources:
         reservations:
