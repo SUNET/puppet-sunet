@@ -1,10 +1,10 @@
 # microk8s cluster node
 class sunet::gpuworkloads(
-  String $interface   = 'enp2s0',
-  String $tabby_model = 'CodeLlama-13B',
-  String $tabby_vhost       = 'tabby-lab.sunet.se',
-  String $localai_vhost       = 'localai-lab.sunet.se',
-  String $localai_tag       = 'v1.40.0-cublas-cuda12-ffmpeg',
+  String $interface     = 'enp2s0',
+  String $tabby_model   = 'CodeLlama-13B',
+  String $tabby_vhost   = 'tabby-lab.sunet.se',
+  String $localai_vhost = 'localai-lab.sunet.se',
+  String $localai_tag   = 'v1.40.0-cublas-cuda12-ffmpeg',
 ) {
   $tabby_vhost_password = lookup('tabby_vhost_password')
   $localai_vhost_password = lookup('localai_vhost_password')
@@ -39,6 +39,10 @@ class sunet::gpuworkloads(
   -> exec { 'htpasswd_tabby':
     command => "htpasswd -b -c /opt/gpuworkloads/nginx/htpasswd/${tabby_vhost} tabby ${tabby_vhost_password}",
     unless  => "test -f /opt/gpuworkloads/nginx/htpasswd/${tabby_vhost}",
+  }
+  -> exec { 'htpasswd_localai':
+    command => "htpasswd -b -c /opt/gpuworkloads/nginx/htpasswd/${localai_vhost} localai ${localai_vhost_password}",
+    unless  => "test -f /opt/gpuworkloads/nginx/htpasswd/${localai_vhost}",
   }
   file {'/opt/gpuworkloads/tabby':
     ensure  => 'directory'
