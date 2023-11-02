@@ -66,3 +66,29 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+  localai:
+    image: quay.io/go-skynet/local-ai:<%= @localai_tag %>
+    tty: true
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./models:/models
+    command: ["/usr/bin/local-ai" ]
+    container_name: localai
+    dns:
+      - 89.32.32.32
+    volumes:
+      - /opt/gpuworkloads/localai:/models
+    environment:
+      - VIRTUAL_HOST=<%= @localai_vhost %>
+      - VIRTUAL_PATH=/
+      - VIRTUAL_PORT=8080
+      - LETSENCRYPT_HOST=<%= @localai_vhost %>
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
