@@ -44,7 +44,7 @@ class sunet::bankidp(
       }
     }
     exec { 'saml_metadata.p12':
-      command => "openssl pkcs12 -export -in ${bankid_home}credentials/saml_metadata.crt -inkey ${bankid_home}/credentials/saml_metadata.key -name 'saml_metadata' -out ${bankid_home}/credentials/saml_metadata.p12 -passout pass:qwerty123",
+      command => "openssl pkcs12 -export -in ${bankid_home}/credentials/saml_metadata.crt -inkey ${bankid_home}/credentials/saml_metadata.key -name 'saml_metadata' -out ${bankid_home}/credentials/saml_metadata.p12 -passout pass:qwerty123",
       onlyif  => "test ! -f ${bankid_home}/credentals/saml_metadata.p12"
     }
 
