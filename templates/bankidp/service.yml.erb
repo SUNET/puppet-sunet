@@ -97,20 +97,17 @@ saml:
         mdq: true
     credentials:
       sign:
-        resource: file:/opt/bankidp/config/idp-keystore.jks
-        alias: METADATA
-        password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
-        type: JKS
+        resource: file:/opt/bankidp/credentials/saml_metadata.p12
+        alias: saml_metadata
+        password: 'qwerty123'
       encrypt:
-        resource: file:/opt/bankidp/config/idp-keystore.jks
-        alias: METADATA
-        password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
-        type: JKS
+        resource: file:/opt/bankidp/credentials/saml_metadata.p12
+        alias: saml_metadata
+        password: 'qwerty123'
       metadata-sign:
-        resource: file:/opt/bankidp/config/idp-keystore.jks
-        alias: METADATA
-        password: '<%= scope.call_function('safe_hiera', ['bankidp_saml_cert_password'])  %>'
-        type: JKS
+        resource: file:/opt/bankidp/credentials/saml_metadata.p12
+        alias: saml_metadata
+        password: 'qwerty123'
     metadata:
       ui-info:
         display-names:
