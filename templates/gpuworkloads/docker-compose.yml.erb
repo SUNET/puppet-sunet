@@ -79,14 +79,14 @@ services:
     volumes:
       - /opt/gpuworkloads/localai:/models
     environment:
-      - BUILD_TYPE=cublas
-      - GALLERIES='[{"name":"model-gallery", "url":"github:go-skynet/model-gallery/index.yaml"}, {"url": "github:go-skynet/model-gallery/huggingface.yaml","name":"huggingface"}]'
-      - LETSENCRYPT_HOST=<%= @localai_vhost %>
-      - MODELS_PATH=/models
-      - THREADS=2
-      - VIRTUAL_HOST=<%= @localai_vhost %>
-      - VIRTUAL_PATH=/
-      - VIRTUAL_PORT=8080
+      BUILD_TYPE: 'cublas'
+      GALLERIES: '[{"name":"model-gallery", "url":"github:go-skynet/model-gallery/index.yaml"}, {"url": "github:go-skynet/model-gallery/huggingface.yaml","name":"huggingface"}]'
+      LETSENCRYPT_HOST: '<%= @localai_vhost %>'
+      MODELS_PATH: '/models'
+      THREADS: 2
+      VIRTUAL_HOST: '<%= @localai_vhost %>'
+      VIRTUAL_PATH: '/'
+      VIRTUAL_PORT: 8080
     deploy:
       resources:
         reservations:
