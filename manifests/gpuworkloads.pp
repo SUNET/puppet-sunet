@@ -9,11 +9,13 @@ class sunet::gpuworkloads(
   $tabby_vhost_password = lookup('tabby_vhost_password')
   $localai_vhost_password = lookup('localai_vhost_password')
   $repositories = lookup('tabby_repositories', undef, undef, [])
+  $localai_models = lookup('localai_models', undef, undef, [])
   include sunet::packages::apache2_utils
   include sunet::packages::git
   include sunet::packages::git_lfs
   include sunet::packages::nvidia_container_toolkit
   include sunet::packages::nvidia_cuda_drivers
+  include sunet::packages::wget
   sunet::docker_compose { 'gpuworkloads':
     content          => template('sunet/gpuworkloads/docker-compose.yml.erb'),
     service_name     => 'gpuworkloads',
@@ -51,4 +53,13 @@ class sunet::gpuworkloads(
     ensure  => 'file',
     content => template('sunet/gpuworkloads/tabby-config.toml.erb'),
   }
+  $localai_models.each |$model| {
+    $org = $model.split('/')[0]
+    $repo = $model.split('/')[1]
+    $model_name = $model.split('/')[2]
+
+    exec { "localai_model_${model_name}":
+      command => "wget -o /opt/gpuworkloads/localai/models/${org}/${repo}/${model_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
+      unless  => "test -f /opt/gpuworkloads/localai/models/${org}/${repo}/${model_name}"
+    }
 }
