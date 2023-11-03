@@ -88,12 +88,12 @@ saml:
     metadata-providers:
 <% if @prod == true %>
       - location: https://mds.swamid.se
-        validation-certificate: file:/opt/bankidp/config/certificates/md-signer2.crt
+        validation-certificate: file:/opt/bankidp/credentials/md-signer2.crt
 <% else %>
       - location: https://mds.swamid.se/qa
-        validation-certificate: file:/opt/bankidp/config/certificates/swamid-qa.crt
+        validation-certificate: file:/opt/bankidp/credentials/swamid-qa.crt
 <% end -%>
-        backup-location: /opt/bankidp/config/metadata/mdq-backup
+        backup-location: /opt/bankidp/cache/metadata
         mdq: true
     credentials:
       sign:
