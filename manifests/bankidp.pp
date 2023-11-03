@@ -33,7 +33,7 @@ class sunet::bankidp(
       $password = lookup("bankidp_customers.${name}.password", undef, undef, undef)
       exec { "build_${name}.p12":
         command => "openssl pkcs12 -export -in ${credsdir}/${name}.pem -inkey ${credsdir}/${name}.key -name '${name}-bankid' -out ${credsdir}/${name}.p12 -passin pass:${password} -passout pass:${pass}",
-        onlyif  => "test ! -f ${bankid_home}/credentals/${name}.p12"
+        onlyif  => "test ! -f ${credsdir}/${name}.p12"
       }
     }
 
@@ -49,7 +49,7 @@ class sunet::bankidp(
     }
     exec { 'saml_metadata.p12':
       command => "openssl pkcs12 -export -in ${credsdir}/saml_metadata.crt -inkey ${credsdir}/saml_metadata.key -name 'saml_metadata' -out ${credsdir}/saml_metadata.p12 -passout pass:${pass}",
-      onlyif  => "test ! -f ${bankid_home}/credentals/saml_metadata.p12"
+      onlyif  => "test ! -f ${credsdir}/saml_metadata.p12"
     }
 
     package {'openjdk-17-jre-headless':
