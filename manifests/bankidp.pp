@@ -22,29 +22,31 @@ class sunet::bankidp(
 
   if $app_node {
 
-    ensure_resource('sunet::misc::create_dir', '/opt/bankidp/credentials/', { owner => 'root', group => 'root', mode => '0750'})
+    $credsdir = "${bankid_home}/credentials"
+
+    ensure_resource('sunet::misc::create_dir', $credsdir, { owner => 'root', group => 'root', mode => '0750'})
     $customers = lookup('bankidp_customers', undef, undef, undef)
     sort(keys($customers)).each |$name| {
-      sunet::snippets::secret_file { "${bankid_home}/credentials/${name}.key": hiera_key => "bankidp_customers.${name}.key" }
+      sunet::snippets::secret_file { "${credsdir}/${name}.key": hiera_key => "bankidp_customers.${name}.key" }
       $password = lookup("bankidp_customers.${name}.password", undef, undef, undef)
       exec { "build_${name}.p12":
-        command => "openssl pkcs12 -export -in /opt/bankidp/credentials/${name}.pem -inkey /opt/bankidp/credentials/${name}.key -name '${name}-bankid' -out /opt/bankidp/credentials/${name}.p12 -passin pass:${password} -passout pass:qwerty123",
+        command => "openssl pkcs12 -export -in ${credsdir}/${name}.pem -inkey ${credsdir}/${name}.key -name '${name}-bankid' -out ${credsdir}/${name}.p12 -passin pass:${password} -passout pass:qwerty123",
         onlyif  => "test ! -f ${bankid_home}/credentals/${name}.p12"
       }
     }
 
     if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
-      sunet::snippets::secret_file { "${bankid_home}/credentials/metadata.key": hiera_key => 'bankid_saml_metadata_key' }
+      sunet::snippets::secret_file { "${credsdir}/metadata.key": hiera_key => 'bankid_saml_metadata_key' }
       # assume cert is in cosmos repo
     } else {
       # make key pair
       sunet::snippets::keygen {'bankid_saml_metadata_key':
-        key_file  => "${bankid_home}/credentials/saml_metadata.key",
-        cert_file => "${bankid_home}/credentials/saml_metadata.crt"
+        key_file  => "${credsdir}/saml_metadata.key",
+        cert_file => "${credsdir}/saml_metadata.crt"
       }
     }
     exec { 'saml_metadata.p12':
-      command => "openssl pkcs12 -export -in ${bankid_home}/credentials/saml_metadata.crt -inkey ${bankid_home}/credentials/saml_metadata.key -name 'saml_metadata' -out ${bankid_home}/credentials/saml_metadata.p12 -passout pass:qwerty123",
+      command => "openssl pkcs12 -export -in ${credsdir}/saml_metadata.crt -inkey ${credsdir}/saml_metadata.key -name 'saml_metadata' -out ${credsdir}/saml_metadata.p12 -passout pass:qwerty123",
       onlyif  => "test ! -f ${bankid_home}/credentals/saml_metadata.p12"
     }
 
