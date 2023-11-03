@@ -44,11 +44,11 @@ class sunet::bankidp(
       # make key pair
       sunet::snippets::keygen {'bankid_saml_metadata_key':
         key_file  => "${credsdir}/saml_metadata.key",
-        cert_file => "${credsdir}/saml_metadata.crt"
+        cert_file => "${credsdir}/saml_metadata.pem"
       }
     }
     exec { 'saml_metadata.p12':
-      command => "openssl pkcs12 -export -in ${credsdir}/saml_metadata.crt -inkey ${credsdir}/saml_metadata.key -name 'saml_metadata' -out ${credsdir}/saml_metadata.p12 -passout pass:${pass}",
+      command => "openssl pkcs12 -export -in ${credsdir}/saml_metadata.pem -inkey ${credsdir}/saml_metadata.key -name 'saml_metadata' -out ${credsdir}/saml_metadata.p12 -passout pass:${pass}",
       onlyif  => "test ! -f ${credsdir}/saml_metadata.p12"
     }
 
