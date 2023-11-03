@@ -8,7 +8,7 @@ class sunet::bankidp(
   String $imagetag='latest',
   String $tz = 'Europe/Stockholm',
   String $bankid_home = '/opt/bankidp',
-  String $spring_config_import = '/config/service.yml',
+  String $spring_config_import = '/config/bankidp.yml',
   String $service_name = 'bankidp.qa.swamid.se',
   Boolean $prod = true,
   Boolean $app_node = false,
@@ -75,8 +75,8 @@ class sunet::bankidp(
       }
     }
     ensure_resource('sunet::misc::create_dir', '/opt/bankidp/config/', { owner => 'root', group => 'root', mode => '0750'})
-    file { '/opt/bankidp/config/service.yml':
-      content => template('sunet/bankidp/service.yml.erb'),
+    file { '/opt/bankidp/config/bankidp.yml':
+      content => template('sunet/bankidp/bankidp.yml.erb'),
       mode    => '0755',
     }
 
