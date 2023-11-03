@@ -23,6 +23,8 @@ class sunet::bankidp(
   if $app_node {
 
     $credsdir = "${bankid_home}/credentials"
+    # Unwanted password - but hey Java!
+    $pass = 'qwerty123'
 
     ensure_resource('sunet::misc::create_dir', $credsdir, { owner => 'root', group => 'root', mode => '0750'})
     $customers = lookup('bankidp_customers', undef, undef, undef)
@@ -30,7 +32,7 @@ class sunet::bankidp(
       sunet::snippets::secret_file { "${credsdir}/${name}.key": hiera_key => "bankidp_customers.${name}.key" }
       $password = lookup("bankidp_customers.${name}.password", undef, undef, undef)
       exec { "build_${name}.p12":
-        command => "openssl pkcs12 -export -in ${credsdir}/${name}.pem -inkey ${credsdir}/${name}.key -name '${name}-bankid' -out ${credsdir}/${name}.p12 -passin pass:${password} -passout pass:qwerty123",
+        command => "openssl pkcs12 -export -in ${credsdir}/${name}.pem -inkey ${credsdir}/${name}.key -name '${name}-bankid' -out ${credsdir}/${name}.p12 -passin pass:${password} -passout pass:${pass}",
         onlyif  => "test ! -f ${bankid_home}/credentals/${name}.p12"
       }
     }
@@ -46,7 +48,7 @@ class sunet::bankidp(
       }
     }
     exec { 'saml_metadata.p12':
-      command => "openssl pkcs12 -export -in ${credsdir}/saml_metadata.crt -inkey ${credsdir}/saml_metadata.key -name 'saml_metadata' -out ${credsdir}/saml_metadata.p12 -passout pass:qwerty123",
+      command => "openssl pkcs12 -export -in ${credsdir}/saml_metadata.crt -inkey ${credsdir}/saml_metadata.key -name 'saml_metadata' -out ${credsdir}/saml_metadata.p12 -passout pass:${pass}",
       onlyif  => "test ! -f ${bankid_home}/credentals/saml_metadata.p12"
     }
 
@@ -55,12 +57,12 @@ class sunet::bankidp(
     }
 
     exec { 'infra.p12':
-      command => 'keytool -import -noprompt -deststorepass qwerty123 -file /etc/ssl/certs/infra.crt -keystore /etc/ssl/certs/infra.p12',
+      command => "keytool -import -noprompt -deststorepass ${pass} -file /etc/ssl/certs/infra.crt -keystore /etc/ssl/certs/infra.p12",
       onlyif  => 'test ! -f /etc/ssl/certs/infra.p12'
     }
 
     exec { "${facts['networking']['fqdn']}_infra.p12":
-      command => "openssl pkcs12 -export -in /etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt -inkey /etc/ssl/private/${facts['networking']['fqdn']}_infra.pem -name 'infra' -out /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12 -passout pass:qwerty123",
+      command => "openssl pkcs12 -export -in /etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt -inkey /etc/ssl/private/${facts['networking']['fqdn']}_infra.pem -name 'infra' -out /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12 -passout pass:${pass}",
       onlyif  => "test ! -f /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
     }
 
