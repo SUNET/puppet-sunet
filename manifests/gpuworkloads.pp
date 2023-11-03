@@ -57,6 +57,12 @@ class sunet::gpuworkloads(
     $org = $model.split('/')[0]
     $repo = $model.split('/')[1]
     $model_name = $model.split('/')[2]
+    file {"/opt/gpuworkloads/localai/models/${org}":
+      ensure  => 'directory'
+    }
+    file {"/opt/gpuworkloads/localai/models/${org}/${repo}":
+      ensure  => 'directory'
+    }
 
     exec { "localai_model_${model_name}":
       command => "wget -o /opt/gpuworkloads/localai/models/${org}/${repo}/${model_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
