@@ -92,7 +92,9 @@ class sunet::bankidp(
       content => file("sunet/bankidp/${signing_cert}")
     }
 
-    file { '/opt/bankidp/config/sunet.svg':
+    $resourcedir = "${bankid_home}/resources"
+    ensure_resource('sunet::misc::create_dir', $resourcedir, { owner => 'root', group => 'root', mode => '0750'})
+    file { "${resourcedir}/sunet.svg":
       ensure  => 'file',
       mode    => '0755',
       owner   => 'root',
