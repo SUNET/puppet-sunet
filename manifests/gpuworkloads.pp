@@ -60,11 +60,10 @@ class sunet::gpuworkloads(
     file {"/opt/gpuworkloads/localai/${org}":
       ensure  => 'directory'
     }
-    file {"/opt/gpuworkloads/localai/${org}/${repo}":
+    ->file {"/opt/gpuworkloads/localai/${org}/${repo}":
       ensure  => 'directory'
     }
-
-    exec { "localai_model_${model_name}":
+    ->exec { "localai_model_${model_name}":
       command => "wget -o /opt/gpuworkloads/localai/${org}/${repo}/${model_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
       unless  => "test -f /opt/gpuworkloads/localai/${org}/${repo}/${model_name}"
     }
