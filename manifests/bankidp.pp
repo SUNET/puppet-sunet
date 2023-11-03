@@ -33,6 +33,21 @@ class sunet::bankidp(
       }
     }
 
+    if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
+      sunet::snippets::secret_file { "${bankid_home}/credentials/metadata.key": hiera_key => 'bankid_saml_metadata_key' }
+      # assume cert is in cosmos repo
+    } else {
+      # make key pair
+      sunet::snippets::keygen {'bankid_saml_metadata_key':
+        key_file  => "${bankid_home}/credentials/saml_metadata.key",
+        cert_file => "${bankid_home}/credentials/saml_metadata.crt"
+      }
+    }
+    exec { 'saml_metadata.p12':
+      command => "openssl pkcs12 -export -in ${bankid_home}credentials/saml_metadata.crt -inkey ${bankid_home}/credentials/saml_metadata.key -name 'saml_metadata' -out ${bankid_home}/credentials/saml_metadata.p12 -passout pass:qwerty123",
+      onlyif  => "test ! -f ${bankid_home}/credentals/saml_metadata.p12"
+    }
+
     package {'openjdk-17-jre-headless':
       ensure => latest
     }
