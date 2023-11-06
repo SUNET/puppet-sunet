@@ -133,6 +133,7 @@ define sunet::lb::load_balancer::website(
   }
 
   # Parameters used in frontend/docker-compose_template.erb
+  $allow_ports            = pick_default($config['allow_ports'], [])
   $dns                    = pick_default($config['dns'], [])
   $exposed_ports          = pick_default($config['exposed_ports'], [80, 443])
   $frontendtools_image    = pick($config['frontendtools_image'], 'docker.sunet.se/frontend/frontend-tools')
