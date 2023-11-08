@@ -4,6 +4,7 @@ define sunet::lb::load_balancer::website(
   String  $confdir,
   String  $scriptdir,
   Hash    $config,
+  String  $interface = 'eth0',
   Integer $api_port = 8080,
 ) {
   $instance  = $name

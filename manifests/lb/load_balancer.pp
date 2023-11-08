@@ -6,6 +6,7 @@ class sunet::lb::load_balancer(
   String  $router_id   = $ipaddress_default,
   String  $basedir     = '/opt/frontend',
   Integer $base_uidgid = lookup('sunet_frontend_load_balancer_base_uidgid', undef, undef, 800),
+  String  $interface   = 'eth0',
   Integer $frontend    = $base_uidgid + 0,
   Integer $fe_api      = $base_uidgid + 1,
   Integer $fe_monitor  = $base_uidgid + 2,
@@ -48,6 +49,7 @@ class sunet::lb::load_balancer(
                     { owner => 'root', group => 'root', mode => '0755' })
 
     sunet::lb::load_balancer::configure_websites { 'websites':
+      interface => $interface,
       websites  => $websites,
       basedir   => $basedir,
       confdir   => $confdir,
