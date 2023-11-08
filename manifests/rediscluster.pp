@@ -1,6 +1,9 @@
 # A cluster class
 class sunet::rediscluster(
   Integer $numnodes = 3,
+  Boolean $hostmode = false,
+  Optional[Boolean] $tls = false,
+  Optional[String] $cluster_announce_ip = '',
 )
 {
   include stdlib
@@ -29,9 +32,18 @@ class sunet::rediscluster(
       ensure  => present,
       content => template('sunet/rediscluster/server.conf.erb'),
     }
-    -> sunet::misc::ufw_allow { "redis_port_${i}":
-      from => '0.0.0.0/0',
-      port => [$redisportnum,$clusterportnum],
+    if $::facts['sunet_nftables_enabled'] == 'yes' or $::facts['dockerhost_advanced_network'] == 'yes' {
+      $ports = [$redisportnum, $clusterportnum]
+      $ports.each|$port| {
+        sunet::nftables::rule { "redis_port_${port}":
+          rule => "add rule inet filter input tcp dport ${port} counter accept comment \"allow-redis-${port}\""
+        }
+      }
+    } else {
+      sunet::misc::ufw_allow { "redis_port_${i}":
+        from => '0.0.0.0/0',
+        port => [$redisportnum,$clusterportnum],
+      }
     }
   }
 }
