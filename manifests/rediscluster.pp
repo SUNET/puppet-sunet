@@ -36,13 +36,14 @@ class sunet::rediscluster(
       $ports = [$redisportnum, $clusterportnum]
       $ports.each|$port| {
         sunet::nftables::rule { "redis_port_${port}":
-          rule => "add rule inet filter input tcp dport $port counter accept comment \"allow-redis-${port}\""
+          rule => "add rule inet filter input tcp dport ${port} counter accept comment \"allow-redis-${port}\""
         }
       }
     } else {
       -> sunet::misc::ufw_allow { "redis_port_${i}":
         from => '0.0.0.0/0',
         port => [$redisportnum,$clusterportnum],
+      }
     }
   }
 }
