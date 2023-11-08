@@ -40,7 +40,7 @@ class sunet::rediscluster(
         }
       }
     } else {
-      -> sunet::misc::ufw_allow { "redis_port_${i}":
+      sunet::misc::ufw_allow { "redis_port_${i}":
         from => '0.0.0.0/0',
         port => [$redisportnum,$clusterportnum],
       }
