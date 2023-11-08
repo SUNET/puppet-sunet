@@ -8,6 +8,20 @@ cluster-slave-validity-factor 0
 cluster-allow-reads-when-down yes
 cluster-require-full-coverage no
 loglevel warning
+<% if @tls%>
+port 0
+tls-port <%= @redisportnum %>
+tls-replication yes
+tls-cluster yes
+tls-cert-file /etc/ssl/certs/<%= @fqdn %>_infra.crt
+tls-key-file /etc/ssl/private/<%= @fqdn %>_infra.key
+tls-ca-cert-file /etc/ssl/certs/infra.crt
+<% else %>
 port <%= @redisportnum %>
+<% end %>
 requirepass "<%= @redis_password %>"
 masterauth "<%= @redis_password %>"
+<% if @cluster_announce_ip != ''%>
+cluster-announce-ip <%= @cluster_announce_ip %>
+<% end %>
+
