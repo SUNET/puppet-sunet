@@ -12,18 +12,16 @@ define sunet::docker_compose (
   String           $owner = 'root',
   Optional[String] $start_command = undef,
 ) {
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
-    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
-      notice("sunet::docker_compose: No to_docker interface found, not installing ${service_name}")
-      $_install_service = false
-    } else {
-      $_install_service = true
-    }
-  } else {
+  $nftenabled_and_interface =  $::facts['sunet_nftables_enabled'] == 'yes' and has_key($::facts['networking']['interfaces'], 'to_docker')
+  $advanced_network_or_nftdisabled = $::facts['dockerhost_advanced_network'] == 'yes' or $::facts['sunet_nftables_enabled'] == 'no'
+  if ( $nftenabled_and_interface or  $advanced_network_or_nftdisabled ) {
     $_install_service = true
+  } else {
+    $_install_service = false
+    notice("sunet::docker_compose: Not installing ${service_name}, interface to_docker missing")
   }
 
-  if $_install_service or $::facts['dockerhost_advanced_network'] == 'yes' {
+  if $_install_service {
     $compose_file = "${compose_dir}/${service_name}/${compose_filename}"
 
     # docker-compose uses dirname as project name, so we add $service_name and put the compose_file in there
