@@ -32,11 +32,17 @@ class sunet::rediscluster(
       ensure  => present,
       content => template('sunet/rediscluster/server.conf.erb'),
     }
-    $ports = [$redisportnum, $clusterportnum]
-    $ports.each|$port| {
-      sunet::nftables::rule { "redis_port_${port}":
-        rule => "add rule inet filter input tcp dport $port counter accept comment \"allow-redis-$port\""
+    if $::facts['sunet_nftables_enabled'] == 'yes' or $::facts['dockerhost_advanced_network'] == 'yes' {
+      $ports = [$redisportnum, $clusterportnum]
+      $ports.each|$port| {
+        sunet::nftables::rule { "redis_port_${port}":
+          rule => "add rule inet filter input tcp dport $port counter accept comment \"allow-redis-${port}\""
+        }
       }
+    } else {
+      -> sunet::misc::ufw_allow { "redis_port_${i}":
+        from => '0.0.0.0/0',
+        port => [$redisportnum,$clusterportnum],
     }
   }
 }
