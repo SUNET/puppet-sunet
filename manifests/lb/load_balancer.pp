@@ -57,6 +57,7 @@ class sunet::lb::load_balancer(
     }
 
     class { 'sunet::lb::load_balancer::services':
+      interface => $interface,
       router_id => $router_id,
       basedir   => $basedir,
       config    => $config,
