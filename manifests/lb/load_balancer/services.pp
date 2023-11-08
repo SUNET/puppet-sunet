@@ -55,9 +55,9 @@ class sunet::lb::load_balancer::services(
   }
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'frontend-api' :
-      interface     => $interface,
       allow_clients => sunet::lb::load_balancer::get_all_backend_ips($config),
       port          => $api_port,
+      iif          => $interface,
     }
   }
 
