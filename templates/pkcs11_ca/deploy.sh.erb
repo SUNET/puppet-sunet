@@ -58,7 +58,7 @@ fi
 
 echo "Using 'sudo' to set correct directory ownership"
 # Remove git create folder files
-docker-compose -f docker-compose.yml down || exit 1 # Stop service if running
+# docker-compose -f docker-compose.yml down || exit 1 # Stop service if running
 sudo rm -f data/hsm_tokens/.empty || exit 1 # if sudo is not installed ot failed
 sudo rm -f data/db_data/.empty
 sudo rm -f data/ca_root_certs/.empty
