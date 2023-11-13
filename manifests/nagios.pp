@@ -10,7 +10,6 @@ class sunet::nagios(
   $nagios_ip_v4 = lookup('nagios_ip_v4', undef, undef, '109.105.111.111')
   $nagios_ip_v6 = lookup('nagios_ip_v6', undef, undef, '2001:948:4:6::111')
   $nrpe_clients = lookup('nrpe_clients', undef, undef, ['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
-  #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
   $allowed_hosts = join($nrpe_clients,',')
 
   package {$nrpe_service:
