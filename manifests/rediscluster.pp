@@ -6,7 +6,12 @@ class sunet::rediscluster(
   Optional[String] $cluster_announce_ip = '',
 )
 {
-  include stdlib
+
+  if $cluster_announce_ip == '' {
+    $_cluster_announce_ip = lookup('cluster_announce_ip', undef, undef, '')
+  } else {
+    $_cluster_announce_ip = $cluster_announce_ip
+  }
 
   $redis_password = safe_hiera('redis_password')
 
