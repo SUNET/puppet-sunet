@@ -1,11 +1,11 @@
 # Set up nrpe server and some default checks
 class sunet::nagios(
-  $nrpe_service    = 'nagios-nrpe-server',
-  $command_timeout = 60,
-  $loadw           = '15,10,5',
-  $loadc           = '30,25,20',
-  $procsw          = 150,
-  $procsc          = 200,
+  String $nrpe_service    = 'nagios-nrpe-server',
+  Integer $command_timeout = 60,
+  Integer $loadw           = '15,10,5',
+  Integer $loadc           = '30,25,20',
+  Integer $procsw          = 150,
+  Integer $procsc          = 200,
 ) {
 
   $nagios_ip_v4 = lookup('nagios_ip_v4', undef, undef, '109.105.111.111')
