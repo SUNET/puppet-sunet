@@ -146,6 +146,44 @@ class sunet::nagios(
       command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
     }
   }
+
+  unless 'memory' in $optout_checks {
+    if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'],'22.04') >= 0 ) {
+      $mem_arg = '-w 90% -c 95%'
+    } elsif ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['full'],'12') >= 0 ) {
+      $mem_arg = '-w 90% -c 95%'
+    } else {
+      $mem_arg = '-w 10% -c 5%'
+    }
+    sunet::nagios::nrpe_command {'check_memory':
+      command_line => "/usr/lib/nagios/plugins/check_memory ${mem_arg}"
+    }
+  }
+
+  unless 'entropy' in $optout_checks {
+    sunet::nagios::nrpe_command { 'check_entropy':
+      command_line => '/usr/lib/nagios/plugins/check_entropy -w 256',
+    }
+  }
+
+  unless 'ntp_time' in $optout_checks {
+    sunet::nagios::nrpe_command { 'check_ntp_time':
+      command_line => '/usr/lib/nagios/plugins/check_ntp_time -H localhost',
+    }
+  }
+
+  unless 'scriptherder' in $optout_checks {
+    sunet::nagios::nrpe_command { 'check_scriptherder':
+      command_line => '/usr/local/bin/scriptherder --mode check',
+    }
+  }
+
+  unless 'apt' in $optout_checks {
+    sunet::nagios::nrpe_command { 'check_apt':
+      command_line => '/usr/lib/nagios/plugins/check_apt-wrapper',
+    }
+  }
+
   $nrpe_clients.each |$client| {
     $client_name = regsubst($client,'([.:]+)','_','G')
     sunet::misc::ufw_allow { "allow-nrpe-${client_name}":
