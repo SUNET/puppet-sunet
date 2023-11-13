@@ -7,10 +7,19 @@ class sunet::rediscluster(
 )
 {
 
+  # Allow the user to either specify the variable in cosmos-rules or in hiera
   if $cluster_announce_ip == '' {
-    $_cluster_announce_ip = lookup('cluster_announce_ip', undef, undef, '')
+    $__cluster_announce_ip = lookup('cluster_announce_ip', undef, undef, '')
   } else {
-    $_cluster_announce_ip = $cluster_announce_ip
+    $__cluster_announce_ip = $cluster_announce_ip
+  }
+  # Allow the user to use the explicit string ipaddress or ipaddress6 to use the corresponding facts
+  if $__cluster_announce_ip == 'ipaddress' {
+    $_cluster_announce_ip = $facts['ipaddress']
+  } elsif $__cluster_announce_ip == 'ipaddress6' {
+    $_cluster_announce_ip = $facts['ipaddress6']
+  } else {
+    $_cluster_announce_ip = $__cluster_announce_ip
   }
 
   $redis_password = safe_hiera('redis_password')
