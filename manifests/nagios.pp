@@ -1,3 +1,4 @@
+# Set up nrpe server and some default checks
 class sunet::nagios(
   $nrpe_service    = 'nagios-nrpe-server',
   $command_timeout = 60,
@@ -50,7 +51,7 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_load':
     command_line => "/usr/lib/nagios/plugins/check_load -w ${loadw} -c ${loadc}"
   }
-  if $::fqdn == 'docker.sunet.se' {
+  if $facts['networking']['fqdn'] == 'docker.sunet.se' {
     sunet::nagios::nrpe_command {'check_root':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /'
     }
@@ -62,7 +63,7 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_boot':
     command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
   }
-  if $::fqdn == 'docker.sunet.se' {
+  if $facts['networking']['fqdn'] == 'docker.sunet.se' {
     sunet::nagios::nrpe_command {'check_var':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /var'
     }
