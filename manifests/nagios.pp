@@ -21,6 +21,11 @@ class sunet::nagios(
       enable  => 'true',
       require => Package[$nrpe_service],
   }
+
+  package {'monitoring-plugins-contrib':
+      ensure => 'installed',
+  }
+
   concat {'/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg':
       owner  => root,
       group  => root,
