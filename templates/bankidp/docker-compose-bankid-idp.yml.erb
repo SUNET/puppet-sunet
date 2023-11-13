@@ -29,11 +29,3 @@ services:
       - "<%= port %>"
 <%- end -%>
 <% end -%>
-  redis:
-    image: redis:7-bullseye
-    volumes:
-      - /opt/redis/:/data
-    command: redis-server /data/server.conf
-    ports:
-      - "6379:6379"
-    restart: always
