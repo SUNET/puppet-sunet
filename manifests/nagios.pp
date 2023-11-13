@@ -2,8 +2,8 @@
 class sunet::nagios(
   String $nrpe_service    = 'nagios-nrpe-server',
   Integer $command_timeout = 60,
-  Integer $loadw           = '15,10,5',
-  Integer $loadc           = '30,25,20',
+  String $loadw           = '15,10,5',
+  String $loadc           = '30,25,20',
   Integer $procsw          = 150,
   Integer $procsc          = 200,
   Array[Optional[String]] $optout_checks = []
