@@ -6,6 +6,7 @@ class sunet::nagios(
   Integer $loadc           = '30,25,20',
   Integer $procsw          = 150,
   Integer $procsc          = 200,
+  Array[Optional[String]] $optout_checks = []
 ) {
 
   $nagios_ip_v4 = lookup('nagios_ip_v4', undef, undef, '109.105.111.111')
@@ -47,82 +48,103 @@ class sunet::nagios(
       content => template('sunet/nagioshost/nrpe.cfg.erb'),
   }
 
-  sunet::nagios::nrpe_command {'check_dynamic_disk':
-    command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -W 15% -K 5% -X overlay -X aufs -X tmpfs -X devtmpfs -X nsfs -A -i "^/var/lib/docker/plugins/.*/propagated-mount|^/snap|^/var/snap|^/sys/kernel/debug/tracing"'
-  }
-  sunet::nagios::nrpe_command {'check_users':
-    command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
-  }
-  sunet::nagios::nrpe_command {'check_load':
-    command_line => "/usr/lib/nagios/plugins/check_load -w ${loadw} -c ${loadc}"
-  }
-  if $facts['networking']['fqdn'] == 'docker.sunet.se' {
-    sunet::nagios::nrpe_command {'check_root':
-      command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /'
+  unless 'dynamic_disk' in $optout_checks {
+    sunet::nagios::nrpe_command {'check_dynamic_disk':
+      command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -W 15% -K 5% -X overlay -X aufs -X tmpfs -X devtmpfs -X nsfs -A -i "^/var/lib/docker/plugins/.*/propagated-mount|^/snap|^/var/snap|^/sys/kernel/debug/tracing"'
     }
-  } else {
+  }
+  unless 'users' in $optout_checks {
+    sunet::nagios::nrpe_command {'check_users':
+      command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
+    }
+  }
+  unless 'load' in $optout_checks {
+    sunet::nagios::nrpe_command {'check_load':
+      command_line => "/usr/lib/nagios/plugins/check_load -w ${loadw} -c ${loadc}"
+    }
+  }
+
+  unless 'root' in $optout_checks {
     sunet::nagios::nrpe_command {'check_root':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 15% -c 5% -p /'
     }
   }
-  sunet::nagios::nrpe_command {'check_boot':
-    command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
-  }
-  if $facts['networking']['fqdn'] == 'docker.sunet.se' {
-    sunet::nagios::nrpe_command {'check_var':
-      command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /var'
+
+  unless 'boot' in $optout_checks {
+    sunet::nagios::nrpe_command {'check_boot':
+      command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
     }
-  } else {
+  }
+
+  unless 'var' in $optout_checks {
     sunet::nagios::nrpe_command {'check_var':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /var'
     }
   }
-  sunet::nagios::nrpe_command {'check_zombie_procs':
-    command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
+
+  unless 'zombie_procs' in $optout_checks {
+    sunet::nagios::nrpe_command {'check_zombie_procs':
+      command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
+    }
   }
-  if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
-    # There are more processes than normal on frontend hosts
-    $_procw = $procsw + 350
-    $_procc = $procsc + 350
-  } else {
-    $_procw = $procsw
-    $_procc = $procsc
+
+  unless 'total_procs_lax' in $optout_checks {
+    if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
+      # There are more processes than normal on frontend hosts
+      $_procw = $procsw + 350
+      $_procc = $procsc + 350
+    } else {
+      $_procw = $procsw
+      $_procc = $procsc
+    }
+    file { '/usr/lib/nagios/plugins/check_process' :
+        ensure  => 'file',
+        mode    => '0751',
+        group   => 'nagios',
+        require => Package['nagios-nrpe-server'],
+        content => template('sunet/nagioshost/check_process.erb'),
+    }
+    sunet::nagios::nrpe_command {'check_total_procs_lax':
+      command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
+    }
   }
-  sunet::nagios::nrpe_command {'check_total_procs_lax':
-    command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
+
+  unless 'uptime' in $optout_checks {
+    file { '/usr/lib/nagios/plugins/check_uptime.pl' :
+        ensure  => 'file',
+        mode    => '0751',
+        group   => 'nagios',
+        require => Package['nagios-nrpe-server'],
+        content => template('sunet/nagioshost/check_uptime.pl.erb'),
+    }
+    sunet::nagios::nrpe_command {'check_uptime':
+      command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
+    }
   }
-  sunet::nagios::nrpe_command {'check_uptime':
-    command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
+
+  unless 'reboot' in $optout_checks {
+    file { '/usr/lib/nagios/plugins/check_reboot' :
+        ensure  => 'file',
+        mode    => '0751',
+        group   => 'nagios',
+        require => Package['nagios-nrpe-server'],
+        content => template('sunet/nagioshost/check_reboot.erb'),
+    }
+    sunet::nagios::nrpe_command {'check_reboot':
+      command_line => '/usr/lib/nagios/plugins/check_reboot'
+    }
   }
-  sunet::nagios::nrpe_command {'check_reboot':
-    command_line => '/usr/lib/nagios/plugins/check_reboot'
+
+  unless 'status' in $optout_checks {
+    sunet::nagios::nrpe_command {'check_status':
+      command_line => '/usr/local/bin/check_status'
+    }
   }
-  sunet::nagios::nrpe_command {'check_status':
-    command_line => '/usr/local/bin/check_status'
-  }
-  sunet::nagios::nrpe_command {'check_mailq':
-    command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
-  }
-  file { '/usr/lib/nagios/plugins/check_uptime.pl' :
-      ensure  => 'file',
-      mode    => '0751',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
-      content => template('sunet/nagioshost/check_uptime.pl.erb'),
-  }
-  file { '/usr/lib/nagios/plugins/check_reboot' :
-      ensure  => 'file',
-      mode    => '0751',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
-      content => template('sunet/nagioshost/check_reboot.erb'),
-  }
-  file { '/usr/lib/nagios/plugins/check_process' :
-      ensure  => 'file',
-      mode    => '0751',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
-      content => template('sunet/nagioshost/check_process.erb'),
+
+  unless 'mailq' in $optout_checks {
+    sunet::nagios::nrpe_command {'check_mailq':
+      command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
+    }
   }
   $nrpe_clients.each |$client| {
     $client_name = regsubst($client,'([.:]+)','_','G')
