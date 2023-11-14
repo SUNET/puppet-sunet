@@ -13,6 +13,8 @@ class sunet::nagios(
   #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
   $allowed_hosts = join($nrpe_clients,',')
 
+  notice('"sunet::nagios" is deprecated - please migrate to "sunet::nagios::nrpe" instead')
+
   package {$nrpe_service:
       ensure => 'installed',
   }
@@ -111,13 +113,6 @@ class sunet::nagios(
       group   => 'nagios',
       require => Package['nagios-nrpe-server'],
       content => template('sunet/nagioshost/check_reboot.erb'),
-  }
-  file { '/usr/lib/nagios/plugins/check_process' :
-      ensure  => 'file',
-      mode    => '0751',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
-      content => template('sunet/nagioshost/check_process.erb'),
   }
   if ($::operatingsystem == 'Ubuntu' and $::operatingsystemmajrelease == '16.04') {
     file { '/usr/lib/nagios/plugins/check_memory':
