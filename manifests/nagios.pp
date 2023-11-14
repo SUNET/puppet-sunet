@@ -16,6 +16,8 @@ class sunet::nagios(
   #$allowed_hosts = "127.0.0.1,127.0.1.1,${nagios_ip_v4},${nagios_ip_v6}"
   $allowed_hosts = join($nrpe_clients,',')
 
+  notice('"sunet::nagios" is deprecated - please migrate to "sunet::nagios::nrpe" instead')
+
   package {$nrpe_service:
       ensure => 'installed',
   }
