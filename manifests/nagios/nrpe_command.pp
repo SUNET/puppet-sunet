@@ -2,9 +2,9 @@
 define sunet::nagios::nrpe_command ($command_line = undef) {
 
   if defined('$sunet::nagios::nrpe_service') {
-    service = $sunet::nagios::nrpe_service
+    $service = $sunet::nagios::nrpe_service
   } elsif ('$sunet::nagios::nrpe::nrpe_service') {
-    service = $sunet::nagios::nrpe::nrpe_service
+    $service = $sunet::nagios::nrpe::nrpe_service
   }
 
   concat::fragment {"sunet_nrpe_command_${name}":
