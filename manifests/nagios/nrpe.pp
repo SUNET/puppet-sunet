@@ -49,6 +49,11 @@ class sunet::nagios::nrpe(
       content => template('sunet/nagioshost/nrpe.cfg.erb'),
   }
 
+  checks.each |$check| {
+    "sunet::nagios::${check}" { "nagios-nrpe-${check}": }
+
+  }
+
   $nrpe_clients.each |$client| {
     $client_name = regsubst($client,'([.:]+)','_','G')
     sunet::misc::ufw_allow { "allow-nrpe-${client_name}":
