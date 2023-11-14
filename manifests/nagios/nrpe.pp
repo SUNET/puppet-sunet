@@ -50,8 +50,7 @@ class sunet::nagios::nrpe(
   }
 
   checks.each |$check| {
-    "sunet::nagios::${check}" { "nagios-nrpe-${check}": }
-
+    ensure_resource("sunet::nagios::${check}", "nagios-nrpe-${check}")
   }
 
   $nrpe_clients.each |$client| {
