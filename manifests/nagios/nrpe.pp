@@ -49,7 +49,7 @@ class sunet::nagios::nrpe(
       content => template('sunet/nagioshost/nrpe.cfg.erb'),
   }
 
-  checks.each |$check| {
+  $checks.each |$check| {
     ensure_resource("sunet::nagios::${check}", "nagios-nrpe-${check}")
   }
 
