@@ -134,6 +134,11 @@ class sunet::vc::standalone_test(
       allow_clients => 'any',
       port          => 443,
     }
+    sunet::nftables::docker_expose { 'jaeger_ui_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 16686,
+    }
   } else {
     sunet::misc::ufw_allow { 'web_ports':
       from => 'any',
