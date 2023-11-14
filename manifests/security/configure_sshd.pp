@@ -3,7 +3,7 @@
 # @param port            The port to configure sshd to listen on. If undef, we leave it to sshd to decide.
 class sunet::security::configure_sshd (
   Boolean $configure_sftp = true,
-  Optional[Integer] $port = hiera('sunet_ssh_daemon_port', undef),
+  Optional[Integer] $port = lookup('sunet_ssh_daemon_port', Optional[integer], undef,  undef),
 ) {
   ensure_resource('package', 'openssh-server', {
       ensure => 'installed'
@@ -41,7 +41,6 @@ class sunet::security::configure_sshd (
     $set_port = undef
   }
 
-  include augeas
   augeas { 'sshd_config':
     context => '/files/etc/ssh/sshd_config',
     changes => flatten([

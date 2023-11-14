@@ -1,7 +1,7 @@
 # microk8s cluster node
 class sunet::microk8s::node(
-  String  $channel        = '1.25/stable',
-  Boolean $mayastor       = true,
+  String  $channel        = '1.27/stable',
+  Boolean $mayastor       = false,
   Integer $failure_domain = 42,
 ) {
   # Loop through peers and do things that require their ip:s
@@ -77,17 +77,26 @@ class sunet::microk8s::node(
       command  => '/snap/bin/microk8s enable community',
       provider => 'shell',
     }
-  }
-  unless any2bool($facts['microk8s_traefik']) {
-    exec { 'enable_plugin_traefik':
-      command  => '/snap/bin/microk8s enable traefik',
-      provider => 'shell',
+    unless any2bool($facts['microk8s_traefik']) {
+      exec { 'enable_plugin_traefik':
+        command  => '/snap/bin/microk8s enable traefik',
+        provider => 'shell',
+      }
     }
   }
-  if $enable_mayastor {
+  if $mayastor {
+    package { "linux-modules-extra-${facts['kernelrelease']}":
+      ensure   =>  installed,
+      provider => apt,
+    }
+    file {'/etc/modules-load.d/microk8s-mayastor.conf':
+      ensure  => file,
+      content => "nvme_tcp\n",
+      mode    => '0644',
+    }
     file { '/etc/sysctl.d/20-microk8s-hugepages.conf':
       ensure  => file,
-      content => "vm.nr_hugepages = 1024\n",
+      content => "vm.nr_hugepages = 4096\n",
       mode    => '0644',
     }
     unless any2bool($facts['microk8s_mayastor']) {
@@ -97,11 +106,11 @@ class sunet::microk8s::node(
       }
     }
   }
-  $namespaces = hiera_hash('microk8s_secrets', {})
+  $namespaces = lookup('microk8s_secrets', undef, undef, {})
   $namespaces.each |String $namespace, Hash $secrets| {
       $secrets.each |String $name, Array $secret| {
         set_microk8s_secret($namespace, $name, $secret)
     }
   }
-  import_gpg_keys_to_microk8s()
+  #import_gpg_keys_to_microk8s()
 }

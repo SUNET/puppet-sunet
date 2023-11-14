@@ -1,8 +1,8 @@
 class sunet::norduni {
 
-    $postgres_master_password = hiera('postgres_master_password', 'NOT_SET_IN_HIERA')
-    $postgres_ni_password = hiera('postgres_ni_password', 'NOT_SET_IN_HIERA')
-    $noclook_secret_key = hiera('noclook_secret_key', 'NOT_SET_IN_HIERA')
+    $postgres_master_password = safe_hiera('postgres_master_password')
+    $postgres_ni_password = safe_hiera('postgres_ni_password')
+    $noclook_secret_key = safe_hiera('noclook_secret_key')
     # TODO: Take tls info as arguments
     $norduni_tls_cert = 'nidev-consumer_nordu_net.crt'
     $norduni_tls_key = 'nidev-consumer_nordu_net.key'

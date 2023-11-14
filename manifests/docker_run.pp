@@ -1,12 +1,12 @@
 # Common use of docker::run
 define sunet::docker_run(
   String $image,
-  String $imagetag           = hiera('sunet_docker_default_tag', 'latest'),
+  String $imagetag           = lookup('sunet_docker_default_tag', String, undef, 'latest'),
   Array[String] $volumes     = [],
   Array[String] $ports       = [],
   Array[String] $expose      = [],
   Array[String] $env         = [],
-  String $net                = hiera('sunet_docker_default_net', 'docker'),
+  String $net                = lookup('sunet_docker_default_net', String, undef, 'docker'),
   Optional[String] $command  = undef,
   Optional[String] $hostname = undef,
   $depends                   = [],  # should be array of strings, but need to fix usage first

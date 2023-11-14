@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 datadir="<%= @invent_dir%>/data"
 retention_days="<%= @invent_retention_days%>"
@@ -6,6 +6,7 @@ filename="${datadir}/data-$(date +%Y%m%dT%H%M%S).json"
 latest="${datadir}/latest.json"
 host_os="<%= @host_os %>"
 fact_dir="/var/lib/puppet/facts.d"
+export_endpoint="<%= @export_endpoint %>"
 # Gather packages
 
 case "${host_os}" in
@@ -55,3 +56,20 @@ ln -f -s "${filename}" "${latest}"
 
 # Clean out old facts
 find ${datadir} -type f -mtime +${retention_days} -delete 
+
+# Send data to inventory receiver
+if [[ -x /usr/bin/curl ]] && [[ -n ${export_endpoint} ]]; then
+  username=$(hostname -f)
+  pwfile="/opt/invent/passwd"
+  if [[ -f ${pwfile} ]]; then
+    password=$(cat ${pwfile})
+  else
+    mkdir -p $(basename ${pwfile})
+    password=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 256 | head -n 1)
+    echo ${password} > ${pwfile}
+  fi
+  curl -X POST -H 'accept: application/json' \
+    -F "file=@${filename}" \
+    --user ${username}:${password}  \
+    ${export_endpoint}/host/${username}
+fi

@@ -26,12 +26,12 @@ INTERNAL_TOKEN = <%= @internal_token %>
 [mailer]
 ENABLED        = true
 PROTOCOL       = smtp+starttls
-FROM           = platform@sunet.se
+FROM           = <%= @smtp_user%>@sunet.se
 MAILER_TYPE    = smtp
 IS_TLS_ENABLED = false
 SMTP_ADDR      = smtp.sunet.se
 SMTP_PORT      = 587
-USER           = platform
+USER           = <%= @smtp_user %>
 PASSWD         = `<%= @smtp_password %>`
 
 [oauth2]
@@ -49,7 +49,7 @@ MAX_CREATION_LIMIT = -1
 [service]
 DISABLE_REGISTRATION = false
 DEFAULT_ALLOW_CREATE_ORGANIZATION = false
-REQUIRE_SIGNIN_VIEW = true
+REQUIRE_SIGNIN_VIEW = false
 EMAIL_DOMAIN_WHITELIST = <%= @email_domain_whitelist %>
 ALLOW_ONLY_EXTERNAL_REGISTRATION = true
 SHOW_REGISTRATION_BUTTON = false
@@ -60,3 +60,7 @@ ALLOW_SUBDOMAIN = true
 X_FRAME_OPTIONS = SAMEORIGIN
 SCHEME = https
 ENABLED = true
+
+[actions]
+ENABLED = true
+DEFAULT_ACTIONS_URL = https://<%= @domain %>

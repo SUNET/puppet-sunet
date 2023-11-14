@@ -1,14 +1,14 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
-  String $docker_version,
-  String $docker_package_name                 = 'docker-engine',  # facilitate transition to new docker-ce package
+  String $docker_version                      = 'installed',
+  String $docker_package_name                 = 'docker-ce',  # facilitate transition to new docker-ce package
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
   Boolean $run_docker_cleanup                 = true,
-  Variant[String, Boolean] $docker_network    = hiera('dockerhost_docker_network', '172.18.0.0/22'),
-  String $docker_network_v6                   = hiera('dockerhost_docker_network_v6', 'fd0c:d0c::/64'),  # default bridge
-  Variant[String, Array[String]] $docker_dns  = $::ipaddress_default,
+  Variant[String, Boolean] $docker_network    = lookup('dockerhost_docker_network', Variant[String, Boolean], undef, '172.18.0.0/22'),
+  String $docker_network_v6                   = lookup('dockerhost_docker_network_v6', String, undef, 'fd0c:d0c::/64'),  # default bridge
+  Variant[String, Array[String]] $docker_dns  = $facts['ipaddress_default'],
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
@@ -16,12 +16,13 @@ class sunet::dockerhost(
   Optional[Array[String]] $tcp_bind           = undef,
   Boolean $write_daemon_config                = false,
   Boolean $enable_ipv6                        = false,
+  Boolean $advanced_network                   = false,
 ) {
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
   include stdlib
 
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
+  if $::facts['sunet_nftables_enabled'] == 'yes' and $advanced_network == false {
     # Hackishly create the /etc/systemd/system/docker.service.d/ directory before the docker service is installed.
     # If we do this using 'file', the docker class will fail because of a duplicate declaration.
     exec { "create_${name}_service_dir":
@@ -55,7 +56,7 @@ class sunet::dockerhost(
     }
   }
 
-  if versioncmp($::operatingsystemrelease, '22.04') <= 0 or $::operatingsystem == 'Debian' {
+  if versioncmp($facts['os']['release']['full'], '22.04') <= 0 or $facts['os']['name'] == 'Debian' {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
       ensure => 'purged',
@@ -88,37 +89,33 @@ class sunet::dockerhost(
       }
     apt::key { 'docker_ce':
       id     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
+      server => 'https://does-not-exists-but-is-required.example.com',
       source => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
       notify => Exec['dockerhost_apt_get_update'],
     }
 
-    if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
-      $architecture = 'amd64'
-    } else {
-      $architecture = undef
-    }
-
-    $distro = downcase($::operatingsystem)
+    $distro = downcase($facts['os']['name'])
     # new source
     apt::source {'docker_ce':
-      location     => "https://download.docker.com/linux/${distro}",
-      release      => $::lsbdistcodename,
-      repos        => $docker_repo,
-      key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
-      architecture => $architecture,
-      notify       => Exec['dockerhost_apt_get_update'],
+      location => "https://download.docker.com/linux/${distro}",
+      release  => $facts['os']['distro']['codename'],
+      repos    => $docker_repo,
+      key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
+      notify   => Exec['dockerhost_apt_get_update'],
     }
   }
 
-  if $docker_version =~ /^\d.*/ {
-    # if it looks like a version number (as opposed to 'latest', 'installed', ...)
-    # then pin it so that automatic/manual dist-upgrades don't touch the docker package
-    apt::pin { 'docker package':
-      packages => $docker_package_name,
-      version  => $docker_version,
-      priority => 920,  # upgrade, but do not downgrade
-      notify   => Exec['dockerhost_apt_get_update'],
-    }
+  apt::pin { 'Pin docker repo':
+    packages => '*',
+    priority => 1,
+    origin   => 'download.docker.com'
+  }
+  # Clean up old pinning
+  file {'/etc/apt/preferences.d/docker-ce-cli.pref':
+    ensure => 'absent',
+  }
+  file {'/etc/apt/preferences.d/docker_package.pref':
+    ensure => 'absent',
   }
 
   exec { 'dockerhost_apt_get_update':
@@ -131,34 +128,9 @@ class sunet::dockerhost(
     ensure  => $docker_version,
     require => Exec['dockerhost_apt_get_update'],
   }
-
-  if $docker_package_name == 'docker-ce' {
-    # also need to hold the docker-ce-cli package at the same version
-    if $docker_version =~ /^\d.*/ and $docker_version !~ /^1[78]/ and $docker_version !~ /5:18.0[12345678]/ {
-      notice("Docker version ${docker_version} has a docker-ce-cli package, pinning it")
-      apt::pin { 'docker-ce-cli':
-        packages => 'docker-ce-cli',
-        version  => $docker_version,
-        priority => 920,  # upgrade, but do not downgrade
-        notify   => Exec['dockerhost_apt_get_update'],
-      }
-      package { 'docker-ce-cli' :
-        ensure  => $docker_version,
-        require => Exec['dockerhost_apt_get_update'],
-      }
-    } else {
-      notice("Docker version ${docker_version} does not have a docker-ce-cli package")
-    }
-  }
-
-  $docker_command = $docker_package_name ? {
-    'docker-ce' => 'dockerd',  # docker-ce has a new dockerd executable
-    default     => undef,
-  }
-
-  $daemon_subcommand = $docker_package_name ? {
-    'docker-ce' => '',  # docker-ce removed the 'daemon' in '/usr/bin/docker daemon'
-    default     => undef,
+  package { 'docker-ce-cli' :
+    ensure  => $docker_version,
+    require => Exec['dockerhost_apt_get_update'],
   }
 
   # Make it possible to not set a class::docker DNS at all by passing in the empty string
@@ -167,12 +139,12 @@ class sunet::dockerhost(
     default => $docker_dns,
   }
 
-  if $tcp_bind and has_key($::tls_certificates, $::fqdn) and has_key($::tls_certificates[$::fqdn], 'infra_cert') {
+  if $tcp_bind and has_key($facts['tls_certificates'], $facts['networking']['fqdn']) and has_key($facts['tls_certificates'][$::fqdn], 'infra_cert') {
     $_tcp_bind = $tcp_bind
     $tls_enable = true
     $tls_cacert = '/etc/ssl/certs/infra.crt'
-    $tls_cert   = $::tls_certificates[$::fqdn]['infra_cert']
-    $tls_key    = $::tls_certificates[$::fqdn]['infra_key']
+    $tls_cert   = $facts['tls_certificates'][$::fqdn]['infra_cert']
+    $tls_key    = $facts['tls_certificates'][$::fqdn]['infra_key']
   } else {
     $_tcp_bind = undef
     $tls_enable = undef
@@ -199,6 +171,10 @@ class sunet::dockerhost(
     $ipv6_parameters,
     ]).join(' ')
 
+  $iptables = $advanced_network ? {
+    true      => false,
+    false     => true,
+  }
 
   if $write_daemon_config {
     if $docker_network =~ String[1] {
@@ -220,24 +196,30 @@ class sunet::dockerhost(
 
     # Docker rejects options specified both from command line and in daemon.json
     class {'docker':
+      ip_forward                  => $iptables,
+      ip_masq                     => $iptables,
+      iptables                    => $iptables,
       manage_package              => false,
       manage_kernel               => false,
       use_upstream_package_source => false,
       extra_parameters            => $_extra_parameters,
-      docker_command              => $docker_command,
-      daemon_subcommand           => $daemon_subcommand,
+      docker_command              => 'dockerd',
+      daemon_subcommand           => '',
       require                     => Package[$docker_package_name],
     }
   } else {
     class {'docker':
+      ip_forward                  => $iptables,
+      ip_masq                     => $iptables,
+      iptables                    => $iptables,
       storage_driver              => $storage_driver,
       manage_package              => false,
       manage_kernel               => false,
       use_upstream_package_source => false,
       dns                         => $_docker_dns,
       extra_parameters            => $_extra_parameters,
-      docker_command              => $docker_command,
-      daemon_subcommand           => $daemon_subcommand,
+      docker_command              => 'dockerd',
+      daemon_subcommand           => '',
       tcp_bind                    => $_tcp_bind,
       tls_enable                  => $tls_enable,
       tls_cacert                  => $tls_cacert,
@@ -283,13 +265,15 @@ class sunet::dockerhost(
       ;
     }
 
-  if $::sunet_has_nrpe_d == 'yes' {
-    # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
-    if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
-      $check_docker_containers_args = '--systemd'
-    } else {
-      $check_docker_containers_args = '--init_d'
+    file { '/usr/local/bin/docker-upgrade':
+        ensure => 'present',
+        mode   => '0755',
+        source => 'puppet:///modules/sunet/docker/docker-upgrade',
     }
+
+  if $facts['sunet_has_nrpe_d'] == 'yes' {
+    # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
+    $check_docker_containers_args = '--systemd'
 
     file {
       '/etc/sudoers.d/nrpe_dockerhost_checks':
@@ -365,10 +349,6 @@ class sunet::dockerhost(
         require => Package['unbound'],
         notify  => Service['unbound'],
         ;
-    }
-  } else {
-    if $::facts['operatingsystem'] == 'Ubuntu' {
-      ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => true, })
     }
   }
 }

@@ -13,12 +13,14 @@
 # @param cfssl_helper_version       The version of the cfssl cert generation helper container to run
 # @param etcdctl_helper_version     The version of the etcdctl initial setup helper container to run
 # @param domain                     The domain where the fleetlock server will supply its services
+# @param letsencrypt_prod           Should the server request real letsencrypt certificates
 class sunet::knubbis::fleetlock_standalone(
-  String        $knubbis_fleetlock_version="v0.0.6",
+  String        $knubbis_fleetlock_version="v0.0.10",
   String        $etcd_version="v3.5.8",
   String        $cfssl_helper_version="v0.0.1",
   String        $etcdctl_helper_version="v0.0.1",
   String        $domain="",
+  Boolean       $letsencrypt_prod=false,
 ) {
 
     # A domain must be supplied by the user
@@ -181,6 +183,14 @@ class sunet::knubbis::fleetlock_standalone(
                 owner  => 'root',
                 group  => 'root',
                 content => file("sunet/knubbis/fleetlock_standalone/knubbis-fleetlock_standalone-backup")
+            }
+
+            file { '/usr/local/sbin/knubbis-fleetlock_standalone-restore':
+                ensure => file,
+                mode   => '0755',
+                owner  => 'root',
+                group  => 'root',
+                content => file("sunet/knubbis/fleetlock_standalone/knubbis-fleetlock_standalone-restore")
             }
 
             sunet::scriptherder::cronjob { "knubbis-fleetlock_standalone-backup":
