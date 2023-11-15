@@ -56,7 +56,7 @@ class sunet::gpuworkloads(
   $localai_models.each |$model| {
     $org = $model.split('/')[0]
     $repo = $model.split('/')[1]
-    $model_name = $model.split('/')[2].split('.')[0]
+    $model_name = $model.split('/')[2]
     $short_name = $model_name.split('.')[0]
     $defaultmpl = '{{.Input}}\n### Response:'
     $tmpl = lookup("${short_name}_tmpl", undef, undef, $defaultmpl)
