@@ -56,7 +56,10 @@ class sunet::gpuworkloads(
   $localai_models.each |$model| {
     $org = $model.split('/')[0]
     $repo = $model.split('/')[1]
-    $model_name = $model.split('/')[2]
+    $model_name = $model.split('/')[2].split('.')[0]
+    $short_name = $model_name.split('.')[0]
+    $defaultmpl = '{{.Input}}\n### Response:'
+    $tmpl = lookup("${short_name}_tmpl", undef, undef, $defaultmpl)
     file {"/opt/gpuworkloads/localai/${org}":
       ensure  => 'directory'
     }
@@ -64,8 +67,12 @@ class sunet::gpuworkloads(
       ensure  => 'directory'
     }
     ->exec { "localai_model_${model_name}":
-      command => "wget -o /opt/gpuworkloads/localai/${org}/${repo}/${model_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
-      unless  => "test -f /opt/gpuworkloads/localai/${org}/${repo}/${model_name}"
+      command => "wget -o /opt/gpuworkloads/localai/${short_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
+      unless  => "test -f /opt/gpuworkloads/localai/${short_name}"
+    }
+    -> file {"/opt/gpuworkloads/localai/${short_name}.tmpl":
+      ensure  => 'file',
+      content => inline_template($tmpl),
     }
   }
 }
