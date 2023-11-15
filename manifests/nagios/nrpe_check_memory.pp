@@ -4,14 +4,14 @@ define sunet::nagios::nrpe_check_memory (
   String $critical_arg = '',
 ) {
 
-    $default_warning = $facts['os']['codename'] ? {
+    $default_warning = $facts['os']['distro']['codename'] ? {
       'bullseye' => '10%',
       'focal'    => '10%',
       default    => '90%',
 
     }
 
-    $default_critical = $facts['os']['codename'] ? {
+    $default_critical = $facts['os']['distro']['codename'] ? {
       'bullseye' => '5%',
       'focal'    => '5%',
       default    => '95%',
