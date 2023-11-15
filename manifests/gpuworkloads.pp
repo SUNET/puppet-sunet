@@ -67,7 +67,7 @@ class sunet::gpuworkloads(
       ensure  => 'directory'
     }
     ->exec { "localai_model_${model_name}":
-      command => "wget -o /opt/gpuworkloads/localai/${short_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
+      command => "wget -O /opt/gpuworkloads/localai/${short_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
       unless  => "test -f /opt/gpuworkloads/localai/${short_name}"
     }
     -> file {"/opt/gpuworkloads/localai/${short_name}.tmpl":
