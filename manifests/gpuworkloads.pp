@@ -64,7 +64,7 @@ class sunet::gpuworkloads(
       ### Response:
       | EOT
     $tmpl = lookup("${safe_name}_tmpl", undef, undef, $defaultmpl)
-    ->exec { "localai_model_${model_name}":
+    ->exec { "localai_model_${safe_name}":
       command => "wget -O /opt/gpuworkloads/localai/${short_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
       unless  => "test -f /opt/gpuworkloads/localai/${short_name}"
     }
