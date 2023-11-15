@@ -80,6 +80,8 @@ services:
       - /opt/gpuworkloads/localai:/models
     environment:
       BUILD_TYPE: 'cublas'
+      REBUILD: true
+      DEBUG: true
       GALLERIES: '[{"name":"model-gallery", "url":"github:go-skynet/model-gallery/index.yaml"}, {"url": "github:go-skynet/model-gallery/huggingface.yaml","name":"huggingface"}]'
       LETSENCRYPT_HOST: '<%= @localai_vhost %>'
       MODELS_PATH: '/models'
@@ -89,6 +91,8 @@ services:
       VIRTUAL_PORT: 8080
     deploy:
       resources:
+        limits:
+          memory: 32G
         reservations:
           devices:
             - driver: nvidia
