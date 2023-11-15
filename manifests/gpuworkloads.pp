@@ -58,8 +58,12 @@ class sunet::gpuworkloads(
     $repo = $model.split('/')[1]
     $model_name = $model.split('/')[2]
     $short_name = $model_name.split('\.')[0]
-    $defaultmpl = "{{.Input}}\n### Response:"
-    $tmpl = lookup("${short_name}_tmpl", undef, undef, $defaultmpl)
+    $safe_name = $short_name.split('-').join('_')
+    $defaultmpl = @(EOT)
+      {{.Input}}
+      ### Response:
+      | EOT
+    $tmpl = lookup("${safe_name}_tmpl", undef, undef, $defaultmpl)
     ->exec { "localai_model_${model_name}":
       command => "wget -O /opt/gpuworkloads/localai/${short_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
       unless  => "test -f /opt/gpuworkloads/localai/${short_name}"
