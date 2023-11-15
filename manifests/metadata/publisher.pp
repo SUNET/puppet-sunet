@@ -21,8 +21,8 @@ class sunet::metadata::publisher(
          warn_criteria     => ['max_age=30m']
       }
    }
-   $ssh_key = safe_hiera('publisher_ssh_key',undef)
-   $ssh_key_type = safe_hiera('publisher_ssh_key_type',undef)
+   $ssh_key = lookup(publisher_ssh_key, undef, undef, undef)
+   $ssh_key_type = lookup(publisher_ssh_key_type, undef, undef, undef)
    if ($ssh_key and $ssh_key_type) {
       sunet::rrsync {$dir:
          ro                => false,

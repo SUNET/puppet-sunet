@@ -3,12 +3,13 @@
 # pylint:enable=invalid-name
 """ Check dsmc logs and other information and exit non-zero if something bad is detected """
 
+import datetime
+import os
+import re
 import shlex
 import subprocess
 import sys
-import re
-import datetime
-import os
+from typing import Union
 
 
 def write_schedule_cache(cache_file: str) -> None:
@@ -62,7 +63,7 @@ def have_schedule() -> bool:
     return False
 
 
-def last_scheduled_start_time() -> datetime.datetime | None:
+def last_scheduled_start_time() -> Union[datetime.datetime, None]:
     """return the time we last logged a started scheduled backup"""
     returned_timestamp = None
     with open("/var/log/dsmsched.log", "r", encoding="utf-8") as fileobj:
@@ -76,7 +77,7 @@ def last_scheduled_start_time() -> datetime.datetime | None:
     return returned_timestamp
 
 
-def last_error_time() -> datetime.datetime | None:
+def last_error_time() -> Union[datetime.datetime, None]:
     """return the last time we saw an error logged"""
     returned_timestamp = None
     with open("/var/log/dsmerror.log", "r", encoding="utf-8") as fileobj:

@@ -12,7 +12,7 @@ class sunet::server (
   Boolean $apparmor = false,
   Boolean $disable_ipv6_privacy = false,
   Boolean $disable_all_local_users = false,
-  Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
+  Array $mgmt_addresses = [lookup('mgmt_addresses', undef, undef, [])],
   Boolean $ssh_allow_from_anywhere = false,
 ) {
   if $fail2ban {
@@ -31,7 +31,7 @@ class sunet::server (
   }
 
   if $sshd_config {
-    $ssh_port = hiera('sunet_ssh_daemon_port', undef)
+    $ssh_port = lookup(sunet_ssh_daemon_port, undef, undef, undef)
     class { 'sunet::security::configure_sshd':
       port => $ssh_port,
     }

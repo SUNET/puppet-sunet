@@ -3,7 +3,7 @@ define sunet::luna_client($hostname = undef) {
       undef    => "${::fqdn}",
       default  => $hostname
    }
-   $pin = hiera("luna_partition_password")
+   $pin = lookup('luna_partition_password', undef, undef, undef)
    sunet::docker_run { "${name}-luna-client":
       image    => 'docker.sunet.se/luna-client',
       imagetag => 'latest',

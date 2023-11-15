@@ -2,15 +2,15 @@ class sunet::gitlab {
 
     # Application specific password for Crowd.
     # The variable is used in the gitlab.rb template.
-    $crowd_password = hiera('crowd_password', 'NOT_SET_IN_HIERA')
+    $crowd_password = safe_hiera('crowd_password')
 
     # root password for the Gitlab app.
     # The variable is used in the gitlab.rb template.
-    $gitlab_root_password = hiera('gitlab_root_password', 'NOT_SET_IN_HIERA')
+    $gitlab_root_password = safe_hiera('gitlab_root_password')
 
     # Password for user gitlab in the PostgreSQL database.
     # The variable is used in the gitlab.rb template.
-    $postgres_gitlab_password = hiera('postgres_gitlab_password', 'NOT_SET_IN_HIERA')
+    $postgres_gitlab_password = safe_hiera('postgres_gitlab_password')
 
     # The following are used by the Gitlab container
     user { 'git': ensure => present,

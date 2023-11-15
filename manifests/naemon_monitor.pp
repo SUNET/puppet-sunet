@@ -1,7 +1,7 @@
 # Run naemon with Thruk
 class sunet::naemon_monitor(
   String $domain,
-  String $influx_password = hiera('influx_password'),
+  String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
   Array $resolvers = [],
@@ -17,9 +17,8 @@ class sunet::naemon_monitor(
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
   Optional[String] $default_host_group = undef,
+  Array[Optional[String]] $optout_checks = [],
 ){
-
-  require stdlib
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
       sunet::nftables::docker_expose { 'allow_http' :
@@ -46,7 +45,7 @@ class sunet::naemon_monitor(
 
   class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
 
-  if hiera('shib_key',undef) != undef {
+  if lookup('shib_key', undef, undef, undef) != undef {
     sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
     # assume cert is in cosmos repo (overlay)
   }
@@ -55,6 +54,9 @@ class sunet::naemon_monitor(
   $thruk_users_string = inline_template('READONLY_USERS=<%- @thruk_users.each do |user| -%><%= user %>,<%- end -%>')
   $thruk_env = [ $thruk_admins_string, $thruk_users_string ]
 
+  if $influx_password == '' {
+    err('ERROR: influx password not set')
+  }
   $influx_env =  [ 'INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux']
   $nagflux_env =  [ "INFLUXDB_ADMIN_PASSWORD=${influx_password}" ]
 
@@ -106,90 +108,114 @@ class sunet::naemon_monitor(
     }
 
   nagioscfg::contactgroup {'alerts': }
-  -> nagioscfg::service {'check_load':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_load',
-    description    => 'System Load',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
-  nagioscfg::service {'check_users':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_users',
-    description    => 'Active Users',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
-  nagioscfg::service {'check_zombie_procs':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_zombie_procs',
-    description    => 'Zombie Processes',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
-  nagioscfg::service {'check_total_procs':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_total_procs_lax',
-    description    => 'Total Processes',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
-  nagioscfg::service {'check_dynamic_disk':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_dynamic_disk',
-    description    => 'Disk',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
-  }
 
-  nagioscfg::service {'check_uptime':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_uptime',
-    description    => 'Uptime',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
+  unless 'load' in $optout_checks {
+    nagioscfg::service {'check_load':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_load',
+      description    => 'System Load',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
   }
-  nagioscfg::service {'check_reboot':
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_reboot',
-    description    => 'Reboot Needed',
-    contact_groups => ['alerts'],
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
+  unless 'users' in $optout_checks {
+    nagioscfg::service {'check_users':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_users',
+      description    => 'Active Users',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
   }
-  nagioscfg::service {'check_memory':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_memory',
-    description    => 'System Memory',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
+  unless 'zombie_procs' in $optout_checks {
+    nagioscfg::service {'check_zombie_procs':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_zombie_procs',
+      description    => 'Zombie Processes',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
   }
-  nagioscfg::service {'check_entropy':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_entropy',
-    description    => 'System Entropy',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
+  unless 'total_procs' in $optout_checks {
+    nagioscfg::service {'check_total_procs':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_total_procs_lax',
+      description    => 'Total Processes',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
   }
-  nagioscfg::service {'check_ntp_time':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_ntp_time',
-    description    => 'System NTP Time',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
+  unless 'dynamic_disk' in $optout_checks {
+    nagioscfg::service {'check_dynamic_disk':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_dynamic_disk',
+      description    => 'Disk',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
   }
-  nagioscfg::service {'check_scriptherder':
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_scriptherder',
-    description    => 'Scriptherder Status',
-    contact_groups => ['naemon-admins'],
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
+  unless 'uptime' in $optout_checks {
+    nagioscfg::service {'check_uptime':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_uptime',
+      description    => 'Uptime',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
   }
-  nagioscfg::service {'check_apt':
-    use            => 'naemon-service',
-    hostgroup_name => [$nrpe_group],
-    check_command  => 'check_nrpe!check_apt',
-    description    => 'Packages available for upgrade',
-    require        => File['/etc/naemon/conf.d/nagioscfg/'],
+  unless 'reboot' in $optout_checks {
+    nagioscfg::service {'check_reboot':
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_reboot',
+      description    => 'Reboot Needed',
+      contact_groups => ['alerts'],
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
+  }
+  unless 'memory' in $optout_checks {
+    nagioscfg::service {'check_memory':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_memory',
+      description    => 'System Memory',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
+  }
+  unless 'entropy' in $optout_checks {
+    nagioscfg::service {'check_entropy':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_entropy',
+      description    => 'System Entropy',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
+  }
+  unless 'ntp_time' in $optout_checks {
+    nagioscfg::service {'check_ntp_time':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_ntp_time',
+      description    => 'System NTP Time',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
+  }
+  unless 'scriptherder' in $optout_checks {
+    nagioscfg::service {'check_scriptherder':
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_scriptherder',
+      description    => 'Scriptherder Status',
+      contact_groups => ['naemon-admins'],
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
+  }
+  unless 'apt' in $optout_checks {
+    nagioscfg::service {'check_apt':
+      use            => 'naemon-service',
+      hostgroup_name => [$nrpe_group],
+      check_command  => 'check_nrpe!check_apt',
+      description    => 'Packages available for upgrade',
+      require        => File['/etc/naemon/conf.d/nagioscfg/'],
+    }
   }
 
   file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':

@@ -3,9 +3,6 @@ services:
   nginx:
     image: docker.io/nginxproxy/nginx-proxy:latest
     container_name: nginx
-    networks:
-      - internal_network
-      - external_network
     dns:
       - 89.32.32.32
     ports:
@@ -27,8 +24,6 @@ services:
   acme:
     image: docker.io/nginxproxy/acme-companion:latest
     container_name: acme
-    networks:
-      - external_network
     dns:
       - 89.32.32.32
     volumes:
@@ -51,9 +46,7 @@ services:
     dns:
       - 89.32.32.32
     ports:
-      - "127.0.0.1:8000:8000"
-    networks:
-      - internal_network
+      - "8000:8000"
     volumes:
 <% @endpoints.each do |endpoint|-%>
       - "/opt/receiver/<%= endpoint %>:/app/<%= endpoint %>"
@@ -66,8 +59,4 @@ services:
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=8000
       - LETSENCRYPT_HOST=<%= @vhost %>
-      - ES_ENABLED=false
-networks:
-  external_network:
-  internal_network:
-    internal: true
+      - INVENT_ADMIN_PASSWORD=<%= @admin_password %>

@@ -1,7 +1,7 @@
 # microk8s cluster node
 class sunet::microk8s::node(
-  String  $channel        = '1.25/stable',
-  Boolean $mayastor       = true,
+  String  $channel        = '1.27/stable',
+  Boolean $mayastor       = false,
   Integer $failure_domain = 42,
 ) {
   # Loop through peers and do things that require their ip:s
@@ -106,7 +106,7 @@ class sunet::microk8s::node(
       }
     }
   }
-  $namespaces = hiera_hash('microk8s_secrets', {})
+  $namespaces = lookup('microk8s_secrets', undef, undef, {})
   $namespaces.each |String $namespace, Hash $secrets| {
       $secrets.each |String $name, Array $secret| {
         set_microk8s_secret($namespace, $name, $secret)

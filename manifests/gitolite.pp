@@ -23,12 +23,12 @@ class sunet::gitolite(
     }
 
     $_ssh_key = $ssh_key ? {
-        undef   => safe_hiera("gitolite-admin-ssh-key",undef),
-        ""      => safe_hiera("gitolite-admin-ssh-key",undef),
+        undef   => lookup('gitolite-admin-ssh-key', undef, undef, undef),
+        ''      => lookup('gitolite-admin-ssh-key', undef, undef, undef),
         default => $ssh_key
     }
 
-    file { ["$home/.gitolite","$home/.gitolite/logs"]:
+    file { ["${home}/.gitolite","${home}/.gitolite/logs"]:
         ensure => directory,
         owner  => $username,
         group  => $group
@@ -51,8 +51,8 @@ class sunet::gitolite(
             }
         }
     } elsif $save_private_admin_key_on_server == false {
-        $gitolite_initial_public_admin_key = safe_hiera('gitolite-initial-public-admin-key', undef)
-        file { "$home/admin.pub":
+        $gitolite_initial_public_admin_key = lookup('gitolite-initial-public-admin-key', undef, undef, undef)
+        file { "${home}/admin.pub":
             ensure  => file,
             owner   => 'root',
             group   => 'root',
@@ -61,7 +61,7 @@ class sunet::gitolite(
     }
 
     package {'gitolite3': ensure => latest } ->
-    file { "$home/.gitolite.rc":
+    file { "${home}/.gitolite.rc":
         ensure  => file,
         owner   => $username,
         group   => $group,
@@ -69,9 +69,9 @@ class sunet::gitolite(
     } ->
 
     exec {'gitolite-setup':
-        command     => "gitolite setup -pk $home/admin.pub",
+        command     => "gitolite setup -pk ${home}/admin.pub",
         user        => $username,
-        environment => ["HOME=$home"]
+        environment => ["HOME=${home}"]
     }
 
     if $enable_git_daemon {

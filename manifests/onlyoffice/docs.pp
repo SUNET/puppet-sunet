@@ -28,7 +28,7 @@ define sunet::onlyoffice::docs(
   }
 
   $amqp_env = ["AMQP_URI=${amqpuri}"]
-  $db_pwd = safe_hiera('document_db_password',undef)
+  $db_pwd = lookup(document_db_password, undef, undef, undef)
 
   $db_env = ["DB_HOST=${db_host}","DB_NAME=${db_name}","DB_USER=${db_user}","DB_TYPE=${db_type}"]
   $db_pwd_env = $db_pwd ? {
@@ -36,7 +36,7 @@ define sunet::onlyoffice::docs(
     default => ["DB_PWD=${db_pwd}"]
   }
 
-  $jwt_secret = safe_hiera('document_jwt_key',undef)
+  $jwt_secret = lookup(document_jwt_key, undef, undef, undef)
   $jwt_env = $jwt_secret ? {
     undef   => [],
     default => ['JWT_ENABLED=true',"JWT_SECRET=${jwt_secret}"]
