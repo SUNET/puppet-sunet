@@ -99,3 +99,11 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+  chatui:
+    image: ghcr.io/mckaywrigley/chatbot-ui:main
+    environment:
+      OPENAI_API_HOST: 'http://localai:8080'
+      LETSENCRYPT_HOST: '<%= @chatui_vhost %>'
+      VIRTUAL_HOST: '<%= @chatui_vhost %>'
+      VIRTUAL_PATH: '/'
+      VIRTUAL_PORT: 3000

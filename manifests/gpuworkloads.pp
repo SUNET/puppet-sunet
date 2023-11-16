@@ -1,10 +1,11 @@
 # microk8s cluster node
 class sunet::gpuworkloads(
+  String $chatui_vhost  = 'chat.sunet.dev',
   String $interface     = 'enp2s0',
+  String $localai_tag   = 'master-cublas-cuda12-ffmpeg',
+  String $localai_vhost = 'localai-lab.sunet.se',
   String $tabby_model   = 'CodeLlama-13B',
   String $tabby_vhost   = 'tabby-lab.sunet.se',
-  String $localai_vhost = 'localai-lab.sunet.se',
-  String $localai_tag   = 'master-cublas-cuda12-ffmpeg',
 ) {
   $tabby_vhost_password = lookup('tabby_vhost_password')
   $localai_vhost_password = lookup('localai_vhost_password')
