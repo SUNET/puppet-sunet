@@ -80,7 +80,6 @@ services:
       - /opt/gpuworkloads/localai:/models
     environment:
       BUILD_TYPE: 'cublas'
-      REBUILD: 'true'
       DEBUG: 'true'
       CONTEXT_SIZE: 2048
       GALLERIES: '[{"name":"model-gallery", "url":"github:go-skynet/model-gallery/index.yaml"}, {"url": "github:go-skynet/model-gallery/huggingface.yaml","name":"huggingface"}]'
@@ -100,3 +99,11 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+  chatui:
+    image: ghcr.io/mckaywrigley/chatbot-ui:main
+    environment:
+      OPENAI_API_HOST: 'http://localai:8080'
+      LETSENCRYPT_HOST: '<%= @chatui_vhost %>'
+      VIRTUAL_HOST: '<%= @chatui_vhost %>'
+      VIRTUAL_PATH: '/'
+      VIRTUAL_PORT: 3000
