@@ -100,10 +100,10 @@ services:
               count: 1
               capabilities: [gpu]
   chatui:
-    image: quay.io/go-skynet/localai-frontend:master
-    container_name: chatui
+    image: ghcr.io/mckaywrigley/chatbot-ui:main
     environment:
-      API_HOST: 'http://localai:8080'
+      OPENAI_API_HOST: 'https://<%= @localai_vhost %>'
+      OPENAI_API_KEY: 'dummy'
       LETSENCRYPT_HOST: '<%= @chatui_vhost %>'
       VIRTUAL_HOST: '<%= @chatui_vhost %>'
       VIRTUAL_PATH: '/'
