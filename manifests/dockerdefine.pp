@@ -1,7 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 define sunet::dockerdefine(
   String $docker_version                      = 'installed',
-  String $docker_package_name                 = 'docker-ce'
+  String $docker_package_name                 = 'docker-ce',
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
