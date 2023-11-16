@@ -61,10 +61,6 @@ class sunet::gpuworkloads(
     ensure  => 'file',
     content => template('sunet/gpuworkloads/gpt-3.5-turbo.yaml.erb'),
   }
-  file {'/opt/gpuworkloads/localai/chatui.tmpl':
-    ensure  => 'file',
-    content => template('sunet/gpuworkloads/chatui.tmpl.erb'),
-  }
   $localai_models.each |$model| {
     $org = $model.split('/')[0]
     $repo = $model.split('/')[1]
