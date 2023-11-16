@@ -1,7 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost(
   String $docker_version                      = 'installed',
-  String $docker_package_name                 = 'docker-ce',  # facilitate transition to new docker-ce package
+  String $docker_package_name                 = 'docker-ce'
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
@@ -64,16 +64,6 @@ class sunet::dockerhost(
 
     file {'/etc/apt/sources.list.d/docker.list':
       ensure => 'absent',
-    }
-
-    if $docker_package_name != 'docker-engine' and $docker_package_name != 'docker.io' {
-      # transisition to docker-ce
-      exec { 'remove_dpkg_arch_i386':
-        command => '/usr/bin/dpkg --remove-architecture i386',
-        onlyif  => '/usr/bin/dpkg --print-foreign-architectures | grep i386',
-      }
-
-      package {'docker-engine': ensure => 'purged'}
     }
 
     # Add the dockerproject repository, then force an apt-get update before
