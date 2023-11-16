@@ -32,7 +32,7 @@ class sunet::bankidp(
       sunet::snippets::secret_file { "${credsdir}/${name}.key": hiera_key => "bankidp_customers.${name}.key" }
       $password = lookup("bankidp_customers.${name}.password", undef, undef, undef)
       exec { "build_${name}.p12":
-        command => "openssl pkcs12 -export -in ${credsdir}/${name}.pem -inkey ${credsdir}/${name}.key -name '${name}-bankid' -out ${credsdir}/${name}.p12 -passin pass:'${password}' -passout pass:${pass}",
+        command => "openssl pkcs12 -export -in '${credsdir}/${name}.pem' -inkey '${credsdir}/${name}.key' -name '${name}-bankid' -out '${credsdir}/${name}.p12' -passin pass:'${password}' -passout pass:'${pass}'",
         onlyif  => "test ! -f ${credsdir}/${name}.p12"
       }
     }
