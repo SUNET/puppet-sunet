@@ -54,6 +54,17 @@ class sunet::gpuworkloads(
     ensure  => 'file',
     content => template('sunet/gpuworkloads/tabby-config.toml.erb'),
   }
+  file {'/opt/gpuworkloads/localai':
+    ensure  => 'directory'
+  }
+  file {'/opt/gpuworkloads/localai/gpt-3.5-turbo.yaml':
+    ensure  => 'file',
+    content => template('sunet/gpuworkloads/gpt-3.5-turbo.yaml.erb'),
+  }
+  file {'/opt/gpuworkloads/localai/chatui.tmpl':
+    ensure  => 'file',
+    content => template('sunet/gpuworkloads/chatui.tmpl.erb'),
+  }
   $localai_models.each |$model| {
     $org = $model.split('/')[0]
     $repo = $model.split('/')[1]
