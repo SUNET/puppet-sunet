@@ -18,8 +18,6 @@ class sunet::bankidp(
   $apps = $facts['bankid_cluster_info']['apps']
   $redises = $facts['bankid_cluster_info']['redises']
 
-  sunet::ici_ca::rp { 'infra': }
-
   if $app_node {
 
     $credsdir = "${bankid_home}/credentials"
