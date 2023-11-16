@@ -113,5 +113,9 @@ class sunet::bankidp(
       hostmode => true,
       tls      => true
     }
+
+    file { "/etc/ssl/certs/${fqdn}_infra.crt":
+      mode   => '0640',
+    }
   }
 }
