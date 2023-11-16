@@ -43,6 +43,9 @@ class sunet::naemon_monitor(
     }
   }
 
+  sunet::dockerdefine { 'dockerhost' :
+  }
+
   class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
 
   if lookup('shib_key', undef, undef, undef) != undef {
