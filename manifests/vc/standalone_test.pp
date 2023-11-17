@@ -24,8 +24,8 @@ class sunet::vc::standalone_test(
   String $ca_version              = "latest",
   String $ca_reason               = "Ladok",
   String $ca_location             = "Tidan",
-  String $mongo_user,
-  String $mongo_pw
+  String $mongo_user              = lookup('mongo_user'),
+  String $mongo_pw                = lookup('mongo_pw')
   #hash with basic_auth key/value
 ) {
 
