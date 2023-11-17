@@ -23,7 +23,9 @@ class sunet::vc::standalone_test(
   String $postgres_version		    = '15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c',
   String $ca_version              = "latest",
   String $ca_reason               = "Ladok",
-  String $ca_location             = "Tidan"
+  String $ca_location             = "Tidan",
+  String $mongo_user,
+  String $mongo_pw
   #hash with basic_auth key/value
 ) {
 
