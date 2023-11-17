@@ -2,18 +2,18 @@
 class sunet::bankidp(
   String $instance,
   Array $environments_extras = [],
+  Array $ports_extras = [],
   Array $resolvers = [],
   Array $volumes_extras = [],
-  Array $ports_extras = [],
-  String $imagetag='latest',
-  String $tz = 'Europe/Stockholm',
-  String $bankid_home = '/opt/bankidp',
-  String $spring_config_import = '/config/bankidp.yml',
-  String $service_name = 'bankidp.qa.swamid.se',
-  Boolean $prod = true,
   Boolean $app_node = false,
+  Boolean $prod = true,
   Boolean $redis_node = false,
+  String $bankid_home = '/opt/bankidp',
+  String $imagetag='latest',
   String $interface = 'ens3',
+  String $service_name = 'bankidp.qa.swamid.se',
+  String $spring_config_import = '/config/bankidp.yml',
+  String $tz = 'Europe/Stockholm',
 ) {
 
   $apps = $facts['bankid_cluster_info']['apps']
