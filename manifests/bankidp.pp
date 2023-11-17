@@ -117,5 +117,13 @@ class sunet::bankidp(
     file { "/etc/ssl/certs/${fqdn}_infra.crt":
       mode   => '0644',
     }
+
+    file { "/etc/ssl/private":
+      mode   => '711',
+    }
+
+    package { ['redis-tools']:
+      ensure => installed,
+    }
   }
 }
