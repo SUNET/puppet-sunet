@@ -109,3 +109,30 @@ services:
       VIRTUAL_HOST: '<%= @chatui_vhost %>'
       VIRTUAL_PATH: '/'
       VIRTUAL_PORT: 3000
+  slackbot:
+    image: quay.io/spectrocloud-labs/slack-qa-local-bot:qa
+    container_name: slackbot
+    restart: always
+    environment:
+      - SLACK_APP_TOKEN=<%= @slack_app_token %>
+      - SLACK_BOT_TOKEN=<%= @slack_bot_token %>
+      - OPENAI_API_KEY=sk-foo-bar-baz
+      - OPENAI_MODEL=gpt-3.5-turbo
+      - OPENAI_TIMEOUT_SECONDS=560
+      - MEMORY_DIR=/tmp/memory_dir
+      - OPENAI_API_BASE=http://localai:8080/v1
+      - EMBEDDINGS_MODEL_NAME=all-MiniLM-L6-v2
+      - REPOSITORIES="sunet,sunetdrive"
+      - sunet_CLONE_URL="https://github.com/SUNET/puppet-sunet"
+      - sunetdrive_CLONE_URL="https://platform.sunet.se/Drive/sunetdrive.git"
+      - sunet_BRANCH="main"
+      - sunetdrive_BRANCH="main"
+      - ISSUE_REPOSITORIES="https://github.com/SUNET/puppet-sunet/issues,https://platform.sunet.se/Drive/sunetdrive/issues"
+      - USE_SLACK_LANGUAGE=true
+      - SLACK_APP_LOG_LEVEL=INFO
+      - TRANSLATE_MARKDOWN=true
+      <%# - SITEMAP="https://kairos.io/sitemap.xml" %>
+
+    depends_on:
+      localai:
+        condition: service_healthy
