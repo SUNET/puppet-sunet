@@ -7,10 +7,12 @@ class sunet::gpuworkloads(
   String $tabby_model   = 'CodeLlama-13B',
   String $tabby_vhost   = 'tabby-lab.sunet.se',
 ) {
-  $tabby_vhost_password = lookup('tabby_vhost_password')
+  $localai_models = lookup('localai_models', undef, undef, [])
   $localai_vhost_password = lookup('localai_vhost_password')
   $repositories = lookup('tabby_repositories', undef, undef, [])
-  $localai_models = lookup('localai_models', undef, undef, [])
+  $slack_app_token = lookup('slack_app_token')
+  $slack_bot_token = lookup('slack_bot_token')
+  $tabby_vhost_password = lookup('tabby_vhost_password')
   include sunet::packages::apache2_utils
   include sunet::packages::git
   include sunet::packages::git_lfs
