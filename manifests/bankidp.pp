@@ -13,6 +13,7 @@ class sunet::bankidp(
   Boolean $prod = true,
   Boolean $app_node = false,
   Boolean $redis_node = false,
+  String $interface = 'ens3',
 ) {
 
   $apps = $facts['bankid_cluster_info']['apps']
@@ -21,6 +22,12 @@ class sunet::bankidp(
   sunet::ici_ca::rp { 'infra': }
 
   if $app_node {
+
+    sunet::nftables::docker_expose { 'https' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 443,
+    }
 
     $credsdir = "${bankid_home}/credentials"
     # Unwanted password - but hey Java!
