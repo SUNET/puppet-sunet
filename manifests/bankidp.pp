@@ -48,7 +48,7 @@ class sunet::bankidp(
     }
 
     if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
-      sunet::snippets::secret_file { "${credsdir}/metadata.key": hiera_key => 'bankid_saml_metadata_key' }
+      sunet::snippets::secret_file { "${credsdir}/saml_metadata.key": hiera_key => 'bankid_saml_metadata_key' }
       # assume cert is in cosmos repo
     } else {
       # make key pair
