@@ -80,17 +80,59 @@ services:
       - /opt/gpuworkloads/localai:/models
     environment:
       BUILD_TYPE: 'cublas'
+      DEBUG: 'true'
+      CONTEXT_SIZE: 2048
       GALLERIES: '[{"name":"model-gallery", "url":"github:go-skynet/model-gallery/index.yaml"}, {"url": "github:go-skynet/model-gallery/huggingface.yaml","name":"huggingface"}]'
       LETSENCRYPT_HOST: '<%= @localai_vhost %>'
       MODELS_PATH: '/models'
-      THREADS: 2
+      THREADS: 16
       VIRTUAL_HOST: '<%= @localai_vhost %>'
       VIRTUAL_PATH: '/'
       VIRTUAL_PORT: 8080
     deploy:
       resources:
+        limits:
+          memory: 32G
+          cpus: '16'
         reservations:
           devices:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+  chatui:
+    image: ghcr.io/mckaywrigley/chatbot-ui:main
+    container_name: chatui
+    environment:
+      OPENAI_API_HOST: 'http://localai:8080'
+      OPENAI_API_KEY: 'dummy'
+      LETSENCRYPT_HOST: '<%= @chatui_vhost %>'
+      VIRTUAL_HOST: '<%= @chatui_vhost %>'
+      VIRTUAL_PATH: '/'
+      VIRTUAL_PORT: 3000
+  slackbot:
+    image: quay.io/spectrocloud-labs/slack-qa-local-bot:qa
+    container_name: slackbot
+    restart: always
+    environment:
+      - EMBEDDINGS_MODEL_NAME=all-MiniLM-L6-v2
+      - GITHUB_PERSONAL_ACCESS_TOKEN=''
+      - MEMORY_DIR=/tmp/memory_dir
+      - OPENAI_API_BASE=http://localai:8080/v1
+      - OPENAI_API_KEY=sk-foo-bar-baz
+      - OPENAI_MODEL=gpt-3.5-turbo
+      - OPENAI_TIMEOUT_SECONDS=560
+      - REPOSITORIES=sunet,sunetdrive
+      - SLACK_APP_LOG_LEVEL=INFO
+      - SLACK_APP_TOKEN=<%= @slack_app_token %>
+      - SLACK_BOT_TOKEN=<%= @slack_bot_token %>
+      - TRANSLATE_MARKDOWN=true
+      - USE_SLACK_LANGUAGE=true
+      - sunet_BRANCH=main
+      - sunet_CLONE_URL=https://github.com/SUNET/puppet-sunet
+      - sunetdrive_BRANCH=main
+      - sunetdrive_CLONE_URL=https://platform.sunet.se/Drive/sunetdrive.git
+      <%# - SITEMAP="https://kairos.io/sitemap.xml" %>
+
+    depends_on:
+      localai:
+        condition: service_healthy

@@ -1,15 +1,18 @@
 # microk8s cluster node
 class sunet::gpuworkloads(
+  String $chatui_vhost  = 'chat.sunet.dev',
   String $interface     = 'enp2s0',
+  String $localai_tag   = 'master-cublas-cuda12-ffmpeg',
+  String $localai_vhost = 'localai-lab.sunet.se',
   String $tabby_model   = 'CodeLlama-13B',
   String $tabby_vhost   = 'tabby-lab.sunet.se',
-  String $localai_vhost = 'localai-lab.sunet.se',
-  String $localai_tag   = 'v1.40.0-cublas-cuda12-ffmpeg',
 ) {
-  $tabby_vhost_password = lookup('tabby_vhost_password')
+  $localai_models = lookup('localai_models', undef, undef, [])
   $localai_vhost_password = lookup('localai_vhost_password')
   $repositories = lookup('tabby_repositories', undef, undef, [])
-  $localai_models = lookup('localai_models', undef, undef, [])
+  $slack_app_token = lookup('slack_app_token')
+  $slack_bot_token = lookup('slack_bot_token')
+  $tabby_vhost_password = lookup('tabby_vhost_password')
   include sunet::packages::apache2_utils
   include sunet::packages::git
   include sunet::packages::git_lfs
@@ -53,19 +56,31 @@ class sunet::gpuworkloads(
     ensure  => 'file',
     content => template('sunet/gpuworkloads/tabby-config.toml.erb'),
   }
+  file {'/opt/gpuworkloads/localai':
+    ensure  => 'directory'
+  }
+  file {'/opt/gpuworkloads/localai/gpt-3.5-turbo.yaml':
+    ensure  => 'file',
+    content => template('sunet/gpuworkloads/gpt-3.5-turbo.yaml.erb'),
+  }
   $localai_models.each |$model| {
     $org = $model.split('/')[0]
     $repo = $model.split('/')[1]
     $model_name = $model.split('/')[2]
-    file {"/opt/gpuworkloads/localai/${org}":
-      ensure  => 'directory'
+    $short_name = $model_name.split('\.')[0]
+    $safe_name = $short_name.split('-').join('_')
+    $defaultmpl = @(EOT)
+      {{.Input}}
+      ### Response:
+      | EOT
+    $tmpl = lookup("${safe_name}_tmpl", undef, undef, $defaultmpl)
+    ->exec { "localai_model_${safe_name}":
+      command => "wget -O /opt/gpuworkloads/localai/${short_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
+      unless  => "test -f /opt/gpuworkloads/localai/${short_name}"
     }
-    ->file {"/opt/gpuworkloads/localai/${org}/${repo}":
-      ensure  => 'directory'
-    }
-    ->exec { "localai_model_${model_name}":
-      command => "wget -o /opt/gpuworkloads/localai/${org}/${repo}/${model_name} https://huggingface.co/${org}/${repo}/resolve/main/${model_name}",
-      unless  => "test -f /opt/gpuworkloads/localai/${org}/${repo}/${model_name}"
+    -> file {"/opt/gpuworkloads/localai/${short_name}.tmpl":
+      ensure  => 'file',
+      content => inline_template($tmpl),
     }
   }
 }
