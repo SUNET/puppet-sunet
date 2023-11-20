@@ -12,6 +12,7 @@ class sunet::bankidp(
   String $imagetag='latest',
   String $interface = 'ens3',
   String $service_name = 'bankidp.qa.swamid.se',
+  String $service_path = '/bankid/idp',
   String $spring_config_import = '/config/bankidp.yml',
   String $tz = 'Europe/Stockholm',
 ) {
@@ -20,6 +21,8 @@ class sunet::bankidp(
   $redises = $facts['bankid_cluster_info']['redises']
 
   if $app_node {
+
+    $base_url_and_entity_id = "https://${service_name}${service_path}"
 
     sunet::nftables::docker_expose { 'https' :
       iif           => $interface,
