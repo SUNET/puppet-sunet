@@ -1,5 +1,5 @@
 # Check process command
-define sunet::nagios::nrpe_check_process_command (
+class sunet::nagios::nrpe_check_process_command (
 ) {
   file { '/usr/lib/nagios/plugins/check_process' :
     ensure  => 'file',
