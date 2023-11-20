@@ -3,13 +3,7 @@ define sunet::nagios::nrpe_check_process (
   $display_name = undef
 ) {
 
-  file { '/usr/lib/nagios/plugins/check_process' :
-      ensure  => 'file',
-      mode    => '0751',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
-      content => template('sunet/nagioshost/check_process.erb'),
-  }
+  include sunet::nagios::nrpe_check_process_command
 
   $process_display_name = $alias ? {
     undef   => $name,
