@@ -7,6 +7,7 @@
 class sunet::grafana(
   String        $servicename='',
   String        $grafana_version='latest',
+  Array[String] $grafana_webuser_networks,
 ) {
 
   sunet::system_user {'grafana': username => 'grafana', group => 'grafana' }
@@ -48,13 +49,13 @@ class sunet::grafana(
   }
 
   sunet::misc::ufw_allow { 'allow_http':
-    from => 'any',
+    from => $grafana_webuser_networks,
     port => '80',
     proto => 'tcp',
   }
 
   sunet::misc::ufw_allow { 'allow_https':
-    from => 'any',
+    from => $grafana_webuser_networks,
     port => '443',
     proto => 'tcp',
   }
