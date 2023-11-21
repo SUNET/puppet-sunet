@@ -7,6 +7,7 @@
 class sunet::influx(
   String        $servicename='',
   String        $influxdb_version='latest',
+  Array[String] $influx_producer_networks,
 ) {
 
   sunet::docker_run { 'influxdb2':
@@ -59,7 +60,7 @@ class sunet::influx(
   }
 
   sunet::misc::ufw_allow { 'allow_influx':
-    from => 'any',
+    from => $influx_producer_networks,
     port => '8086',
     proto => 'tcp',
   }
