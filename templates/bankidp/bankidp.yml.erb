@@ -68,6 +68,9 @@ bankid:
       login-text:
         text: "*Tänk på!* Logga aldrig in med ditt BankID då någon ringer och ber dig logga in."
         format: simple-markdown-v1
+    # Override copyright
+    override:
+      directory-path: "/opt/bankidp/overrides"
   relying-parties:
 <% @customers.each do | customer, value | -%>
     - id: "<%= customer %>"

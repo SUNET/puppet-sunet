@@ -111,6 +111,15 @@ class sunet::bankidp(
       content => file('sunet/bankidp/sunet.svg')
     }
 
+    $overrides_dir = '/opt/bankidp/overrides'
+    ensure_resource('sunet::misc::create_dir', $overrides_dir, { owner => 'root', group => 'root', mode => '0750'})
+    file { "${overrides_dir}/.messages":
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      content => file('sunet/bankidp/dot-messages')
+    }
+
     sunet::docker_compose { 'bankidp':
       content          => template('sunet/bankidp/docker-compose-bankid-idp.yml.erb'),
       service_name     => 'bankidp',
