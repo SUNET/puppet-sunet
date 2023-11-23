@@ -47,24 +47,6 @@ class sunet::influx(
   }
 
   # nftables
-    sunet::misc::ufw_allow { 'allow_http':
-    from => 'any',
-    port => '80',
-    proto => 'tcp',
-  }
-
-  sunet::misc::ufw_allow { 'allow_https':
-    from => 'any',
-    port => '443',
-    proto => 'tcp',
-  }
-
-  sunet::misc::ufw_allow { 'allow_influx':
-    from => $influx_producer_networks,
-    port => '8086',
-    proto => 'tcp',
-  }
-
   sunet::nftables::docker_expose { 'allow_http' :
     allow_clients => 'any',
     port          => '80',
@@ -79,7 +61,7 @@ class sunet::influx(
 
   # Port 8086 is used to access influxdb2 container
   sunet::nftables::docker_expose { 'allow-influxdb2' :
-    allow_clients => 'any',
+    allow_clients => $influx_producer_networks,
     port          => '8086',
     proto         => 'tcp',
     iif           => "${interface_default}",
