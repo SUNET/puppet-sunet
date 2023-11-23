@@ -39,7 +39,6 @@ class sunet::grafana(
                   '/var/lib/grafana:/var/lib/grafana',
                   '/etc/grafana:/etc/grafana',
                   '/var/log/grafana:/var/log/grafana',
-                  '/etc/dehydrated/certs:/etc/dehydrated/certs:ro',
                   '/etc/letsencrypt/live/:/etc/letsencrypt/live/:ro',
                   '/etc/letsencrypt/archive:/etc/letsencrypt/archive:ro',
                   '/etc/grafana/provisioning/datasources:/usr/share/grafana/conf/provisioning/datasources',
@@ -55,6 +54,7 @@ class sunet::grafana(
     special => 'daily',
   }
 
+  # nftables
   sunet::misc::ufw_allow { 'allow_http':
     from => $grafana_webuser_networks,
     port => '80',
