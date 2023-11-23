@@ -60,8 +60,8 @@ static_root_path = public
 enable_gzip = false
 
 # https certs & key file
-cert_file = /etc/dehydrated/certs/<%= @servicename %>.crt
-cert_key = /etc/dehydrated/certs/<%= @servicename %>.key
+cert_file = /etc/letsencrypt/live/<%= @servicename %>/cert.pem
+cert_key = /etc/letsencrypt/live/<%= @servicename %>/privkey.pem
 
 # Unix socket path
 socket = /tmp/grafana.sock

@@ -40,7 +40,8 @@ class sunet::grafana(
                   '/etc/grafana:/etc/grafana',
                   '/var/log/grafana:/var/log/grafana',
                   '/etc/dehydrated/certs:/etc/dehydrated/certs:ro',
-                  '/etc/letsencrypt/archive:/etc/archive:ro',
+                  '/etc/letsencrypt/live/:/etc/letsencrypt/live/:ro'
+                  '/etc/letsencrypt/archive:/etc/letsencrypt/archive:ro',
                   '/etc/grafana/provisioning/datasources:/usr/share/grafana/conf/provisioning/datasources',
                   '/etc/grafana/provisioning/dashboards:/usr/share/grafana/conf/provisioning/dashboards',
       ],
@@ -70,11 +71,5 @@ class sunet::grafana(
     allow_clients => 'any',
     port          => '443',
     iif           => "${interface_default}",
-  }
-
-  sunet::docker_run {'always-https':
-    image => 'docker.sunet.se/always-https',
-    ports => ['80:80'],
-    env   => ['ACME_URL=http://acme-c.sunet.se/'],
   }
 }
