@@ -49,6 +49,12 @@ class sunet::grafana(
       ports    => ['443:3000'],
   }
 
+  # Cronjob for renewal of acme-d cert
+  sunet::scriptherder::cronjob { 'le_renew':
+    cmd     => '/usr/bin/certbot renew --post-hook "service docker-grafana restart"',
+    special => 'daily',
+  }
+
   sunet::misc::ufw_allow { 'allow_http':
     from => $grafana_webuser_networks,
     port => '80',
