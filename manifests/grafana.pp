@@ -40,7 +40,7 @@ class sunet::grafana(
                   '/etc/grafana:/etc/grafana',
                   '/var/log/grafana:/var/log/grafana',
                   '/etc/dehydrated/certs:/etc/dehydrated/certs:ro',
-                  '/etc/letsencrypt/live/:/etc/letsencrypt/live/:ro'
+                  '/etc/letsencrypt/live/:/etc/letsencrypt/live/:ro',
                   '/etc/letsencrypt/archive:/etc/letsencrypt/archive:ro',
                   '/etc/grafana/provisioning/datasources:/usr/share/grafana/conf/provisioning/datasources',
                   '/etc/grafana/provisioning/dashboards:/usr/share/grafana/conf/provisioning/dashboards',
