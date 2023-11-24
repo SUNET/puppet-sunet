@@ -2,8 +2,9 @@
 # related to influxdb. The previuos generation relied on server
 # specific configuration specified in cosmos-site.pp in nunoc-ops.
 
-# @param servername        The fqdn of the server or servicename?
-# @param tcpserveraddress  The version of the influx container to run
+# @param servername                The fqdn of the server or servicename?
+# @param tcpserveraddress          The version of the influx container to run
+# @param influx_producer_networks  A list of networks allowed to access influx port 8086
 class sunet::influx(
   String        $servicename='',
   String        $influxdb_version='latest',
@@ -59,7 +60,7 @@ class sunet::influx(
     iif           => "${interface_default}",
   }
 
-  # Port 8086 is used to access influxdb2 container
+  # Port 8086 is used to access the influxdb2 container
   sunet::nftables::docker_expose { 'allow-influxdb2' :
     allow_clients => $influx_producer_networks,
     port          => '8086',
