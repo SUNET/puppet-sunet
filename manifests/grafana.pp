@@ -2,8 +2,9 @@
 # related to grafana. The previuos generation relied on a class
 # in cosmos-site.pp in nunoc-ops.
 
-# @param servicename       The fqdn of the servicename
-# @param grafana_version   The version of the grafana container to run
+# @param servicename               The fqdn of the servicename
+# @param grafana_version           The version of the grafana container to run
+# @param grafana_webuser_networks  A list of networks allowed to grafana web on port 80/443
 class sunet::grafana(
   String        $servicename='',
   String        $grafana_version='latest',
