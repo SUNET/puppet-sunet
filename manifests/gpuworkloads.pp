@@ -6,6 +6,7 @@ class sunet::gpuworkloads(
   String $localai_vhost = 'localai-lab.sunet.se',
   String $tabby_model   = 'CodeLlama-13B',
   String $tabby_vhost   = 'tabby-lab.sunet.se',
+  String $tabby_tag     = '0.6.0-rc0',
 ) {
   $localai_models = lookup('localai_models', undef, undef, [])
   $localai_vhost_password = lookup('localai_vhost_password')
