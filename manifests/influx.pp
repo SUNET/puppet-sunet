@@ -16,7 +16,7 @@ class sunet::influx(
     imagetag => $influxdb_version,
     volumes  => [
       '/etc/dehydrated:/etc/dehydrated',
-      '/var/lib/influxdb:/var/lib/influxdb',
+      '/data:/var/lib/influxdb',
       '/usr/local/bin/backup-influx.sh:/usr/local/bin/backup-influx.sh:ro',
     ],
     env      => ["HOSTNAME=${servicename}"],
