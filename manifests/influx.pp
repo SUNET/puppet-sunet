@@ -20,7 +20,6 @@ class sunet::influx(
       '/data:/var/lib/influxdb',
       '/usr/local/bin/backup-influx.sh:/usr/local/bin/backup-influx.sh:ro',
     ],
-    env      => ["HOSTNAME=${servicename}"],
     env      => ["SERVICENAME=${servicename}"],
     ports    => ['8086:8086'],
   }
