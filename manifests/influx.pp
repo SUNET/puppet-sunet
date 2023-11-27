@@ -42,6 +42,12 @@ class sunet::influx(
     warn_criteria => ['exit_status=1', 'max_age=50h'],
   }
 
+  # Cronjob for renewal of acme-d cert
+  sunet::scriptherder::cronjob { 'le_renew':
+    cmd     => '/usr/bin/certbot renew --post-hook "service docker-influxdb2 restart"',
+    special => 'daily',
+  }
+
   # nftables
   # Port 8086 is used to access the influxdb2 container
   sunet::nftables::docker_expose { 'allow-influxdb2' :
