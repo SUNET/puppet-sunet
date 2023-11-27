@@ -25,12 +25,6 @@ class sunet::influx(
     ports    => ['8086:8086'],
   }
 
-  sunet::docker_run { 'always-https':
-    image => 'docker.sunet.se/always-https',
-    ports => ['80:80'],
-    env   => ['ACME_URL=http://acme-c.sunet.se/'],
-  }
-
   # Create a script used to do backups of influxdb
   file {'/usr/local/bin/backup-influx.sh':
       ensure  => file,
@@ -50,18 +44,6 @@ class sunet::influx(
   }
 
   # nftables
-  sunet::nftables::docker_expose { 'allow_http' :
-    allow_clients => 'any',
-    port          => '80',
-    iif           => "${interface_default}",
-  }
-
-  sunet::nftables::docker_expose { 'allow_https' :
-    allow_clients => 'any',
-    port          => '443',
-    iif           => "${interface_default}",
-  }
-
   # Port 8086 is used to access the influxdb2 container
   sunet::nftables::docker_expose { 'allow-influxdb2' :
     allow_clients => $influx_producer_networks,
