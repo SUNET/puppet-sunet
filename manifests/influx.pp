@@ -15,11 +15,13 @@ class sunet::influx(
     image    => 'docker.sunet.se/docker-influxdb2',
     imagetag => $influxdb_version,
     volumes  => [
-      '/etc/dehydrated:/etc/dehydrated',
+      '/etc/letsencrypt/live/:/etc/letsencrypt/live/:ro',
+      '/etc/letsencrypt/archive:/etc/letsencrypt/archive:ro',
       '/data:/var/lib/influxdb',
       '/usr/local/bin/backup-influx.sh:/usr/local/bin/backup-influx.sh:ro',
     ],
     env      => ["HOSTNAME=${servicename}"],
+    env      => ["SERVICENAME=${servicename}"],
     ports    => ['8086:8086'],
   }
 
