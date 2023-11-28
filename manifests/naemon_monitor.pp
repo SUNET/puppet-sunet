@@ -16,6 +16,7 @@ class sunet::naemon_monitor(
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
+  Array $exclude_hosts =  [],
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
 ){
@@ -253,5 +254,6 @@ class sunet::naemon_monitor(
     service             => 'sunet-naemon_monitor',
     single_ip           => true,
     require             => File['/etc/naemon/conf.d/nagioscfg/'],
+    exclude_hosts       => $exclude_hosts,
   }
 }
