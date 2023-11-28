@@ -43,6 +43,12 @@ bankid:
     repository: "redistimeseries"
     log-file: /opt/bankidp/logs/audit.log
 
+  authn:
+    supported-loas:
+      - http://id.swedenconnect.se/loa/1.0/uncertified-loa3
+    entity-categories:
+      - http://id.swedenconnect.se/contract/Sunet/BankID-idp
+
 <% if @prod == true %>
   server-root-certificate: classpath:bankid-trust-prod.crt
   service-url: https://appapi2.bankid.com/rp/v6.0
@@ -115,34 +121,34 @@ saml:
     metadata:
       ui-info:
         display-names:
-          en: BankID
-          sv: BankID
+          en: BankID <% if @prod != true %>(QA)<% end %>
+          sv: BankID <% if @prod != true %>(QA)<% end %>
         descriptions:
-          en: BankID Identity Provider (Sandbox)
-          sv: BankID legitimeringstjänst (Sandbox)
+          en: BankID Identity Provider <% if @prod != true %>(QA)<% end %>
+          sv: BankID legitimeringstjänst <% if @prod != true %>(QA)<% end %>
         logotypes:
         - path: /images/BankID_logo.svg
           height: 171
           width: 20
       organization:
         names:
-          en: "Sweden Connect"
-          sv: "Sweden Connect"
+          en: "Sunet"
+          sv: "Sunet"
         display-names:
-          en: "Sweden Connect"
-          sv: "Sweden Connect"
+          en: "Sunet"
+          sv: "Sunet"
         urls:
-          en: https://www.swedenconnect.se/en
-          sv: https://www.swedenconnect.se
+          en: https://www.sunet.se
+          sv: https://www.sunet.se
       contact-persons:
         technical:
-          company: "Sweden Connect"
+          company: "Sunet"
           email-addresses:
-          - operations@swedenconnect.se
+          - bankid-idp@sunet.se
         support:
-          company: "Sweden Connect"
+          company: "Sunet"
           email-addresses:
-          - operations@swedenconnect.se
+          - bankid-idp@sunet.se
 
 logging:
   level:
