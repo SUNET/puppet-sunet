@@ -5,7 +5,6 @@ define sunet::nagios::nrpe_check_memory (
 ) {
 
     $default_warning = $facts['os']['distro']['codename'] ? {
-      'bookworm' => '10%',
       'bullseye' => '10%',
       'focal'    => '10%',
       default    => '90%',
@@ -13,7 +12,6 @@ define sunet::nagios::nrpe_check_memory (
     }
 
     $default_critical = $facts['os']['distro']['codename'] ? {
-      'bookworm' => '5%',
       'bullseye' => '5%',
       'focal'    => '5%',
       default    => '95%',
