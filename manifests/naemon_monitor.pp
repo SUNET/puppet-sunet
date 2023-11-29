@@ -4,6 +4,7 @@ class sunet::naemon_monitor(
   String $influx_password = hiera('influx_password'),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
+  Array $exclude_hosts = [],
   Array $resolvers = [],
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
@@ -203,6 +204,7 @@ class sunet::naemon_monitor(
 
   class { 'nagioscfg':
     hostgroups     => $::roles,
+    exclude_hosts => $exclude_hosts,
     additional_entities => $additional_entities,
     config         => 'naemon_monitor',
     default_host_group => $default_host_group,
