@@ -1,17 +1,22 @@
 ---
 common:
   mongo:
-    uri: mongodb://mongo:27017
+    uri: mongodb://<%= @mongo_user %>:<%= @mongo_pw %>@vc_mongo:27017
   production: <%= @production %>
   basic_auth:
     ladok: xyz
   log:
     level:
     folder_path: "/var/log/sunet"
+  tracing:
+    addr: vc_jaeger:4318
+    type: jaeger
 
 issuer:
   api_server:
-    addr: vc_issuer:8080
+    addr: :8080
+  rpc_server:
+    addr: :8090
   http_proxy:
   ca:
     addr: "<%= @ca_pdfsign_url %>"
@@ -24,13 +29,39 @@ issuer:
     db: 3
     addr: vc_redis:6379
     pdf:
-      keep_signed_duration: 3600
-      keep_unsigned_duration: 3600
+      keep_signed_duration: 600
+      keep_unsigned_duration: 600
+  rpc_client:
+    default_config:
+      methodConfig:
+        - name:
+          - service: grpc.examples.echo.Echo
+          waitForReady: true
+          retryPolicy:
+            MaxAttempts: 4
+            InitialBackoff: ".01s"
+            MaxBackoff: ".01s"
+            BackoffMultiplier: 1
+            RetryableStatusCodes:
+              - UNAVAILABLE
   
 datastore:
   api_server:
-    addr: vc_datastore:8080
+    addr: :8080
+  rpc_server:
+    addr: :8090
 
 verifier:
   api_server:
-    addr: vc_verifier:8080
+    addr: :8080
+  rpc_server:
+    addr: :8090
+
+registry:
+  api_server:
+    addr: :8080
+  rpc_server:
+    addr: :8090
+  smt:
+    update_periodicity: 5
+    init_leaf: 575cea4a-5725-11ee-8287-2b486b7ace28
