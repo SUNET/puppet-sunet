@@ -48,6 +48,10 @@ bankid:
       - http://id.swedenconnect.se/loa/1.0/uncertified-loa3
     entity-categories:
       - http://id.swedenconnect.se/contract/Sunet/BankID-idp
+      - http://id.swedenconnect.se/general-ec/1.0/secure-authenticator-binding
+      - http://id.swedenconnect.se/ec/1.0/loa3-name
+      - http://id.elegnamnden.se/sprop/1.0/mobile-auth
+      - http://id.elegnamnden.se/ec/1.0/loa3-pnr
 
 <% if @prod == true %>
   server-root-certificate: classpath:bankid-trust-prod.crt
