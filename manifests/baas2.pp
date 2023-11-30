@@ -45,7 +45,7 @@ class sunet::baas2(
         refreshonly => true,
       }
       file { '/etc/ld.so.conf.d/puppet-sunet-baas2.conf':
-        content => '/usr/lib64\n',
+        content => "/usr/lib64\n",
         notify  => Exec['reload_ld_cache']
       }
     }
