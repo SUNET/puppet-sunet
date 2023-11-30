@@ -108,7 +108,7 @@ saml:
       - location: https://mds.swamid.se/qa
         validation-certificate: file:/opt/bankidp/credentials/swamid-qa.crt
 <% end -%>
-        backup-location: /opt/bankidp/cache/metadata
+        backup-location: /opt/bankidp/cache/swamid-mdq
         mdq: true
 <% end -%>
 <% if @swedenconnect == true %>
@@ -119,7 +119,7 @@ saml:
       - location: https://qa.md.swedenconnect.se/role/sp.xml
         validation-certificate: file:/opt/bankidp/credentials/qa.swedenconnect.se.cert
 <% end -%>
-        backup-location: /opt/bankidp/cache/metadata
+        backup-location: /opt/bankidp/cache/swedenconnect
 <% end -%>
     credentials:
       sign:
