@@ -97,7 +97,7 @@ def last_error_time() -> Union[datetime.datetime, None]:
             # ===
             for regex in non_critical_logrows:
                 if re.search(regex, line):
-                    print(f"Ignoring line considered non-critical:: {line}")
+                    print(f"Ignoring line considered non-critical: {line}")
                     break
             else:
                 if re.search(
