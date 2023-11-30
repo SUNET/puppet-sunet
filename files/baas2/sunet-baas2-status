@@ -80,21 +80,32 @@ def last_scheduled_start_time() -> Union[datetime.datetime, None]:
 def last_error_time() -> Union[datetime.datetime, None]:
     """return the last time we saw an error logged"""
     returned_timestamp = None
+    # Sometimes the client logs stuff that we do not consider to be critical,
+    # so we want to have the posibility to ignore these log rows.
+    non_critical_logrows = (
+        r" ANS0361I DIAG: A record has been deleted from password file, due to password change or wrong password.$",  # pylint:disable=line-too-long
+        r" ANS1138E The 'QUERY' command must be followed by a subcommand$",
+    )
     with open("/var/log/dsmerror.log", "r", encoding="utf-8") as fileobj:
         for line in fileobj:
             line = line.rstrip()
-            # We are only interested in lines beginning with a timestamp, it
-            # appears an error can span multiple lines, e.g.:
-            # ===
-            # 2023-03-16 14:32:59 ANS1835E PASSWORDACCESS is GENERATE, but password needed for server 'XYZ'. # pylint:disable=line-too-long
-            # Either the password is not stored locally, or it was changed at the server.
-            # ===
-            if re.search(
-                r"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} ", line
-            ):
-                timestamp_parts = line.split(maxsplit=2)
-                timestamp = timestamp_parts[0] + " " + timestamp_parts[1]
-                returned_timestamp = datetime.datetime.fromisoformat(timestamp)
+            for regex in non_critical_logrows:
+                if re.search(regex, line):
+                    print(f"Ignoring line considered non-critical: {line}")
+                    break
+            else:
+                # We are only interested in lines beginning with a timestamp, it
+                # appears an error can span multiple lines, e.g.:
+                # ===
+                # 2023-03-16 14:32:59 ANS1835E PASSWORDACCESS is GENERATE, but password needed for server 'XYZ'. # pylint:disable=line-too-long
+                # Either the password is not stored locally, or it was changed at the server.
+                # ===
+                if re.search(
+                    r"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} ", line
+                ):
+                    timestamp_parts = line.split(maxsplit=2)
+                    timestamp = timestamp_parts[0] + " " + timestamp_parts[1]
+                    returned_timestamp = datetime.datetime.fromisoformat(timestamp)
 
     return returned_timestamp
 
