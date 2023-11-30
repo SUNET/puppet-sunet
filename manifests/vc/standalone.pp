@@ -28,6 +28,10 @@ class sunet::vc::standalone(
   #hash with basic_auth key/value
 ) {
 
+  sunet::ssh_keys { 'vcops':
+    config => lookup('vcops_ssh_config', undef, undef, {}),
+  }
+
   sunet::misc::system_user { 'sunet':
     username   => 'sunet',
     group      => 'sunet',
@@ -127,9 +131,6 @@ class sunet::vc::standalone(
     month       => '*/2',
   }
 
-  sunet::ssh_keys { 'vcops':
-    config => lookup('vcops_ssh_config', undef, undef, {}),
-  }
 
 
   # Compose
