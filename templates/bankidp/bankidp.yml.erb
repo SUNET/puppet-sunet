@@ -100,6 +100,7 @@ saml:
     entity-id: '<%= @base_url_and_entity_id %>'
     base-url: '<%= @base_url_and_entity_id %>'
     metadata-providers:
+<% if @swamid == true %>
 <% if @prod == true %>
       - location: https://mds.swamid.se
         validation-certificate: file:/opt/bankidp/credentials/md-signer2.crt
@@ -109,6 +110,17 @@ saml:
 <% end -%>
         backup-location: /opt/bankidp/cache/metadata
         mdq: true
+<% end -%>
+<% if @swedenconnect == true %>
+<% if @prod == true %>
+      - location: https://md.swedenconnect.se/role/sp.xml
+        validation-certificate: file:/opt/bankidp/credentials/swedenconnect.se.cert
+<% else %>
+      - location: https://qa.md.swedenconnect.se/role/sp.xml
+        validation-certificate: file:/opt/bankidp/credentials/qa.swedenconnect.se.cert
+<% end -%>
+        backup-location: /opt/bankidp/cache/metadata
+<% end -%>
     credentials:
       sign:
         resource: file:/opt/bankidp/credentials/saml_metadata.p12
