@@ -5,6 +5,8 @@ class sunet::bankidp(
   Array $ports_extras = [],
   Array $resolvers = [],
   Array $volumes_extras = [],
+  Boolean $swamid = true,
+  Boolean $swedenconnect = false,
   Boolean $app_node = false,
   Boolean $prod = true,
   Boolean $redis_node = false,
@@ -19,6 +21,8 @@ class sunet::bankidp(
 
   $apps = $facts['bankid_cluster_info']['apps']
   $redises = $facts['bankid_cluster_info']['redises']
+
+  sunet::ici_ca::rp { 'infra': }
 
   if $app_node {
 
@@ -88,16 +92,34 @@ class sunet::bankidp(
       mode    => '0755',
     }
 
-    $signing_cert = $prod ? {
-      true => 'md-signer2.crt',
-      false => 'swamid-qa.crt',
+
+
+    if $swamid {
+      $swamid_signing_cert = $prod ? {
+        true => 'md-signer2.crt',
+        false => 'swamid-qa.crt',
+      }
+
+      file { "/opt/bankidp/credentials/${swamid_signing_cert}":
+        ensure  => 'file',
+        mode    => '0755',
+        owner   => 'root',
+        content => file("sunet/bankidp/${swamid_signing_cert}")
+      }
     }
 
-    file { "/opt/bankidp/credentials/${signing_cert}":
-      ensure  => 'file',
-      mode    => '0755',
-      owner   => 'root',
-      content => file("sunet/bankidp/${signing_cert}")
+    if $swedenconnect {
+      $sc_signing_cert = $prod ? {
+        true => 'swedenconnect.se.cert',
+        false => 'qa.swedenconnect.se.cert',
+      }
+
+      file { "/opt/bankidp/credentials/${sc_signing_cert}":
+        ensure  => 'file',
+        mode    => '0755',
+        owner   => 'root',
+        content => file("sunet/bankidp/${sc_signing_cert}")
+      }
     }
 
     $resourcedir = "${bankid_home}/resources"
@@ -107,6 +129,15 @@ class sunet::bankidp(
       mode    => '0755',
       owner   => 'root',
       content => file('sunet/bankidp/sunet.svg')
+    }
+
+    $overrides_dir = '/opt/bankidp/overrides'
+    ensure_resource('sunet::misc::create_dir', $overrides_dir, { owner => 'root', group => 'root', mode => '0750'})
+    file { "${overrides_dir}/.messages":
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      content => file('sunet/bankidp/dot-messages')
     }
 
     sunet::docker_compose { 'bankidp':
@@ -122,18 +153,6 @@ class sunet::bankidp(
       numnodes => 2,
       hostmode => true,
       tls      => true
-    }
-
-    file { "/etc/ssl/certs/${fqdn}_infra.crt":
-      mode   => '0644',
-    }
-
-    file { "/etc/ssl/private":
-      mode   => '711',
-    }
-
-    package { ['redis-tools']:
-      ensure => installed,
     }
   }
 }
