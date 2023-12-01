@@ -10,6 +10,7 @@ class sunet::bankidp(
   Boolean $app_node = false,
   Boolean $prod = true,
   Boolean $redis_node = false,
+  Boolean $infra_cert_from_this_class = true,
   String $bankid_home = '/opt/bankidp',
   String $imagetag='latest',
   String $interface = 'ens3',
@@ -22,7 +23,9 @@ class sunet::bankidp(
   $apps = $facts['bankid_cluster_info']['apps']
   $redises = $facts['bankid_cluster_info']['redises']
 
-  sunet::ici_ca::rp { 'infra': }
+  if $infra_cert_from_this_class {
+    sunet::ici_ca::rp { 'infra': }
+  }
 
   if $app_node {
 
@@ -153,6 +156,18 @@ class sunet::bankidp(
       numnodes => 2,
       hostmode => true,
       tls      => true
+    }
+
+    file { "/etc/ssl/certs/${fqdn}_infra.crt":
+      mode   => '0644',
+    }
+
+    file { "/etc/ssl/private":
+      mode   => '711',
+    }
+
+    package { ['redis-tools']:
+      ensure => installed,
     }
   }
 }
