@@ -25,12 +25,16 @@ class sunet::vc::standalone(
   String $ca_reason               = "Ladok",
   String $ca_location             = "Tidan",
   String $letsencrypt_account_thumbprint             = lookup('letsencrypt_account_thumbprint')
+  String $mongo_user              = lookup('mongo_user'),
+  String $mongo_pw                = lookup('mongo_pw')
   #hash with basic_auth key/value
 ) {
 
   sunet::ssh_keys { 'vcops':
     config => lookup('vcops_ssh_config', undef, undef, {}),
   }
+
+ package { 'make': ensure => 'installed' }
 
   sunet::misc::system_user { 'sunet':
     username   => 'sunet',
@@ -48,7 +52,7 @@ class sunet::vc::standalone(
 
   file { '/opt/vc/config.yaml':
     ensure => file,
-    mode   => '0400',
+    mode   => '0600',
     owner  => 'root',
     group  => 'root',
     content => template("sunet/vc/standalone/config.yaml.erb")
@@ -105,6 +109,14 @@ class sunet::vc::standalone(
     group   => '999',
   }
 
+  file { '/opt/vc/Makefile':
+    ensure => file,
+    mode => '0744',
+    owner => 'root',
+    group => 'root',
+    content => template("sunet/vc/standalone/Makefile.erb")
+  }
+
   file { '/opt/vc/cert':
     ensure  => directory,
     mode    => '0755',
@@ -130,8 +142,6 @@ class sunet::vc::standalone(
     command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem",
     month       => '*/2',
   }
-
-
 
   # Compose
   sunet::docker_compose { 'vc_standalone':

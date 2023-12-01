@@ -1,6 +1,7 @@
 global
   stats socket /var/run/api.sock user haproxy group haproxy mode 660 level admin expose-fd listeners
   log stdout format raw local0 info
+  setenv ACCOUNT_THUMBPRINT '<%= @letsencrypt_account_thumbprint %>'
 
 defaults
   mode http
@@ -21,6 +22,9 @@ frontend stats
 
 frontend myfrontend
     bind :80
+    bind :443 ssl crt /usr/local/etc/haproxy/tls-cert-key.pem
+
+    http-request return status 200 content-type text/plain lf-string "%[path,field(-1,/)].${ACCOUNT_THUMBPRINT}\n" if { path_beg '/.well-known/acme-challenge/' }
 
     timeout http-request 10s                                                                                                                                                                                                                   
     timeout http-keep-alive 4s 
@@ -37,16 +41,16 @@ backend issuer
 
 backend verifier
     http-request replace-path /verifier(/)?(.*) /\2
-    server issuer_server vc_verifier:8080 resolvers docker_resolver resolve-prefer ipv4
+    server verifier_server vc_verifier:8080 resolvers docker_resolver resolve-prefer ipv4
 
 backend datastore
     http-request replace-path /datastore(/)?(.*) /\2
-    server issuer_server vc_datastore:8080 resolvers docker_resolver resolve-prefer ipv4
+    server datastore_server vc_datastore:8080 resolvers docker_resolver resolve-prefer ipv4
 
 backend registry
     http-request replace-path /registry(/)?(.*) /\2
-    server issuer_server vc_registry:8080 resolvers docker_resolver resolve-prefer ipv4
+    server registry_server vc_registry:8080 resolvers docker_resolver resolve-prefer ipv4
 
 backend jaeger
     http-request replace-path /jaeger(/)?(.*) /\2
-    server issuer_server vc_jaeger:16686 resolvers docker_resolver resolve-prefer ipv4
+    server jaeger_server vc_jaeger:16686 resolvers docker_resolver resolve-prefer ipv4
