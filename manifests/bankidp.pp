@@ -5,6 +5,8 @@ class sunet::bankidp(
   Array $ports_extras = [],
   Array $resolvers = [],
   Array $volumes_extras = [],
+  Boolean $swamid = true,
+  Boolean $swedenconnect = false,
   Boolean $app_node = false,
   Boolean $prod = true,
   Boolean $redis_node = false,
@@ -90,16 +92,34 @@ class sunet::bankidp(
       mode    => '0755',
     }
 
-    $signing_cert = $prod ? {
-      true => 'md-signer2.crt',
-      false => 'swamid-qa.crt',
+
+
+    if $swamid {
+      $swamid_signing_cert = $prod ? {
+        true => 'md-signer2.crt',
+        false => 'swamid-qa.crt',
+      }
+
+      file { "/opt/bankidp/credentials/${swamid_signing_cert}":
+        ensure  => 'file',
+        mode    => '0755',
+        owner   => 'root',
+        content => file("sunet/bankidp/${swamid_signing_cert}")
+      }
     }
 
-    file { "/opt/bankidp/credentials/${signing_cert}":
-      ensure  => 'file',
-      mode    => '0755',
-      owner   => 'root',
-      content => file("sunet/bankidp/${signing_cert}")
+    if $swedenconnect {
+      $sc_signing_cert = $prod ? {
+        true => 'swedenconnect.se.cert',
+        false => 'qa.swedenconnect.se.cert',
+      }
+
+      file { "/opt/bankidp/credentials/${sc_signing_cert}":
+        ensure  => 'file',
+        mode    => '0755',
+        owner   => 'root',
+        content => file("sunet/bankidp/${sc_signing_cert}")
+      }
     }
 
     $resourcedir = "${bankid_home}/resources"
