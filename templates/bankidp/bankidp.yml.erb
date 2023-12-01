@@ -48,6 +48,10 @@ bankid:
       - http://id.swedenconnect.se/loa/1.0/uncertified-loa3
     entity-categories:
       - http://id.swedenconnect.se/contract/Sunet/BankID-idp
+      - http://id.swedenconnect.se/general-ec/1.0/secure-authenticator-binding
+      - http://id.swedenconnect.se/ec/1.0/loa3-name
+      - http://id.elegnamnden.se/sprop/1.0/mobile-auth
+      - http://id.elegnamnden.se/ec/1.0/loa3-pnr
 
 <% if @prod == true %>
   server-root-certificate: classpath:bankid-trust-prod.crt
@@ -71,9 +75,9 @@ bankid:
       fallback-sign-text:
         text: "Jag skriver härmed under den information som visades på föregående sida."
         format: plain-text
-      login-text:
-        text: "*Tänk på!* Logga aldrig in med ditt BankID då någon ringer och ber dig logga in."
-        format: simple-markdown-v1
+    # Override copyright
+    override:
+      directory-path: "/opt/bankidp/overrides"
   relying-parties:
 <% @customers.each do | customer, value | -%>
     - id: "<%= customer %>"
@@ -93,6 +97,7 @@ saml:
     entity-id: '<%= @base_url_and_entity_id %>'
     base-url: '<%= @base_url_and_entity_id %>'
     metadata-providers:
+<% if @swamid == true %>
 <% if @prod == true %>
       - location: https://mds.swamid.se
         validation-certificate: file:/opt/bankidp/credentials/md-signer2.crt
@@ -100,8 +105,19 @@ saml:
       - location: https://mds.swamid.se/qa
         validation-certificate: file:/opt/bankidp/credentials/swamid-qa.crt
 <% end -%>
-        backup-location: /opt/bankidp/cache/metadata
+        backup-location: /opt/bankidp/cache/swamid-mdq
         mdq: true
+<% end -%>
+<% if @swedenconnect == true %>
+<% if @prod == true %>
+      - location: https://md.swedenconnect.se/role/sp.xml
+        validation-certificate: file:/opt/bankidp/credentials/swedenconnect.se.cert
+<% else %>
+      - location: https://qa.md.swedenconnect.se/role/sp.xml
+        validation-certificate: file:/opt/bankidp/credentials/qa.swedenconnect.se.cert
+<% end -%>
+        backup-location: /opt/bankidp/cache/swedenconnect
+<% end -%>
     credentials:
       sign:
         resource: file:/opt/bankidp/credentials/saml_metadata.p12
