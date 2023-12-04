@@ -590,7 +590,12 @@ def handle_registration() -> None:
 
 
 def fix_ldd() -> None:
-    """Make sure the dynamic linker finds IBM's libraries"""
+    """Make sure the dynamic linker finds IBM's libraries
+    Without this fix Debian machines failed to run the IBM binaries since the linker
+    didn't include the diretory where IBM install it's libraries.
+
+    dsmc: error while loading shared libraries: libgsk8ssl_64.so: cannot open shared object file: No such file or directory # pylint:disable=line-too-long
+    """
 
     dist_info = platform.freedesktop_os_release()
     if dist_info["ID"] != "debian":
