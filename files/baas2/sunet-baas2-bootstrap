@@ -601,7 +601,6 @@ def fix_ldd() -> None:
     try:
         with open(ldd_conf_file, "x", encoding="utf-8") as file:
             file.write("/usr/lib64\n")
-            file.close()
     except FileExistsError:
         # Assume the ldd cache is already handled
         return
