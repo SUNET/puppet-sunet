@@ -597,27 +597,20 @@ def fix_ldd() -> None:
         # This fix only applies to Debian
         return
 
-    lock_file = "/var/lock/sunet-baas2-ldd"
     ldd_conf_file = "/etc/ld.so.conf.d/sunet-baas2.conf"
-    if os.path.isfile(lock_file):
-        # fix ldd is already run
-        return
-
     try:
         with open(ldd_conf_file, "x", encoding="utf-8") as file:
             file.write("/usr/lib64\n")
             file.close()
     except FileExistsError:
-        pass
+        # Assume the ldd cache is already handled
+        return
 
     # Flush the ldd cache
     try:
         subprocess.run("/usr/sbin/ldconfig", check=True)
     except subprocess.CalledProcessError:
         raise RuntimeError("unable to run '/usr/sbin/ldconfig'") from None
-
-    with open(lock_file, "a", encoding="utf-8") as file:
-        file.close()
 
 
 if __name__ == "__main__":
