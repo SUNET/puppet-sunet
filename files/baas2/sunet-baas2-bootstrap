@@ -598,11 +598,13 @@ def fix_ldd() -> None:
     ldd_conf_file = "/etc/ld.so.conf.d/sunet-baas2.conf"
     try:
         with open(ldd_conf_file, "x", encoding="utf-8") as file:
+            print(f"Adding {file}")
             file.write("/usr/lib64\n")
     except FileExistsError:
         # Assume the ldd cache is already handled
         return
 
+    print("Flusing ldd cache")
     # Flush the ldd cache
     subprocess.run("/usr/sbin/ldconfig", check=True)
 
