@@ -17,6 +17,7 @@ mypy --strict sunet-baas2-bootstrap
 import argparse
 import os
 import os.path
+import platform
 import shlex
 import shutil
 import struct
@@ -483,7 +484,15 @@ def main() -> None:
     parser.add_argument(
         "--register", help="version of client to install", action="store_true"
     )
+    parser.add_argument(
+        "--fix-ldd",
+        help="Make sure the dynamic linker finds IBM's libraries",
+        action="store_true",
+    )
     args = parser.parse_args()
+
+    if args.fix_ldd:
+        fix_ldd()
 
     if args.install and not args.version:
         print("--install requires that you supply --version")
@@ -578,6 +587,36 @@ def handle_registration() -> None:
     baas_encrypt_password = baas_encrypt_password.rstrip("\r\n")
 
     set_encrypt_password(encrypted_passwords_db, baas_encrypt_password)
+
+
+def fix_ldd() -> None:
+    """Make sure the dynamic linker finds IBM's libraries"""
+
+    dist_info = platform.freedesktop_os_release()
+    if not "debian" in dist_info["ID"]:
+        # This fix only applies to Debian
+        return
+
+    lock_file = "/var/lock/sunet-baas2-ldd"
+    ldd_conf_file = "/etc/ld.so.conf.d/sunet-baas2.conf"
+    if os.path.isfile(lock_file):
+        # fix ldd is already run
+        return
+
+    if not os.path.isfile(ldd_conf_file):
+        with open(ldd_conf_file, "w", encoding="utf-8") as file:
+            file.write("/usr/lib64\n")
+            file.close()
+
+    # Flush the ldd cache
+    try:
+        subprocess.run("/usr/sbin/ldconfig", capture_output=True, check=True)
+    except subprocess.CalledProcessError:
+        # Do not output the full command line since it contains secrets
+        raise RuntimeError("unable to run '/usr/sbin/ldconfig'") from None
+
+    with open(lock_file, "a", encoding="utf-8") as file:
+        file.close()
 
 
 if __name__ == "__main__":
