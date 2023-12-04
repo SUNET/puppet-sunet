@@ -604,10 +604,7 @@ def fix_ldd() -> None:
         return
 
     # Flush the ldd cache
-    try:
-        subprocess.run("/usr/sbin/ldconfig", check=True)
-    except subprocess.CalledProcessError:
-        raise RuntimeError("unable to run '/usr/sbin/ldconfig'") from None
+    subprocess.run("/usr/sbin/ldconfig", check=True)
 
 
 if __name__ == "__main__":
