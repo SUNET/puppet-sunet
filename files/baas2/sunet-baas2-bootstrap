@@ -593,7 +593,7 @@ def fix_ldd() -> None:
     """Make sure the dynamic linker finds IBM's libraries"""
 
     dist_info = platform.freedesktop_os_release()
-    if not "debian" in dist_info["ID"]:
+    if dist_info["ID"] != "debian":
         # This fix only applies to Debian
         return
 
