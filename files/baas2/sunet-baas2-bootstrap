@@ -484,15 +484,7 @@ def main() -> None:
     parser.add_argument(
         "--register", help="version of client to install", action="store_true"
     )
-    parser.add_argument(
-        "--fix-ldd",
-        help="Make sure the dynamic linker finds IBM's libraries",
-        action="store_true",
-    )
     args = parser.parse_args()
-
-    if args.fix_ldd:
-        fix_ldd()
 
     if args.install and not args.version:
         print("--install requires that you supply --version")
@@ -534,6 +526,7 @@ def handle_installation(
 ) -> None:
     """Overall handler for installing the TSM client"""
     if installed_version != args.version:
+        fix_ldd()
         print(f"installing version: {args.version}")
         url = get_tar_url(args.version)
         print(f"url is: {url}")
