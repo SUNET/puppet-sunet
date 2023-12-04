@@ -53,11 +53,6 @@ class sunet::baas2(
       content => file('sunet/baas2/sunet-baas2-bootstrap')
     }
 
-    # Make sure the dynamic linker finds IBM's libraries
-    exec { 'sunet-baas2-bootstrap --fix-ldd':
-      command => '/usr/local/sbin/sunet-baas2-bootstrap --fix-ldd',
-    }
-
     # Make sure the requested version is installed
     exec { 'sunet-baas2-bootstrap --install':
       command => "/usr/local/sbin/sunet-baas2-bootstrap --install --version=${version}",
