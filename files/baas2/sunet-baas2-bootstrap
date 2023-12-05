@@ -604,7 +604,7 @@ def fix_ldd() -> None:
         # Assume that the existing file contains the the requested content already
         pass
 
-    print("Flusing ldd cache")
+    print("Flushing ldd cache")
     # Flush the ldd cache
     subprocess.run("/usr/sbin/ldconfig", check=True)
 
