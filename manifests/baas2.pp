@@ -39,16 +39,6 @@ class sunet::baas2(
 
   if $nodename and $baas_password != 'NOT_SET_IN_HIERA' and $baas_encryption_password != 'NOT_SET_IN_HIERA' {
 
-    if $facts['os']['name'] == 'Debian' {
-      exec { 'reload_ld_cache':
-        command     => '/usr/sbin/ldconfig',
-        refreshonly => true,
-      }
-      file { '/etc/ld.so.conf.d/puppet-sunet-baas2.conf':
-        content => "/usr/lib64\n",
-        notify  => Exec['reload_ld_cache']
-      }
-    }
 
     # The dsm.sys template expects backup_dirs to not have a trailing slash, so
     # make sure this is the case
