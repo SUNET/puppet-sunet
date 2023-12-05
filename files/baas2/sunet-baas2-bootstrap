@@ -602,7 +602,7 @@ def fix_ldd() -> None:
             file.write("/usr/lib64\n")
     except FileExistsError:
         # Assume the ldd cache is already handled
-        return
+        pass
 
     print("Flusing ldd cache")
     # Flush the ldd cache
