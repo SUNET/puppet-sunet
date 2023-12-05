@@ -601,7 +601,7 @@ def fix_ldd() -> None:
             print(f"Adding {file}")
             file.write("/usr/lib64\n")
     except FileExistsError:
-        # Assume the ldd cache is already handled
+        # Assume that the existing file contains the the requested content already
         pass
 
     print("Flusing ldd cache")
