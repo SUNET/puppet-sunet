@@ -526,7 +526,6 @@ def handle_installation(
 ) -> None:
     """Overall handler for installing the TSM client"""
     if installed_version != args.version:
-        fix_ldd()
         print(f"installing version: {args.version}")
         url = get_tar_url(args.version)
         print(f"url is: {url}")
@@ -535,6 +534,7 @@ def handle_installation(
         verify_file_hash(checksum_file)
         extract_tar_file(tar_file, download_dir)
         install_deb_files(download_dir)
+        fix_ldd()
 
     root_cert_needed = False
     root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
