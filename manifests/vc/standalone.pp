@@ -24,7 +24,6 @@ class sunet::vc::standalone(
   String $ca_version              = "latest",
   String $ca_reason               = "Ladok",
   String $ca_location             = "Tidan",
-  String $letsencrypt_account_thumbprint             = lookup('letsencrypt_account_thumbprint'),
   String $mongo_user              = lookup('mongo_user'),
   String $mongo_pw                = lookup('mongo_pw')
   #hash with basic_auth key/value
