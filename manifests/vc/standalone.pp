@@ -124,25 +124,6 @@ class sunet::vc::standalone(
     group   => 'root',
   }
 
-  $letsencrypt_deps = [ 'python3-certbot-dns-standalone', 'unzip' ]
-  package { $letsencrypt_deps: ensure => 'installed' }
-
-  exec { 'install_letsencrypt_files':
-    command     => "unzip letsencrypt.zip",
-    cwd         => '/etc',
-    unless => '/usr/bin/ls /etc/letsencrypt 2> /dev/null',
-  }
-
-  exec { 'renew_letsencrypt_cert_first_run':
-    command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem && touch /etc/letsencrypt/first_run",
-    unless => '/usr/bin/ls /etc/letsencrypt/first_run 2> /dev/null',
-  }
-
-  cron { 'renew_letsencrypt_cert':
-    command     => "/usr/bin/rm -r /etc/letsencrypt/live ; /usr/bin/certbot certonly --standalone -d ${facts['networking']['fqdn']} --agree-tos --email masv@sunet.se -n && cat /etc/letsencrypt/live/*/fullchain.pem /etc/letsencrypt/live/*/privkey.pem | tee /opt/vc/cert/tls-cert-key.pem",
-    month       => '*/2',
-  }
-
   # Compose
   sunet::docker_compose { 'vc_standalone':
     content          => template('sunet/vc/standalone/docker-compose.yml.erb'),
@@ -150,7 +131,6 @@ class sunet::vc::standalone(
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'VC-standalone service',
-    subscribe        => Cron['renew_letsencrypt_cert'],
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
