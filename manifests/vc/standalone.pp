@@ -16,6 +16,7 @@ class sunet::vc::standalone(
   String $postgres_timeout        = '5',
   String $postgres_image		      = 'postgres',
   String $postgres_version		    = '15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c',
+  String $ca_acme_root            = '/acme',
   String $ca_token,
   String $ca_url,
   String $ca_version              = "latest",
