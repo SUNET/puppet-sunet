@@ -8,7 +8,6 @@ docker-pull-vc:
 
 docker-pull-pkcs11:
 	docker pull docker.sunet.se/dc4eu/pkcs11_ca:<%= @ca_version %>
-	docker pull docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>
 
 dev-release: docker-pull
 	systemctl restart sunet-vc.service
