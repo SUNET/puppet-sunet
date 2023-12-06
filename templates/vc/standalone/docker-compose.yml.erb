@@ -22,10 +22,10 @@ services:
       - vc_jaeger
     environment:
       - "VC_CONFIG_YAML=config.yaml"
-      - "HTTP_PROXY=vc-test-1.sunet.se"
-      - "http_proxy=vc-test-1.sunet.se"
-      - "HTTPS_PROXY=vc-test-1.sunet.se"
-      - "https_proxy=vc-test-1.sunet.se"
+      - "HTTP_PROXY=<%= @fqdn %>"
+      - "http_proxy=<%= @fqdn %>"
+      - "HTTPS_PROXY=<%= @fqdn %>"
+      - "https_proxy=<%= @fqdn %>"
       - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8,ca_ca,vc_jaeger"
 
   vc_verifier:
@@ -45,10 +45,10 @@ services:
       - vc_haproxy
     environment:
       - "VC_CONFIG_YAML=config.yaml"
-      - "HTTP_PROXY=vc-test-1.sunet.se"
-      - "http_proxy=vc-test-1.sunet.se"
-      - "HTTPS_PROXY=vc-test-1.sunet.se"
-      - "https_proxy=vc-test-1.sunet.se"
+      - "HTTP_PROXY=<%= @fqdn %>"
+      - "http_proxy=<%= @fqdn %>"
+      - "HTTPS_PROXY=<%= @fqdn %>"
+      - "https_proxy=<%= @fqdn %>"
       - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8"
 
   vc_datastore:
@@ -68,10 +68,10 @@ services:
       - vc_haproxy
     environment:
       - "VC_CONFIG_YAML=config.yaml"
-      - "HTTP_PROXY=vc-test-1.sunet.se"
-      - "http_proxy=vc-test-1.sunet.se"
-      - "HTTPS_PROXY=vc-test-1.sunet.se"
-      - "https_proxy=vc-test-1.sunet.se"
+      - "HTTP_PROXY=<%= @fqdn %>"
+      - "http_proxy=<%= @fqdn %>"
+      - "HTTPS_PROXY=<%= @fqdn %>"
+      - "https_proxy=<%= @fqdn %>"
       - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8"
 
   vc_registry:
@@ -90,10 +90,10 @@ services:
       - vc_haproxy
     environment:
       - "VC_CONFIG_YAML=config.yaml"
-      - "HTTP_PROXY=vc-test-1.sunet.se"
-      - "http_proxy=vc-test-1.sunet.se"
-      - "HTTPS_PROXY=vc-test-1.sunet.se"
-      - "https_proxy=vc-test-1.sunet.se"
+      - "HTTP_PROXY=<%= @fqdn %>"
+      - "http_proxy=<%= @fqdn %>"
+      - "HTTPS_PROXY=<%= @fqdn %>"
+      - "https_proxy=<%= @fqdn %>"
       - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8"
 
   vc_haproxy:
@@ -104,8 +104,8 @@ services:
       - 8404:8404
     volumes:
       - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - /etc/letsencrypt/live/"<%= @fqdn %>/fullchain.pem:/etc/certs/cert.pem:ro
-      - /etc/letsencrypt/live/"<%= @fqdn %>"/privkey.pem:/etc/certs/cert.pem.key:ro
+      - /etc/letsencrypt/live/<%= @fqdn %>/fullchain.pem:/etc/certs/cert.pem:ro
+      - /etc/letsencrypt/live/<%= @fqdn %>/privkey.pem:/etc/certs/cert.pem.key:ro
 
   vc_redis:
     image: redis:alpine
