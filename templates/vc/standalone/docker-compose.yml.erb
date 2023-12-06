@@ -18,7 +18,6 @@ services:
       - vc_mongo
       - vc_registry
       - ca_ca
-      - ca_pdfsign
       - vc_haproxy
       - vc_jaeger
     environment:
@@ -27,7 +26,7 @@ services:
       - "http_proxy=vc-test-1.sunet.se"
       - "HTTPS_PROXY=vc-test-1.sunet.se"
       - "https_proxy=vc-test-1.sunet.se"
-      - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8,ca_pdfsign,vc_jaeger"
+      - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8,ca_ca,vc_jaeger"
 
   vc_verifier:
     container_name: "vc_verifier"
