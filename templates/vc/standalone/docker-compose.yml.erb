@@ -104,6 +104,8 @@ services:
       - 8404:8404
     volumes:
       - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /etc/letsencrypt/live/"<%= @fqdn %>/fullchain.pem:/etc/certs/cert.pem:ro
+      - /etc/letsencrypt/live/"<%= @fqdn %>"/privkey.pem:/etc/certs/cert.pem.key:ro
 
   vc_redis:
     image: redis:alpine
