@@ -99,7 +99,7 @@ services:
 
   vc_haproxy:
     container_name: "vc_haproxy"
-    image: "haproxytech/haproxy-alpine:2.4"
+    image: "haproxytech/haproxy-alpine"
     ports:
       - 80:80
       - 8404:8404
@@ -185,24 +185,6 @@ services:
       - "POSTGRES_USER=<%= @postgres_user %>"
       - "POSTGRES_PASSWORD=<%= @postgres_password %>"
       
-  ca_pdfsign:
-    image: "docker.sunet.se/dc4eu/pkcs11_pdfsign:<%= @ca_version %>"
-    container_name: "ca_pdfsign"
-    volumes:
-      - /var/log/sunet/pkcs11:/var/log/sunet
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-    depends_on:
-      - ca_ca
-    restart: always
-    #cap_drop: [ALL]
-    #security_opt:
-    #  - no-new-privileges:true
-    tmpfs:
-      - /dev/shm:ro,noexec,nosuid,nodev
-    environment:
-      - CA_URL=<%= @ca_url %>
-
 networks:
   default:
     driver_opts:
