@@ -6,7 +6,6 @@ class sunet::vc::standalone(
   String  $interface="ens3",
   Boolean $production=false,
   String $ca_url,
-  String $ca_pdfsign_url,
   #String $ca_dns_name,
   String $acme_root               = '/acme',
   String $pkcs11_sign_api_token   = lookup('pkcs11_sign_api_token'), 
