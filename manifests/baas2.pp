@@ -39,6 +39,7 @@ class sunet::baas2(
 
   if $nodename and $baas_password != 'NOT_SET_IN_HIERA' and $baas_encryption_password != 'NOT_SET_IN_HIERA' {
 
+
     # The dsm.sys template expects backup_dirs to not have a trailing slash, so
     # make sure this is the case
     $backup_dirs_transformed = $backup_dirs.map |$backup_dir| {

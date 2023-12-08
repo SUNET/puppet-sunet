@@ -1,8 +1,5 @@
-require stdlib
-
 # TODO: enable the RW functions of the API at some point - need to mount nagios.cmd if exists
 # TODO: add tls frontend
-
 class sunet::nagiosapi($version='latest',$api_port=5667) {
 
    $nagios_ip_v4 = lookup('nagios_ip_v4', undef, undef, '109.105.111.111', undef, undef, undef)

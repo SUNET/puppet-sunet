@@ -12,9 +12,18 @@ services:
       - 89.46.20.75
       - 89.46.21.29
       - 89.32.32.32
+<% if @hostmode == true %>
     network_mode: host
+<% else %>
+    ports:
+      - "<%= redisport %>:<%= redisport %>"
+      - "<%= joinport %>:<%= joinport %>"
+<% end %>
     volumes:
       - /opt/redis/node-<%= i %>:/data
+<% if @tls == true -%>
+      - /etc/ssl:/etc/ssl
+<% end %>
     command: redis-server /data/server.conf
     restart: always
 <% end %>

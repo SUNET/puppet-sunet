@@ -1,6 +1,5 @@
 # pubkey from privkey
 define sunet::snippets::ssh_pubkey_from_privkey($privkey_file=undef) {
-  require stdlib
   $_privkey_file = $privkey_file ? {
     undef   => $name,
     default => $privkey_file

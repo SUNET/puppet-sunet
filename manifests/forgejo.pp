@@ -36,8 +36,12 @@ class sunet::forgejo (
   # GPG password
   $platform_sunet_se_gpg_password = lookup('platform_sunet_se_gpg_password', undef, undef, undef)
 
+  # GPG key
+  $platform_sunet_se_gpg_key = lookup('platform_sunet_se_gpg_key', undef, undef, undef)
+
   # White list for email domains for account creation
   $email_domain_whitelist = lookup('email_domain_whitelist', undef, undef, undef)
+
   # Nginx stuff
   file{ '/opt/nginx':
     ensure => directory,
@@ -65,12 +69,6 @@ class sunet::forgejo (
     group => 'git',
     uid   => $uid,
     gid   => $gid,
-  }
-  # Parent Data directory
-  -> file{ '/opt/forgejo':
-    ensure => directory,
-    owner  => 'git',
-    group  => 'git',
   }
   # Data directory
   -> file{ '/opt/forgejo/data':
@@ -135,5 +133,14 @@ class sunet::forgejo (
       from => 'any',
       port => ['80', '443', '22022'],
     }
+  }
+  file{ '/opt/forgejo/import-secret-key.sh':
+    ensure  => file,
+    content => template('sunet/forgejo/import-secret-key.erb.sh'),
+    mode    => '0700',
+  }
+  # Import gpg key
+  -> exec{ 'import_gpg_key':
+    command => '/opt/forgejo/import-secret-key.sh'
   }
 }

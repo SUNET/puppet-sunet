@@ -1,6 +1,5 @@
 # Disable IPv6 privacy extensions on servers. Complicates troubleshooting.
 define sunet::snippets::disable_ipv6_privacy() {
-  require stdlib
   augeas { 'server_ipv6_privacy_config':
     context => '/files/etc/sysctl.d/10-ipv6-privacy.conf',
     changes => [

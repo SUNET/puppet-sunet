@@ -41,7 +41,6 @@ class sunet::security::configure_sshd (
     $set_port = undef
   }
 
-  include augeas
   augeas { 'sshd_config':
     context => '/files/etc/ssh/sshd_config',
     changes => flatten([
