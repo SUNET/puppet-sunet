@@ -7,7 +7,7 @@ docker-pull-vc:
 	docker pull docker.sunet.se/dc4eu/verifier:<%= @vc_version %>
 
 docker-pull-pkcs11:
-	docker pull docker.sunet.se/dc4eu/pkcs11_ca:<%= @ca_version %>
+	docker pull docker.sunet.se/dc4eu/ca-softhsm2:<%= @ca_version %>
 
 dev-release: docker-pull
 	systemctl restart sunet-vc.service
