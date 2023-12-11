@@ -21,7 +21,7 @@ frontend stats
 
 frontend myfrontend
     mode http
-    bind *:443 ssl crt /etc/certs/cert.pem verify required ca-file /etc/certs/ca.crt crl-file /etc/certs/root_crl.pem
+    bind *:443 ssl crt /etc/certs/cert.pem verify required ca-file /etc/certs/ca_cert.pem crl-file /etc/certs/ca_crl.pem
 
     use_backend issuer if { path /issuer } || { path_beg /issuer/ }
     use_backend verifier if { path /verifier } || { path_beg /verifier/ }

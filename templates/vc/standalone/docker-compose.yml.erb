@@ -107,8 +107,8 @@ services:
       - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
       - /etc/letsencrypt/live/<%= @fqdn %>/fullchain.pem:/etc/certs/cert.pem:ro
       - /etc/letsencrypt/live/<%= @fqdn %>/privkey.pem:/etc/certs/cert.pem.key:ro
-      - /opt/vc/certs/ca.crt:/etc/certs/ca.crt:ro
-      - /opt/vc/certs/root_crl.pem:/etc/certs/root_crl.pem:ro
+      - /opt/vc/certs/ca_cert.pem:/etc/certs/ca.pem:ro
+      - /opt/vc/certs/ca_crl.pem:/etc/certs/ca_crl.pem:ro
 
   vc_redis:
     image: redis:alpine
