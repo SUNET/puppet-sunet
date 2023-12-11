@@ -116,7 +116,7 @@ class sunet::vc::standalone(
     content => template("sunet/vc/standalone/Makefile.erb")
   }
 
-  file { '/opt/vc/cert':
+  file { '/opt/vc/certs':
     ensure  => directory,
     mode    => '0755',
     owner   => 'root',
