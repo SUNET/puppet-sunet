@@ -134,7 +134,7 @@ class sunet::vc::standalone(
         unless  => "test -f /tmp/safenetauthenticationclient-core.zip",
     } ->
     exec {"Install safenetauthenticationclient-core":
-        command => "apt-get install 'SAC 10.8.28 GA Build/Installation/withoutUI/Ubuntu-2004/safenetauthenticationclient-core_10.8.28_amd64.deb' -y",,
+        command => "apt-get install 'SAC 10.8.28 GA Build/Installation/withoutUI/Ubuntu-2004/safenetauthenticationclient-core_10.8.28_amd64.deb' -y",
         unless  => "test -f /tmp/safenetauthenticationclient-core.zip",
     }
 
