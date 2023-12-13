@@ -1,11 +1,10 @@
 class sunet::vc::standalone(
-  String $vc_version="latest",
-  String $mongodb_version="4.0.10",
-  String $mockca_sleep="20",
+  String $vc_version              ="latest",
+  String $mongodb_version         ="4.0.10",
   String $interface               ="ens3",
-  Boolean $production=false,
+  Boolean $production             =false,
   String $pkcs11_sign_api_token   = lookup('pkcs11_sign_api_token'), 
-  String $pkcs11_token            = 'my_test_token_1',
+  String $pkcs11_token            = lookup('pkcs11_token'),
   String $pkcs11_pin              = lookup('pkcs11_pin'), 
   String $pkcs11_module           = '/usr/lib/softhsm/libsofthsm2.so',
   String $postgres_host           = 'ca_postgres',
@@ -123,6 +122,17 @@ class sunet::vc::standalone(
     owner   => 'root',
     group   => 'root',
   }
+
+  sunet::remote_file { "/tmp/safenetauthenticationclient-core.zip":
+       remote_location => $safenetauthenticationclient-core_url,
+       mode            => "0600"
+    } ->
+    exec {"Unpack safenetauthenticationclient-core":
+      command => "unzip  /tmp/safenetauthenticationclient-core.zip",
+    } ->
+    exec {"Install safenetauthenticationclient-core":
+       command => "apt-get install 'SAC 10.8.28 GA Build/Installation/withoutUI/Ubuntu-2004/safenetauthenticationclient-core_10.8.28_amd64.deb' -y"
+    }
 
   # Compose
   sunet::docker_compose { 'vc_standalone':
