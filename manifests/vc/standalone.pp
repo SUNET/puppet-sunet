@@ -2,7 +2,7 @@ class sunet::vc::standalone(
   String $vc_version="latest",
   String $mongodb_version="4.0.10",
   String $mockca_sleep="20",
-  String $interface="ens3",
+  String $interface               ="ens3",
   Boolean $production=false,
   String $pkcs11_sign_api_token   = lookup('pkcs11_sign_api_token'), 
   String $pkcs11_token            = 'my_test_token_1',
@@ -20,6 +20,7 @@ class sunet::vc::standalone(
   String $ca_token,
   String $ca_url,
   String $ca_version              = "latest",
+  String $ca_flavor               = "ca-softhsm2"
   String $ca_reason               = "Ladok",
   String $ca_location             = "Stockholm",
   String $ca_name                 = "Sunet",
