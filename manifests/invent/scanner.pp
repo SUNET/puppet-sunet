@@ -30,6 +30,7 @@ class sunet::invent::scanner(
   }
   -> file { '/usr/local/bin/scanner':
     ensure  => file,
+    mode    => '0755',
     content => template('sunet/invent/scanner.erb.sh'),
   }
   -> sunet::scriptherder::cronjob { 'docker_repo_scanner':
