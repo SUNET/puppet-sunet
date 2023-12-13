@@ -24,7 +24,7 @@ class sunet::vc::standalone(
   String $ca_location             = "Stockholm",
   String $ca_name                 = "Sunet",
   String $ca_contact_info         = "noc@sunet.se",
-  String $safenetauthenticationclient-core_url = "https://www.digicert.com/StaticFiles/SAC_10_8_28_GA_Build.zip",
+  String $safenetauthenticationclient_core_url = "https://www.digicert.com/StaticFiles/SAC_10_8_28_GA_Build.zip",
   String $mongo_user              = lookup('mongo_user'),
   String $mongo_pw                = lookup('mongo_pw')
   #hash with basic_auth key/value
@@ -125,7 +125,7 @@ class sunet::vc::standalone(
   }
 
   sunet::remote_file { "/tmp/safenetauthenticationclient-core.zip":
-       remote_location => $safenetauthenticationclient-core_url,
+       remote_location => $safenetauthenticationclient_core_url,
        mode            => "0600"
     } ->
     exec {"Unpack safenetauthenticationclient-core":
