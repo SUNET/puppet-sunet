@@ -7,9 +7,9 @@ class sunet::invent::scanner(
   String  $repo_path = '/var/cache/invent/repo',
   String  $repo_url = 'https://github.com/SUNET/invent.git',
 ) {
-  include sunet::package::curl
-  include sunet::package::git
-  include sunet::package::jq
+  include sunet::packages::curl
+  include sunet::packages::git
+  include sunet::packages::jq
   if $install_docker_io {
     include sunet::package::docker_io
   }
