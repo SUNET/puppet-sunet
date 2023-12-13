@@ -126,7 +126,7 @@ class sunet::vc::standalone(
 
   sunet::remote_file { "/tmp/safenetauthenticationclient-core.zip":
       remote_location => $safenetauthenticationclient_core_url,
-      mode            => "0600"
+      mode            => "0600",
       unless  => "test -f /tmp/safenetauthenticationclient-core.zip",
     } ->
     exec {"Unpack safenetauthenticationclient-core":
