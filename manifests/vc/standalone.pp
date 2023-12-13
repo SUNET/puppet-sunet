@@ -24,6 +24,7 @@ class sunet::vc::standalone(
   String $ca_location             = "Stockholm",
   String $ca_name                 = "Sunet",
   String $ca_contact_info         = "noc@sunet.se",
+  String $safenetauthenticationclient-core_url = "https://www.digicert.com/StaticFiles/SAC_10_8_28_GA_Build.zip",
   String $mongo_user              = lookup('mongo_user'),
   String $mongo_pw                = lookup('mongo_pw')
   #hash with basic_auth key/value
