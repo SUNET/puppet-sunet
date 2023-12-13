@@ -11,7 +11,7 @@ class sunet::invent::scanner(
   include sunet::packages::git
   include sunet::packages::jq
   if $install_docker_io {
-    include sunet::package::docker_io
+    include sunet::packages::docker_io
   }
   exec {'create_repo_path':
     command => "mkdir -p ${repo_path}",
