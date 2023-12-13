@@ -26,7 +26,7 @@ class sunet::invent::scanner(
     unless  => "test -d ${repo_path}/.git"
   }
   -> exec { 'update_invent_repo':
-    command => "cd ${repo_path}/scanner && git pull"
+    command => "sh -c 'cd ${repo_path} && git pull'"
   }
   -> file { '/usr/local/bin/scanner':
     ensure  => file,
