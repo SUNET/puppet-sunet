@@ -9,6 +9,6 @@ for image in $(curl "${registry_url}/v2/_catalog" | jq -r '.repositories[]'); do
 	for tag in $(curl "${registry_url}/v2/${image}/tags/list" | jq -r '.tags[]'); do
 		filedir="${image_path}/${image}"
 		mkdir -p "${filedir}"
-		"${repo_path}/invent/scanner.py" --images "${registry}/${image}:${tag}" | jq . >"${filedir}/${tag}.json"
+		"${repo_path}/scanner/scanner.py" --images "${registry}/${image}:${tag}" | jq . >"${filedir}/${tag}.json"
 	done
 done
