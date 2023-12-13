@@ -3,6 +3,7 @@ class sunet::lb::load_balancer::services(
   String $router_id,
   String $basedir,
   Hash[String, Hash] $config,
+  String $interface = 'eth0',
   Integer $api_port = 8080,
   Integer $statsd_port = 8125,
 ) {
@@ -56,6 +57,7 @@ class sunet::lb::load_balancer::services(
     sunet::nftables::docker_expose { 'frontend-api' :
       allow_clients => sunet::lb::load_balancer::get_all_backend_ips($config),
       port          => $api_port,
+      iif          => $interface,
     }
   }
 

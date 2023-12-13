@@ -11,13 +11,13 @@ add rule inet filter forward iifname to_<%= @instance -%> oifname <%= @external_
 add rule ip6 nat postrouting ip6 saddr { fd0c::/64 } iifname to_<%= @instance -%> counter masquerade comment "SNAT traffic from frontend instances"
 
 #
-# Allow exposed ports from eth0 to frontend instance docker containers
+# Allow exposed ports from <%= @interface %> to frontend instance docker containers
 <% if @tcp_dport.is_a? String -%>
 add rule inet filter forward oifname to_<%= @instance -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
 # icmp is necessary for path-mtu
 add rule inet filter forward oifname to_<%= @instance -%> ip protocol icmp counter accept comment "Allow ICMP to frontend instance <%= @instance -%>"
 add rule inet filter forward oifname to_<%= @instance -%> ip6 nexthdr icmpv6 counter accept comment "Allow ICMPv6 to frontend instance <%= @instance -%>"
 # We could filter on destination address too, but I'm not sure it would be worth the extra clock cylces
-# add rule inet filter forward iif eth0 ip  daddr <%= @frontend_ips_v4 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
-# add rule inet filter forward iif eth0 ip6 daddr <%= @frontend_ips_v6 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+# add rule inet filter forward iif <%= @interface %> ip  daddr <%= @frontend_ips_v4 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+# add rule inet filter forward iif <%= @interface %> ip6 daddr <%= @frontend_ips_v6 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
 <% end -%>

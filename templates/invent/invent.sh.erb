@@ -8,18 +8,19 @@ host_os="<%= @host_os %>"
 fact_dir="/var/lib/puppet/facts.d"
 export_endpoint="<%= @export_endpoint %>"
 # Gather packages
+parse_command="awk -v q='\"' '{print \"{\"q\"name\"q\": \"q\$1q\",\"q\"version\"q\": \"q\$2q\"}\"}' | jq -s ."
 
 case "${host_os}" in
   alpine)
     query_command="apk list -q"
-    parse_command="awk '{print \$1}' | sed 's/\-\\([0-9]\\)/ \1/' | awk -v q='\"' '{print \"\{ \"q\$1q\": \"q\$2q\" }\" }' | jq -s ."
+    parse_command="awk '{print \$1}' | sed 's/\-\\([0-9]\\)/ \1/' | ${parse_command}"
     ;;
   centos | fedora | redhat)
     query_command="rpm -qa"
+    parse_command="sed 's/\-\\([0-9]\\)/ \1/' |${parse_command}"
     ;;
   debian | ubuntu)
     query_command="dpkg-query -W"
-    parse_command="awk -v q='\"' '{print \"\{ \"q\$1q\": \"q\$2q\" \}\" }' | jq -s ."
     ;;
   *)
     query_command='echo {\"unknown\": \"none\"}'
