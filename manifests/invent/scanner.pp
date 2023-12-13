@@ -35,6 +35,7 @@ class sunet::invent::scanner(
   -> sunet::scriptherder::cronjob { 'docker_repo_scanner':
     cmd  => '/usr/local/bin/scanner',
     hour =>  '*',
+    min  =>  '10',
   }
 
 }
