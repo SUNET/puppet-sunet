@@ -23,7 +23,7 @@ class sunet::invent::scanner(
   }
   -> exec { 'clone_invent_repo':
     command => "git clone ${repo_url} ${repo_path}",
-    unless  => "test -d ${repo_path}/invent/.git"
+    unless  => "test -d ${repo_path}/scanner/.git"
   }
   -> exec { 'update_invent_repo':
     command => "cd ${repo_path}/invent && git pull"
