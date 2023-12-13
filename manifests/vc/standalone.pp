@@ -20,7 +20,7 @@ class sunet::vc::standalone(
   String $ca_token,
   String $ca_url,
   String $ca_version              = "latest",
-  String $ca_flavor               = "ca-softhsm2"
+  String $ca_flavor               = "ca-softhsm2",
   String $ca_reason               = "Ladok",
   String $ca_location             = "Stockholm",
   String $ca_name                 = "Sunet",
