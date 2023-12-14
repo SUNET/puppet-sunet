@@ -153,7 +153,8 @@ services:
     volumes:
       - /opt/pkcs11_ca/data/hsm_tokens:/var/lib/softhsm/tokens
       - /opt/pkcs11_ca/data/trusted_keys:/app/trusted_keys
-      - /dev/bus/usb:
+    devices:
+      - /dev/bus/usb
     environment:
       - "CA_URL=<%= @ca_url %>"
       - "ACME_ROOT=<%= @ca_acme_root %>"
