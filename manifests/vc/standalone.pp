@@ -123,6 +123,8 @@ class sunet::vc::standalone(
     owner   => 'root',
     group   => 'root',
   }
+#wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+#sudo dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb
 
   sunet::remote_file { "/tmp/safenetauthenticationclient-core.zip":
       remote_location => $safenetauthenticationclient_core_url,

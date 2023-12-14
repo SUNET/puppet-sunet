@@ -105,8 +105,8 @@ services:
       - 8404:8404
     volumes:
       - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - /etc/letsencrypt/live/<%= @fqdn %>/fullchain.pem:/etc/certs/cert.pem:ro
-      - /etc/letsencrypt/live/<%= @fqdn %>/privkey.pem:/etc/certs/cert.pem.key:ro
+      - /etc/letsencrypt/live/<%= @fqdn %>-0001/fullchain.pem:/etc/certs/cert.pem:ro
+      - /etc/letsencrypt/live/<%= @fqdn %>-0001/privkey.pem:/etc/certs/cert.pem.key:ro
       - /opt/vc/certs/ca_cert.pem:/etc/certs/ca_cert.pem:ro
       - /opt/vc/certs/ca_crl.pem:/etc/certs/ca_crl.pem:ro
 
@@ -147,20 +147,13 @@ services:
   ca_ca:
     image: "docker.sunet.se/dc4eu/<%= @ca_flavor %>:<%= @ca_version %>"
     container_name: "ca_ca"
-    #ports:
-    #  - "8005:8005"
     depends_on:
       - ca_postgres
     restart: always
-    read_only: true
-    #cap_drop: [ALL]
-    #security_opt:
-    #  - no-new-privileges:true
     volumes:
       - /opt/pkcs11_ca/data/hsm_tokens:/var/lib/softhsm/tokens
       - /opt/pkcs11_ca/data/trusted_keys:/app/trusted_keys
-    tmpfs:
-      - /dev/shm:ro,noexec,nosuid,nodev
+      - /dev/bus/usb:
     environment:
       - "CA_URL=<%= @ca_url %>"
       - "ACME_ROOT=<%= @ca_acme_root %>"
