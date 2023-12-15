@@ -7,7 +7,6 @@ services:
     image: "docker.sunet.se/dc4eu/issuer:<%= @vc_version %>"
     restart: always
     volumes:
-      - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     links:
@@ -33,7 +32,6 @@ services:
     image: "docker.sunet.se/dc4eu/verifier:<%= @vc_version %>"
     restart: always
     volumes:
-      - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     links:
@@ -56,7 +54,6 @@ services:
     image: "docker.sunet.se/dc4eu/datastore:<%= @vc_version %>"
     restart: always
     volumes:
-      - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     links:
@@ -79,7 +76,6 @@ services:
     image: "docker.sunet.se/dc4eu/registry:<%= @vc_version %>"
     restart: always
     volumes:
-      - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     links:
@@ -144,45 +140,22 @@ services:
     environment:
       - "COLLECTOR_OTLP_ENABLED=true"
 
-  ca_ca:
+  vc_pdfsigner:
     image: "docker.sunet.se/dc4eu/<%= @ca_flavor %>:<%= @ca_version %>"
-    container_name: "ca_ca"
-    depends_on:
-      - ca_postgres
+    container_name: "vc_pdfsigner"
     restart: always
-    volumes:
-      - /opt/pkcs11_ca/data/hsm_tokens:/var/lib/softhsm/tokens
-      - /opt/pkcs11_ca/data/trusted_keys:/app/trusted_keys
+      volumes:
+      - /opt/vc/certs/external_certs:/app:ro
+      - /var/run/pcscd:/var/run/pcscd
     devices:
       - /dev/bus/usb
     environment:
-      - "CA_URL=<%= @ca_url %>"
-      - "ACME_ROOT=<%= @ca_acme_root %>"
-      - "PKCS11_SIGN_API_TOKEN=<%= @pkcs11_sign_api_token %>"
-      - "PKCS11_TOKEN=<%= @pkcs11_token %>"
+      - "PKCS11_LABEL=<%= @pkcs11_label %>"
       - "PKCS11_PIN=<%= @pkcs11_pin %>"
       - "PKCS11_MODULE=<%= @pkcs11_module %>"
-      - "POSTGRES_HOST=<%= @postgres_host %>"
-      - "POSTGRES_USER=<%= @postgres_user %>"
-      - "POSTGRES_PASSWORD=<%= @postgres_password %>"
-      - "POSTGRES_PORT=<%= @postgres_port %>"
-      - "POSTGRES_DATABASE=<%= @postgres_database %>"
-      - "POSTGRES_TIMEOUT=<%= @postgres_timeout %>"
+      - "PKCS11_KEY_LABEl=<%= @pkcs11_key_label %>"
+      - "PKCS11_CERT_LABEl=<%= @pkcs11_cert_label %>"
   
-  ca_postgres:
-    image: "<%= @postgres_image %>:<%= @postgres_version %>"
-    container_name: "ca_postgres"
-    restart: always
-    volumes:
-      - /opt/pkcs11_ca/data/db_data:/var/lib/postgresql/data
-      - /opt/pkcs11_ca/postgres_shell.sh:/root/postgres_shell.sh
-    tmpfs:
-      - /dev/shm:ro,noexec,nosuid,nodev
-    environment:
-      - "POSTGRES_DB=<%= @postgres_database %>"
-      - "POSTGRES_USER=<%= @postgres_user %>"
-      - "POSTGRES_PASSWORD=<%= @postgres_password %>"
-      
 networks:
   default:
     driver_opts:

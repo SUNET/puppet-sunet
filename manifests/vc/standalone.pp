@@ -3,21 +3,11 @@ class sunet::vc::standalone(
   String $mongodb_version         ="4.0.10",
   String $interface               ="ens3",
   Boolean $production             =false,
-  String $pkcs11_sign_api_token   = lookup('pkcs11_sign_api_token'), 
-  String $pkcs11_token            = lookup('pkcs11_token'),
-  String $pkcs11_pin              = lookup('pkcs11_pin'), 
   String $pkcs11_module           = '/usr/lib/softhsm/libsofthsm2.so',
-  String $postgres_host           = 'ca_postgres',
-  String $postgres_database       = 'pkcs11_testdb1',
-  String $postgres_user           = 'pkcs11_testuser1',
-  String $postgres_password       = lookup('postgres_password'), 
-  String $postgres_port           = '5432',
-  String $postgres_timeout        = '5',
-  String $postgres_image		      = 'postgres',
-  String $postgres_version		    = '15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c',
-  String $ca_acme_root            = '/acme',
-  String $ca_token,
-  String $ca_url,
+  String $pkcs11_label,
+  String $pkcs11_cert_label,
+  String $pkcs11_key_label,
+  String $pkcs11_pin              = lookup('pkcs11_pin'), 
   String $ca_version              = "latest",
   String $ca_flavor               = "ca-softhsm2",
   String $ca_reason               = "Ladok",
@@ -123,8 +113,14 @@ class sunet::vc::standalone(
     owner   => 'root',
     group   => 'root',
   }
-#wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-#sudo dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+
+  sunet::remote_file { "/opt/vc/libssl1.1_1.1.0g-2ubuntu4_amd64.deb":
+      remote_location => "http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb",
+      mode            => "0600",
+    } ->
+    exec {"Install libssl1.1":
+        command => "dpkg -i ./opt/vc/libssl1.1_1.1.0g-2ubuntu4_amd64.deb"
+    }
 
   sunet::remote_file { "/tmp/safenetauthenticationclient-core.zip":
       remote_location => $safenetauthenticationclient_core_url,
