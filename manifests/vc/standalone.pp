@@ -120,7 +120,7 @@ class sunet::vc::standalone(
       mode            => "0600",
     } ->
     exec {"Install libssl1.1":
-        command => "cd /opt/vc && dpkg -i ./libssl1.1_1.1.0g-2ubuntu4_amd64.deb"
+        command => "dpkg -i /opt/vc/libssl1.1_1.1.0g-2ubuntu4_amd64.deb"
     }
 
   sunet::remote_file { "/tmp/safenetauthenticationclient-core.zip":
