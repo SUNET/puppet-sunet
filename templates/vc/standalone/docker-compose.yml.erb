@@ -16,7 +16,7 @@ services:
       - vc_redis
       - vc_mongo
       - vc_registry
-      - ca_ca
+      - vc_pdfsigner
       - vc_haproxy
       - vc_jaeger
     environment:
@@ -25,7 +25,7 @@ services:
       - "http_proxy=<%= @fqdn %>"
       - "HTTPS_PROXY=<%= @fqdn %>"
       - "https_proxy=<%= @fqdn %>"
-      - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8,ca_ca,vc_jaeger"
+      - "no_proxy=localhost,/var/run/docker.sock,127.0.0.0/8,vc_pdfsigner,vc_jaeger"
 
   vc_verifier:
     container_name: "vc_verifier"
@@ -144,9 +144,9 @@ services:
     image: "docker.sunet.se/dc4eu/<%= @ca_flavor %>:<%= @ca_version %>"
     container_name: "vc_pdfsigner"
     restart: always
-      volumes:
-        - /opt/vc/certs/external_certs:/app:ro
-        - /var/run/pcscd:/var/run/pcscd
+    volumes:
+      - /opt/vc/certs/external_certs:/app:ro
+      - /var/run/pcscd:/var/run/pcscd
     devices:
       - /dev/bus/usb
     environment:
