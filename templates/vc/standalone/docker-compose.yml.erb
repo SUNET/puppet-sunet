@@ -141,7 +141,7 @@ services:
       - "COLLECTOR_OTLP_ENABLED=true"
 
   vc_pdfsigner:
-    image: "docker.sunet.se/dc4eu/<%= @ca_flavor %>:<%= @ca_version %>"
+    image: "docker.sunet.se/dc4eu/<%= @pdfsigner_flavor %>:<%= @pdfsigner_version %>"
     container_name: "vc_pdfsigner"
     restart: always
     volumes:
