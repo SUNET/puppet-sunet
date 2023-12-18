@@ -145,8 +145,8 @@ services:
     container_name: "vc_pdfsigner"
     restart: always
       volumes:
-      - /opt/vc/certs/external_certs:/app:ro
-      - /var/run/pcscd:/var/run/pcscd
+        - /opt/vc/certs/external_certs:/app:ro
+        - /var/run/pcscd:/var/run/pcscd
     devices:
       - /dev/bus/usb
     environment:
