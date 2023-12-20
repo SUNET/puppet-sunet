@@ -34,7 +34,7 @@ class sunet::vc::sealer(
 
   file { '/opt/vc/config.yaml':
     ensure => file,
-    mode   => '0600',
+    mode   => '0644',
     owner  => 'root',
     group  => 'root',
     content => template("sunet/vc/sealer/config.yaml.erb")

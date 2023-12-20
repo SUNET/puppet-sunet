@@ -22,14 +22,14 @@ services:
     restart: always
     volumes:
       - /var/log/sunet:/var/log/sunet
-      - /opt/vc/config.yaml:/config.yaml:ro
+      - /opt/vc/config.yaml:/opt/sunet/config.yaml:ro
       - /opt/vc/certs/external_certs/SectigoRSADocumentSigningCA.crt:/app/SectigoRSADocumentSigningCA.crt:ro
       - /opt/vc/certs/external_certs/USERTrustRSAAddTrustCA.crt:/app/USERTrustRSAAddTrustCA.crt:ro
       - /var/run/pcscd:/var/run/pcscd
     devices:
       - /dev/bus/usb
     environment:
-      - "CONFIG_YAML=config.yaml"
+      - "CONFIG_YAML=/opt/sunet/config.yaml"
 
 networks:
   default:
