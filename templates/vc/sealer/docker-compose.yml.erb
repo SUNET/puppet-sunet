@@ -1,0 +1,40 @@
+---
+version: "3.3"
+
+services:
+  vc_haproxy:
+    container_name: "vc_haproxy"
+    image: "haproxytech/haproxy-alpine"
+    ports:
+      - 80:80
+      - 443:443
+      - 8404:8404
+    volumes:
+      - /opt/vc/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /etc/letsencrypt/live/<%= @fqdn %>-0001/fullchain.pem:/etc/certs/cert.pem:ro
+      - /etc/letsencrypt/live/<%= @fqdn %>-0001/privkey.pem:/etc/certs/cert.pem.key:ro
+      - /opt/vc/certs/ca_cert.pem:/etc/certs/ca_cert.pem:ro
+      - /opt/vc/certs/ca_crl.pem:/etc/certs/ca_crl.pem:ro
+
+  vc_pdfsigner:
+    image: "docker.sunet.se/dc4eu/<%= @pdfsigner_flavor %>:<%= @pdfsigner_version %>"
+    container_name: "vc_pdfsigner"
+    restart: always
+    volumes:
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /opt/vc/certs/external_certs/SectigoRSADocumentSigningCA.crt:/app/SectigoRSADocumentSigningCA.crt:ro
+      - /opt/vc/certs/external_certs/USERTrustRSAAddTrustCA.crt:/app/USERTrustRSAAddTrustCA.crt:ro
+      - /var/run/pcscd:/var/run/pcscd
+    devices:
+      - /dev/bus/usb
+    environment:
+      - "CONFIG_YAML=config.yaml"
+
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-vc_signer
+
+volumes:
+  redis_data:
+  mongo_data:
