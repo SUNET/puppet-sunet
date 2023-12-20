@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -e 
+
+out_folder="/opt/vc/softhsm2"
+if [[ ! -d  ${out_folder} ]]; then
+    mkdir -p ${out_folder}
+fi
+
+softhsm2-util --init-token --slot <%= @pkcs11_pin %> --label <%= @pkcs11_label %> --pin <%= @pkcs11_pin %> --so-pin <%= @pkcs11_pin %>
+
+openssl req -x509 -newkey rsa:4096 -keyout "${out_folder}"/private.pem -out "${out_folder}"/cert.pem -sha256 -days 3650 -nodes -subj "/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Infrastructure/CN=example.com"
+
+#softhsm2-util --pin <%= @pksc11_pin %> --import "${out_folder}"/private.pem --label <%= @pkcs11_label %> --token <%= @pkcs11_label %> --id A1B2 --module <%= @pkcs11_module %>

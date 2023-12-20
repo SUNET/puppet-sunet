@@ -6,6 +6,7 @@ class sunet::vc::sealer(
   String $pkcs11_cert_label,
   String $pkcs11_key_label,
   String $pkcs11_pin              = lookup('pkcs11_pin'), 
+  String $pkcs11_slot             = 0,
   String $pdfsigner_version              = "latest",
   String $pdfsigner_flavor               = "ca-softhsm2",
   String $pdfsigner_addr,
