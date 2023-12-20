@@ -1,4 +1,4 @@
-class sunet::vc::host_environment-softhsm2(
+class sunet::vc::host_environments::softhsm2(
   String $pkcs11_module           = '/usr/lib/softhsm/libsofthsm2.so',
   String $pkcs11_label,
   String $pkcs11_cert_label,
