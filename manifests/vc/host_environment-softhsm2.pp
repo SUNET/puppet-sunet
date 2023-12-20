@@ -3,8 +3,8 @@ class sunet::vc::host_environment-softhsm2(
   String $pkcs11_label,
   String $pkcs11_cert_label,
   String $pkcs11_key_label,
-  String $pkcs11_pin
-  
+  String $pkcs11_pin,
+  Int pkcs11_slot = 0,
 ) {
 
   package { ["softhsm2", "opensc-pkcs11", "pcscd"]: ensure => "latest"}
