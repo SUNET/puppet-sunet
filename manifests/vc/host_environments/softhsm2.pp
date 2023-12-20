@@ -19,7 +19,7 @@ class sunet::vc::host_environments::softhsm2(
 
   exec {"Run softhsm2-post_install script":
         command => "/usr/bin/bash ./softhsm2-post_install.sh",
-        cwd => "./opt/vc/",
+        cwd => "/opt/vc/",
         #unless  => "test -f /tmp/safenetauthenticationclient-core.zip",
     }
 
