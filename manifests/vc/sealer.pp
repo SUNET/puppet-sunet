@@ -19,7 +19,7 @@ class sunet::vc::sealer(
   }
 
   if $host_environments == "softhsm2" {
-    sunet::vc::host_environments::softhsm2: {
+    sunet::vc::host_environments::softhsm2 { "softhsm2":
       pkcs11_module     => $pkcs11_module,
       pkcs11_label      => $pkcs11_label,
       pkcs11_cert_label => $pkcs11_cert_label,
