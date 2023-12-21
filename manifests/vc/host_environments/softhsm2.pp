@@ -7,7 +7,7 @@ class sunet::vc::host_environments::softhsm2(
   Integer $pkcs11_slot = 0,
 ) {
 
-  package { ["softhsm2", "opensc-pkcs11", "pcscd"]: ensure => "latest"}
+  package { ["softhsm2", "opensc-pkcs11", "pcscd", "opensc"]: ensure => "latest"}
 
   file { '/opt/vc/softhsm2-post_install.sh':
     ensure => file,
