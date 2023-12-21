@@ -18,16 +18,16 @@ class sunet::vc::sealer(
       config => lookup('vcops_ssh_config', undef, undef, {}),
     }
 
-    if $host_environments == "softhsm2" {
-      sunet::vc::host_environments::softhsm2 { "softhsm2":
-        pkcs11_module     => $pkcs11_module,
-        pkcs11_label      => $pkcs11_label,
-        pkcs11_cert_label => $pkcs11_cert_label,
-        pkcs11_key_label  => $pkcs11_key_label,
-        pkcs11_pin        =>$pkcs11_pin,
-        pkcs11_slot       => $pkcs11_slot,
-      }
-    }
+    #if $host_environments == "softhsm2" {
+    #  sunet::vc::host_environments::softhsm2 { "softhsm2":
+    #    pkcs11_module     => $pkcs11_module,
+    #    pkcs11_label      => $pkcs11_label,
+    #    pkcs11_cert_label => $pkcs11_cert_label,
+    #    pkcs11_key_label  => $pkcs11_key_label,
+    #    pkcs11_pin        => $pkcs11_pin,
+    #    pkcs11_slot       => $pkcs11_slot,
+    #  }
+    #}
 
   package { 'make': ensure => 'installed' }
 
