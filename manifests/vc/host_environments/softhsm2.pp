@@ -35,7 +35,7 @@ class sunet::vc::host_environments::softhsm2(
     mode    => '0644',
     owner   => 'root',
     group   => 'root',
-    content =>  "/usr/lib/softhsm/libsofthsm2.so"
+    source  =>  "/usr/lib/softhsm/libsofthsm2.so"
   }
 }
 
