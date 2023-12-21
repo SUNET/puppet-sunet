@@ -6,7 +6,8 @@ class sunet::vc::sealer(
   String $pkcs11_cert_label,
   String $pkcs11_key_label,
   String $pkcs11_pin              = lookup('pkcs11_pin'), 
-  Integer $pkcs11_slot             = 0,
+  Integer $pkcs11_slot            = 0,
+  String $host_environments          = "softhsm2",
   String $pdfsigner_version              = "latest",
   String $pdfsigner_flavor               = "ca-softhsm2",
   String $pdfsigner_addr,
@@ -15,6 +16,17 @@ class sunet::vc::sealer(
 
   sunet::ssh_keys { 'vcops':
     config => lookup('vcops_ssh_config', undef, undef, {}),
+  }
+
+  if $host_environments == "softhsm2" {
+    sunet::vc::host_environments::softhsm2: {
+      pkcs11_module     => $pkcs11_module,
+      pkcs11_label      => $pkcs11_label,
+      pkcs11_cert_label => $pkcs11_cert_label,
+      pkcs11_key_label  => $pkcs11_key_label,
+      pkcs11_pin        =>$pkcs11_pin,
+      pkcs11_slot       => $pkcs11_slot,
+    }
   }
 
  package { 'make': ensure => 'installed' }
