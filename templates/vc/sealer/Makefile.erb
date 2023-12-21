@@ -6,6 +6,13 @@ docker-pull-signer:
 release: docker-pull
 	systemctl restart sunet-vc.service
 
-clean_softhsm:
+softhsm_clean:
 	$(info Deleting and reinitialize the PKCS11 token)
 	softhsm2-util --delete-token --token <%= @pkcs11_label %>
+
+softhsm_init:
+	$(info init SoftHSM)
+	softhsm2-util --init-token --slot 0 --label <%= @pkcs11_label %> --pin <%= @pkcs11_pin %> --so-pin <%= @pkcs11_pin %>
+
+pkcs11-list:
+	pkcs11-tool --module <%= @pkcs11_module %> -T -O -I

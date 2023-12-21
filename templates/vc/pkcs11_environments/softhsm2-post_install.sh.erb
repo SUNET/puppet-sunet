@@ -12,6 +12,6 @@ softhsm2-util --init-token --slot <%= @pkcs11_pin %> --label <%= @pkcs11_label %
 openssl req -x509 -newkey rsa:4096 -keyout "${out_folder}"/private.pem -out "${out_folder}"/cert.pem -sha256 -days 3650 -nodes -subj "/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Infrastructure/CN=example.com"
 
 #softhsm2-util --pin <%= @pksc11_pin %> --import "${out_folder}"/private.pem --label <%= @pkcs11_label %> --token <%= @pkcs11_label %> --id A1B2 --module <%= @pkcs11_module %>
-pkcs11-tool --module <%= @pkcs11_module %> -l --pin <%= @pksc11_pin %> --write-object "${out_folder}"/private.pem --type privkey --id <%= @pkcs11_key_label %>
+pkcs11-tool --module <%= @pkcs11_module %> -l --pin <%= @pksc11_pin %> --write-object "${out_folder}"/private.pem --type privkey --id 1001 --label <%= @pkcs11_key_label %>
 
 pkcs11-tool --module <%= @pkcs11_module %> -l --pin <%= @pksc11_pin %> --write-object "${out_folder}"/cert.pem --type cert --id <%= @pkcs11_cert_label %>
