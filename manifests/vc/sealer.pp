@@ -11,6 +11,7 @@ class sunet::vc::sealer(
   String $pdfsigner_version              = "latest",
   String $pdfsigner_flavor               = "ca-softhsm2",
   String $pdfsigner_addr,
+  String $pdfsigner_pkcs11_module = "/app/hsm_module.so",
   String $safenetauthenticationclient_core_url = "https://www.digicert.com/StaticFiles/SAC_10_8_28_GA_Build.zip",
 ) {
 
@@ -76,26 +77,26 @@ class sunet::vc::sealer(
     group   => 'root',
   }
 
-  sunet::remote_file { "/opt/vc/libssl1.1_1.1.0g-2ubuntu4_amd64.deb":
-      remote_location => "http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb",
-      mode            => "0600",
-    } ->
-    exec {"Install libssl1.1":
-        command => "dpkg -i /opt/vc/libssl1.1_1.1.0g-2ubuntu4_amd64.deb"
-    }
+  #sunet::remote_file { "/opt/vc/libssl1.1_1.1.0g-2ubuntu4_amd64.deb":
+  #    remote_location => "http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb",
+  #    mode            => "0600",
+  #  } ->
+  #  exec {"Install libssl1.1":
+  #      command => "dpkg -i /opt/vc/libssl1.1_1.1.0g-2ubuntu4_amd64.deb"
+  #  }
 
-  sunet::remote_file { "/tmp/safenetauthenticationclient-core.zip":
-      remote_location => $safenetauthenticationclient_core_url,
-      mode            => "0600",
-    } ->
-    exec {"Unpack safenetauthenticationclient-core":
-        command => "unzip  /tmp/safenetauthenticationclient-core.zip",
-        unless  => "test -f /tmp/safenetauthenticationclient-core.zip",
-    } ->
-    exec {"Install safenetauthenticationclient-core":
-        command => "apt-get install 'SAC 10.8.28 GA Build/Installation/withoutUI/Ubuntu-2004/safenetauthenticationclient-core_10.8.28_amd64.deb' -y",
-        unless  => "test -f /tmp/safenetauthenticationclient-core.zip",
-    }
+  #sunet::remote_file { "/tmp/safenetauthenticationclient-core.zip":
+  #    remote_location => $safenetauthenticationclient_core_url,
+  #    mode            => "0600",
+  #  } ->
+  #  exec {"Unpack safenetauthenticationclient-core":
+  #      command => "unzip  /tmp/safenetauthenticationclient-core.zip",
+  #      unless  => "test -f /tmp/safenetauthenticationclient-core.zip",
+  #  } ->
+  #  exec {"Install safenetauthenticationclient-core":
+  #      command => "apt-get install 'SAC 10.8.28 GA Build/Installation/withoutUI/Ubuntu-2004/safenetauthenticationclient-core_10.8.28_amd64.deb' -y",
+  #      unless  => "test -f /tmp/safenetauthenticationclient-core.zip",
+  #  }
 
   # Compose
   sunet::docker_compose { 'vc_sealer':

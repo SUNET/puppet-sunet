@@ -28,5 +28,13 @@ class sunet::vc::host_environments::softhsm2(
     enable  => true,
     require => Package['pcscd'],
   }
+
+  file { '/opt/vc/hsm_module.so':
+    ensure  => file,
+    mode    => '0644',
+    owner   => 'root',
+    group   => 'root',
+    content =>  "/usr/lib/softhsm/libsofthsm2.so"
+  }
 }
 

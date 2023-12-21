@@ -21,6 +21,7 @@ services:
     container_name: "vc_pdfsigner"
     restart: always
     volumes:
+      - /opt/vc/hsm_module.so:/app/hsm_module.so:ro
       - /var/log/sunet:/var/log/sunet
       - /opt/vc/config.yaml:/opt/sunet/config.yaml:ro
       - /opt/vc/certs/external_certs/SectigoRSADocumentSigningCA.crt:/app/SectigoRSADocumentSigningCA.crt:ro
