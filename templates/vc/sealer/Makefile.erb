@@ -8,4 +8,4 @@ release: docker-pull
 
 clean_softhsm:
 	$(info Deleting and reinitialize the PKCS11 token)
-	softhsm2-util --delete-token --token <%= pkcs11_token %>
+	softhsm2-util --delete-token --token <%= @pkcs11_token %>
