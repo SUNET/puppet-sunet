@@ -11,7 +11,7 @@ class sunet::vc::host_environments::softhsm2(
 
   file { '/opt/vc/softhsm2-post_install.sh':
     ensure => file,
-    mode   => '0600',
+    mode   => '0700',
     owner  => 'root',
     group  => 'root',
     content => template("sunet/vc/pkcs11_environments/softhsm2-post_install.sh.erb")
