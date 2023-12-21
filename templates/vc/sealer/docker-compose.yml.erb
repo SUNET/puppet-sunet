@@ -23,14 +23,14 @@ services:
     volumes:
       - /opt/vc/hsm_module.so:/app/hsm_module.so:ro
       - /var/log/sunet:/var/log/sunet
-      - /opt/vc/config.yaml:/opt/sunet/config.yaml:ro
+      - /opt/vc/config.yaml:/app/config.yaml:ro
       - /opt/vc/certs/external_certs/SectigoRSADocumentSigningCA.crt:/app/SectigoRSADocumentSigningCA.crt:ro
       - /opt/vc/certs/external_certs/USERTrustRSAAddTrustCA.crt:/app/USERTrustRSAAddTrustCA.crt:ro
       - /var/run/pcscd:/var/run/pcscd
     devices:
       - /dev/bus/usb
     environment:
-      - "CONFIG_YAML=/opt/sunet/config.yaml"
+      - "CONFIG_YAML=/app/config.yaml"
 
 networks:
   default:
