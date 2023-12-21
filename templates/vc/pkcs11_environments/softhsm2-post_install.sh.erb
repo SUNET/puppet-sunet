@@ -7,7 +7,7 @@ if [[ ! -d  ${out_folder} ]]; then
     mkdir -p ${out_folder}
 fi
 
-init() {
+init_hsm() {
     ret=$(pkcs11-tool --module <%= @pkcs11_module %> --init-token --pin <%= @pkcs11_pin %> --so-pin <%= @pkcs11_pin %> --label <%= @pkcs11_label %>)
     if [[ ${reg} != 0 ]]; then
         exit 1
@@ -36,8 +36,24 @@ import_cert() {
     fi
 }
 
-init
+create_run_once() {
+    touch "${out_folder}"/.run_once
+    echo > "${out_folder}"/.run_once
+}
+
+prevent_run_more_than_once() {
+    if [[ -f  "${out_folder}"/.run_once ]]; then
+        printf "this script can only run once!"
+        exit 0
+    fi
+}
+
+prevent_run_more_than_once
+
+init_hsm
 create_pki
 
 import_private_key
 import_cert
+
+create_run_once
