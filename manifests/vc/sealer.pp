@@ -14,22 +14,22 @@ class sunet::vc::sealer(
   String $safenetauthenticationclient_core_url = "https://www.digicert.com/StaticFiles/SAC_10_8_28_GA_Build.zip",
 ) {
 
-  sunet::ssh_keys { 'vcops':
-    config => lookup('vcops_ssh_config', undef, undef, {}),
-  }
-
-  if $host_environments == "softhsm2" {
-    sunet::vc::host_environments::softhsm2 { "softhsm2":
-      pkcs11_module     => $pkcs11_module,
-      pkcs11_label      => $pkcs11_label,
-      pkcs11_cert_label => $pkcs11_cert_label,
-      pkcs11_key_label  => $pkcs11_key_label,
-      pkcs11_pin        =>$pkcs11_pin,
-      pkcs11_slot       => $pkcs11_slot,
+    sunet::ssh_keys { 'vcops':
+      config => lookup('vcops_ssh_config', undef, undef, {}),
     }
-  }
 
- package { 'make': ensure => 'installed' }
+    if $host_environments == "softhsm2" {
+      sunet::vc::host_environments::softhsm2 { "softhsm2":
+        pkcs11_module     => $pkcs11_module,
+        pkcs11_label      => $pkcs11_label,
+        pkcs11_cert_label => $pkcs11_cert_label,
+        pkcs11_key_label  => $pkcs11_key_label,
+        pkcs11_pin        =>$pkcs11_pin,
+        pkcs11_slot       => $pkcs11_slot,
+      }
+    }
+
+  package { 'make': ensure => 'installed' }
 
   sunet::misc::system_user { 'sunet':
     username   => 'sunet',
