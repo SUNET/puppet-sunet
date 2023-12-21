@@ -15,4 +15,7 @@ softhsm_init:
 	softhsm2-util --init-token --slot 0 --label <%= @pkcs11_label %> --pin <%= @pkcs11_pin %> --so-pin <%= @pkcs11_pin %>
 
 pkcs11-list:
-	pkcs11-tool --module <%= @pkcs11_module %> -T -O -I
+	pkcs11-tool --module <%= @pkcs11_module %> -L --pin <%= @pkcs11_pin %> -T -O -I
+
+
+	#pkcs11-tool -l -O
