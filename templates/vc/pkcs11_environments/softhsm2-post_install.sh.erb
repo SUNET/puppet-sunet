@@ -10,7 +10,7 @@ fi
 init_hsm() {
     printf "Init hsm"
     ret=$(pkcs11-tool --module <%= @pkcs11_module %> --init-token --init-pin --login --pin <%= @pkcs11_pin %> --so-pin <%= @pkcs11_pin %> --label <%= @pkcs11_label %>)
-    if [[ ${reg} != 0 ]]; then
+    if [[ ${reg} -ne 0 ]]; then
         exit 1
     fi
     printf "done!"
@@ -19,7 +19,7 @@ init_hsm() {
 create_pki() {
     printf "create PKI"
     ret=$(openssl req -x509 -newkey rsa:4096 -keyout "${out_folder}"/private.pem -out "${out_folder}"/cert.pem -sha256 -days 3650 -nodes -subj "/C=SE/ST=Stockholm/L=Stockholm/O=SUNET/OU=Infrastructure/CN=example.com")
-    if [[ ${reg} != 0 ]]; then
+    if [[ ${reg} -ne 0 ]]; then
         exit 1
     fi
     printf "done!"
@@ -28,7 +28,7 @@ create_pki() {
 import_private_key() {
     printf "import private key"
     ret=$(pkcs11-tool --module <%= @pkcs11_module %> -l --pin <%= @pkcs11_pin %> --write-object "${out_folder}"/private.pem --type privkey --id 1001 --label <%= @pkcs11_key_label %>)
-    if [[ ${reg} != 0 ]]; then
+    if [[ ${reg} -ne 0 ]]; then
         exit 1
     fi
     printf "done!"
@@ -37,7 +37,7 @@ import_private_key() {
 import_cert() {
     printf "import certificate"
     ret=$(pkcs11-tool --module <%= @pkcs11_module %> -l --pin <%= @pkcs11_pin %> --write-object "${out_folder}"/cert.pem --type cert --id 2002 --label <%= @pkcs11_cert_label %>)
-    if [[ ${reg} != 0 ]]; then
+    if [[ ${reg} -ne 0 ]]; then
         exit 1
     fi
     printf "done!"
