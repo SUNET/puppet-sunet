@@ -21,16 +21,16 @@ services:
     container_name: "vc_pdfsigner"
     restart: always
     volumes:
-      - /opt/vc/hsm_module.so:/app/hsm_module.so:ro
+      - /opt/vc/hsm_module.so:/opt/sunet/hsm_module.so:ro
       - /var/log/sunet:/var/log/sunet
-      - /opt/vc/config.yaml:/app/config.yaml:ro
-      - /opt/vc/certs/external_certs/SectigoRSADocumentSigningCA.crt:/app/SectigoRSADocumentSigningCA.crt:ro
-      - /opt/vc/certs/external_certs/USERTrustRSAAddTrustCA.crt:/app/USERTrustRSAAddTrustCA.crt:ro
+      - /opt/vc/config.yaml:/opt/sunet/config.yaml:ro
+      - /opt/vc/certs/external_certs/SectigoRSADocumentSigningCA.crt:/opt/sunet/SectigoRSADocumentSigningCA.crt:ro
+      - /opt/vc/certs/external_certs/USERTrustRSAAddTrustCA.crt:/opt/sunet/USERTrustRSAAddTrustCA.crt:ro
       - /var/run/pcscd:/var/run/pcscd
     devices:
       - /dev/bus/usb
     environment:
-      - "CONFIG_YAML=/app/config.yaml"
+      - "CONFIG_YAML=/opt/sunet/config.yaml"
 
 networks:
   default:

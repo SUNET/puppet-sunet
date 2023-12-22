@@ -30,7 +30,7 @@ class sunet::vc::host_environments::softhsm2(
   }
 
   file { '/opt/vc/hsm_module.so':
-    links              => 'follow',
+    links   => 'follow',
     ensure  => file,
     mode    => '0644',
     owner   => 'root',
