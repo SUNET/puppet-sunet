@@ -8,7 +8,7 @@ services:
     restart: always
     volumes:
       - /var/log/sunet:/opt/emqx/log/
-      -v $PWD/data:/opt/emqx/data \
+      redis_data:/opt/emqx/data
     ports:
       - 1883:1883 
       - 8083:8083
@@ -26,5 +26,4 @@ networks:
       com.docker.network.bridge.name: br-vc_broker
 
 volumes:
-  redis_data:
-  mongo_data:
+  broker_data:
