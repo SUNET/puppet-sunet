@@ -7,7 +7,7 @@ class sunet::vc::host_environments::usb_gemalto(
   Integer $pkcs11_slot = 0,
 ) {
 
-  package { ["opensc-pkcs11", "pcscd", "pcsc-tools", "opensc"]: ensure => "latest"}
+  package { ["opensc-pkcs11", "pcscd", "pcsc-tools", "opensc", "gnutls-bin"]: ensure => "latest"}
 
    service { 'pcscd':
     ensure  => 'running',

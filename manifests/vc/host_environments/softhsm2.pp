@@ -14,7 +14,7 @@ class sunet::vc::host_environments::softhsm2(
     mode   => '0700',
     owner  => 'root',
     group  => 'root',
-    content => template("sunet/vc/pkcs11_environments/softhsm2-post_install.sh.erb")
+    content => template("sunet/vc/host_environments/softhsm2-post_install.sh.erb")
   }
 
   exec {"Run softhsm2-post_install script":
