@@ -3,7 +3,7 @@ class sunet::invent::scanner(
   Boolean $install_docker_io = true, 
   String  $image_path = '/var/cache/invent/images',
   String  $registry = 'docker.sunet.se',
-  String  $registry_url = "https://${registry}",
+  String  $registry_url = "https://${registry}?n=100000",
   String  $repo_path = '/var/cache/invent/repo',
   String  $repo_url = 'https://github.com/SUNET/invent.git',
 ) {
