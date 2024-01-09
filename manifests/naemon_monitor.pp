@@ -20,7 +20,7 @@ class sunet::naemon_monitor(
   Array $exclude_hosts =  [],
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
-  Array[Optional[String]] $override_shibxml = [],
+  Optional[String] $override_shibxml = undef,
 ){
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
