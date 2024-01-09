@@ -48,9 +48,6 @@ services:
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
       - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
       - '/opt/naemon_monitor/data:/var/lib/thruk'
-<% @override_shibxml -%>
-      - -<%= @override_shibxml %>:/etc/shibboleth/shibboleth2.xml'
-<% end -%>
     environment:
 <%- @thruk_env.each do |environ| -%>
       - "<%= environ %>"
