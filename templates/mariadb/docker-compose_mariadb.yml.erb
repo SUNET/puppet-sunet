@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+
+  db:
+    image:  docker.sunet.se/drive/mariadb:<%= @mariadb_version %>
+    restart: always
+    volumes:
+      - /etc/mariadb/backups:/backups
+      - /etc/mariadb/conf:/etc/mysql/mariadb.conf.d
+      - /etc/mariadb/datadir:/var/lib/mysql
+      - /etc/mariadb/init:/docker-entrypoint-initdb.d
+      - /etc/mariadb/scripts:/scripts
+    network_mode: host
+    dns:
+      - 89.46.20.75
+      - 89.46.21.29
+      - 89.32.32.32
+    environment: 
+      - MYSQL_ROOT_PASSWORD=<%= @mysql_root_password %>
+      - BOOTSTRAP=<%= @bootstrap %>
+      - FORCE_BOOTSTRAP=0
+    command:  "--wsrep_cluster_address=gcomm://<%= @db_ip[0] %>,<%= @db_ip[1] %>,<%= @db_ip[2] %>"
+    tty: true
+
