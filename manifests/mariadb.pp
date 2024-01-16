@@ -1,90 +1,50 @@
 # Mariadb cluster class for SUNET
-class sunet::mariadb(
-  String $wsrep_cluster_address,
-  Array[String] $client_ips,
-  Integer $id,
-  String $interface = 'ens3',
+define sunet::mariadb(
+  $mariadb_version=latest,
+  $bootstrap=undef,
+  $clients= ['127.0.0.1'],
+  $ports = [3306, 4444, 4567, 4568],
 )
 {
-  include sunet::packages::mariadb_server
-  include sunet::packages::mariadb_backup
-  $wsrep_node_address = $facts['networking']['ip']
-  $wsrep_node_name = $facts['networking']['fqdn']
-  $server_id = 1000 + $id
-  $mysql_backup_password = lookup('mysql_backup_password', undef, undef, undef)
-  $ports = [3306, 4444, 4567, 4568]
+  # Config from group.yaml
+  $mysql_root_password = safe_hiera('mysql_root_password')
+  $mysql_backup_password = safe_hiera('mysql_backup_password')
+  $mariadb_dir = '/etc/mariadb'
+  $server_id = 1000 + Integer($facts['networking']['hostname'][-1])
+  ensure_resource('file',$mariadb_dir, { ensure => directory, recurse => true } )
+  $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
+  $dirs.each |$dir| {
+    ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, recurse => true } )
+  }
+
   sunet::misc::ufw_allow { 'mariadb_ports':
-    from => $client_ips,
+    from => $clients,
     port => $ports,
   }
 
-  file { '/etc/mysql/mariadb.conf.d/99-sunet-credentials.cnf':
-    ensure  => present,
-    content => template('sunet/mariadb/99-sunet-credentials.cnf.erb'),
-    mode    => '0744',
-    owner   => 999,
-    group   => 999,
+  $sql_files = ['02-backup_user.sql']
+  $sql_files.each |$sql_file|{
+    file { "${mariadb_dir}/init/${sql_file}":
+      ensure  => present,
+      content => template("sunet/mariadb/${sql_file}.erb"),
+      mode    => '0744',
+    }
   }
-  file { '/etc/mysql/mariadb.conf.d/99-sunet-my.cnf':
+  file { "${mariadb_dir}/conf/credentials.cnf":
     ensure  => present,
-    content => template('sunet/mariadb/99-sunet-my.cnf.erb'),
-    mode    => '0744',
-    owner   => 999,
-    group   => 999,
-  }
-  file { '/etc/mysql/02-backup_user.sql':
-    ensure  => present,
-    content => template('sunet/mariadb/02-backup_user.sql.erb'),
-    mode    => '0640',
-  }
-  file { '/usr/local/bin/purge-binlogs':
-    ensure  => present,
-    content => template('sunet/mariadb/purge-binlogs.erb.sh'),
-    mode    => '0744',
-    owner   => 999,
-    group   => 999,
-  }
-  file { '/usr/local/bin/bootstrap_cluster':
-    ensure  => present,
-    content => template('sunet/mariadb/bootstrap_cluster.erb.sh'),
+    content => template('sunet/mariadb/credentials.cnf.erb'),
     mode    => '0744',
   }
-  file { '/usr/local/bin/run_manual_backup_dump':
+  file { "${mariadb_dir}/conf/my.cnf":
     ensure  => present,
-    content => template('sunet/mariadb/run_manual_backup_dump.erb.sh'),
-    mode    => '0744',
-    owner   => 999,
-    group   => 999,
-  }
-  sunet::scriptherder::cronjob { 'purge_binlogs':
-    cmd           => '/usr/local/bin/purge-binlogs',
-    hour          => '6',
-    minute        => '0',
-    ok_criteria   => ['exit_status=0','max_age=2d'],
-    warn_criteria => ['exit_status=1','max_age=3d'],
-  }
-  file { '/usr/local/bin/cluster-size':
-    ensure  => present,
-    content => template('sunet/mariadb/cluster-size.erb.sh'),
+    content => template('sunet/mariadb/my.cnf.erb'),
     mode    => '0744',
   }
-  file { '/usr/local/bin/cluster-status':
-    ensure  => present,
-    content => template('sunet/mariadb/cluster-status.erb.sh'),
-    mode    => '0744',
-  }
-  file { '/etc/sudoers.d/99-size-test':
-    ensure  => file,
-    content => "script ALL=(root) NOPASSWD: /usr/local/bin/cluster-size\n",
-    mode    => '0440',
-    owner   => 'root',
-    group   => 'root',
-  }
-  file { '/etc/sudoers.d/99-status-test':
-    ensure  => file,
-    content => "script ALL=(root) NOPASSWD: /usr/local/bin/cluster-status\n",
-    mode    => '0440',
-    owner   => 'root',
-    group   => 'root',
+  $docker_compose = sunet::docker_compose { 'sunet_mariadb_docker_compose':
+    content          => template('sunet/mariadb/docker-compose_mariadb.yml.erb'),
+    service_name     => 'mariadb',
+    compose_dir      => '/opt/',
+    compose_filename => 'docker-compose.yml',
+    description      => 'Mariadb server',
   }
 }
