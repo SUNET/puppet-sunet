@@ -14,6 +14,19 @@ class sunet::dockerhost2(
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
 
+
+  # Start of Migration from sunet::dockerhost
+  file {'/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
+    ensure => 'absent',
+  }
+  file {'/etc/systemd/system/docker.service.d/service-overrides.conf':
+    ensure => 'absent',
+  }
+  file {'/etc/default/docker':
+    ensure => 'absent',
+  }
+  # End of Migration from sunet::dockerhost
+
   if ($nat) {
     file {
       '/etc/nftables/conf.d/200-sunet_dockerhost.nft':
