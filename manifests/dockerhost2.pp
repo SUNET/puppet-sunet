@@ -99,13 +99,6 @@ class sunet::dockerhost2(
     require => Exec['dockerhost_apt_get_update'],
   }
 
-  # Make it possible to not set a class::docker DNS at all by passing in the empty string
-  $_docker_dns = $docker_dns ? {
-    ''      => undef,
-    default => $docker_dns,
-  }
-
-
   file {
     '/etc/logrotate.d':
       ensure => 'directory',
