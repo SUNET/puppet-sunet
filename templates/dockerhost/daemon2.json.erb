@@ -1,4 +1,9 @@
 {
+    <% if @nat -%>
+    "ip-forward": true,
+    <% else -%>
+    "ip-forward": false,
+     <% end -%>
     "default-address-pools": [
         {
             "base": "<%= @docker_network %>",
