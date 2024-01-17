@@ -7,7 +7,7 @@ class sunet::dockerhost2(
   String $docker_network                      = lookup('dockerhost_docker_network', String, undef, '172.16.0.0/12'),
   String $docker_network_v6                   = lookup('dockerhost_docker_network_v6', String, undef, 'fd0c:d0c::/64'),  # default bridge
   String $docker_dns                          = lookup('dockerhost_docker_dns', String, undef,'89.32.32.32'),
-  Boolean $enable_ipv6                        = true,
+  Boolean $ipv6                               = true,
   Boolean $nat                                = true,
 ) {
 
