@@ -38,6 +38,18 @@ class sunet::dockerhost2(
     }
   }
 
+  file {
+    '/etc/docker':
+      ensure => 'directory',
+      mode   => '0755',
+      ;
+    '/etc/docker/daemon.json':
+      ensure  => file,
+      mode    => '0644',
+      content => template('sunet/dockerhost/daemon2.json.erb'),
+      ;
+  }
+
   # Add the dockerproject repository, then force an apt-get update before
   # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
   #
@@ -93,17 +105,6 @@ class sunet::dockerhost2(
     default => $docker_dns,
   }
 
-    file {
-      '/etc/docker':
-        ensure => 'directory',
-        mode   => '0755',
-        ;
-      '/etc/docker/daemon.json':
-        ensure  => file,
-        mode    => '0644',
-        content => template('sunet/dockerhost/daemon2.json.erb'),
-        ;
-    }
 
   file {
     '/etc/logrotate.d':
