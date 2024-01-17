@@ -1,0 +1,18 @@
+{
+    "default-address-pools": [
+        {
+            "base": "<%= @docker_network %>",
+            "size": 24
+        }
+    ],
+    "dns": <%= scope.function_flatten([[@_docker_dns]]) %>,
+    <% if @ipv6 %->
+    "fixed-cidr-v6": "<%= @docker_network_v6 -%>",
+    "ipv6": <%= @ipv6 -%>,
+     <% end -%>
+    "log-driver": "json-file",
+    "log-opts": {
+        "max-size": "10k",
+        "max-file": "3"
+    },
+}
