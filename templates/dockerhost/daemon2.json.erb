@@ -15,8 +15,8 @@
   "dns": <%= scope.function_flatten([[@docker_dns]]) %>,
   <% if @ipv6 -%>
   "fixed-cidr-v6": "<%= @docker_network_v6 -%>",
-  "ipv6": <%= @ipv6 -%>,
   <% end -%>
+  "ipv6": <%= @ipv6 -%>,
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "10k",
