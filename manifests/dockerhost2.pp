@@ -93,20 +93,6 @@ class sunet::dockerhost2(
     default => $docker_dns,
   }
 
-  if $tcp_bind and has_key($facts['tls_certificates'], $facts['networking']['fqdn']) and has_key($facts['tls_certificates'][$::fqdn], 'infra_cert') {
-    $_tcp_bind = $tcp_bind
-    $tls_enable = true
-    $tls_cacert = '/etc/ssl/certs/infra.crt'
-    $tls_cert   = $facts['tls_certificates'][$::fqdn]['infra_cert']
-    $tls_key    = $facts['tls_certificates'][$::fqdn]['infra_key']
-  } else {
-    $_tcp_bind = undef
-    $tls_enable = undef
-    $tls_cacert = undef
-    $tls_cert = undef
-    $tls_key = undef
-  }
-
     file {
       '/etc/docker':
         ensure => 'directory',
