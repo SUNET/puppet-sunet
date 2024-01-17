@@ -36,6 +36,11 @@ class sunet::dockerhost2(
         notify  => Service['nftables'],
         ;
     }
+  } else {
+    file {'/etc/nftables/conf.d/200-sunet_dockerhost.nft':
+      ensure => 'absent',
+      notify => Service['nftables'],
+    }
   }
 
   file {
