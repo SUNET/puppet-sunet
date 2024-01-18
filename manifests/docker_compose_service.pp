@@ -16,7 +16,7 @@ define sunet::docker_compose_service(
   }
 
   $_template = $docker_class ? {
-    'sunet::dockerhost' => 'sunet/dockerhost/compose.service.erb',
+    /^sunet::dockerhost$/ => 'sunet/dockerhost/compose.service.erb',
     default => 'sunet/dockerhost/compose2.service.erb',
   }
 
