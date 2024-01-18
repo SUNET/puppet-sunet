@@ -6,12 +6,18 @@ define sunet::docker_compose_service(
   Boolean          $pull_on_start = false,
   Array[String]    $service_extras = [],
   Optional[String] $start_command = undef,
+  String           $docker_class = 'sunet::dockerhost',
 ) {
   include sunet::systemd_reload
 
   $_service_name = $service_name ? {
     undef => $name,
     default => $service_name,
+  }
+
+  $_template = $docker_class ? {
+    'sunet::dockerhost' => 'sunet/dockerhost/compose.service.erb',
+    default => 'sunet/dockerhost/compose2.service.erb',
   }
 
   file {
