@@ -1,0 +1,138 @@
+
+version: "3.7"
+
+services:
+  nginx:
+    image: docker.io/nginxproxy/nginx-proxy:latest
+    container_name: nginx
+    dns:
+      - 89.32.32.32
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    volumes:
+      - /opt/gpuworkloads/nginx/htpasswd:/etc/nginx/htpasswd 
+      - /opt/gpuworkloads/nginx/certs:/etc/nginx/certs:ro
+      - /opt/gpuworkloads/nginx/conf:/etc/nginx/conf.d
+      - /opt/gpuworkloads/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/gpuworkloads/nginx/html:/usr/share/nginx/html
+      - /opt/gpuworkloads/nginx/vhost:/etc/nginx/vhost.d
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      - ENABLE_IPV6=true
+    restart: unless-stopped
+
+  acme:
+    image: docker.io/nginxproxy/acme-companion:latest
+    container_name: acme
+    dns:
+      - 89.32.32.32
+    volumes:
+      - /opt/gpuworkloads/nginx/acme:/etc/acme.sh
+      - /opt/gpuworkloads/nginx/certs:/etc/nginx/certs:rw
+      - /opt/gpuworkloads/nginx/conf:/etc/nginx/conf.d
+      - /opt/gpuworkloads/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/gpuworkloads/nginx/html:/usr/share/nginx/html
+      - /opt/gpuworkloads/nginx/vhost:/etc/nginx/vhost.d:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx
+      - DEFAULT_EMAIL=noc@sunet.se
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
+  tabby:
+    restart: always
+    image: tabbyml/tabby:<%= @tabby_tag %>
+    command: serve --model TabbyML/<%= @tabby_model %> --device cuda
+    container_name: tabby
+    dns:
+      - 89.32.32.32
+    volumes:
+      - /opt/gpuworkloads/tabby:/data
+      - /opt/gpuworkloads/tabby-config.toml:/root/.tabby/config.toml
+    environment:
+      - LETSENCRYPT_HOST=<%= @tabby_vhost %>
+      - VIRTUAL_HOST=<%= @tabby_vhost %>
+      - VIRTUAL_PATH=/
+      - VIRTUAL_PORT=8080
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  localai:
+    image: quay.io/go-skynet/local-ai:<%= @localai_tag %>
+    tty: true
+    restart: always
+    volumes:
+      - ./models:/models
+    command: ["/usr/bin/local-ai" ]
+    container_name: localai
+    dns:
+      - 89.32.32.32
+    volumes:
+      - /opt/gpuworkloads/localai:/models
+    environment:
+      BUILD_TYPE: 'cublas'
+      DEBUG: 'true'
+      CONTEXT_SIZE: 2048
+      GALLERIES: '[{"name":"model-gallery", "url":"github:go-skynet/model-gallery/index.yaml"}, {"url": "github:go-skynet/model-gallery/huggingface.yaml","name":"huggingface"}]'
+      LETSENCRYPT_HOST: '<%= @localai_vhost %>'
+      MODELS_PATH: '/models'
+      THREADS: 16
+      VIRTUAL_HOST: '<%= @localai_vhost %>'
+      VIRTUAL_PATH: '/'
+      VIRTUAL_PORT: 8080
+    deploy:
+      resources:
+        limits:
+          memory: 32G
+          cpus: '16'
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  chatui:
+    image: ghcr.io/mckaywrigley/chatbot-ui:main
+    container_name: chatui
+    environment:
+      OPENAI_API_HOST: 'http://localai:8080'
+      OPENAI_API_KEY: 'dummy'
+      LETSENCRYPT_HOST: '<%= @chatui_vhost %>'
+      VIRTUAL_HOST: '<%= @chatui_vhost %>'
+      VIRTUAL_PATH: '/'
+      VIRTUAL_PORT: 3000
+  slackbot:
+    image: quay.io/spectrocloud-labs/slack-qa-local-bot:qa
+    container_name: slackbot
+    restart: always
+    environment:
+      - EMBEDDINGS_MODEL_NAME=all-MiniLM-L6-v2
+      - GITHUB_PERSONAL_ACCESS_TOKEN=''
+      - MEMORY_DIR=/tmp/memory_dir
+      - OPENAI_API_BASE=http://localai:8080/v1
+      - OPENAI_API_KEY=sk-foo-bar-baz
+      - OPENAI_MODEL=gpt-3.5-turbo
+      - OPENAI_TIMEOUT_SECONDS=560
+      - REPOSITORIES=sunet,sunetdrive
+      - SLACK_APP_LOG_LEVEL=INFO
+      - SLACK_APP_TOKEN=<%= @slack_app_token %>
+      - SLACK_BOT_TOKEN=<%= @slack_bot_token %>
+      - TRANSLATE_MARKDOWN=true
+      - USE_SLACK_LANGUAGE=true
+      - sunet_BRANCH=main
+      - sunet_CLONE_URL=https://github.com/SUNET/puppet-sunet
+      - sunetdrive_BRANCH=main
+      - sunetdrive_CLONE_URL=https://platform.sunet.se/Drive/sunetdrive.git
+      <%# - SITEMAP="https://kairos.io/sitemap.xml" %>
+
+    depends_on:
+      localai:
+        condition: service_healthy

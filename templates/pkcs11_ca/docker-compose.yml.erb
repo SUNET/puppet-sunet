@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: containers/ca/Dockerfile
     ports:
-      - "8005:8005"
+      - "443:443"
     depends_on:
       - "postgres"
     restart: always
@@ -21,6 +21,7 @@ services:
     # cpus: "1.75"
     volumes:
       - ./data/hsm_tokens:/var/lib/softhsm/tokens
+      - ./data/ca_root_certs:/etc/pkcs11_ca/ca_root_certs/
     tmpfs:
       - /dev/shm:ro,noexec,nosuid,nodev
     # dns:
