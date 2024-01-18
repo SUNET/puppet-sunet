@@ -22,7 +22,7 @@ define sunet::docker_compose_service(
 
   file {
     "/etc/systemd/system/${_service_name}.service":
-      content => template('sunet/dockerhost/compose.service.erb'),
+      content => template($_template),
       notify  => [Class['sunet::systemd_reload'],
                   ],
       ;
