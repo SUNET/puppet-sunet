@@ -47,6 +47,7 @@ define sunet::docker_compose (
       require        => File[$compose_file],
       service_extras => $service_extras,
       start_command  => $start_command,
+      docker_class   => $docker_class,
     }
   }
 }
