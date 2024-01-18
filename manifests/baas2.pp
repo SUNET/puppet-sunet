@@ -27,7 +27,7 @@
 # @param backup_dirs       Specific directories to backup, default is to backup everything
 class sunet::baas2(
   String        $nodename='',
-  String        $tcpserveraddress='tsm12.backup.sto2.safedc.net',
+  String        $tcpserveraddress='server2.backup.dco1.safedc.net',
   Boolean       $monitor_backups=true,
   String        $version='8.1.17.2',
   Array[String] $backup_dirs = [],
@@ -38,6 +38,7 @@ class sunet::baas2(
   $baas_encryption_password = safe_hiera('baas_encryption_password')
 
   if $nodename and $baas_password != 'NOT_SET_IN_HIERA' and $baas_encryption_password != 'NOT_SET_IN_HIERA' {
+
 
     # The dsm.sys template expects backup_dirs to not have a trailing slash, so
     # make sure this is the case
