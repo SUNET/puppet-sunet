@@ -10,10 +10,13 @@ define sunet::docker_compose (
   String           $group = 'root',
   String           $mode = '0700',
   String           $owner = 'root',
-  String           $docker_class = 'sunet::dockerhost',
   Optional[String] $start_command = undef,
 ) {
 
+  $docker_class = $::facts['dockerhost2'] ? {
+    no => 'sunet::dockerhost',
+    default => 'sunet::dockerhost2',
+  }
   if ($docker_class == 'sunet::dockerhost') {
     # handle legacy class
     $nftenabled_and_interface =  $::facts['sunet_nftables_enabled'] == 'yes' and has_key($::facts['networking']['interfaces'], 'to_docker')
@@ -47,7 +50,6 @@ define sunet::docker_compose (
       require        => File[$compose_file],
       service_extras => $service_extras,
       start_command  => $start_command,
-      docker_class   => $docker_class,
     }
   }
 }

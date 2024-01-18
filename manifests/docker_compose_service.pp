@@ -6,7 +6,6 @@ define sunet::docker_compose_service(
   Boolean          $pull_on_start = false,
   Array[String]    $service_extras = [],
   Optional[String] $start_command = undef,
-  String           $docker_class = 'sunet::dockerhost',
 ) {
   include sunet::systemd_reload
 
@@ -15,8 +14,8 @@ define sunet::docker_compose_service(
     default => $service_name,
   }
 
-  $_template = $docker_class ? {
-    /^sunet::dockerhost$/ => 'sunet/dockerhost/compose.service.erb',
+  $_template = $::facts['dockerhost2'] ? {
+    no => 'sunet/dockerhost/compose.service.erb',
     default => 'sunet/dockerhost/compose2.service.erb',
   }
 
