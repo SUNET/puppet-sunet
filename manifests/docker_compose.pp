@@ -10,15 +10,22 @@ define sunet::docker_compose (
   String           $group = 'root',
   String           $mode = '0700',
   String           $owner = 'root',
+  String           $docker_class = 'sunet::dockerhost',
   Optional[String] $start_command = undef,
 ) {
-  $nftenabled_and_interface =  $::facts['sunet_nftables_enabled'] == 'yes' and has_key($::facts['networking']['interfaces'], 'to_docker')
-  $advanced_network_or_nftdisabled = $::facts['dockerhost_advanced_network'] == 'yes' or $::facts['sunet_nftables_enabled'] == 'no'
-  if ( $nftenabled_and_interface or  $advanced_network_or_nftdisabled ) {
-    $_install_service = true
+
+  if ($docker_class == 'sunet::dockerhost') {
+    # handle legacy class
+    $nftenabled_and_interface =  $::facts['sunet_nftables_enabled'] == 'yes' and has_key($::facts['networking']['interfaces'], 'to_docker')
+    $advanced_network_or_nftdisabled = $::facts['dockerhost_advanced_network'] == 'yes' or $::facts['sunet_nftables_enabled'] == 'no'
+    if ( $nftenabled_and_interface or  $advanced_network_or_nftdisabled ) {
+      $_install_service = true
+    } else {
+      $_install_service = false
+      notice("sunet::docker_compose: Not installing ${service_name}, interface to_docker missing")
+    }
   } else {
-    $_install_service = false
-    notice("sunet::docker_compose: Not installing ${service_name}, interface to_docker missing")
+    $_install_service = true
   }
 
   if $_install_service {
@@ -31,7 +38,7 @@ define sunet::docker_compose (
         ensure  => 'file',
         mode    => '600',
         content => $content,
-        require => Class['sunet::dockerhost'],
+        require => Class[$docker_class],
     })
 
     sunet::docker_compose_service { "${service_prefix}-${service_name}":
