@@ -12,7 +12,7 @@ define sunet::mariadb(
   $mysql_backup_password = safe_hiera('mysql_backup_password')
   $mariadb_dir = '/opt/mariadb'
   $server_id = 1000 + Integer($facts['networking']['hostname'][-1])
-  ensure_resource('file',$mariadb_dir, { ensure => directory, recurse => true } )
+  ensure_resource('sunet::misc::create_dir', '/opt/mariadb', { owner => 'root', group => 'root', mode => '0750'})
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
   $dirs.each |$dir| {
     ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, recurse => true } )
