@@ -12,7 +12,13 @@ define sunet::mariadb(
   $mysql_backup_password = safe_hiera('mysql_backup_password')
   $mariadb_dir = '/opt/mariadb'
   $server_id = 1000 + Integer($facts['networking']['hostname'][-1])
-  ensure_resource('sunet::misc::create_dir', '/opt/mariadb', { owner => 'root', group => 'root', mode => '0750'})
+
+  # Hack to not clash with docker_compose which tries to create the same directory
+  exec {'mariadb_dir_create':
+    command => "mkdir -p ${mariadb_dir}",
+    unless  =>  "test -d ${mariadb_dir}",
+    }
+
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
   $dirs.each |$dir| {
     ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, recurse => true } )
