@@ -3,6 +3,7 @@ define sunet::mariadb(
   $mariadb_version=latest,
   $bootstrap=undef,
   $clients= ['127.0.0.1'],
+  $cluster_nodes= ['127.0.0.1'];
   $ports = [3306, 4444, 4567, 4568],
 )
 {
@@ -17,6 +18,8 @@ define sunet::mariadb(
     ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, recurse => true } )
   }
 
+  $cluster_nodes_string = join($cluster_nodes, ',')
+  _$from = $clients + $cluster_nodes
   sunet::misc::ufw_allow { 'mariadb_ports':
     from => $clients,
     port => $ports,
