@@ -3,7 +3,7 @@ define sunet::mariadb(
   $mariadb_version=latest,
   $bootstrap=undef,
   $clients= ['127.0.0.1'],
-  $cluster_nodes= ['127.0.0.1'];
+  $cluster_nodes= ['127.0.0.1'],
   $ports = [3306, 4444, 4567, 4568],
 )
 {
