@@ -19,9 +19,9 @@ define sunet::mariadb(
   }
 
   $cluster_nodes_string = join($cluster_nodes, ',')
-  _$from = $clients + $cluster_nodes
+  $_from = $clients + $cluster_nodes_string
   sunet::misc::ufw_allow { 'mariadb_ports':
-    from => $clients,
+    from => $_from,
     port => $ports,
   }
 
