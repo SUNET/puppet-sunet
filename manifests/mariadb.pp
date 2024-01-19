@@ -10,7 +10,7 @@ define sunet::mariadb(
   # Config from group.yaml
   $mysql_root_password = safe_hiera('mysql_root_password')
   $mysql_backup_password = safe_hiera('mysql_backup_password')
-  $mariadb_dir = '/etc/mariadb'
+  $mariadb_dir = '/opt/mariadb'
   $server_id = 1000 + Integer($facts['networking']['hostname'][-1])
   ensure_resource('file',$mariadb_dir, { ensure => directory, recurse => true } )
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
