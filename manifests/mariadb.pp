@@ -2,14 +2,14 @@
 define sunet::mariadb(
   $mariadb_version=latest,
   $bootstrap=0,
-  $clients= ['127.0.0.1'],
-  $cluster_nodes= ['127.0.0.1'],
   $ports = [3306, 4444, 4567, 4568],
 )
 {
   # Config from group.yaml
   $mysql_root_password = safe_hiera('mysql_root_password')
   $mysql_backup_password = safe_hiera('mysql_backup_password')
+  $clients = lookup('mariadb_clients', undef, undef,['127.0.0.1'])
+  $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,['127.0.0.1'])
   $mariadb_dir = '/opt/mariadb'
   $server_id = 1000 + Integer($facts['networking']['hostname'][-1])
 
