@@ -35,13 +35,8 @@ for node_name in all_hosts:
     for reg, cls in iteritems(rules):
         if re.match(reg, node_name):
             if node_name == me:
-                if "sunet::dockerhost" in cls:
-                    if cls["sunet::dockerhost"] is not None:
-                        if (
-                            "advanced_network" in cls["sunet::dockerhost"]
-                            and cls["sunet::dockerhost"]["advanced_network"]
-                        ):
-                            print("dockerhost_advanced_network=yes")
-                            sys.exit()
+                if "sunet::dockerhost2" in cls:
+                    print("dockerhost2=yes")
+                    sys.exit()
 
-print("dockerhost_advanced_network=no")
+print("dockerhost2=no")
