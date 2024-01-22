@@ -15,7 +15,7 @@ services:
     dns:
       - 89.32.32.32
     environment:
-      - MYSQL_ROOT_PASSWORD=<%= @mysql_root_password %>
+      - MYSQL_ROOT_PASSWORD=<%= @mariadb_root_password %>
       - BOOTSTRAP=<%= @bootstrap %>
       - FORCE_BOOTSTRAP=0
     command:  "--wsrep_cluster_address=gcomm://<%= @cluster_nodes.join(',') %>"
