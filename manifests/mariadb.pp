@@ -24,8 +24,7 @@ define sunet::mariadb(
     ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, recurse => true } )
   }
 
-  $cluster_nodes_string = join($cluster_nodes, ',')
-  $_from = $clients + $cluster_nodes_string
+  $_from = $clients + $cluster_nodes
   sunet::misc::ufw_allow { 'mariadb_ports':
     from => $_from,
     port => $ports,
