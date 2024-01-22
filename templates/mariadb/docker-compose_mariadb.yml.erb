@@ -6,11 +6,11 @@ services:
     image:  docker.sunet.se/drive/mariadb:<%= @mariadb_version %>
     restart: always
     volumes:
-      - /etc/mariadb/backups:/backups
-      - /etc/mariadb/conf:/etc/mysql/mariadb.conf.d
-      - /etc/mariadb/datadir:/var/lib/mysql
-      - /etc/mariadb/init:/docker-entrypoint-initdb.d
-      - /etc/mariadb/scripts:/scripts
+      - /opt/mariadb/backups:/backups
+      - /opt/mariadb/conf:/etc/mysql/mariadb.conf.d
+      - /opt/mariadb/datadir:/var/lib/mysql
+      - /opt/mariadb/init:/docker-entrypoint-initdb.d
+      - /opt/mariadb/scripts:/scripts
     network_mode: host
     dns:
       - 89.32.32.32
