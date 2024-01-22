@@ -39,7 +39,8 @@ services:
       - <%= single_env %>
 <% end -%>
 <% end -%>
-    networks: <%= @net %>
+    networks: 
+      - <%= @net %>
 <% if @command -%>
     command:  <%= @command %>
 <% end -%>
@@ -50,3 +51,8 @@ services:
 <% end -%>
 <% end -%>
     image: <%= @image_tag %>
+
+networks:
+  docker:
+    name: docker
+    external: true
