@@ -5,9 +5,8 @@ define sunet::mariadb(
   $ports = [3306, 4444, 4567, 4568],
 )
 {
-  # Config from group.yaml
-  $mysql_root_password = safe_hiera('mysql_root_password')
-  $mysql_backup_password = safe_hiera('mysql_backup_password')
+  $mariadb_root_password = lookup('mariadb_root_password', undef, undef,'NOT_SET_IN_HIERA')
+  $mariadb_backup_password = lookup('mariadb_root_password', undef, undef,'NOT_SET_IN_HIERA')
   $clients = lookup('mariadb_clients', undef, undef,['127.0.0.1'])
   $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,['127.0.0.1'])
   $mariadb_dir = '/opt/mariadb'
