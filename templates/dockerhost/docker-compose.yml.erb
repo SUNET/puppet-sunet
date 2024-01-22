@@ -17,6 +17,7 @@ services:
 <% @flat_volumes.each do |volume| -%>
       - <%= volume %>
 <% end -%>
+<% end -%>
 <% if @hostname -%>
     hostname:  <%= @hostname %>
 <% end -%>
@@ -25,15 +26,18 @@ services:
 <% @ports.each do |port| -%>
       - <%= port %>
 <% end -%>
+<% end -%>
 <% unless @expose.empty? -%>
     expose:
 <% @expose.each do |single_expose| -%>
       - <%= single_expose %>
 <% end -%>
+<% end -%>
 <% unless @env.empty? -%>
     environment:
 <% @env.each do |single_env| -%>
       - <%= single_env %>
+<% end -%>
 <% end -%>
     network: <%= @net %>
 <% if @command -%>
@@ -43,5 +47,6 @@ services:
     dns:
 <% @dns.each do |resolver| -%>
       - <%= resolver %>
+<% end -%>
 <% end -%>
     image:<%= image_tag %>
