@@ -16,27 +16,45 @@ define sunet::nftables::docker_expose (
 ) {
   $safe_name = regsubst($title, '[^0-9A-Za-z_]', '_', 'G')
 
-  $allow_clients_v4 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 4) or $this == 'any' }
-  $allow_clients_v6 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 6) or $this == 'any' }
+  $docker_class = $::facts['dockerhost2'] ? {
+    no => 'sunet::dockerhost',
+    default => 'sunet::dockerhost2',
+  }
+  if ($docker_class == 'sunet::dockerhost') {
 
-  # Variables used in template
-  $saddr_v4 = sunet::format_nft_set('ip saddr', $allow_clients_v4)
-  $daddr_v4 = sunet::format_nft_set('ip daddr', [$dnat_v4_addr])
-  $saddr_v6 = sunet::format_nft_set('ip6 saddr', $allow_clients_v6)
-  $daddr_v6 = sunet::format_nft_set('ip6 daddr', [$dnat_v6_addr])
-  $dport = sunet::format_nft_set('dport', $port)
-  $v6_dnat_dport = sunet::format_nft_set('dport', $dnat_v6_port)
+    $allow_clients_v4 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 4) or $this == 'any' }
+    $allow_clients_v6 = filter(flatten([$allow_clients])) | $this | { is_ipaddr($this, 6) or $this == 'any' }
 
-  if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
-    notice('No to_docker interface found, not setting up the DNAT rules for Docker (will probably work next time)')
-  } else {
-    file {
-      "/etc/nftables/conf.d/600-docker_expose-${safe_name}.nft":
-        ensure  => file,
-        mode    => '0400',
-        content => template('sunet/nftables/600-docker_expose.nft.erb'),
-        notify  => Service['nftables'],
-        ;
+    # Variables used in template
+    $saddr_v4 = sunet::format_nft_set('ip saddr', $allow_clients_v4)
+    $daddr_v4 = sunet::format_nft_set('ip daddr', [$dnat_v4_addr])
+    $saddr_v6 = sunet::format_nft_set('ip6 saddr', $allow_clients_v6)
+    $daddr_v6 = sunet::format_nft_set('ip6 daddr', [$dnat_v6_addr])
+    $dport = sunet::format_nft_set('dport', $port)
+    $v6_dnat_dport = sunet::format_nft_set('dport', $dnat_v6_port)
+
+    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+      notice('No to_docker interface found, not setting up the DNAT rules for Docker (will probably work next time)')
+    } else {
+      file {
+        "/etc/nftables/conf.d/600-docker_expose-${safe_name}.nft":
+          ensure  => file,
+          mode    => '0400',
+          content => template('sunet/nftables/600-docker_expose.nft.erb'),
+          notify  => service['nftables'],
+          ;
+      }
     }
+  } else {
+      file {
+        "/etc/nftables/conf.d/600-docker_expose-${safe_name}.nft":
+          ensure => absent,
+          notify => service['nftables'],
+          ;
+      }
+      sunet::nftables::allow { "expose-allow-${safe_name}":
+        from => 'any',
+        port => $port,
+      }
   }
 }
