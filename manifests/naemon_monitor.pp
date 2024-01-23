@@ -4,6 +4,7 @@ class sunet::naemon_monitor(
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
+  Array $thruk_extra_volumes = [],
   Array $resolvers = [],
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
@@ -19,7 +20,6 @@ class sunet::naemon_monitor(
   Array $exclude_hosts =  [],
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
-  Optional[String] $override_shibxml = undef,
 ){
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
