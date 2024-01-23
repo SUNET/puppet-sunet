@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mountpoint=/opt/mastodon_web/syncmount
-bucket="<%= @s3_bucket>"
+bucket="<%= @s3_bucket %>"
 mkdir -p "${mountpoint}"
 
 rclone mount old: ${mountpoint}/ --daemon --allow-other
