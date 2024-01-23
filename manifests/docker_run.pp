@@ -111,9 +111,11 @@ define sunet::docker_run(
       }
     } else {
 
-      service { "docker-${name}":
-        ensure => 'stopped',
-        enable =>  'false',
+      # Disable and remove the service under the old name without interfering with the Alias set in the new service file
+      # The Alias makes systemd create links with the alternative name
+      exec { "disable-and-remove-old-service_${name}":
+        command => "/usr/bin/systemctl disable ${name}; /usr/bin/systemctl stop ${name}; rm /etc/systemd/system/docker-${name}.services; /usr/bin/systemctl daemon-reload",
+        onlyif  => "test ! -L /etc/systemd/system/docker-${name}.services -a -f /etc/systemd/system/docker-${name}.services;",
       }
 
       $flat_volumes = flatten([$volumes, $_uid_gid])
