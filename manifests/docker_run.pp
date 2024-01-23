@@ -114,7 +114,7 @@ define sunet::docker_run(
       # Disable and remove the service under the old name without interfering with the Alias set in the new service file
       # The Alias makes systemd create links with the alternative name
       exec { "disable-and-remove-old-service_${name}":
-        command => "/usr/bin/systemctl disable ${name}; /usr/bin/systemctl stop ${name}; rm /etc/systemd/system/docker-${name}.services; /usr/bin/systemctl daemon-reload",
+        command => "/usr/bin/systemctl disable ${name}; /usr/bin/systemctl stop ${name}; rm /etc/systemd/system/docker-${name}.service; /usr/bin/systemctl daemon-reload",
         onlyif  => "test ! -L /etc/systemd/system/docker-${name}.service -a -f /etc/systemd/system/docker-${name}.service",
       }
 
