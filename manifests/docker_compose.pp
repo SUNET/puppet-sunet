@@ -46,7 +46,7 @@ define sunet::docker_compose (
     })
 
     sunet::docker_compose_service { "${service_prefix}-${service_name}":
-      alias          => $service_alias,
+      service_alias  => $service_alias,
       compose_file   => $compose_file,
       description    => $description,
       require        => File[$compose_file],
