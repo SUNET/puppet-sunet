@@ -3,7 +3,7 @@ type = s3
 provider = Ceph
 access_key_id = <%= @aws_access_key_id %>
 secret_access_key = <%= @aws_secret_access_key %>
-endpoint = <%= @s3_alias_host %>
+endpoint = <%= @s3_alias_host.split('/')[0] %>
 acl = private
 
 [new]
@@ -11,5 +11,5 @@ type = s3
 provider = Ceph
 access_key_id = <%= @aws_access_key_id_new %>
 secret_access_key = <%= @aws_secret_access_key_new %>
-endpoint = <%= @s3_alias_host_new %>
+endpoint = <%= @s3_alias_host_new.split('/')[0] %>
 acl = private
