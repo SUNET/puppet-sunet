@@ -123,7 +123,7 @@ define sunet::docker_run(
         alias            => "docker-${name}",
         content          => template('sunet/dockerhost/docker-compose.yml.erb'),
         service_name     => $name,
-        compose_dir      => "/opt/docker_run/",
+        compose_dir      => '/opt/docker_run/',
         compose_filename => 'docker-compose.yml',
         description      => "${name} shrimed fom docker_run",
       }
