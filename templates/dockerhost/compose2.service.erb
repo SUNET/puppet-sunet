@@ -45,6 +45,6 @@ NotifyAccess=all
 
 [Install]
 WantedBy=multi-user.target
-<% if @alias -%>
-Alias=<%= @alias %>
+<% if @service_alias -%>
+Alias=<%= @service_alias %>
 <% end -%>

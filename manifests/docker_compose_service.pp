@@ -5,7 +5,7 @@ define sunet::docker_compose_service(
   Optional[String] $service_name = undef,
   Boolean          $pull_on_start = false,
   Array[String]    $service_extras = [],
-  Optional[String] $alias = undef,
+  Optional[String] $service_alias = undef,
   Optional[String] $start_command = undef,
 ) {
   include sunet::systemd_reload

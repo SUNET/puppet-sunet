@@ -120,7 +120,7 @@ define sunet::docker_run(
 
       $flat_volumes = flatten([$volumes, $_uid_gid])
       sunet::docker_compose { $name:
-        alias            => "docker-${name}",
+        service_alias    => "docker-${name}",
         content          => template('sunet/dockerhost/docker-compose.yml.erb'),
         service_name     => $name,
         compose_dir      => '/opt/docker_run/',
