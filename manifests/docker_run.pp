@@ -115,7 +115,7 @@ define sunet::docker_run(
       # The Alias makes systemd create links with the alternative name
       exec { "disable-and-remove-old-service_${name}":
         command => "/usr/bin/systemctl disable ${name}; /usr/bin/systemctl stop ${name}; rm /etc/systemd/system/docker-${name}.services; /usr/bin/systemctl daemon-reload",
-        onlyif  => "test ! -L /etc/systemd/system/docker-${name}.services -a -f /etc/systemd/system/docker-${name}.services;",
+        onlyif  => "test ! -L /etc/systemd/system/docker-${name}.service -a -f /etc/systemd/system/docker-${name}.service",
       }
 
       $flat_volumes = flatten([$volumes, $_uid_gid])
