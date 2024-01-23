@@ -23,6 +23,11 @@ class sunet::mastodon::web(
 ) {
 
   include sunet::packages::rclone
+  package{'fuse3':
+    ensure => 'installed'
+  }
+
+
   # Must set in hiera eyaml
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
@@ -71,6 +76,13 @@ class sunet::mastodon::web(
     group   => 'root',
     mode    => '0640',
     content => template('sunet/mastodon/web/rclone.conf.erb'),
+  }
+  -> file { '/usr/local/bin/sync_masto_s3':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0740',
+    content => template('sunet/mastodon/web/sync.erb.sh'),
   }
   -> file { '/opt/mastodon_web/files-nginx-vhost.conf':
     ensure  => file,
