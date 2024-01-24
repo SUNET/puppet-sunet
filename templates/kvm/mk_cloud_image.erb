@@ -1,0 +1,123 @@
+#!/bin/bash
+#
+# Script to (re-)create a cloud-image based VM. Created by puppet-sunet - do not edit.
+#
+
+set -e
+
+src_image="<%= @image_src %>"
+size="<%= @size %>"
+mac="<%= @mac %>"
+hostname="<%= @name %>"
+bridge="<%= @bridge %>"
+network="<%= @network %>"
+cpus="<%= @cpus %>"
+mem="<%= @memory %>"
+description="<%= @description %>"
+apt_dir="<%= @apt_dir %>"
+local_size="<%= @local_size %>"
+images_dir="<%= @images_dir %>"
+pool_name="<%= @pool_name %>"
+rng="<%= @rng %>"
+install_options="<%= @install_options %>"
+sb_args="<%= @sb_args %>"
+os_info=""
+
+if ! echo "${install_options}" | grep -q -- '--osinfo'; then
+    os_info_base="--osinfo "
+    image_file=$(basename "${src_image}")
+    dist=$(echo "${image_file}" | cut -d - -f1)
+
+    if [ "${dist}" == "debian" ]; then
+		version=$(echo "${image_file}" | cut -d - -f2)
+        os_info="${os_info_base} ${dist}${version}"
+    else
+        # Assuming Ubuntu at this point since their images doesn't include dist name.
+        os_info="${os_info_base} ubuntu${dist}"
+    fi
+fi
+
+cd "${images_dir}"
+
+seed=${hostname}_seed.img
+disk=${hostname}.img
+local_disk=${hostname}_local.img
+
+if [ ! -f "${seed}" ]; then
+    # If the seed file exists, just update it with new user-data and meta-data below
+    # to facilitate reinstalls with 'sunet-reinstall'
+    truncate --size 2M "${seed}"
+    mkfs.vfat -n cidata "${seed}" 2>/dev/null
+fi
+
+chmod 600 "${seed}"
+
+for this in meta-data user-data network-config; do
+    src="$(dirname "$0")/${hostname}_${this}"
+    mcopy -o -i "${seed}" "${src}" "::${this}" 2>/dev/null
+done
+cosmos_deb=${apt_dir}/cosmos_1.2-2_all.deb
+test -f "${apt_dir}/cosmos_1.5-1_all.deb" && cosmos_deb="${apt_dir}/cosmos_1.5-1_all.deb"
+test -f "${apt_dir}/cosmos_1.5-2~sunet20220414_all.deb" && cosmos_deb="${apt_dir}/cosmos_1.5-2~sunet20220414_all.deb"
+mcopy -o -i "${seed}" "${apt_dir}/bootstrap-cosmos.sh" "${cosmos_deb}" ::
+reinst="$(dirname "$0")/${hostname}_sunet-reinstall.tgz"
+if [ -f "${reinst}" ]; then
+    # one-time init a cloud-image from a host that presumably wasn't a cloud image VM before
+    mcopy -o -i "${seed}" "${reinst}" ::sunet-reinstall.tgz
+    shred -u "${reinst}" || rm -f "${reinst}"
+fi
+
+# solve bootstrapping of new kvm hosts where no vms exist already
+virsh pool-list | grep -qe "^\s*${pool_name}.*active" || {
+    virsh pool-create-as --name "${pool_name}" --target "${images_dir}" --type dir --build
+    virsh pool-autostart "${pool_name}"
+    virsh pool-start "${pool_name}"
+}
+virsh pool-refresh "${pool_name}"
+
+if [ ! -f "${images_dir}/${disk}" ]; then
+    test -f "${images_dir}/${disk}" || virsh vol-clone --pool "${pool_name}" "${src_image}" "${disk}"
+    virsh vol-resize --pool "${pool_name}" "${disk}" "${size}"
+fi
+
+chmod 600 "${disk}"
+
+local_disk_arg=''
+if [ "x${local_size}" != 'x0' ]; then
+    test -f "${local_disk}" || mkfs.ext4 -L 'local' -M '/local' "${local_disk}" "${local_size}"
+
+    local_disk_arg="--disk path=${images_dir}/${local_disk},bus=virtio"
+    chmod 600 "${local_disk}"
+fi
+
+# Default to bridged
+if [[ ! $network ]]; then
+    network="--network bridge=${bridge},model=virtio"
+fi
+
+# Optional settings
+if [ "x${mac}" != "x" ]; then
+    network="${network},mac=${mac}"
+fi
+if [ "x${description}" != "x" ]; then
+   install_options="${install_options} --description '${description}'"
+fi
+if [ "x${rng}" != "x" ]; then
+   install_options="${install_options} --rng='${rng}'"
+fi
+
+# destroy and undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
+rm -f "/var/lib/libvirt/qemu/nvram/${hostname}_VARS.fd"  # need to remove UEFI NVRAM file if it exists
+virsh destroy "${hostname}" || true
+virsh undefine "${hostname}" || true
+
+# use eval to expand the $install_options properly
+eval virt-install -r "${mem}" -n "${hostname}" --vcpus="${cpus}" --autostart --memballoon virtio --boot hd \
+    --graphics none \
+    --disk path="${images_dir}/${disk},format=qcow2,bus=virtio" \
+    --disk path="${images_dir}/${seed},bus=virtio" \
+    "${local_disk_arg}" \
+    "${network}" \
+    "${install_options}" \
+    "${os_info}" \
+    "${sb_args}"
