@@ -21,6 +21,13 @@ class sunet::mastodon::web(
   String $smtp_server              = 'smtp.sunet.se',
   String $vhost                    = 'social.sunet.se',
 ) {
+
+  include sunet::packages::rclone
+  package{'fuse3':
+    ensure => 'installed'
+  }
+
+
   # Must set in hiera eyaml
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
@@ -35,6 +42,11 @@ class sunet::mastodon::web(
   $smtp_password=safe_hiera('smtp_password')
   $vaipd_public_key=safe_hiera('vaipd_public_key')
   $vapid_private_key=safe_hiera('vapid_private_key')
+
+  # Temp variables for s3 migration
+  $aws_access_key_id_new = safe_hiera('aws_access_key_id_new')
+  $aws_secret_access_key_new = safe_hiera('aws_secret_access_key_new')
+  $s3_alias_host_new = safe_hiera('s3_alias_host_new')
 
   # Interpolated variables
   $temp_array = split($vhost, '[.]')
@@ -57,6 +69,20 @@ class sunet::mastodon::web(
     group   => 'root',
     mode    => '0640',
     content => template('sunet/mastodon/web/mastodon.env.erb'),
+  }
+  -> file { '/root/.rclone.conf':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    content => template('sunet/mastodon/web/rclone.conf.erb'),
+  }
+  -> file { '/usr/local/bin/sync_masto_s3':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0740',
+    content => template('sunet/mastodon/web/sync.erb.sh'),
   }
   -> file { '/opt/mastodon_web/files-nginx-vhost.conf':
     ensure  => file,

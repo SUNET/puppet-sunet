@@ -7,11 +7,11 @@ class sunet::invent::scanner(
   String  $repo_path = '/var/cache/invent/repo',
   String  $repo_url = 'https://github.com/SUNET/invent.git',
 ) {
-  include sunet::package::curl
-  include sunet::package::git
-  include sunet::package::jq
+  include sunet::packages::curl
+  include sunet::packages::git
+  include sunet::packages::jq
   if $install_docker_io {
-    include sunet::package::docker_io
+    include sunet::packages::docker_io
   }
   exec {'create_repo_path':
     command => "mkdir -p ${repo_path}",
@@ -23,18 +23,20 @@ class sunet::invent::scanner(
   }
   -> exec { 'clone_invent_repo':
     command => "git clone ${repo_url} ${repo_path}",
-    unless  => "test -d ${repo_path}/invent/.git"
+    unless  => "test -d ${repo_path}/.git"
   }
   -> exec { 'update_invent_repo':
-    command => "cd ${repo_path}/invent && git pull"
+    command => "sh -c 'cd ${repo_path} && git pull'"
   }
   -> file { '/usr/local/bin/scanner':
     ensure  => file,
-    content => template('invent/scanner.erb.sh'),
+    mode    => '0755',
+    content => template('sunet/invent/scanner.erb.sh'),
   }
   -> sunet::scriptherder::cronjob { 'docker_repo_scanner':
-    cmd  => '/usr/local/bin/scanner',
-    hour =>  '*',
+    cmd    => '/usr/local/bin/scanner',
+    hour   =>  '*/12',
+    minute =>  '10',
   }
 
 }
