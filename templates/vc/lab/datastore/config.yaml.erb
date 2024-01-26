@@ -1,0 +1,19 @@
+---
+common:
+  mongo:
+    uri: mongodb://<%= @mongo_user %>:<%= @mongo_pw %>@vc_mongo:27017
+  production: <%= @production %>
+  basic_auth:
+    ladok: xyz
+  log:
+    level:
+    folder_path: "/var/log/sunet"
+  tracing:
+    addr: vc_jaeger:4318
+    type: jaeger
+
+datastore:
+  api_server:
+    addr: :8080
+  rpc_server:
+    addr: :8090
