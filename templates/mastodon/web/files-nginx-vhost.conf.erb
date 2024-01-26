@@ -14,7 +14,7 @@ server {
     try_files $uri @s3;
   }
 
-  set $s3_backend 'https://<%= @s3_hostname %>';
+  set $s3_backend 'https://<%= @s3_alias_host %>';
 
   location @s3 {
     limit_except GET {
@@ -37,7 +37,7 @@ server {
     proxy_ignore_headers Set-Cookie;
     # Workaround for https://github.com/mastodon/mastodon/pull/25273 but still
     # makes the URIs to the assets prettier.
-    proxy_pass $s3_backend<%= @s3_alias_path %>/<%= @s3_bucket %>$uri;
+    proxy_pass $s3_backend$uri;
     proxy_intercept_errors off;
 
     proxy_cache CACHE;
