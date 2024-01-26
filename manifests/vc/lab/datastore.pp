@@ -2,7 +2,8 @@ class sunet::vc::lab::datastore(
   String $vc_version              = "latest",
   Boolean $production             =false, 
   String $mongo_user              = lookup('mongo_user'),
-  String $mongo_pw                = lookup('mongo_pw')
+  String $mongo_pw                = lookup('mongo_pw'),
+  String $interface               = "ens3"
 ) {
 
   sunet::ssh_keys { 'vcops':
