@@ -47,6 +47,9 @@ class sunet::mastodon::web(
   $aws_access_key_id_new = safe_hiera('aws_access_key_id_new')
   $aws_secret_access_key_new = safe_hiera('aws_secret_access_key_new')
   $s3_alias_host_new = safe_hiera('s3_alias_host_new')
+  $aws_access_key_id_old = safe_hiera('aws_access_key_id_old')
+  $aws_secret_access_key_old = safe_hiera('aws_secret_access_key_old')
+  $s3_alias_host_old = safe_hiera('s3_alias_host_old')
 
   # Interpolated variables
   $temp_array = split($vhost, '[.]')
