@@ -9,13 +9,9 @@ services:
     volumes:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
-    links:
-      - vc_haproxy
     depends_on:
       - vc_redis
       - vc_mongo
-      - vc_issuer
-      - vc_haproxy
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 

@@ -1,0 +1,19 @@
+---
+version: "3.3"
+
+services:
+  vc_jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: vc_jaeger
+    restart: always
+    ports:
+      - 16686:16686
+    expose:
+      - 4317
+    environment:
+      - "COLLECTOR_OTLP_ENABLED=true"
+
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-vc_gateway

@@ -1,0 +1,97 @@
+---
+common:
+  mongo:
+    uri: mongodb://<%= @mongo_user %>:<%= @mongo_pw %>@vc_mongo:27017
+  production: <%= @production %>
+  basic_auth:
+    ladok: xyz
+  tracing:
+    addr: jaeger:4318
+    type: jaeger
+  queues:
+    simple_queue:
+      ladok_sign:
+        name: sign
+      ladok_add_signed:
+        name: add_signed
+      ladok_del_signed:
+        name: del_signed
+      ladok_validate:
+        name: validate
+      ladok_persistent_save:
+        name: persistent_save
+  key_value:
+    db: 3
+    addr: redis:6379
+    pdf:
+      keep_signed_duration: 3600
+      keep_unsigned_duration: 3600
+
+issuer:
+  api_server:
+    addr: :8080
+  rpc_server:
+    addr: :8090
+  http_proxy:
+  log:
+    level:
+  datastore:
+    addr: datastore:8080
+  
+datastore:
+  api_server:
+    addr: :8080
+  rpc_server: 
+    addr: datastore:8090
+  
+verifier:
+  api_server:
+    addr: :8080
+  rpc_server:
+    addr: verifier:8090
+
+registry:
+  api_server:
+    addr: :8080
+  smt:
+    update_periodicity: 5
+    init_leaf: <%= @smt_init_leaf %>
+  rpc_server:
+    addr: registry:8090
+
+cache:
+  api_server:
+    addr: :8080
+
+persistent:
+  api_server:
+    addr: :8080
+
+py_pdfsigner:
+  sign_queue_name: sign
+  add_signed_queue_name: add_signed
+  pkcs11:
+    pin: <%= @pkcs11_pin %>
+    module:  <%= @pkcs11_module %>
+    label: <%= @pkcs11_label %>
+    key_label: <%= @pkcs11_key_label %>
+    cert_label: <%= @pkcs11_cert_label %>
+    #slot: 0
+  redis:
+    host: "redis"
+    port: 6379
+    db: 3
+  metadata:
+    location: "Stockholm"
+    reason: "Future validation"
+    name: "SUNET/Vetenskapsrådet"
+    contact_info: "info@sunet.se"
+    field_name: "Signature1"
+
+py_pdfvalidator:
+  validate_queue_name: validate
+  trust_root_folder: "/opt/sunet/pki"
+  redis:
+    host: "redis"
+    port: 6379
+    db: 3

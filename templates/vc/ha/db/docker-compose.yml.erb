@@ -1,0 +1,58 @@
+---
+version: "3.3"
+
+services:
+  cache:
+    container_name: "vc_cache"
+    image: docker.sunet.se/dc4eu/cache:latest
+    restart: always
+    volumes:
+      - ./dev_config_docker.yaml:/config.yaml:ro
+    links:
+      - haproxy
+    depends_on:
+      - redis
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  persistent:
+    container_name: "vc_persistent"
+    image: docker.sunet.se/dc4eu/persistent:latest
+    restart: always
+    volumes:
+      - ./dev_config_docker.yaml:/config.yaml:ro
+    links:
+      - haproxy
+    depends_on:
+      - redis
+      - mongo
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  redis:
+    image: redis:alpine
+    container_name: "vc_redis"
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+  
+  mongo:
+    image: mongo:4.0.10
+    container_name: "vc_mongo"
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data
+
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-vc_db
+
+volumes:
+  mongo_data:
+  redis_data:
