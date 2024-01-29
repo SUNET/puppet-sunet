@@ -6,6 +6,8 @@ services:
     container_name: "vc_datastore"
     image: "docker.sunet.se/dc4eu/datastore:<%= @vc_version %>"
     restart: always
+    ports:
+      - 80:8080
     volumes:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
