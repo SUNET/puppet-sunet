@@ -36,7 +36,7 @@ class sunet::nagios::nrpe(
   if (find_file($debsecan_conf)){
     file_line { 'disable_debsecan_reports_config':
       path  => $debsecan_conf,
-      line  => 'REPORT=true',
+      line  => 'REPORT=false',
       match => '^REPORT=',
     }
   }
