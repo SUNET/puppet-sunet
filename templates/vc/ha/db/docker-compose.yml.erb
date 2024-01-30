@@ -4,7 +4,7 @@ version: "3.3"
 services:
   cache:
     container_name: "vc_cache"
-    image: docker.sunet.se/dc4eu/cache:latest
+    image: docker.sunet.se/dc4eu/cache:<%= @vc_version %>
     restart: always
     volumes:
       - ./dev_config_docker.yaml:/config.yaml:ro
@@ -17,7 +17,7 @@ services:
 
   persistent:
     container_name: "vc_persistent"
-    image: docker.sunet.se/dc4eu/persistent:latest
+    image: docker.sunet.se/dc4eu/persistent:<%= @vc_version %>
     restart: always
     volumes:
       - ./dev_config_docker.yaml:/config.yaml:ro
@@ -29,18 +29,18 @@ services:
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-  redis:
-    image: redis:alpine
-    container_name: "vc_redis"
-    restart: always
-    ports:
-      - 6379:6379
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
+  #redis:
+  #  image: redis:alpine
+  #  container_name: "vc_redis"
+  #  restart: always
+  #  ports:
+  #    - 6379:6379
+  #  volumes:
+  #    - redis_data:/data
+  #  command: redis-server --appendonly yes
   
   mongo:
-    image: mongo:4.0.10
+    image: mongo:<%= @mongodb_version %>
     container_name: "vc_mongo"
     restart: always
     ports:
