@@ -33,7 +33,7 @@ class sunet::vc::db(
     mode => '0744',
     owner => 'root',
     group => 'root',
-    content => template("sunet/vc/db/Makefile.erb")
+    content => template("sunet/vc/ha/db/Makefile.erb")
   }
 
   file { '/opt/vc/certs':
@@ -45,7 +45,7 @@ class sunet::vc::db(
 
   # Compose
   sunet::docker_compose { 'vc_db':
-    content          => template('sunet/vc/db/docker-compose.yml.erb'),
+    content          => template('sunet/vc/ha/db/docker-compose.yml.erb'),
     service_name     => 'vc',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
