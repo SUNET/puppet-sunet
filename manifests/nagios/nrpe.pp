@@ -24,6 +24,23 @@ class sunet::nagios::nrpe(
       require => Package[$nrpe_service],
   }
 
+  # monitoring-plugins-contrib installs debsecan which sends reports to root every other day.
+  # Most servers are not configured to handle root mail so better configure the tool to not send mail.
+  exec { 'disable_debsecan_reports':
+    command => 'echo "debsecan debsecan/report boolean false" | debconf-set-selections',
+    unless  => 'debconf-show debsecan | grep -q "debsecan/report: false$"',
+    path    => ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin',],
+  }
+  # Also disable reports on already installed and configured servers
+  $debsecan_conf = '/etc/default/debsecan'
+  if (find_file($debsecan_conf)){
+    file_line { 'disable_debsecan_reports_config':
+      path  => $debsecan_conf,
+      line  => 'REPORT=true',
+      match => '^REPORT=',
+    }
+  }
+
   package {'monitoring-plugins-contrib':
       ensure => 'installed',
   }
