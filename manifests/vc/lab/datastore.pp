@@ -35,6 +35,14 @@ class sunet::vc::lab::datastore(
     content => template("sunet/vc/lab/datastore/config.yaml.erb")
    }
 
+  file { '/opt/vc/Makefile':
+    ensure => file,
+    mode => '0744',
+    owner => 'root',
+    group => 'root',
+    content => template("sunet/vc/standalone/Makefile.erb")
+  }
+
      # Compose
   sunet::docker_compose { 'vc_standalone':
     content          => template('sunet/vc/lab/datastore/docker-compose.yml.erb'),
