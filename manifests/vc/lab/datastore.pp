@@ -40,7 +40,7 @@ class sunet::vc::lab::datastore(
     mode => '0744',
     owner => 'root',
     group => 'root',
-    content => template("sunet/vc/standalone/Makefile.erb")
+    content => template("sunet/vc/lab/datastore/Makefile.erb")
   }
 
      # Compose
