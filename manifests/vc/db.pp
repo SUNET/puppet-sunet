@@ -52,11 +52,6 @@ class sunet::vc::db(
     description      => 'VC-db service',
   }
 
-  sunet::rediscluster { 'redis-cluster':
-
-
-  }
-
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'web_http_port' :
       iif           => $interface,
@@ -72,6 +67,11 @@ class sunet::vc::db(
       iif           => $interface,
       allow_clients => 'any',
       port          => 27017,
+    }
+    sunet::nftables::docker_expose { 'redis_port':
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 6379,
     }
   } else {
     sunet::misc::ufw_allow { 'web_mongo_redis_ports':

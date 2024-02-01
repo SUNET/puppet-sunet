@@ -4,5 +4,5 @@ docker-pull-vc:
 	docker pull docker.sunet.se/dc4eu/persistent:<%= @vc_version %>
 	docker pull docker.sunet.se/dc4eu/cache:<%= @vc_version %>
 
-dev-release: docker-pull
+release: docker-pull
 	systemctl restart sunet-vc.service
