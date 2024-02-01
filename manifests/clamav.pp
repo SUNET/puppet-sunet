@@ -3,14 +3,15 @@ class sunet::clamav (
   String $minute = '45',
   String $hour   = '*/2',
 ) {
+
   include sunet::packages::clamav
   include sunet::packages::clamav_daemon
 
   file { '/opt/clamav/':
-    ensure  => directory,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
   }
   -> file { '/opt/clamav/scan.sh':
     ensure  => file,
