@@ -9,6 +9,7 @@ class sunet::dockerhost2(
   Variant[String,Boolean] $docker_dns         = lookup('dockerhost_docker_dns', undef, undef,false),
   Boolean $ipv6                               = true,
   Boolean $nat                                = true,
+  Boolean $live_restore                       = false,
 ) {
 
   include sunet::packages::jq # restart_unhealthy_containers requirement
