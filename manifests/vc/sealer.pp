@@ -10,8 +10,6 @@ class sunet::vc::sealer(
   String $host_environments          = "softhsm2",
   String $pdfsigner_version              = "latest",
   String $pdfsigner_flavor               = "ca-softhsm2",
-  String $pdfsigner_addr,
-  String $pdfsigner_pkcs11_module = "/opt/sunet/hsm_module.so",
   String $safenetauthenticationclient_core_url = "https://www.digicert.com/StaticFiles/SAC_10_8_28_GA_Build.zip",
 ) {
 
