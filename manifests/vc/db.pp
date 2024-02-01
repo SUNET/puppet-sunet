@@ -36,6 +36,14 @@ class sunet::vc::db(
     content => template("sunet/vc/ha/db/Makefile.erb")
   }
 
+  file { '/opt/vc/config.yaml':
+    ensure => file,
+    mode => '0744',
+    owner => 'root',
+    group => 'root',
+    content => template("sunet/vc/ha/db/config.yaml.erb")
+  }
+
   file { '/opt/vc/certs':
     ensure  => directory,
     mode    => '0755',
