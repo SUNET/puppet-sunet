@@ -3,8 +3,8 @@ class sunet::vc::sealer(
   Boolean $production             =false,
   String $pkcs11_module           = '/usr/lib/softhsm/libsofthsm2.so',
   String $pkcs11_label,
-  String $pkcs11_cert_label,
-  String $pkcs11_key_label,
+  String $pkcs11_cert_label       = lookup('pkcs11_cert_label'),
+  String $pkcs11_key_label        = lookup('pkcs11_key_label'),
   String $pkcs11_pin              = lookup('pkcs11_pin'), 
   Integer $pkcs11_slot            = 0,
   String $host_environments          = "softhsm2",
@@ -51,23 +51,15 @@ class sunet::vc::sealer(
     mode   => '0644',
     owner  => 'root',
     group  => 'root',
-    content => template("sunet/vc/sealer/config.yaml.erb")
+    content => template("sunet/vc/ha/sealer/config.yaml.erb")
    }
-
-  file { '/opt/vc/haproxy.cfg':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'root',
-    group   => 'root',
-    content =>  template("sunet/vc/sealer/haproxy.cfg.erb")
-  }
 
   file { '/opt/vc/Makefile':
     ensure => file,
     mode => '0744',
     owner => 'root',
     group => 'root',
-    content => template("sunet/vc/sealer/Makefile.erb")
+    content => template("sunet/vc/ha/sealer/Makefile.erb")
   }
 
   file { '/opt/vc/certs':

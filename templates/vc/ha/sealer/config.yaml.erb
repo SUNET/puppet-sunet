@@ -1,8 +1,21 @@
 ---
 py_pdfsigner:
-  pkcs11_label: <%= @pkcs11_label %>
-  pkcs11_pin:  <%= @pkcs11_pin %>
-  pkcs11_module:  <%= @pkcs11_module %>
-  pkcs11_key_label:  <%= @pkcs11_key_label %>
-  pkcs11_cert_label:  <%= @pkcs11_cert_label %>
-  pkcs11_slot: <%= @pkcs11_slot %>
+  sign_queue_name: sign
+  add_signed_queue_name: add_signed
+  pkcs11:
+    label: <%= @pkcs11_label %>
+    pin:  <%= @pkcs11_pin %>
+    module:  <%= @pkcs11_module %>
+    key_label:  <%= @pkcs11_key_label %>
+    cert_label:  <%= @pkcs11_cert_label %>
+    slot: <%= @pkcs11_slot %>
+  redis:
+    host: "redis"
+    port: 6379
+    db: 3
+  metadata:
+    location: <%= @meta_location %>
+    reason: <%= @meta_reason %>
+    name: <%= @meta_name %>
+    contact_info: <%= @meta_contact_info %>
+    field_name: <%= @meta_field_name %>
