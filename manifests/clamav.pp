@@ -20,6 +20,10 @@ class sunet::clamav (
     mode    => '0744',
     content => template('sunet/clamav/scan.erb.sh'),
   }
+  -> exec { 'clamav_enable_services':
+    command => 'systemctl enable --now clamav-daemon.service clamav-freshclam.service',
+    unless  => 'systemctl is-enabled clamav-daemon.service clamav-freshclam.service',
+  }
   sunet::scriptherder::cronjob { 'clamav_scan':
     cmd           => '/opt/clamav/scan.sh',
     minute        => $minute,
