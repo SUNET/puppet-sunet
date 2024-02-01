@@ -92,7 +92,7 @@ class sunet::vc::sealer(
 
   # Compose
   sunet::docker_compose { 'vc_sealer':
-    content          => template('sunet/vc/sealer/docker-compose.yml.erb'),
+    content          => template('sunet/vc/ha/sealer/docker-compose.yml.erb'),
     service_name     => 'vc',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
