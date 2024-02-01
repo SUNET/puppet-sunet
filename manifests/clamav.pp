@@ -24,6 +24,42 @@ class sunet::clamav (
     command => 'systemctl enable --now clamav-daemon.service clamav-freshclam.service',
     unless  => 'systemctl is-enabled clamav-daemon.service clamav-freshclam.service',
   }
+  -> file_line { 'exclude_dev':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/dev/'
+  }
+  -> file_line { 'exclude_proc':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/proc/'
+  }
+  -> file_line { 'exclude_sys':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/sys/'
+  }
+  -> file_line { 'exclude_run':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/run/'
+  }
+  -> file_line { 'exclude_snap':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/snap/'
+  }
+  -> file_line { 'exclude_var_snap':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/var/snap/'
+  }
+  -> file_line { 'exclude_var_lib_docker':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/var/lib/docker'
+  }
+  -> file_line { 'exclude_opt_backup_mounts':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/opt/backup_mounts'
+  }
+  -> file_line { 'exclude_var_spool_postfix':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/var/spool/postfix/'
+  }
   sunet::scriptherder::cronjob { 'clamav_scan':
     cmd           => '/opt/clamav/scan.sh',
     minute        => $minute,
