@@ -56,6 +56,10 @@ class sunet::clamav (
     path => '/etc/clamav/clamd.conf',
     line => 'ExcludePath ^/opt/backup_mounts'
   }
+  -> file_line { 'exclude_var_spool_postfix':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/var/spool/postfix/'
+  }
   sunet::scriptherder::cronjob { 'clamav_scan':
     cmd           => '/opt/clamav/scan.sh',
     minute        => $minute,
