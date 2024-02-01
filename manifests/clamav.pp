@@ -52,6 +52,10 @@ class sunet::clamav (
     path => '/etc/clamav/clamd.conf',
     line => 'ExcludePath ^/var/lib/docker'
   }
+  -> file_line { 'exclude_opt_backup_mounts':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/opt/backup_mounts'
+  }
   sunet::scriptherder::cronjob { 'clamav_scan':
     cmd           => '/opt/clamav/scan.sh',
     minute        => $minute,
