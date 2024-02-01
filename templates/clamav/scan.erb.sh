@@ -1,6 +1,6 @@
 #!/bin/bash
 
-num_infected=$(clamdscan --multiscan --fdpass  /* | awk -F: '/Infected files:/{print $2}' | tr -d ' ')
+num_infected=$(nice -19 clamdscan --multiscan --fdpass  /* | awk -F: '/Infected files:/{print $2}' | tr -d ' ')
 
 if [[ ${num_infected} -gt 0 ]]; then
     echo "ClamAV found ${num_infected} infected files"
