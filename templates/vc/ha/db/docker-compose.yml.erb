@@ -7,7 +7,7 @@ services:
     image: docker.sunet.se/dc4eu/cache:<%= @vc_version %>
     restart: always
     volumes:
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
       - redis
     environment:
@@ -18,7 +18,7 @@ services:
     image: docker.sunet.se/dc4eu/persistent:<%= @vc_version %>
     restart: always
     volumes:
-      - ./dev_config_docker.yaml:/config.yaml:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
       - redis
       - mongo
