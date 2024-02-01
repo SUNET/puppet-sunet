@@ -8,8 +8,6 @@ services:
     restart: always
     volumes:
       - ./dev_config_docker.yaml:/config.yaml:ro
-    links:
-      - haproxy
     depends_on:
       - redis
     environment:
@@ -21,8 +19,6 @@ services:
     restart: always
     volumes:
       - ./dev_config_docker.yaml:/config.yaml:ro
-    links:
-      - haproxy
     depends_on:
       - redis
       - mongo
