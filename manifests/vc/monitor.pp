@@ -58,10 +58,15 @@ class sunet::vc::monitor(
       allow_clients => 'any',
       port          => 443,
     }
-    sunet::nftables::docker_expose { 'jaeger_port' :
+    sunet::nftables::docker_expose { 'jaeger_ui_port' :
       iif           => $interface,
       allow_clients => 'any',
       port          => 16686,
+    }
+    sunet::nftables::docker_expose { 'jaeger_trace_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 4318,
     }
   } else {
     sunet::misc::ufw_allow { 'web_ports':
