@@ -7,7 +7,7 @@ common:
     level:
     folder_path: "/var/log/sunet"
   tracing:
-    addr: vc_jaeger:4318
+    addr: <%= @tracing_endpoint_addr %>
     type: jaeger
   key_value:
     db: 3

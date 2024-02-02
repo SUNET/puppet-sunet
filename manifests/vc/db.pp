@@ -5,7 +5,8 @@ class sunet::vc::db(
   String $mongodb_version         = "4.0.10",
   String $mongo_user              = lookup('mongo_user'),
   String $mongo_pw                = lookup('mongo_pw'),
-  String $redis_password          = lookup('redis_password')
+  String $redis_password          = lookup('redis_password'),
+  String $tracing_endpoint_addr
 ) {
 
   sunet::ssh_keys { 'vcops':
