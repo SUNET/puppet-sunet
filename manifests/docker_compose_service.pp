@@ -15,8 +15,8 @@ define sunet::docker_compose_service(
   }
 
   $_template = $::facts['dockerhost2'] ? {
-    no => 'sunet/dockerhost/compose.service.erb',
-    default => 'sunet/dockerhost/compose2.service.erb',
+    yes => 'sunet/dockerhost/compose2.service.erb',
+    default => 'sunet/dockerhost/compose.service.erb',
   }
 
   file {
