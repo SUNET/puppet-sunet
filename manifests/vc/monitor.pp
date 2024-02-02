@@ -23,28 +23,12 @@ class sunet::vc::monitor(
     require =>  [ Group['sunet'] ],
   }
 
-  file { '/opt/vc/config.yaml':
-    ensure => file,
-    mode   => '0600',
-    owner  => 'root',
-    group  => 'root',
-    content => template("sunet/vc/monitor/config.yaml.erb")
-   }
-
-  file { '/opt/vc/haproxy.cfg':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'root',
-    group   => 'root',
-    content =>  template("sunet/vc/monitor/haproxy.cfg.erb")
-  }
-
   file { '/opt/vc/Makefile':
     ensure => file,
     mode => '0744',
     owner => 'root',
     group => 'root',
-    content => template("sunet/vc/monitor/Makefile.erb")
+    content => template("sunet/vc/ha/monitor/Makefile.erb")
   }
 
   file { '/opt/vc/certs':
@@ -56,7 +40,7 @@ class sunet::vc::monitor(
 
   # Compose
   sunet::docker_compose { 'vc_monitor':
-    content          => template('sunet/vc/monitor/docker-compose.yml.erb'),
+    content          => template('sunet/vc/ha/monitor/docker-compose.yml.erb'),
     service_name     => 'vc',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
@@ -73,6 +57,11 @@ class sunet::vc::monitor(
       iif           => $interface,
       allow_clients => 'any',
       port          => 443,
+    }
+    sunet::nftables::docker_expose { 'jaeger_port' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 16686,
     }
   } else {
     sunet::misc::ufw_allow { 'web_ports':
