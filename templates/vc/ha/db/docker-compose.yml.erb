@@ -45,9 +45,6 @@ services:
       - 27017:27017
     volumes:
       - mongo_data:/data
-    environment:
-      - "MONGODB_INITDB_ROOT_USERNAME=<%= @mongo_user %>"
-      - "MONGODB_INITDB_ROOT_PASSWORD=<%= @mongo_pw %>"
 
 networks:
   default:
