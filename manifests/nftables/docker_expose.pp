@@ -17,8 +17,8 @@ define sunet::nftables::docker_expose (
   $safe_name = regsubst($title, '[^0-9A-Za-z_]', '_', 'G')
 
   $docker_class = $::facts['dockerhost2'] ? {
-    no => 'sunet::dockerhost',
-    default => 'sunet::dockerhost2',
+    yes => 'sunet::dockerhost2',
+    default => 'sunet::dockerhost',
   }
   if ($docker_class == 'sunet::dockerhost') {
 
