@@ -1,4 +1,4 @@
-# Common use of docker::run
+#Common use of docker::run
 define sunet::docker_run(
   String $image,
   String $imagetag           = lookup('sunet_docker_default_tag', String, undef, 'latest'),
@@ -125,7 +125,7 @@ define sunet::docker_run(
         service_name     => $name,
         compose_dir      => '/opt/docker_run/',
         compose_filename => 'docker-compose.yml',
-        description      => "${name} shrimed fom docker_run",
+        description      => "${name} shimed fom docker_run",
       }
     }
   }
