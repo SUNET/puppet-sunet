@@ -3,7 +3,7 @@ version: "3.3"
 
 services:
   cache:
-    container_name: "vc_gateway"
+    container_name: "vc_apigw"
     image: docker.sunet.se/dc4eu/apigw:<%= @vc_version %>
     restart: always
     volumes:
