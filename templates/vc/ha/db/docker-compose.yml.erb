@@ -10,6 +10,8 @@ services:
       - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
       - redis
+    dns:
+      - 8.8.8.8
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -22,6 +24,8 @@ services:
     depends_on:
       - redis
       - mongo
+    dns:
+      - 8.8.8.8
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 

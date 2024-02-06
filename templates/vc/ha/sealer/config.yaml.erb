@@ -10,8 +10,8 @@ py_pdfsigner:
     cert_label:  <%= @pkcs11_cert_label %>
     slot: <%= @pkcs11_slot %>
   redis:
-    host: "redis"
-    port: 6379
+    host: <%= @redis_addr %>
+    port: <%= @redis_port %>
     db: 3
   metadata:
     location: <%= @meta_location %>
