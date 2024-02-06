@@ -7,6 +7,7 @@ class sunet::vc::apigw(
   String $redis_password          = lookup('redis_password'),
   String $redis_addr,
   String $redis_port = "6379",
+  String $tracing_endpoint_addr,
 
   #hash with basic_auth key/value
 ) {
