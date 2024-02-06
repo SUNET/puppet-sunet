@@ -16,7 +16,13 @@ def write_schedule_cache(cache_file: str) -> None:
     """request schedule data and write it out to a cache file for future use"""
     cache_file_tmp = f"{cache_file}.tmp"
     proc_args = shlex.split("dsmc query schedule")
-    proc = subprocess.run(proc_args, capture_output=True, check=True, encoding="utf-8")
+    proc = subprocess.run(
+        proc_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+        encoding="utf-8",
+    )
 
     with open(cache_file_tmp, "w", encoding="utf-8") as fileobj:
         fileobj.write(proc.stdout)
