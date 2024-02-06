@@ -17,6 +17,7 @@ mypy --strict sunet-baas2-bootstrap
 import argparse
 import os
 import os.path
+import platform
 import shlex
 import shutil
 import struct
@@ -73,7 +74,11 @@ def get_installed_version() -> Union[str, None]:
     # Homepage: http://www.ibm.com/software/tivoli/products/storage-mgr/
     try:
         proc = subprocess.run(
-            proc_args, check=True, capture_output=True, encoding="utf8"
+            proc_args,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf8",
         )
     except subprocess.CalledProcessError as exc:
         # If the package is not installed this is OK, we will install it
@@ -181,7 +186,9 @@ def verify_file_hash(checksum_file: str) -> None:
     checksum_file_dir = os.path.dirname(checksum_file)
 
     os.chdir(checksum_file_dir)
-    subprocess.run(proc_args, check=True, capture_output=True)
+    subprocess.run(
+        proc_args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     os.chdir(orig_dir)
 
 
@@ -227,7 +234,13 @@ def get_trust_labels(cert_db_file: str) -> List[str]:
     # * default, - personal, ! trusted, # secret key
     # !	"TSM server SafeDC self-signed key"
     proc_args = shlex.split(f"gsk8capicmd_64 -cert -list -db {cert_db_file} -stashed")
-    proc = subprocess.run(proc_args, capture_output=True, check=True, encoding="utf-8")
+    proc = subprocess.run(
+        proc_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+        encoding="utf-8",
+    )
 
     trusted_cert_labels = []
     for line in proc.stdout.splitlines():
@@ -246,7 +259,9 @@ def set_dsmc_password(password: str) -> None:
     # interactive prompts
     proc_args = shlex.split(f"dsmc set password {password} {password}")
     try:
-        subprocess.run(proc_args, capture_output=True, check=True)
+        subprocess.run(
+            proc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        )
     except subprocess.CalledProcessError:
         # Do not output the full command line since it contains secrets
         raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
@@ -408,7 +423,13 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
         f"gsk8capicmd_64 -secretkey -add -db {db_path} -label {label} -stashed -file {tmp_password_file}"  # pylint:disable=line-too-long
     )
     try:
-        subprocess.run(proc_args, capture_output=True, check=True, encoding="utf-8")
+        subprocess.run(
+            proc_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            encoding="utf-8",
+        )
     except subprocess.CalledProcessError as exc:
         # Cleanup before we crash
         os.remove(tmp_password_file)
@@ -533,6 +554,7 @@ def handle_installation(
         verify_file_hash(checksum_file)
         extract_tar_file(tar_file, download_dir)
         install_deb_files(download_dir)
+        fix_ldd()
 
     root_cert_needed = False
     root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
@@ -579,6 +601,110 @@ def handle_registration() -> None:
 
     set_encrypt_password(encrypted_passwords_db, baas_encrypt_password)
 
+
+def fix_ldd() -> None:
+    """Make sure the dynamic linker finds IBM's libraries
+    Without this fix Debian machines failed to run the IBM binaries since the linker
+    didn't include the directory where IBM install it's libraries.
+
+    dsmc: error while loading shared libraries: libgsk8ssl_64.so: cannot open shared object file: No such file or directory # pylint:disable=line-too-long
+    """
+
+    python_version = platform.python_version_tuple()
+    if int(python_version[0]) < 3:
+        raise RuntimeError("only python 3 is supported")
+
+    if int(python_version[1]) < 8:
+        # We have our local implementation of platform_freedesktop_os_release() to
+        # be usable on ubuntu 18.04. This can be cleaned up when there are no
+        # ubuntu 18.04 users of the tool.
+        dist_info = freedesktop_os_release()
+    else:
+        dist_info = platform.freedesktop_os_release()
+
+    if dist_info["ID"] != "debian":
+        # This fix only applies to Debian
+        return
+
+    ldd_conf_file = "/etc/ld.so.conf.d/sunet-baas2.conf"
+    try:
+        with open(ldd_conf_file, "x", encoding="utf-8") as file:
+            print(f"Adding {file}")
+            file.write("/usr/lib64\n")
+    except FileExistsError:
+        # Assume that the existing file contains the the requested content already
+        pass
+
+    print("Flushing ldd cache")
+    # Flush the ldd cache
+    subprocess.run("/usr/sbin/ldconfig", check=True)
+
+
+### START: UBUNTU 18.04 backport code
+# Code from
+# https://github.com/python/cpython/blob/3.12/Lib/platform.pyhttps://github.com/python/cpython/blob/3.12/Lib/platform.py
+# Added here to work on ubuntu 18. If no longer used just go back to calling
+# platform.freedesktop_os_release()
+
+### freedesktop.org os-release standard
+# https://www.freedesktop.org/software/systemd/man/os-release.html
+
+# /etc takes precedence over /usr/lib
+_os_release_candidates = ("/etc/os-release", "/usr/lib/os-release")
+_os_release_cache = None  # pylint:disable=invalid-name
+
+
+def _parse_os_release(lines):
+    # SUNET: import re locally so if/when this code is removed we dont forget
+    # to also remove an "re" import.
+    import re  # pylint:disable=import-outside-toplevel
+
+    # These fields are mandatory fields with well-known defaults
+    # in practice all Linux distributions override NAME, ID, and PRETTY_NAME.
+    info = {
+        "NAME": "Linux",
+        "ID": "linux",
+        "PRETTY_NAME": "Linux",
+    }
+
+    # NAME=value with optional quotes (' or "). The regular expression is less
+    # strict than shell lexer, but that's ok.
+    os_release_line = re.compile(
+        "^(?P<name>[a-zA-Z0-9_]+)=(?P<quote>[\"']?)(?P<value>.*)(?P=quote)$"
+    )
+    # unescape five special characters mentioned in the standard
+    os_release_unescape = re.compile(r"\\([\\\$\"\'`])")
+
+    for line in lines:
+        mo = os_release_line.match(line)
+        if mo is not None:
+            info[mo.group("name")] = os_release_unescape.sub(r"\1", mo.group("value"))
+
+    return info
+
+
+def freedesktop_os_release():
+    """Return operation system identification from freedesktop.org os-release"""
+    global _os_release_cache  # pylint:disable=global-statement
+
+    if _os_release_cache is None:
+        errno = None
+        for candidate in _os_release_candidates:
+            try:
+                with open(candidate, encoding="utf-8") as f:
+                    _os_release_cache = _parse_os_release(f)
+                break
+            except OSError as e:
+                errno = e.errno
+        else:
+            raise OSError(
+                errno, f"Unable to read files {', '.join(_os_release_candidates)}"
+            )
+
+    return _os_release_cache.copy()
+
+
+### END: UBUNTU 18.04 backport code
 
 if __name__ == "__main__":
     main()
