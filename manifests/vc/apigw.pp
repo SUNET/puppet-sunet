@@ -1,15 +1,7 @@
 class sunet::vc::apigw(
   String $vc_version              ="latest",
-  String $mongodb_version         ="4.0.10",
   String $interface               ="ens3",
   Boolean $production             =false,
-  String $pdfsigner_version              = "latest",
-  String $pdfsigner_flavor               = "ca-softhsm2",
-  String $pdfsigner_addr,
-  String $pdf_signing_reason               = "Ladok",
-  String $pdf_signing_location             = "Stockholm",
-  String $pdf_signing_name                 = "Sunet",
-  String $pdf_signing_contact_info         = "noc@sunet.se",
   String $mongo_user              = lookup('mongo_user'),
   String $mongo_pw                = lookup('mongo_pw')
   String $redis_password          = lookup('redis_password'),
