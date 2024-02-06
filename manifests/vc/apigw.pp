@@ -1,4 +1,4 @@
-class sunet::vc::gateway(
+class sunet::vc::apigw(
   String $vc_version              ="latest",
   String $mongodb_version         ="4.0.10",
   String $interface               ="ens3",
