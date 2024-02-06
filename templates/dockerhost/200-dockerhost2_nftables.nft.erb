@@ -24,18 +24,18 @@ table ip6 nat {
 #
 # SNAT packages _from_ Docker.
 #
-add rule ip nat postrouting ip saddr { 172.16.0.0/12 } iifname docker0 counter masquerade comment "SNAT traffic from Docker"
-add rule ip6 nat postrouting ip6 saddr { fd00::2/128 } iifname docker0 counter masquerade comment "SNAT traffic from Docker"
-add rule ip6 nat postrouting ip6 saddr { fd0c::/16 } iifname docker0 counter masquerade comment "SNAT traffic from Docker"
+add rule ip nat postrouting ip saddr { 172.16.0.0/12 } iifname { docker0, br-* } counter masquerade comment "SNAT traffic from Docker"
+add rule ip6 nat postrouting ip6 saddr { fd00::2/128 } iifname { docker0, br-* } counter masquerade comment "SNAT traffic from Docker"
+add rule ip6 nat postrouting ip6 saddr { fd0c::/16 } iifname { docker0, br-* } counter masquerade comment "SNAT traffic from Docker"
 
 #
 # Allow forwarding packages from docker
 #
 add rule inet filter forward ct state established counter accept
-add rule inet filter forward iifname docker0 counter accept comment "Forward traffic from Docker"
+add rule inet filter forward iifname { docker0, br-* } counter accept comment "Forward traffic from Docker"
 
 #
 # Allow ICMP to Docker. Necessary for path-mtu at least.
 #
-add rule inet filter forward oifname docker0 ip protocol icmp counter accept comment "Allow ICMP to Docker"
-add rule inet filter forward oifname docker0 ip6 nexthdr icmpv6 counter accept comment "Allow ICMP to Docker"
+add rule inet filter forward oifname { docker0, br-* } ip protocol icmp counter accept comment "Allow ICMP to Docker"
+add rule inet filter forward oifname { docker0, br-* } ip6 nexthdr icmpv6 counter accept comment "Allow ICMP to Docker"
