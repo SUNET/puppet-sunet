@@ -12,6 +12,10 @@ class sunet::vc::gateway(
   String $pdf_signing_contact_info         = "noc@sunet.se",
   String $mongo_user              = lookup('mongo_user'),
   String $mongo_pw                = lookup('mongo_pw')
+  String $redis_password          = lookup('redis_password'),
+  String $redis_addr,
+  String $redis_port = "6379",
+
   #hash with basic_auth key/value
 ) {
 
@@ -40,23 +44,15 @@ class sunet::vc::gateway(
     mode   => '0600',
     owner  => 'root',
     group  => 'root',
-    content => template("sunet/vc/gateway/config.yaml.erb")
+    content => template("sunet/vc/ha/apigw/config.yaml.erb")
    }
-
-  file { '/opt/vc/haproxy.cfg':
-    ensure  => file,
-    mode    => '0644',
-    owner   => 'root',
-    group   => 'root',
-    content =>  template("sunet/vc/gateway/haproxy.cfg.erb")
-  }
 
   file { '/opt/vc/Makefile':
     ensure => file,
     mode => '0744',
     owner => 'root',
     group => 'root',
-    content => template("sunet/vc/standalone/Makefile.erb")
+    content => template("sunet/vc/ha/apigw/Makefile.erb")
   }
 
   file { '/opt/vc/certs':
@@ -68,7 +64,7 @@ class sunet::vc::gateway(
 
   # Compose
   sunet::docker_compose { 'vc_gateway':
-    content          => template('sunet/vc/gateway/docker-compose.yml.erb'),
+    content          => template('sunet/vc/ha/apigw/docker-compose.yml.erb'),
     service_name     => 'vc',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
@@ -85,11 +81,6 @@ class sunet::vc::gateway(
       iif           => $interface,
       allow_clients => 'any',
       port          => 443,
-    }
-    sunet::nftables::docker_expose { 'jaeger_ui_port' :
-      iif           => $interface,
-      allow_clients => 'any',
-      port          => 16686,
     }
   } else {
     sunet::misc::ufw_allow { 'web_ports':

@@ -1,0 +1,19 @@
+---
+version: "3.3"
+
+services:
+  cache:
+    container_name: "vc_gateway"
+    image: docker.sunet.se/dc4eu/apigw:<%= @vc_version %>
+    restart: always
+    volumes:
+      - /opt/vc/config.yaml:/config.yaml:ro
+    dns:
+      - 8.8.8.8
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-vc_db

@@ -18,6 +18,8 @@ class sunet::vc::sealer(
   String $safenetauthenticationclient_core_url = "https://www.digicert.com/StaticFiles/SAC_10_8_28_GA_Build.zip",
   String $redis_addr,
   String $redis_port = "6379",
+  String $redis_password          = lookup('redis_password'),
+
 ) {
 
     sunet::ssh_keys { 'vcops':

@@ -1,0 +1,7 @@
+docker-pull: docker-pull-vc
+
+docker-pull-vc:
+	docker pull docker.sunet.se/dc4eu/apigw:<%= @vc_version %>
+
+release: docker-pull
+	systemctl restart sunet-vc.service

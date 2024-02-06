@@ -1,0 +1,24 @@
+---
+common:
+  mongo:
+    uri: mongodb://<%= @mongo_user %>:<%= @mongo_pw %>@vc_mongo:27017
+  production: <%= @production %>
+  log:
+    level:
+    folder_path: "/var/log/sunet"
+  tracing:
+    addr: <%= @tracing_endpoint_addr %>
+    type: jaeger
+  key_value:
+    db: 3
+    addr: <%= @redis_addr %>:<%= @redis_port %>
+    password: <%= @redis_password %>
+
+
+cache:
+  api_server:
+    addr: :8080
+
+apigw:
+  api_server:
+    addr: :8080
