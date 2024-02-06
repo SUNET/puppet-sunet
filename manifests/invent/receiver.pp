@@ -4,7 +4,7 @@ class sunet::invent::receiver (
   String $interface  = 'ens3',
   String $vhost = 'invent.sunet.se'
 ){
-  $admin_password = lookup('invent_admin_password')
+  $admin_password = lookup('invent_admin_password', undef, undef, undef)
   $endpoints = ['hosts', 'images']
   $nginx_dirs = [ 'acme', 'certs','conf','dhparam','html','vhost' ]
   $ni_host_key = lookup ('ni_host_key')
@@ -59,7 +59,7 @@ class sunet::invent::receiver (
     }
   }
 
-  sunet::rrsync { '/opt/receiver/hosts':
+  sunet::rrsync { '/opt/receiver/':
     ssh_key_type       => 'ssh-ed25519',
     ssh_key            => $ni_host_key,
     use_sunet_ssh_keys => true,

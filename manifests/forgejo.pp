@@ -17,27 +17,31 @@ class sunet::forgejo (
     env    => ['ACME_URL=http://acme-c.sunet.se'],
   }
   # gitea generate secret INTERNAL_TOKEN
-  $internal_token = hiera('internal_token')
+  $internal_token = lookup('internal_token', undef, undef, undef)
   # gitea generate secret JWT_SECRET
-  $jwt_secret = hiera('jwt_secret')
+  $jwt_secret = lookup('jwt_secret', undef, undef, undef)
   # gitea generate secret JWT_SECRET
-  $lfs_jwt_secret = hiera('lfs_jwt_secret')
+  $lfs_jwt_secret = lookup('lfs_jwt_secret', undef, undef, undef)
   # gitea generate secret SECRET_KEY
-  $secret_key = hiera('secret_key')
+  $secret_key = lookup('secret_key', undef, undef, undef)
   # SMTP Password from NOC
   $smtp_user = split($domain, '[.]')[0]
-  $smtp_password = hiera('smtp_password')
+  $smtp_password = lookup('smtp_password', undef, undef, undef)
 
   # S3 credentials from openstack
-  $s3_secret_key = hiera('s3_secret_key')
-  $s3_access_key = hiera('s3_access_key')
+  $s3_secret_key = lookup('s3_secret_key', undef, undef, undef)
+  $s3_access_key = lookup('s3_access_key', undef, undef, undef)
   $s3_host = 's3.sto4.safedc.net'
 
   # GPG password
-  $platform_sunet_se_gpg_password = hiera('platform_sunet_se_gpg_password')
+  $platform_sunet_se_gpg_password = lookup('platform_sunet_se_gpg_password', undef, undef, undef)
+
+  # GPG key
+  $platform_sunet_se_gpg_key = lookup('platform_sunet_se_gpg_key', undef, undef, undef)
 
   # White list for email domains for account creation
-  $email_domain_whitelist = hiera('email_domain_whitelist')
+  $email_domain_whitelist = lookup('email_domain_whitelist', undef, undef, undef)
+
   # Nginx stuff
   file{ '/opt/nginx':
     ensure => directory,
@@ -65,12 +69,6 @@ class sunet::forgejo (
     group => 'git',
     uid   => $uid,
     gid   => $gid,
-  }
-  # Parent Data directory
-  -> file{ '/opt/forgejo':
-    ensure => directory,
-    owner  => 'git',
-    group  => 'git',
   }
   # Data directory
   -> file{ '/opt/forgejo/data':
@@ -135,5 +133,14 @@ class sunet::forgejo (
       from => 'any',
       port => ['80', '443', '22022'],
     }
+  }
+  file{ '/opt/forgejo/import-secret-key.sh':
+    ensure  => file,
+    content => template('sunet/forgejo/import-secret-key.erb.sh'),
+    mode    => '0700',
+  }
+  # Import gpg key
+  -> exec{ 'import_gpg_key':
+    command => '/opt/forgejo/import-secret-key.sh'
   }
 }

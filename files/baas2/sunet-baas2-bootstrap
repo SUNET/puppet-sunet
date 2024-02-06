@@ -17,6 +17,7 @@ mypy --strict sunet-baas2-bootstrap
 import argparse
 import os
 import os.path
+import platform
 import shlex
 import shutil
 import struct
@@ -533,6 +534,7 @@ def handle_installation(
         verify_file_hash(checksum_file)
         extract_tar_file(tar_file, download_dir)
         install_deb_files(download_dir)
+        fix_ldd()
 
     root_cert_needed = False
     root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
@@ -578,6 +580,33 @@ def handle_registration() -> None:
     baas_encrypt_password = baas_encrypt_password.rstrip("\r\n")
 
     set_encrypt_password(encrypted_passwords_db, baas_encrypt_password)
+
+
+def fix_ldd() -> None:
+    """Make sure the dynamic linker finds IBM's libraries
+    Without this fix Debian machines failed to run the IBM binaries since the linker
+    didn't include the directory where IBM install it's libraries.
+
+    dsmc: error while loading shared libraries: libgsk8ssl_64.so: cannot open shared object file: No such file or directory # pylint:disable=line-too-long
+    """
+
+    dist_info = platform.freedesktop_os_release()
+    if dist_info["ID"] != "debian":
+        # This fix only applies to Debian
+        return
+
+    ldd_conf_file = "/etc/ld.so.conf.d/sunet-baas2.conf"
+    try:
+        with open(ldd_conf_file, "x", encoding="utf-8") as file:
+            print(f"Adding {file}")
+            file.write("/usr/lib64\n")
+    except FileExistsError:
+        # Assume that the existing file contains the the requested content already
+        pass
+
+    print("Flushing ldd cache")
+    # Flush the ldd cache
+    subprocess.run("/usr/sbin/ldconfig", check=True)
 
 
 if __name__ == "__main__":

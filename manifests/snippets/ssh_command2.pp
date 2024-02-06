@@ -6,7 +6,6 @@ define sunet::snippets::ssh_command2(
   String $user         = 'root',
   Boolean $manage_user = false,
 ) {
-  require stdlib
   $safe_name = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
 
   if ($manage_user) {

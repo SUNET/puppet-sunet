@@ -4,7 +4,7 @@ class sunet::satosa(
   String           $image           = 'docker.sunet.se/satosa',
   String           $interface       = $::facts['interface_default'],
   String           $satosa_tag      = '8.4.0',
-  Optional[String] $redirect_uri    = lookup('redirect_uri', undef, undef, ''),
+  Optional[String] $redirect_uri    = lookup('redirect_uri', Optional[String], undef, ''),
   Boolean          $enable_oidc     = false,
 ) {
 
@@ -16,10 +16,10 @@ class sunet::satosa(
     $service_to_notify = undef
   }
 
-  $proxy_conf = lookup('satosa_proxy_conf')
+  $proxy_conf = lookup('satosa_proxy_conf', undef, undef, undef)
   $default_conf = {
-    'STATE_ENCRYPTION_KEY'       => lookup('satosa_state_encryption_key'),
-    'USER_ID_HASH_SALT'          => lookup('satosa_user_id_hash_salt'),
+    'STATE_ENCRYPTION_KEY'       => lookup('satosa_state_encryption_key', undef, undef, undef),
+    'USER_ID_HASH_SALT'          => lookup('satosa_user_id_hash_salt', undef, undef, undef),
     'CUSTOM_PLUGIN_MODULE_PATHS' => ['plugins'],
     'COOKIE_STATE_NAME'          => 'SATOSA_STATE'
   }
@@ -34,7 +34,7 @@ class sunet::satosa(
     content  => file('sunet/md-signer2.crt')
   })
   ['backend','frontend','metadata'].each |$id| {
-    if lookup("satosa_${id}_key",undef, undef,undef) != undef {
+    if lookup("satosa_${id}_key", undef, undef, undef) != undef {
       sunet::snippets::secret_file { "/etc/satosa/${id}.key": hiera_key => "satosa_${id}_key" }
       # assume cert is in cosmos repo
     } else {
@@ -49,7 +49,7 @@ class sunet::satosa(
     content => inline_template("<%= @merged_conf.to_yaml %>\n"),
     notify  => $service_to_notify,
   }
-  $plugins = lookup('satosa_config')
+  $plugins = lookup('satosa_config', undef, undef, undef)
   sort(keys($plugins)).each |$n| {
     $conf = lookup($n)
     $fn = $plugins[$n]

@@ -5,7 +5,7 @@
 class sunet::frontend::load_balancer(
   String  $router_id   = $ipaddress_default,
   String  $basedir     = '/opt/frontend',
-  Integer $base_uidgid = hiera('sunet_frontend_load_balancer_base_uidgid', 800),
+  Integer $base_uidgid = lookup('sunet_frontend_load_balancer_base_uidgid', Integer, undef, 800),
   Integer $frontend    = $base_uidgid + 0,
   Integer $fe_api      = $base_uidgid + 1,
   Integer $fe_monitor  = $base_uidgid + 2,
@@ -14,7 +14,7 @@ class sunet::frontend::load_balancer(
   Integer $telegraf    = $base_uidgid + 11,
   Integer $varnish     = $base_uidgid + 12,
 ) {
-  $config = hiera_hash('sunet_frontend')
+  $config = lookup('sunet_frontend', undef, undef, undef)
   if $config =~ Hash[String, Hash] {
     $confdir = "${basedir}/config"
     $scriptdir = "${basedir}/scripts"
@@ -45,9 +45,9 @@ class sunet::frontend::load_balancer(
         notify  => Sunet::Exabgp['load_balancer'],
       }
 
-      configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
+      sunet::frontend::load_balancer::configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
 
-      configure_websites2 { 'websites':
+      sunet::frontend::load_balancer::configure_websites2 { 'websites':
         websites  => $config['load_balancer']['websites2'],
         basedir   => $basedir,
         confdir   => $confdir,
@@ -101,48 +101,3 @@ class sunet::frontend::load_balancer(
   }
 }
 
-define sysctl_ip_nonlocal_bind() {
-  # Allow haproxy to bind() to a service IP address even if it haven't actually
-  # been set up on an interface yet
-  augeas { 'frontend_ip_nonlocal_bind_config':
-    context => '/files/etc/sysctl.d/10-sunet-frontend-ip-non-local-bind.conf',
-    changes => [
-                'set net.ipv4.ip_nonlocal_bind 1',
-                'set net.ipv6.ip_nonlocal_bind 1',
-                ],
-    notify  => Exec['reload_sysctl_10-sunet-frontend-ip-non-local-bind.conf'],
-  }
-
-  exec { 'reload_sysctl_10-sunet-frontend-ip-non-local-bind.conf':
-    command     => '/sbin/sysctl -p /etc/sysctl.d/10-sunet-frontend-ip-non-local-bind.conf',
-    refreshonly => true,
-  }
-}
-
-define configure_peers($router_id, $peers)
-{
-  $defaults = {
-    router_id => $router_id,
-  }
-  create_resources('sunet::frontend::load_balancer::peer', $peers, $defaults)
-}
-
-define configure_websites($websites, $basedir, $confdir)
-{
-  create_resources('sunet::frontend::load_balancer::website', $websites, {
-    'basedir' => $basedir,
-    'confdir' => $confdir,
-    })
-}
-
-define configure_websites2($websites, $basedir, $confdir, $scriptdir)
-{
-  each($websites) | $site, $config | {
-    create_resources('sunet::frontend::load_balancer::website2', {$site => {}}, {
-      'basedir'         => $basedir,
-      'confdir'         => $confdir,
-      'scriptdir'       => $scriptdir,
-      'config'          => $config,
-      })
-  }
-}

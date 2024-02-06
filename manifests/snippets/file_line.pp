@@ -1,6 +1,5 @@
 # from http://projects.puppetlabs.com/projects/puppet/wiki/Simple_Text_Patterns/5
 define sunet::snippets::file_line($filename, $line, $ensure = 'present') {
-  require stdlib
   case $ensure {
     default : { err ( "unknown ensure value ${ensure}" ) }
     present: {

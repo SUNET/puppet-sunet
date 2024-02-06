@@ -2,7 +2,7 @@
 class sunet::noc(
   Boolean $allow_reboot = true,
 ) {
-  $noc_ssh_keys = lookup('noc_ssh_keys')
+  $noc_ssh_keys = lookup('noc_ssh_keys', undef, undef, undef)
   # If we have Authorized keys for NOC staff, we create a user, 
   # add ssh keys there and allow them to run select commands
   if is_hash($noc_ssh_keys) {

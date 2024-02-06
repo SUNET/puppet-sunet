@@ -1,0 +1,27 @@
+{
+  <% if @nat -%>
+  "ip-forward": true,
+  <% else -%>
+  "ip-forward": false,
+  <% end -%>
+  "iptables": false,
+  "ip-masq": false,
+  "default-address-pools": [
+     {
+       "base": "<%= @docker_network %>",
+       "size": 24
+    }
+  ],
+  <% if @docker_dns -%>
+  "dns": <%= scope.function_flatten([[@docker_dns]]) %>,
+  <% end -%>
+  <% if @ipv6 -%>
+  "fixed-cidr-v6": "<%= @docker_network_v6 -%>",
+  <% end -%>
+  "ipv6": <%= @ipv6 -%>,
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10k",
+    "max-file": "3"
+  }
+}

@@ -7,13 +7,13 @@ define sunet::snippets::secret_file(
   $mode      = '0400',
   $base64    = false
 ) {
-  require stdlib
   $thefile = $path ? {
     undef    => $name,
     default  => $path
   }
   $safe_key = regsubst($hiera_key, '[^0-9A-Za-z_]', '_', 'G')
-  $data = hiera($hiera_key, hiera($safe_key))
+  $default_data_from_safe_key = lookup($safe_key, undef, undef, undef)
+  $data = lookup($hiera_key, undef, undef, $default_data_from_safe_key)
   $decoded_data = $base64 ? {
     true     => base64('decode',$data),
     default  => $data
