@@ -3,7 +3,7 @@ class sunet::vc::apigw(
   String $interface               ="ens3",
   Boolean $production             =false,
   String $mongo_user              = lookup('mongo_user'),
-  String $mongo_pw                = lookup('mongo_pw')
+  String $mongo_pw                = lookup('mongo_pw'),
   String $redis_password          = lookup('redis_password'),
   String $redis_addr,
   String $redis_port = "6379",
