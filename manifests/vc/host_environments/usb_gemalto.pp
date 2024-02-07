@@ -1,5 +1,5 @@
-class sunet::vc::host_environments::usb_gemalto(
-   String $pkcs11_module           = "/usr/lib/libeToken.so",
+define sunet::vc::host_environments::usb_gemalto(
+  String $pkcs11_module           = "/usr/lib/libeToken.so",
   String $pkcs11_label,
   String $pkcs11_cert_label,
   String $pkcs11_key_label,
