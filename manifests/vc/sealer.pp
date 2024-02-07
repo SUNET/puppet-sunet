@@ -41,6 +41,7 @@ class sunet::vc::sealer(
 
   package { 'opensc-pkcs11': ensure => 'installed' }
   package { 'opensc': ensure => 'installed' }
+  package { 'gnutls-bin': ensure => 'installed' }
 
   sunet::misc::system_user { 'sunet':
     username   => 'sunet',
