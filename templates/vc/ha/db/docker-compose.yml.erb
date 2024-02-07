@@ -8,6 +8,7 @@ services:
     restart: always
     volumes:
       - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
     depends_on:
       - redis
     dns:
@@ -21,6 +22,7 @@ services:
     restart: always
     volumes:
       - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
     depends_on:
       - redis
       - mongo
