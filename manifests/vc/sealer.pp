@@ -40,6 +40,7 @@ class sunet::vc::sealer(
   package { 'make': ensure => 'installed' }
 
   package { 'opensc-pkcs11': ensure => 'installed' }
+  package { 'opensc': ensure => 'installed' }
 
   sunet::misc::system_user { 'sunet':
     username   => 'sunet',
