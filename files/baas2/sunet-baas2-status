@@ -78,7 +78,11 @@ def last_scheduled_start_time() -> Union[datetime.datetime, None]:
             # 2023-04-03 22:00:16 --- SCHEDULEREC OBJECT BEGIN FILE_0000 2023-04-04 00:00:00
             if " SCHEDULEREC OBJECT BEGIN " in line:
                 timestamp = line.split(" -")[0]
-                returned_timestamp = datetime.datetime.fromisoformat(timestamp)
+                # Can be used again when there are no ubuntu 18.04 machines using this tool
+                # returned_timestamp = datetime.datetime.fromisoformat(timestamp)
+                returned_timestamp = datetime.datetime.strptime(
+                    timestamp, "%Y-%m-%d %H:%M:%S"
+                )
 
     return returned_timestamp
 
@@ -111,7 +115,11 @@ def last_error_time() -> Union[datetime.datetime, None]:
                 ):
                     timestamp_parts = line.split(maxsplit=2)
                     timestamp = timestamp_parts[0] + " " + timestamp_parts[1]
-                    returned_timestamp = datetime.datetime.fromisoformat(timestamp)
+                    # Can be used again when there are no ubuntu 18.04 machines using this tool
+                    # returned_timestamp = datetime.datetime.fromisoformat(timestamp)
+                    returned_timestamp = datetime.datetime.strptime(
+                        timestamp, "%Y-%m-%d %H:%M:%S"
+                    )
 
     return returned_timestamp
 
