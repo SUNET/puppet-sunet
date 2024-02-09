@@ -39,7 +39,7 @@ class sunet::microk8s::node(
   }
   -> sunet::misc::ufw_allow { 'microk8s_ports':
     from => 'any',
-    port => [8080, 8443, 16443, 10250, 10255, 25000, 12379, 10257, 10259, 19001],
+    port => [8080, 8443, 16443, 10250, 10255, 25000, 12379, 10257, 10259, 19001, 30443],
   }
   # This is how ufw::allow does it, but that lacks support for "on"
   -> exec { 'allow-outgoing-on-calico':
