@@ -248,6 +248,14 @@ class sunet::naemon_monitor(
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
+  sunet::scriptherder::cronjob { 'thrukmaintenance':
+    cmd           => '/usr/bin/docker exec --user www-data naemon_monitor-thruk-1 /usr/bin/thruk maintenance',
+    minute        => '20,50',
+    ok_criteria   => ['exit_status=0'],
+    warn_criteria => ['exit_status=1', 'max_age=24h'],
+  }
+
+
   class { 'nagioscfg':
     additional_entities => $additional_entities,
     config              => 'naemon_monitor',
