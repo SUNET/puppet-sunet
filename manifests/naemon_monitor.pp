@@ -86,6 +86,11 @@ class sunet::naemon_monitor(
     content => template('sunet/naemon_monitor/stop-monitor.sh'),
   }
 
+  file { '/etc/logrotate.d/naemon_monitor':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/logrotate.erb'),
+  }
+
   file { '/opt/naemon_monitor/grafana.ini':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana.ini'),
