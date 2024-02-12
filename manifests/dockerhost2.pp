@@ -103,6 +103,10 @@ class sunet::dockerhost2(
     ensure  => $docker_version,
     require => Exec['dockerhost_apt_get_update'],
   }
+  package { 'docker-compose-plugin' :
+    ensure  => $docker_version,
+    require => Exec['dockerhost_apt_get_update'],
+  }
 
   file {
     '/etc/logrotate.d':
