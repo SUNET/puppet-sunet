@@ -29,6 +29,7 @@ services:
       - '/etc/naemon/conf.d/cosmos:/etc/naemon/conf.d/cosmos:ro'
       - '/usr/lib/nagios/plugins/check_inodes:/usr/lib/nagios/plugins/check_inodes:ro'
       - '/var/lib/naemon/:/var/lib/naemon/'
+      - '/var/log/naemon/:/var/log/naemon/'
       - '/var/nagflux/:/var/nagflux/'
 <%- @naemon_extra_volumes.each do |extra_volume| -%>
       - "<%= extra_volume %>"

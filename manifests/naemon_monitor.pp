@@ -86,6 +86,11 @@ class sunet::naemon_monitor(
     content => template('sunet/naemon_monitor/stop-monitor.sh'),
   }
 
+  file { '/etc/logrotate.d/naemon_monitor':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/logrotate.erb'),
+  }
+
   file { '/opt/naemon_monitor/grafana.ini':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana.ini'),
@@ -242,6 +247,14 @@ class sunet::naemon_monitor(
     content => template('sunet/naemon_monitor/naemon-contactgroups.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
+
+  sunet::scriptherder::cronjob { 'thrukmaintenance':
+    cmd           => '/usr/bin/docker exec --user www-data naemon_monitor-thruk-1 /usr/bin/thruk maintenance',
+    minute        => '50',
+    ok_criteria   => ['exit_status=0'],
+    warn_criteria => ['exit_status=1', 'max_age=24h'],
+  }
+
 
   class { 'nagioscfg':
     additional_entities => $additional_entities,
