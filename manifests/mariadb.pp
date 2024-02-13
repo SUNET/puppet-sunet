@@ -3,6 +3,7 @@ define sunet::mariadb(
   $mariadb_version=latest,
   $bootstrap=0,
   $ports = [3306, 4444, 4567, 4568],
+  $dns = undef,
 )
 {
   $mariadb_root_password = lookup('mariadb_root_password', undef, undef,'NOT_SET_IN_HIERA')
