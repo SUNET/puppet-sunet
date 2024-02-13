@@ -54,7 +54,7 @@ class sunet::clamav (
   }
   -> file_line { 'exclude_opt_backup_mounts':
     path => '/etc/clamav/clamd.conf',
-    line => 'ExcludePath ^/opt/backup_mounts'
+    line => 'ExcludePath ^/opt/backupmounts'
   }
   -> file_line { 'exclude_var_spool_postfix':
     path => '/etc/clamav/clamd.conf',
