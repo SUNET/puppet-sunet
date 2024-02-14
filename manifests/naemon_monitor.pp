@@ -4,6 +4,7 @@ class sunet::naemon_monitor(
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
+  Array $thruk_extra_volumes = [],
   Array $resolvers = [],
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
