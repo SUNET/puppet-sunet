@@ -17,6 +17,7 @@ class sunet::naemon_monitor(
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
   Array $exclude_hosts =  [],
+  Boolean $legacy_scriptherder = true,
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
 ){
@@ -205,10 +206,16 @@ class sunet::naemon_monitor(
       require        => File['/etc/naemon/conf.d/nagioscfg/'],
     }
   }
+
+  $scriptherder_name = $legacy_scriptherder ? {
+    true => 'check_scriptherder',
+    false => 'check_scripts',
+  }
+
   unless 'scriptherder' in $optout_checks {
     nagioscfg::service {'check_scriptherder':
       hostgroup_name => [$nrpe_group],
-      check_command  => 'check_nrpe!check_scriptherder',
+      check_command  => "check_nrpe!${scriptherder_name}",
       description    => 'Scriptherder Status',
       contact_groups => ['naemon-admins'],
       require        => File['/etc/naemon/conf.d/nagioscfg/'],
