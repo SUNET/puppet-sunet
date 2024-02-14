@@ -17,7 +17,7 @@ class sunet::naemon_monitor(
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
   Array $exclude_hosts =  [],
-  Boolean $legacy_scriptherder = true,
+  Boolean $modern_scriptherder = false,
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
 ){
@@ -207,9 +207,9 @@ class sunet::naemon_monitor(
     }
   }
 
-  $scriptherder_name = $legacy_scriptherder ? {
-    true => 'check_scriptherder',
-    false => 'check_scripts',
+  $scriptherder_name = $modern_scriptherder ? {
+    false => 'check_scriptherder',
+    true => 'check_scripts',
   }
 
   unless 'scriptherder' in $optout_checks {
