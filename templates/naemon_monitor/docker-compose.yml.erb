@@ -49,6 +49,9 @@ services:
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
       - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
       - '/opt/naemon_monitor/data:/var/lib/thruk'
+<%- @thruk_extra_volumes.each do |extra_volume| -%>
+      - "<%= extra_volume %>"
+<%- end -%>
     environment:
 <%- @thruk_env.each do |environ| -%>
       - "<%= environ %>"
