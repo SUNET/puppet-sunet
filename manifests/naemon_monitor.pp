@@ -207,7 +207,7 @@ class sunet::naemon_monitor(
     }
   }
 
-  $scriptherder_name = $modern_scriptherder ? {
+  $scriptherder_cmd = $modern_scriptherder ? {
     false => 'check_scriptherder',
     true => 'check_scripts',
   }
@@ -215,7 +215,7 @@ class sunet::naemon_monitor(
   unless 'scriptherder' in $optout_checks {
     nagioscfg::service {'check_scriptherder':
       hostgroup_name => [$nrpe_group],
-      check_command  => "check_nrpe!${scriptherder_name}",
+      check_command  => "check_nrpe!${scriptherder_cmd}",
       description    => 'Scriptherder Status',
       contact_groups => ['naemon-admins'],
       require        => File['/etc/naemon/conf.d/nagioscfg/'],
