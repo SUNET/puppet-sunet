@@ -13,6 +13,30 @@ class sunet::clamav (
     group  => 'root',
     mode   => '0755',
   }
+  -> file { '/etc/systemd/system/clamav-daemon.service.d':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  -> file { '/etc/systemd/system/clamav-daemon.service.d/override.conf':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0744',
+    content => "[Service]\nNice=15\n",
+  }
+  -> exec { 'clamd_override_reload':
+  subscribe   => File['/etc/systemd/system/clamav-daemon.service.d/override.conf'],
+  command     => 'systemctl daemon-reload',
+  refreshonly => true,
+  }
+  -> exec { 'clamd_override_restart':
+  subscribe   => File['/etc/systemd/system/clamav-daemon.service.d/override.conf'],
+  command     => 'systemctl restart clamav-daemon.service',
+  refreshonly => true,
+  onlyif      => 'systemctl is-active  clamav-daemon.service',
+  }
   -> file { '/opt/clamav/scan.sh':
     ensure  => file,
     owner   => 'root',
