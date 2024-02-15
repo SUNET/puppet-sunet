@@ -19,7 +19,7 @@ class sunet::clamav (
     group  => 'root',
     mode   => '0755',
   }
-  -> file { '/etc/systemd/system/clamav-daemon.service.d/override.conf':
+  -> file { '/etc/systemd/system/clamav-daemon.service.d/01-nice.conf':
     ensure  => file,
     owner   => 'root',
     group   => 'root',
@@ -27,12 +27,12 @@ class sunet::clamav (
     content => "[Service]\nNice=15\n",
   }
   -> exec { 'clamd_override_reload':
-  subscribe   => File['/etc/systemd/system/clamav-daemon.service.d/override.conf'],
+  subscribe   => File['/etc/systemd/system/clamav-daemon.service.d/01-nice.conf'],
   command     => 'systemctl daemon-reload',
   refreshonly => true,
   }
   -> exec { 'clamd_override_restart':
-  subscribe   => File['/etc/systemd/system/clamav-daemon.service.d/override.conf'],
+  subscribe   => File['/etc/systemd/system/clamav-daemon.service.d/01-nice.conf'],
   command     => 'systemctl restart clamav-daemon.service',
   refreshonly => true,
   onlyif      => 'systemctl is-active  clamav-daemon.service',
