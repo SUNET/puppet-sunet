@@ -13,6 +13,30 @@ class sunet::clamav (
     group  => 'root',
     mode   => '0755',
   }
+  -> file { '/etc/systemd/system/clamav-daemon.service.d':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  -> file { '/etc/systemd/system/clamav-daemon.service.d/01-nice.conf':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0744',
+    content => "[Service]\nNice=15\n",
+  }
+  -> exec { 'clamd_override_reload':
+  subscribe   => File['/etc/systemd/system/clamav-daemon.service.d/01-nice.conf'],
+  command     => 'systemctl daemon-reload',
+  refreshonly => true,
+  }
+  -> exec { 'clamd_override_restart':
+  subscribe   => File['/etc/systemd/system/clamav-daemon.service.d/01-nice.conf'],
+  command     => 'systemctl restart clamav-daemon.service',
+  refreshonly => true,
+  onlyif      => 'systemctl is-active  clamav-daemon.service',
+  }
   -> file { '/opt/clamav/scan.sh':
     ensure  => file,
     owner   => 'root',
@@ -54,7 +78,7 @@ class sunet::clamav (
   }
   -> file_line { 'exclude_opt_backup_mounts':
     path => '/etc/clamav/clamd.conf',
-    line => 'ExcludePath ^/opt/backup_mounts'
+    line => 'ExcludePath ^/opt/backupmounts'
   }
   -> file_line { 'exclude_var_spool_postfix':
     path => '/etc/clamav/clamd.conf',

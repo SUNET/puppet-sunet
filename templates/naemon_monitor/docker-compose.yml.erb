@@ -29,6 +29,7 @@ services:
       - '/etc/naemon/conf.d/cosmos:/etc/naemon/conf.d/cosmos:ro'
       - '/usr/lib/nagios/plugins/check_inodes:/usr/lib/nagios/plugins/check_inodes:ro'
       - '/var/lib/naemon/:/var/lib/naemon/'
+      - '/var/log/naemon/:/var/log/naemon/'
       - '/var/nagflux/:/var/nagflux/'
 <%- @naemon_extra_volumes.each do |extra_volume| -%>
       - "<%= extra_volume %>"
@@ -48,6 +49,9 @@ services:
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
       - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
       - '/opt/naemon_monitor/data:/var/lib/thruk'
+<%- @thruk_extra_volumes.each do |extra_volume| -%>
+      - "<%= extra_volume %>"
+<%- end -%>
     environment:
 <%- @thruk_env.each do |environ| -%>
       - "<%= environ %>"
