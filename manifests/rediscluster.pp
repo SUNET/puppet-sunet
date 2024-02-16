@@ -4,6 +4,7 @@ class sunet::rediscluster(
   Boolean $hostmode = false,
   Optional[Boolean] $tls = false,
   Optional[String] $cluster_announce_ip = '',
+  Optional[Boolean] $automatic_rectify = false,
 )
 {
 
@@ -35,6 +36,21 @@ class sunet::rediscluster(
     ensure  => present,
     content => template('sunet/rediscluster/55-vm-overcommit.conf.erb'),
   }
+  file {'/opt/redis-rectify.sh':
+    ensure  => present,
+    mode    => '0755',
+    content => template('sunet/rediscluster/redis-rectify.sh.erb'),
+  }
+  if $automatic_rectify {
+    sunet::scriptherder::cronjob { 'redis-rectify':
+      cmd           => '/opt/redis-rectify.sh',
+      hour          => '*',
+      minute        => '*/10',
+      ok_criteria   => ['exit_status=0','max_age=2d'],
+      warn_criteria => ['exit_status=1','max_age=3d'],
+    }
+  }
+
   range(0, $numnodes - 1).each |$i|{
     $clusterportnum = 16379 + $i
     $redisportnum = 6379 + $i
