@@ -153,7 +153,7 @@ class sunet::bankidp(
   }
   if $redis_node {
     class { 'sunet::rediscluster':
-      numnodes => 1,
+      numnodes => 2,
       hostmode => true,
       tls      => true
     }

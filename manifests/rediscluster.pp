@@ -35,6 +35,12 @@ class sunet::rediscluster(
     ensure  => present,
     content => template('sunet/rediscluster/55-vm-overcommit.conf.erb'),
   }
+  file {'/opt/redis-rectify.sh':
+    ensure  => present,
+i   mode    => '0755',
+    content => template('sunet/rediscluster/redis-rectify.sh.erb'),
+  }
+
   range(0, $numnodes - 1).each |$i|{
     $clusterportnum = 16379 + $i
     $redisportnum = 6379 + $i
