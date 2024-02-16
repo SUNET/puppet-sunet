@@ -37,7 +37,7 @@ class sunet::rediscluster(
   }
   file {'/opt/redis-rectify.sh':
     ensure  => present,
-i   mode    => '0755',
+    mode    => '0755',
     content => template('sunet/rediscluster/redis-rectify.sh.erb'),
   }
 
