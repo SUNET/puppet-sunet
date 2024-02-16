@@ -40,6 +40,13 @@ class sunet::rediscluster(
     mode    => '0755',
     content => template('sunet/rediscluster/redis-rectify.sh.erb'),
   }
+  sunet::scriptherder::cronjob { 'redis-rectify':
+    cmd           => '/opt/redis-rectify.sh',
+    hour          => '*',
+    minute        => '*/10',
+    ok_criteria   => ['exit_status=0','max_age=2d'],
+    warn_criteria => ['exit_status=1','max_age=3d'],
+  }
 
   range(0, $numnodes - 1).each |$i|{
     $clusterportnum = 16379 + $i
