@@ -18,7 +18,7 @@ key="/etc/ssl/private/${fqdn}_infra.key"
 ca="/etc/ssl/certs/infra.crt"
 password=$(puppet lookup --render-as s redis_password 2> /dev/null)
 clusterid=$(redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER MYID 2> /dev/null)
-if (redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER NODES 2> /dev/null| grep -e "^\"${clusterid}\""| grep slave); then
+if (redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER NODES 2> /dev/null| grep -e "^${clusterid}"| grep slave); then
   echo SLAVE, failing over to master
   if [ "${dryrun}" ]; then
     echo "No failover will happen in dryrun"
