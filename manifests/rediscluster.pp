@@ -5,6 +5,7 @@ class sunet::rediscluster(
   Optional[Boolean] $tls = false,
   Optional[String] $cluster_announce_ip = '',
   Optional[Boolean] $automatic_rectify = false,
+  Optional[Boolean] $prevent_reboot = false,
 )
 {
 
@@ -50,11 +51,14 @@ class sunet::rediscluster(
       warn_criteria => ['exit_status=1','max_age=3d'],
     }
   }
-  include sunet::packages::cowsay
-  file {'/etc/molly-guard/run.d/11-rediscluster':
-    ensure  => present,
-    mode    => '0755',
-    content => template('sunet/rediscluster/11-rediscluster.erb'),
+
+  if $prevent_reboot {
+    include sunet::packages::cowsay
+    file {'/etc/molly-guard/run.d/11-rediscluster':
+      ensure  => present,
+      mode    => '0755',
+      content => template('sunet/rediscluster/11-rediscluster.erb'),
+    }
   }
 
   range(0, $numnodes - 1).each |$i|{
