@@ -157,6 +157,7 @@ class sunet::bankidp(
       hostmode => true,
       tls      => true,
       automatic_rectify => true
+      prevent_reboot => true
     }
 
     file { "/etc/ssl/certs/${fqdn}_infra.crt":
