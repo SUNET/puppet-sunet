@@ -1,0 +1,58 @@
+version: '3.2'
+
+# TODO
+# Support for depends?
+# https://github.com/SUNET/puppet-sunet/blob/2b4329a8264f675d14ea5ec14f69acdf28a304a7/manifests/docker_run.pp#L12
+# Support for require?
+# https://github.com/SUNET/puppet-sunet/blob/2b4329a8264f675d14ea5ec14f69acdf28a304a7/manifests/docker_run.pp#L83C7-L83C14
+# Support for service order?
+# https://github.com/SUNET/puppet-sunet/blob/2b4329a8264f675d14ea5ec14f69acdf28a304a7/manifests/docker_run.pp#L84C7-L87
+# Support for extra parameters?
+# https://github.com/SUNET/puppet-sunet/blob/2b4329a8264f675d14ea5ec14f69acdf28a304a7/manifests/docker_run.pp#L90C7-L91
+
+services:
+  <%= @name %>:
+<% unless @flat_volumes.empty? -%>
+    volumes:
+<% @flat_volumes.each do |volume| -%>
+      - <%= volume %>
+<% end -%>
+<% end -%>
+<% if @hostname -%>
+    hostname:  <%= @hostname %>
+<% end -%>
+<% unless @ports.empty? -%>
+    ports:
+<% @ports.each do |port| -%>
+      - <%= port %>
+<% end -%>
+<% end -%>
+<% unless @expose.empty? -%>
+    expose:
+<% @expose.each do |single_expose| -%>
+      - <%= single_expose %>
+<% end -%>
+<% end -%>
+<% unless @env.empty? -%>
+    environment:
+<% @env.each do |single_env| -%>
+      - <%= single_env %>
+<% end -%>
+<% end -%>
+    networks:
+      - <%= @net %>
+<% if @command -%>
+    command:  <%= @command %>
+<% end -%>
+<% unless @dns.empty? -%>
+    dns:
+<% @dns.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+    image: <%= @image_tag %>
+
+networks:
+  docker:
+    name: docker
+    external: true

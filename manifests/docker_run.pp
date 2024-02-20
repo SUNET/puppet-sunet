@@ -1,4 +1,4 @@
-# Common use of docker::run
+#Common use of docker::run
 define sunet::docker_run(
   String $image,
   String $imagetag           = lookup('sunet_docker_default_tag', String, undef, 'latest'),
@@ -24,16 +24,27 @@ define sunet::docker_run(
   Boolean $uid_gid_consistency = true,
   Boolean $fetch_docker_image  = true,
 ) {
-  if $::facts['sunet_nftables_enabled'] == 'yes' {
-    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
-      notice("sunet::docker_compose: No to_docker interface found, not installing ${name}")
-      $_install_service = false
+
+  $docker_class = $::facts['dockerhost2'] ? {
+    yes => 'sunet::dockerhost2',
+    default => 'sunet::dockerhost',
+  }
+
+  if ($docker_class == 'sunet::dockerhost') {
+    if $::facts['sunet_nftables_enabled'] == 'yes' {
+      if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+        notice("sunet::docker_compose: No to_docker interface found, not installing ${name}")
+        $_install_service = false
+      } else {
+        $_install_service = true
+      }
     } else {
       $_install_service = true
     }
   } else {
     $_install_service = true
   }
+
 
   if $_install_service {
     if $use_unbound {
@@ -61,40 +72,61 @@ define sunet::docker_run(
     }
 
     $image_tag = "${image}:${imagetag}"
+
     if $fetch_docker_image {
       docker::image { "${name}_${image_tag}" :  # make it possible to use the same docker image more than once on a node
         ensure  => $ensure,
         image   => $image_tag,
-        require => Class['sunet::dockerhost'],
+        require => Class[$docker_class],
       }
     }
 
-    docker::run { $name :
-      ensure                   => $ensure,
-      volumes                  => flatten([$volumes, $_uid_gid]),
-      hostname                 => $hostname,
-      ports                    => $ports,
-      expose                   => $expose,
-      env                      => $env,
-      net                      => $net,
-      command                  => $command,
-      dns                      => $dns,
-      depends                  => $_depends,
-      require                  => flatten([$req]),
-      before_start             => $before_start,
-      before_stop              => $before_stop,
-      after_start              => $after_start,
-      after_stop               => $after_stop,
-      docker_service           => true,  # the service 'docker' is maintainer by puppet, so depend on it
-      image                    => $image_tag,
-      extra_parameters         => flatten([$extra_parameters]),
-      extra_systemd_parameters => $extra_systemd_parameters,
-    }
+    if ($docker_class == 'sunet::dockerhost') {
+      docker::run { $name :
+        ensure                   => $ensure,
+        volumes                  => flatten([$volumes, $_uid_gid]),
+        hostname                 => $hostname,
+        ports                    => $ports,
+        expose                   => $expose,
+        env                      => $env,
+        net                      => $net,
+        command                  => $command,
+        dns                      => $dns,
+        depends                  => $_depends,
+        require                  => flatten([$req]),
+        before_start             => $before_start,
+        before_stop              => $before_stop,
+        after_start              => $after_start,
+        after_stop               => $after_stop,
+        docker_service           => true,  # the service 'docker' is maintainer by puppet, so depend on it
+        image                    => $image_tag,
+        extra_parameters         => flatten([$extra_parameters]),
+        extra_systemd_parameters => $extra_systemd_parameters,
+      }
 
-    # Remove the upstart file created by earlier versions of garethr-docker
-    exec { "remove_docker_upstart_job_${name}":
-      command => "/bin/rm /etc/init/docker-${name}.conf",
-      onlyif  => "/usr/bin/test -f /etc/init/docker-${name}.conf",
+      # Remove the upstart file created by earlier versions of garethr-docker
+      exec { "remove_docker_upstart_job_${name}":
+        command => "/bin/rm /etc/init/docker-${name}.conf",
+        onlyif  => "/usr/bin/test -f /etc/init/docker-${name}.conf",
+      }
+    } else {
+
+      # Disable and remove the service under the old name without interfering with the Alias set in the new service file
+      # The Alias makes systemd create links with the alternative name
+      exec { "disable-and-remove-old-service_${name}":
+        command => "/usr/bin/systemctl disable ${name}; /usr/bin/systemctl stop ${name}; rm /etc/systemd/system/docker-${name}.service; /usr/bin/systemctl daemon-reload",
+        onlyif  => "/usr/bin/test ! -L /etc/systemd/system/docker-${name}.service -a -f /etc/systemd/system/docker-${name}.service",
+      }
+
+      $flat_volumes = flatten([$volumes, $_uid_gid])
+      sunet::docker_compose { $name:
+        service_alias    => "docker-${name}",
+        content          => template('sunet/dockerhost/docker-compose.yml.erb'),
+        service_name     => $name,
+        compose_dir      => '/opt/docker_run/',
+        compose_filename => 'docker-compose.yml',
+        description      => "${name} shimed fom docker_run",
+      }
     }
   }
 }

@@ -10,12 +10,13 @@ define sunet::docker_compose (
   String           $group = 'root',
   String           $mode = '0700',
   String           $owner = 'root',
+  Optional[String] $service_alias = undef,
   Optional[String] $start_command = undef,
 ) {
 
   $docker_class = $::facts['dockerhost2'] ? {
-    no => 'sunet::dockerhost',
-    default => 'sunet::dockerhost2',
+    yes => 'sunet::dockerhost2',
+    default => 'sunet::dockerhost',
   }
   if ($docker_class == 'sunet::dockerhost') {
     # handle legacy class
@@ -45,6 +46,7 @@ define sunet::docker_compose (
     })
 
     sunet::docker_compose_service { "${service_prefix}-${service_name}":
+      service_alias  => $service_alias,
       compose_file   => $compose_file,
       description    => $description,
       require        => File[$compose_file],
