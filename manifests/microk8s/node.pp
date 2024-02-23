@@ -22,11 +22,7 @@ class sunet::microk8s::node(
       }
     }
   }
-  package { 'snapd':
-    ensure   =>  latest,
-    provider => apt,
-  }
-  -> exec { 'install_microk8s':
+ exec { 'install_microk8s':
     command => "snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
   }
