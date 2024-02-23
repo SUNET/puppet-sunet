@@ -37,13 +37,6 @@ define sunet::mariadb(
     owner   => 999,
     group   => 999,
   }
-  sunet::scriptherder::cronjob { 'purge_binlogs':
-    cmd           => '/usr/local/bin/purge-binlogs',
-    hour          => '6',
-    minute        => '0',
-    ok_criteria   => ['exit_status=0','max_age=2d'],
-    warn_criteria => ['exit_status=1','max_age=3d'],
-  }
   file { '/usr/local/bin/bootstrap_cluster':
     ensure  => present,
     content => template('sunet/mariadb/bootstrap_cluster.erb.sh'),
@@ -55,6 +48,13 @@ define sunet::mariadb(
     mode    => '0744',
     owner   => 999,
     group   => 999,
+  }
+  sunet::scriptherder::cronjob { 'purge_binlogs':
+    cmd           => '/usr/local/bin/purge-binlogs',
+    hour          => '6',
+    minute        => '0',
+    ok_criteria   => ['exit_status=0','max_age=2d'],
+    warn_criteria => ['exit_status=1','max_age=3d'],
   }
   file { '/usr/local/bin/cluster-size':
     ensure  => present,
