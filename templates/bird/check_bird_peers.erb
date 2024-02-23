@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2017, 2019, SUNET
 # All rights reserved.
@@ -105,6 +105,7 @@ def birdc(socket_fn, logger):
                             )
     (stdout, _stderr) = proc.communicate()
     logger.debug('Command output:\n{!r}'.format(stdout))
+    stdout = stdout.decode('utf-8')
     if not stdout.startswith('0001 '):
         logger.error('Failed parsing output of {!s}: {!s}'.format(' '.join(cmd), exc))
         return None
