@@ -37,11 +37,6 @@ define sunet::mariadb(
     owner   => 999,
     group   => 999,
   }
-  file { '/usr/local/bin/bootstrap_cluster':
-    ensure  => present,
-    content => template('sunet/mariadb/bootstrap_cluster.erb.sh'),
-    mode    => '0744',
-  }
   file { '/usr/local/bin/run_manual_backup_dump':
     ensure  => present,
     content => template('sunet/mariadb/run_manual_backup_dump.erb.sh'),
