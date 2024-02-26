@@ -72,7 +72,7 @@ class sunet::rediscluster(
       ensure  => present,
       content => template('sunet/rediscluster/server.conf.erb'),
     }
-    if $::facts['sunet_nftables_enabled'] == 'yes' or $::facts['dockerhost_advanced_network'] == 'yes' {
+    if $::facts['sunet_nftables_enabled'] == 'yes' or $::facts['dockerhost_advanced_network'] == 'yes' or $::facts['dockerhost2'] == 'yes' {
       $ports = [$redisportnum, $clusterportnum]
       $ports.each|$port| {
         sunet::nftables::rule { "redis_port_${port}":
