@@ -22,7 +22,7 @@ services:
       - MYSQL_USER=<%= @mariadb_user %>
 <%- end -%>
 <%- if @mariadb_user_password -%>
-      - MYSQL_USER_PASSWORD=<%= @mariadb_user_password %>
+      - MYSQL_PASSWORD=<%= @mariadb_user_password %>
 <%- end -%>
 <%- if @mariadb_database -%>
       - MYSQL_DATABASE=<%= @mariadb_database %>
