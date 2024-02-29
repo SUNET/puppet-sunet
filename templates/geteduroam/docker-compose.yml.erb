@@ -1,0 +1,28 @@
+version: '3.2'
+
+services:
+  always-https:
+    image: docker.sunet.se/always-https
+<% unless @resolvers.empty? -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+    ports:
+      - '80:80'
+    environment:
+      - 'ACME_URL=http://acme-c.sunet.se/'
+
+  app:
+    image: docker.sunet.se/geteduroam-php-app:<%= app_tag %>
+<% unless @resolvers.empty? -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+    ports:
+      - '443:443'
+    volumes:
+      - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
