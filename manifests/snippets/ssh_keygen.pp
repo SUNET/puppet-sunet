@@ -1,5 +1,7 @@
 # Ssh keygen
-define sunet::snippets::ssh_keygen($key_file=undef) {
+define sunet::snippets::ssh_keygen(
+  $key_file=undef,
+) {
   $_key_file = $key_file ? {
     undef   => $name,
     default => $key_file
