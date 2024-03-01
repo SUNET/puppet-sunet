@@ -26,3 +26,5 @@ services:
       - '443:443'
     volumes:
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
+      - "/opt/getedroam/var:/var/www/var:rw"
+      - "/opt/getedroam/config/letswifi.conf.php:/var/www/etc/letswifi.conf.php:rw"
