@@ -28,6 +28,11 @@ class sunet::geteduroam(
     ensure_resource('sunet::misc::create_dir', "/opt/geteduroam/${directory}", { owner => 'root', group => 'root', mode => '0750'})
   }
 
+  file { '/opt/geteduroam/config/letswifi.conf.php':
+    content => template('sunet/geteduroam/letswifi.conf.simplesaml.php.erb'),
+    mode    => '0755',
+  }
+
   sunet::docker_compose { 'geteduroam':
     content          => template('sunet/geteduroam/docker-compose.yml.erb'),
     service_name     => 'geteduroam',
