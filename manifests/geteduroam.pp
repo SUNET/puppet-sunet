@@ -25,7 +25,7 @@ class sunet::geteduroam(
   $directories = ['var','config']
   $directories.each | String $directory |
   {
-    ensure_resource('sunet::misc::create_dir', $directory, { owner => 'root', group => 'root', mode => '0750'})
+    ensure_resource('sunet::misc::create_dir', "/opt/geteduroam/${directory}", { owner => 'root', group => 'root', mode => '0750'})
   }
 
   sunet::docker_compose { 'geteduroam':
