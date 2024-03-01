@@ -22,6 +22,12 @@ class sunet::geteduroam(
   class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
 
 
+  $directories = ['var','config']
+  $directories.each | String $directory |
+  {
+    ensure_resource('sunet::misc::create_dir', $directory)
+  }
+
   sunet::docker_compose { 'geteduroam':
     content          => template('sunet/geteduroam/docker-compose.yml.erb'),
     service_name     => 'geteduroam',
