@@ -1133,11 +1133,11 @@ $config = [
      'metadata.sources' => [
           [
               'type' => 'mdq',
-              'server' => 'http://mds.swamid.se/qa',
+              'server' => 'https://mds.swamid.se/qa',
               'validateCertificate' => [
                   '/var/www/cert/swamid.crt'
               ],
-              'cachedir' => '/var/simplesamlphp/mdq-cache',
+              'cachedir' => '/tmp/simplesaml/mdq-cache',
               'cachelength' => 900
           ]
      ],
