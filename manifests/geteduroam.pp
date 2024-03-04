@@ -31,7 +31,7 @@ class sunet::geteduroam(
     mode    => '0755',
   }
   file { '/opt/geteduroam/config/config.php':
-    content => template('sunet/geteduroam/config.conf.php.erb'),
+    content => template('sunet/geteduroam/config.php.erb'),
     mode    => '0755',
   }
 
