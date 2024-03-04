@@ -30,6 +30,10 @@ class sunet::geteduroam(
     content => template('sunet/geteduroam/letswifi.conf.simplesaml.php.erb'),
     mode    => '0755',
   }
+  file { '/opt/geteduroam/config/config.php':
+    content => template('sunet/geteduroam/config.conf.php.erb'),
+    mode    => '0755',
+  }
 
   file { '/opt/geteduroam/cert/swamid.crt':
     content => file('sunet/geteduroam/swamid-qa.crt'),
