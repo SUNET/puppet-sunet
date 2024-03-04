@@ -34,6 +34,10 @@ class sunet::geteduroam(
     content => template('sunet/geteduroam/config.php.erb'),
     mode    => '0755',
   }
+  file { '/opt/geteduroam/config/authsources.php':
+    content => template('sunet/geteduroam/authsources.php.erb'),
+    mode    => '0755',
+  }
 
   file { '/opt/geteduroam/cert/swamid.crt':
     content => file('sunet/geteduroam/swamid-qa.crt'),
