@@ -24,9 +24,15 @@ class sunet::geteduroam(
 
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/var', { owner => 'root', group => 'www-data', mode => '0770'})
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'root', mode => '0750'})
+  ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/cert', { owner => 'root', group => 'root', mode => '0750'})
 
   file { '/opt/geteduroam/config/letswifi.conf.php':
     content => template('sunet/geteduroam/letswifi.conf.simplesaml.php.erb'),
+    mode    => '0755',
+  }
+
+  file { '/opt/geteduroam/cert/swamid.crt':
+    content => file('sunet/geteduroam/swamid-qa.crt'),
     mode    => '0755',
   }
 
