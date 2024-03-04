@@ -27,7 +27,7 @@ $config = [
         'saml:SP',
 
         // The entity ID of this SP.
-        'entityID' => 'https://myapp.example.org/',
+        'entityID' => 'https://get.test.eduroam.se/',
 
         // The entity ID of the IdP this SP should contact.
         // Can be NULL/unset, in which case the user will be shown a list of available IdPs.
@@ -35,7 +35,7 @@ $config = [
 
         // The URL to the discovery service.
         // Can be NULL/unset, in which case a builtin discovery service will be used.
-        'discoURL' => null,
+        'discoURL' => 'https://ds.qa.swamid.se/ds',
 
         /*
          * If SP behind the SimpleSAMLphp in IdP/SP proxy mode requests
