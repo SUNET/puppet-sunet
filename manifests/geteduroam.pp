@@ -22,8 +22,8 @@ class sunet::geteduroam(
   class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
 
 
-  ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/var', { owner => 'root', group => 'root', mode => '0750'})
-  ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'www-data', mode => '0770'})
+  ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/var', { owner => 'root', group => 'www-data', mode => '0770'})
+  ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'root', mode => '0750'})
 
   file { '/opt/geteduroam/config/letswifi.conf.php':
     content => template('sunet/geteduroam/letswifi.conf.simplesaml.php.erb'),
