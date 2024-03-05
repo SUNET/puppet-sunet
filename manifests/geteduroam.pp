@@ -33,9 +33,13 @@ class sunet::geteduroam(
   } else {
     # make key pair
     sunet::snippets::keygen {'saml_metadata_key':
-      key_file  => '/opt/geteduroam/cert/saml.pem',
-      cert_file => '/opt/geteduroam/cert/saml.key',
+      key_file  => '/opt/geteduroam/cert/saml.key',
+      cert_file => '/opt/geteduroam/cert/saml.pem',
     }
+  }
+  file { '/opt/geteduroam/cert/saml.key':
+    group =>  'www-data',
+    mode  => '0750',
   }
 
   file { '/opt/geteduroam/config/letswifi.conf.php':
