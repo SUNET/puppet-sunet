@@ -11,28 +11,8 @@
 	'realm.selector' => null, // one of null, getparam or httphost
 	'realm.default' => 'get.test.eduroam.se', // used when realm.selector = null
 	'realm.auth' => [
-			'demo.eduroam.no' => [
-					'userIdAttribute' => 'eduPersonPrincipalName', // null for NameID
-					'samlIdp' => 'https://idp-test.feide.no',
-				],
-			'demo.eduroam.nl' => [
-					'userIdAttribute' => 'eduPersonPrincipalName', // null for NameID
-					'samlIdp' => 'https://engine.test.surfconext.nl/authentication/idp/metadata',
-					//'authzAttributeValue' => [
-					//	'eduPersonAffiliation' => ['employee','staff'],
-					//	'eduPersonEntitlement' => 'geteduroam-user',
-					//	],
-					//'verifyAuthenticatingAuthority' => false,
-					//'userRealmPrefixAttribute' => 'eduPersonPrimaryAffiliation',
-					//'userRealmPrefixAttribute' => 'eduPersonAffiliation',
-					//'userRealmPrefixValueMap' => [
-					//        'employee' => 'mdw',
-					//        'staff' => null,
-					//        'student' => 'student',
-					//	],
-					'idpList' => [
-							'https://example.com'
-						],
+			'get.test.eduroam.se' => [
+					'userIdAttribute' => 'subject-id'
 				],
 		],
 	'pdo.dsn' => 'sqlite:' . dirname( __DIR__ ) . '/var/letswifi-dev.sqlite',
