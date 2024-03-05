@@ -26,6 +26,18 @@ class sunet::geteduroam(
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'root', mode => '0750'})
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/cert', { owner => 'root', group => 'root', mode => '0755'})
 
+
+  if lookup('saml_metadata_key', undef, undef, undef) != undef {
+    sunet::snippets::secret_file { '/opt/geteduroam/cert/saml.key': hiera_key => 'saml_metadata_key' }
+    # assume cert is in cosmos repo
+  } else {
+    # make key pair
+    sunet::snippets::keygen {'saml_metadata_key':
+      key_file  => '/opt/geteduroam/cert/saml.pem',
+      cert_file => '/opt/geteduroam/cert/saml.key',
+    }
+  }
+
   file { '/opt/geteduroam/config/letswifi.conf.php':
     content => template('sunet/geteduroam/letswifi.conf.simplesaml.php.erb'),
     mode    => '0755',

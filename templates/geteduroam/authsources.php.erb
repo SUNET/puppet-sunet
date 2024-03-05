@@ -25,6 +25,8 @@ $config = [
     // An authentication source which can authenticate against SAML 2.0 IdPs.
     'default-sp' => [
         'saml:SP',
+        'privatekey' => '/var/www/cert/saml.key',
+        'certificate' => '/var/www/cert/saml.pem',
 
         // The entity ID of this SP.
         'entityID' => 'https://get.test.eduroam.se/',
