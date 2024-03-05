@@ -13,6 +13,7 @@
 	'realm.auth' => [
 			'get.test.eduroam.se' => [
 					'userIdAttribute' => 'subject-id'
+                    'idpList' => ['an-whitelisted-IdP','https://testidp.qa.swamid.se/simplesaml/saml2/idp/metadata.php','https://bankidp.qa.swamid.se/bankid/idp'],
 				],
 		],
 	'pdo.dsn' => 'sqlite:' . dirname( __DIR__ ) . '/var/letswifi-dev.sqlite',
