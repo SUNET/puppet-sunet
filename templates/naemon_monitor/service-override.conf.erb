@@ -3,4 +3,4 @@
 ExecStop=
 # Make sure that naemon has time to write down retention.dat
 ExecStop=/opt/naemon_monitor/stop-monitor.sh
-ExecReload=/usr/bin/docker exec naemonmonitor_naemon_1 bash -c 'pkill -o naemon --signal HUP'
+ExecReload=/usr/bin/docker exec <%= @naemon_container %> bash -c 'pkill -o naemon --signal HUP'
