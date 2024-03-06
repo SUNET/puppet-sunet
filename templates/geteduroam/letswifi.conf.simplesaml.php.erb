@@ -13,12 +13,13 @@
 	'realm.auth' => [
 			'get.test.eduroam.se' => [
 					'userIdAttribute' => 'subject-id',
-                    // eduPersonScopedAffiliation
-                    'urn:oid:1.3.6.1.4.1.5923.1.1.1.9' => [
-                      'member@sunet.se',
-                    ],
-				],
-		],
+                    'authzAttributeValue' => [
+                      // eduPersonScopedAffiliation
+                      'urn:oid:1.3.6.1.4.1.5923.1.1.1.9' => [
+                        'member@sunet.se',
+                      ],
+				    ],
+		    ],
 	'pdo.dsn' => 'sqlite:' . dirname( __DIR__ ) . '/var/letswifi-dev.sqlite',
 	'pdo.username' => null,
 	'pdo.password' => null,
