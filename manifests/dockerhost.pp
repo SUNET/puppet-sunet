@@ -18,6 +18,9 @@ class sunet::dockerhost(
   Boolean $enable_ipv6                        = false,
   Boolean $advanced_network                   = false,
 ) {
+
+  $container_name_delimiter = '_'
+
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
   include stdlib
