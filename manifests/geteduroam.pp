@@ -3,6 +3,7 @@ class sunet::geteduroam(
   String $domain,
   Array $resolvers = [],
   String $app_tag = 'latest',
+  Int $realm_version = 1,
   String $freeradius_tag = 'latest',
   Array $app_admins = [],
 ){
