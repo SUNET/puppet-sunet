@@ -1,6 +1,7 @@
 version: '3.2'
 
 services:
+  <% if @app %>
   always-https:
     image: docker.sunet.se/always-https
 <% unless @resolvers.empty? -%>
@@ -31,7 +32,9 @@ services:
       - "/opt/geteduroam/config/letswifi.conf.php:/var/www/etc/letswifi.conf.php:ro"
       - "/opt/geteduroam/config/config.php:/var/www/simplesamlphp/config/config.php:ro"
       - "/opt/geteduroam/config/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro"
+<% end %>
 
+<% if @prod %>
   radius:
     image: docker.sunet.se/geteduroam-freeradius:<%= @freeradius_tag %>
 <% unless @resolvers.empty? -%>
@@ -46,3 +49,4 @@ services:
     volumes:
       - "/opt/geteduroam/cert:/etc/raddb/certs:ro"
       - "/opt/geteduroam/config/clients.conf:/etc/raddb/clients.conf"
+<% end %>

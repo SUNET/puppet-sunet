@@ -1,9 +1,9 @@
 <?php return [
 	'auth.service' => 'SimpleSAMLAuth',
 	'auth.admin' => [
-          <%- @app_admins.each do |app| -%>
+<%- @app_admins.each do |app| -%>
           '<%= app %>',
-          <%- end -%>
+<%- end -%>
 	],
 	'auth.params' => [
 			'autoloadInclude' => dirname( __DIR__ ) . '/simplesamlphp/src/_autoload.php',
@@ -17,9 +17,9 @@
                     'authzAttributeValue' => [
                       // eduPersonScopedAffiliation
                       'urn:oid:1.3.6.1.4.1.5923.1.1.1.9' => [
-          <%- @required_scoped_affiliation.each do |aff| -%>
-          '<%= aff %>',
-          <%- end -%>
+<%- @required_scoped_affiliation.each do |aff| -%>
+                          '<%= aff %>',
+<%- end -%>
                       ],
 				    ],
 		    ],
