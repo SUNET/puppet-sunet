@@ -3,7 +3,7 @@ class sunet::geteduroam(
   String $domain,
   Array $resolvers = [],
   Boolean $mariadb = true,
-  String $mariadb_host = '127.0.0.1',
+  String $mariadb_host = $facts['ipaddress_default'],
   Boolean $app = true,
   Boolean $radius = true,
   String $app_tag = 'latest',
