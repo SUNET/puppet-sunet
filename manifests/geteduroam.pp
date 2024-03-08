@@ -2,6 +2,7 @@
 class sunet::geteduroam(
   String $domain,
   Array $resolvers = [],
+  Boolean $mariadb = true,
   Boolean $app = true,
   Boolean $radius = true,
   String $app_tag = 'latest',
@@ -13,6 +14,11 @@ class sunet::geteduroam(
 
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'root', mode => '0750'})
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/cert', { owner => 'root', group => 'root', mode => '0755'})
+
+  if $mariadb {
+    sunet::mariadb { 'geteduroam_db':
+    }
+  }
 
   if $radius {
     sunet::nftables::allow { 'expose-allow-radius':
