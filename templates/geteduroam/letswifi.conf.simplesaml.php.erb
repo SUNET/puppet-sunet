@@ -28,7 +28,7 @@
 <%- if @mariadb -%>
 	'pdo.dsn' => 'mysql:host:<%= @mariadb_host %>;dbname=geteduroam' . dirname( __DIR__ ) . '/var/letswifi-dev.sqlite',
 	'pdo.username' => 'geteduroam',
-	'pdo.password' => '<%= scope.call_function('safe_hiera', [mariadb_user_password'])  %>',
+	'pdo.password' => '<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>',
 <%- else %>
 	'pdo.dsn' => 'sqlite:' . dirname( __DIR__ ) . '/var/letswifi-dev.sqlite',
     'pdo.username' => null,
