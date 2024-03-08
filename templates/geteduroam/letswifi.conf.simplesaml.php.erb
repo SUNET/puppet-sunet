@@ -10,9 +10,9 @@
 			'authSource' => 'default-sp',
 		],
 	'realm.selector' => null, // one of null, getparam or httphost
-    'realm.default' => 'get-v<% @realm_version %>.test.eduroam.se',
+    'realm.default' => 'get-v<%= @realm_version %>.test.eduroam.se',
 	'realm.auth' => [
-			'get-v<% @realm_version %>.test.eduroam.se' => [
+			'get-v<%= @realm_version %>.test.eduroam.se' => [
 					'userIdAttribute' => 'subject-id',
                     'authzAttributeValue' => [
                       // eduPersonScopedAffiliation
