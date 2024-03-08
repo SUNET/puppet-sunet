@@ -42,6 +42,7 @@ services:
 <% end -%>
     ports:
       - 1812:1812/udp
+    command: -X
     volumes:
       - "/opt/geteduroam/cert:/etc/raddb/certs:ro"
       - "/opt/geteduroam/config/clients.conf:/etc/raddb/clients.conf"
