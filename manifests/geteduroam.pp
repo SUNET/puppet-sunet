@@ -6,6 +6,11 @@ class sunet::geteduroam(
   String $freeradius_tag = 'latest'
 ){
 
+  sunet::nftables::allow { 'expose-allow-radius':
+    from  => 'any',
+    port  => 1812,
+    proto =>  'udp'
+  }
   if $::facts['sunet_nftables_enabled'] == 'yes' {
       sunet::nftables::docker_expose { 'allow_http' :
       iif           => $interface,
