@@ -34,7 +34,7 @@ services:
       - "/opt/geteduroam/config/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro"
 <% end %>
 
-<% if @prod %>
+<% if @radius %>
   radius:
     image: docker.sunet.se/geteduroam-freeradius:<%= @freeradius_tag %>
 <% unless @resolvers.empty? -%>
