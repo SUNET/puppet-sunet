@@ -31,3 +31,17 @@ services:
       - "/opt/geteduroam/config/letswifi.conf.php:/var/www/etc/letswifi.conf.php:ro"
       - "/opt/geteduroam/config/config.php:/var/www/simplesamlphp/config/config.php:ro"
       - "/opt/geteduroam/config/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro"
+
+  radius:
+    image: docker.sunet.se/geteduroam-freeradius:<%= @freeradius_tag %>
+<% unless @resolvers.empty? -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+    ports:
+      - 1812:1812/udp
+    volumes:
+      - "/opt/geteduroam/cert:/etc/raddb/certs:ro"
+      - "/opt/geteduroam/config/clients.conf:/etc/raddb/clients.conf"

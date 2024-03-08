@@ -2,7 +2,8 @@
 class sunet::geteduroam(
   String $domain,
   Array $resolvers = [],
-  String $app_tag = 'latest'
+  String $app_tag = 'latest',
+  String $freeradius_tag = 'latest'
 ){
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
@@ -52,6 +53,11 @@ class sunet::geteduroam(
   }
   file { '/opt/geteduroam/config/authsources.php':
     content => template('sunet/geteduroam/authsources.php.erb'),
+    mode    => '0755',
+  }
+
+  file { '/opt/geteduroam/config/clients.conf':
+    content => template('sunet/geteduroam/clients.conf.erb'),
     mode    => '0755',
   }
 
