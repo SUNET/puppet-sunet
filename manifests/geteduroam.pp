@@ -6,6 +6,7 @@ class sunet::geteduroam(
   Int $realm_version = 1,
   String $freeradius_tag = 'latest',
   Array $app_admins = [],
+  Array $required_scoped_affiliation = [],
 ){
 
   sunet::nftables::allow { 'expose-allow-radius':
