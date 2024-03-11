@@ -1,0 +1,237 @@
+#!/usr/bin/env python3
+# pylint:disable=invalid-name
+# pylint:enable=invalid-name
+"""
+This tool manages the installation of IBM Spectrum Protect Backup-Archive
+Client for the Safespring Backup 2.0 service
+
+Operations based on a combination of:
+https://docs.safespring.com/backup/install/linux/
+https://www.ibm.com/docs/en/SSEQVQ_8.1.15/pdf/b_ba_guide_unx_lnx.pdf
+
+Tools used before committing code:
+black sunet-baas2-tbmr-bootstrap
+pylint sunet-baas2-tbmr-bootstrap
+mypy --strict sunet-baas2-tbmr-bootstrap
+"""
+
+import argparse
+import os
+import os.path
+import shlex
+import shutil
+import subprocess
+import sys
+from typing import Union
+
+
+def get_installed_version() -> Union[str, None]:
+    """Return current installed version string or None if not installed"""
+    proc_args = shlex.split("dpkg --status tbmr")
+    # Package: tbmr
+    # Status: install ok installed
+    # Priority: extra
+    # Section: Applications/Archiving
+    # Installed-Size: 32492
+    # Maintainer: <jenkins@cs-linuxbuild>
+    # Architecture: amd64
+    # Version: 9.5.2.3206-1
+    # Provides: tbmr, tbmr
+    # Depends: tivsm-ba
+    # Description: TBMR stores configuration information about your system required to recover the OS.  # pylint:disable=line-too-long
+    # License: commercial
+    # Vendor: Cristie Software Ltd.
+    # Homepage: http://www.cristie.com
+    try:
+        proc = subprocess.run(
+            proc_args,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf8",
+        )
+    except subprocess.CalledProcessError as exc:
+        # If the package is not installed this is OK, we will install it
+        if " is not installed " in exc.stderr:
+            return None
+        raise exc
+
+    # Parse out the package information
+    package_info = {}
+    for line in proc.stdout.splitlines():
+        key, value = line.split(": ", maxsplit=2)
+        package_info[key] = value
+
+    if "Version" not in package_info:
+        raise KeyError("no 'Version' field parsed from dpkg output")
+
+    print(f"Installed TBMR version: {package_info['Version']}")
+    return package_info["Version"]
+
+
+def download_file(url: str, download_dir: str) -> str:
+    """downloads the file pointed to by url, returns path to downloaded file"""
+
+    os.makedirs(download_dir, exist_ok=True)
+
+    filename = url.split("/")[-1]
+
+    file_path = f"{download_dir}/{filename}"
+
+    if os.path.isfile(file_path):
+        print(f"file {file_path} already exists, not downloading")
+        return file_path
+
+    proc_args = shlex.split(f"curl --fail --silent --output {file_path} {url}")
+    subprocess.run(proc_args, check=True)
+
+    print(f"downloaded file: {file_path}")
+
+    return file_path
+
+
+def install_deb_file(deb_file: str) -> None:
+    """install the TBMR deb file"""
+
+    # Make sure the file exists in expected location
+    if os.path.isfile(deb_file):
+        print(
+            f"found the tbmr installation file at: '{deb_file}', continue with install"
+        )
+    else:
+        print(f"ERROR: could not find installation file at: '{deb_file}', exiting")
+        sys.exit(1)
+
+    # Install TBMR
+    proc_args = shlex.split(f"dpkg -i {deb_file}")
+    subprocess.run(proc_args, check=True)
+
+
+def handle_installation(
+    args: argparse.Namespace, installed_version: Union[str, None], download_dir: str
+) -> None:
+    """Overall handler for installing the TBMR client"""
+    if installed_version != args.version:
+        print(f"installing TBMR version: {args.version}")
+        print(f"url is: {args.tbmr_url}")
+        deb_file = download_file(args.tbmr_url, download_dir)
+        install_deb_file(deb_file)
+    else:
+        print(
+            f"The TBMR version about to be installed ('{args.version}') is already installed, exiting"  # pylint:disable=line-too-long
+        )
+        sys.exit(0)
+
+
+def activate_tbmr_license(args: argparse.Namespace) -> bool:
+    """Activate the TBMR software license"""
+
+    # Remove current .lic file
+    if os.path.isfile("/etc/cbmr/TBMR.lic"):
+        os.remove("/etc/cbmr/TBMR.lic")
+
+    # Activate license
+    print(
+        f"Trying to activate TBMR with license key: '{args.tbmr_lic}' and contract id: '{args.tbmr_cid}'"  # pylint:disable=line-too-long
+    )
+    proc_args = shlex.split(
+        f"licmgr -p tbmr --cid {args.tbmr_cid} --act {args.tbmr_lic}"
+    )
+    output = subprocess.run(
+        proc_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        encoding="utf-8",
+    )
+    if "Activation code : " in output.stdout:
+        print("Successfully activated TBMR")
+        return True
+
+    print("Failed to activate TBMR")
+    return False
+
+
+def main() -> None:
+    """the starting point of the program"""
+
+    class MyParser(argparse.ArgumentParser):
+        """Class to provide full help message when supplying a faulty argument"""
+
+        def error(self, message):
+            sys.stderr.write(f"error: {message}\n")
+            self.print_help()
+            sys.exit(2)
+
+    msg = "This is a script for installing TBMR (Criste Bare Machine Recovery for TSM)"
+    parser = MyParser(description=msg, prog="sunet-baas2-tbmr-bootstrap")
+    parser.add_argument(
+        "--install", help="Needed for installation to happen", action="store_true"
+    )
+    parser.add_argument("--version", help="Version of client to install")
+    parser.add_argument(
+        "--tbmr_url",
+        help="The download url for the TBMR .deb installer",
+    )
+    parser.add_argument(
+        "--tbmr_lic",
+        help="The license key needed to activate TBMR",
+    )
+    parser.add_argument("--tbmr_cid", help="The customer contract id for TBMR")
+    args = parser.parse_args()
+
+    if args.install and not args.version:
+        print("--install requires that you supply --version")
+        sys.exit(1)
+    if args.install and not args.tbmr_url:
+        print("--install requires that you supply --tbmr_url")
+        sys.exit(1)
+    # You need to supply tbmr_lic either as an argument or an environment variable
+    tbmr_lic_env_name = "tbmr_lic"
+    tbmr_lic = os.environ.get(tbmr_lic_env_name)
+    if tbmr_lic is None:
+        if args.install and not args.tbmr_lic:
+            print(
+                f"--install requires that you supply --tbmr_lic or set environment variable '{tbmr_lic_env_name}"
+            )
+            sys.exit(1)
+    # You need to supply tbmr_cid either as an argument or an environment variable
+    tbmr_cid_env_name = "tbmr_cid"
+    tbmr_cid = os.environ.get(tbmr_cid_env_name)
+    if tbmr_cid is None:
+        if args.install and not args.tbmr_cid:
+            print(
+                f"--install requires that you supply --tbmr_cid or set environment variable '{tbmr_cid_env_name}"
+            )
+            sys.exit(1)
+
+    installed_version = get_installed_version()
+
+    if installed_version is None and args.install is False:
+        print(
+            "The client is currently not installed, you need to run the tool with --install"
+        )
+        sys.exit(1)
+
+    # This is the directory used for downloading temporary files when
+    # installing the client. It will be automatically removed when installation
+    # is done.
+    download_dir = "/var/cache/sunet-baas2-tbmr-bootstrap"
+
+    # Install TBMR
+    if args.install:
+        handle_installation(args, installed_version, download_dir)
+
+    # Remove download dir to save space
+    if os.path.isdir(download_dir):
+        shutil.rmtree(download_dir)
+
+    # Activate TBMR software licence
+    if args.tbmr_lic and args.tbmr_cid:
+        activation_result = activate_tbmr_license(args)
+        if activation_result is False:
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

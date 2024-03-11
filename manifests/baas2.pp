@@ -31,6 +31,9 @@ class sunet::baas2(
   Boolean       $monitor_backups=true,
   String        $version='8.1.17.2',
   Array[String] $backup_dirs = [],
+  Boolean       $install_tbmr=false,
+  String        $tbmr_version='9.5.2.3206-1',
+  String        $tbmr_url='https://s3.sto1.safedc.net/94f5b4f4aa674782b6bc4181943e67f1:tbmr/wab0snk8lrh6l8cjzgnaozm8siw7g7/tbmr_9.5.2.3206-1_amd64.deb',
 ) {
 
   # MUST be set properly in hiera to continue
@@ -118,6 +121,21 @@ class sunet::baas2(
         cmd         => '/usr/local/sbin/sunet-baas2-status',
         minute      => '26',
         ok_criteria => ['exit_status=0', 'max_age=3h'],
+      }
+    }
+
+    # TBMR section
+    if $install_tbmr and $tbmr_lic != 'NOT_SET_IN_HIERA' and $tbmr_cid != 'NOT_SET_IN_HIERA' {
+      file { '/usr/local/sbin/sunet-baas2-tbmr-bootstrap':
+        ensure  => 'file',
+        mode    => '0755',
+        owner   => 'root',
+        content => file('sunet/baas2/sunet-baas2-tbmr-bootstrap')
+      }
+
+      # Make sure the requested TBMR version is installed
+      exec { "sunet-baas2-tbmr-bootstrap --install:"
+        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --install --version=${tbmr_version} --tbmr_url=${tbmr_url}",
       }
     }
   }
