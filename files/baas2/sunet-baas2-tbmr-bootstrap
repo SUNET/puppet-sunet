@@ -245,24 +245,13 @@ def main() -> None:
             "Both --install and --activate is provided simultaneously, this is not allowed"
         )
         sys.exit(1)
-    # You need to supply tbmr_lic either as an argument or an environment variable
-    if args.activate:
-        tbmr_lic_env_name = "tbmr_lic"
-        tbmr_lic = os.environ.get(tbmr_lic_env_name)
-        if tbmr_lic is None and not args.tbmr_lic:
-            print(
-                f"--activate requires that you supply --tbmr_lic or set environment variable '{tbmr_lic_env_name}'"  # pylint:disable=line-too-long
-            )
-            sys.exit(1)
+    if args.activate and not args.tbmr_lic:
+        print("--activate requires that you supply --tbmr_lic")
+        sys.exit(1)
     # You need to supply tbmr_cid either as an argument or an environment variable
-    if args.activate:
-        tbmr_cid_env_name = "tbmr_cid"
-        tbmr_cid = os.environ.get(tbmr_cid_env_name)
-        if tbmr_cid is None and not args.tbmr_cid:
-            print(
-                f"--activate requires that you supply --tbmr_cid or set environment variable '{tbmr_cid_env_name}'"  # pylint:disable=line-too-long
-            )
-            sys.exit(1)
+    if args.activate and not args.tbmr_cid:
+        print("--activate requires that you supply --tbmr_cid")
+        sys.exit(1)
 
     installed_version = get_installed_version()
 
@@ -286,12 +275,7 @@ def main() -> None:
 
     # Activate TBMR software licence
     if args.activate:
-        # If it is not an env variable, we use the value from the provided argument
-        if tbmr_cid is None:
-            tbmr_cid = args.tbmr_cid
-        if tbmr_lic is None:
-            tbmr_lic = args.tbmr_lic
-        activation_result = activate_tbmr_license(tbmr_cid, tbmr_lic)
+        activation_result = activate_tbmr_license(args.tbmr_cid, args.tbmr_lic)
         if activation_result is False:
             print("Failed to activate TBMR")
             sys.exit(1)

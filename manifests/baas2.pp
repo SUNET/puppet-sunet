@@ -129,6 +129,9 @@ class sunet::baas2(
     }
 
     # TBMR section
+    # MUST be set properly in hiera to continue
+    $tbmr_lic = safe_hiera('tbmr_lic')
+    $tbmr_cid = safe_hiera('tbmr_cid')
     if $install_tbmr and $tbmr_lic != 'NOT_SET_IN_HIERA' and $tbmr_cid != 'NOT_SET_IN_HIERA' {
       file { '/usr/local/sbin/sunet-baas2-tbmr-bootstrap':
         ensure  => 'file',
@@ -144,11 +147,7 @@ class sunet::baas2(
 
       # Activate the TBMR license
       exec { "sunet-baas2-tbmr-bootstrap --activate:"
-        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate",
-        environment => [
-            "tbmr_cid=${tbmr_cid}",
-            "tbmr_lic=${tbmr_lic}",
-        ],
+        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate --tbmr_lic=${tbmr_lic} --tbmr_cid=${tbmr_cid}",
       }
     }
   }
