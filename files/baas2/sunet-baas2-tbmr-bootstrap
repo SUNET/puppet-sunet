@@ -2,12 +2,8 @@
 # pylint:disable=invalid-name
 # pylint:enable=invalid-name
 """
-This tool manages the installation of IBM Spectrum Protect Backup-Archive
-Client for the Safespring Backup 2.0 service
-
-Operations based on a combination of:
-https://docs.safespring.com/backup/install/linux/
-https://www.ibm.com/docs/en/SSEQVQ_8.1.15/pdf/b_ba_guide_unx_lnx.pdf
+This tool manages the installation and license activation of
+Bare Machine Recovery for Tivoli TSM (TBMR)
 
 Tools used before committing code:
 black sunet-baas2-tbmr-bootstrap
