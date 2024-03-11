@@ -24,7 +24,7 @@ class sunet::geteduroam(
 
   if $radius {
     sunet::nftables::allow { 'expose-allow-radius':
-      from  => lookup('radius_servers', undef, undef,'127.0.0.1' ),
+      from  => lookup('radius_servers', undef, undef,['192.36.171.226', '192.36.171.227', '2001:6b0:8:2::226', '2001:6b0:8:2::227'] ),
       port  => 1812,
       proto =>  'udp'
     }
