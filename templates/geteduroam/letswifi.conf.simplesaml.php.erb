@@ -16,6 +16,7 @@
 					'userIdAttribute' => 'subject-id',
                     'authzAttributeValue' => [
                       // eduPersonScopedAffiliation
+                    'urn:oasis:names:tc:SAML:attribute:subject-id' => ['jocar@sunet.se'],
                       'urn:oid:1.3.6.1.4.1.5923.1.1.1.9' => [
 <%- @required_scoped_affiliation.each do |aff| -%>
                           '<%= aff %>',
