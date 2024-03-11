@@ -29,6 +29,7 @@ class sunet::geteduroam(
       proto =>  'udp'
     }
 
+    $shared_secret = lookup('shared_secret', undef, undef, undef)
     file { '/opt/geteduroam/config/clients.conf':
       content => template('sunet/geteduroam/clients.conf.erb'),
       mode    => '0755',
