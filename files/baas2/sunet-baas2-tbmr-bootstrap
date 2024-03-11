@@ -165,10 +165,6 @@ def get_tbmr_license_status(tbmr_lic: str) -> bool:
     lines = output.stdout.splitlines()
     for line in lines:
         trimmed_line = line.strip()
-        print("--------------")
-        print(activation_string)
-        print(trimmed_line)
-        print("--------------")
         if trimmed_line == activation_string:
             print(
                 f"TBMR is already activated with the same license key: {tbmr_lic}, exiting"
