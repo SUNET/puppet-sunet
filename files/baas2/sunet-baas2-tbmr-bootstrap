@@ -28,6 +28,7 @@ from typing import Union
 def get_installed_version() -> Union[str, None]:
     """Return current installed version string or None if not installed"""
     proc_args = shlex.split("dpkg --status tbmr")
+    # If installed:
     # Package: tbmr
     # Status: install ok installed
     # Priority: extra
@@ -42,6 +43,12 @@ def get_installed_version() -> Union[str, None]:
     # License: commercial
     # Vendor: Cristie Software Ltd.
     # Homepage: http://www.cristie.com
+
+    # If not installed:
+    # $ dpkg --status tbmr
+    # dpkg-query: package 'tbmr' is not installed and no information is available
+    # Use dpkg --info (= dpkg-deb --info) to examine archive files.
+
     try:
         proc = subprocess.run(
             proc_args,
@@ -123,8 +130,60 @@ def handle_installation(
         sys.exit(0)
 
 
-def activate_tbmr_license(args: argparse.Namespace) -> bool:
+def get_tbmr_license_status(tbmr_lic: str) -> bool:
+    """determines if TBMR is already activated with the same license key"""
+    # Activate license
+    proc_args = shlex.split("licmgr -p tbmr")
+    output = subprocess.run(
+        proc_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+        encoding="utf-8",
+    )
+    # Example output:
+    # ===============================================================================
+    #                     Cristie License Manager Version
+    #                                     9.5
+    #             Copyright (C) 2012-2023 Cristie Software Limited
+    # ===============================================================================
+    # Machine attributes : {physical, server}
+    #         Contract ID : XXXX
+    #         Signature : KE3ZJ8CM-9PTP4EKP-JK26DARY-VY5VPSC7
+    #             Product : Bare Machine Recovery for Tivoli TSM (TBMR)
+    #             Version : 9.5
+    # Maintenance ends on : 2024-12-31
+    #
+    #     Activation code : XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX
+    #     Activation type : Product rental code
+    #     Software expiry : 2024-12-31
+    #         Attributes : {physical, server}
+    #
+    #             Status : Rental licence
+
+    activation_string = f"Activation code : {tbmr_lic}"
+    lines = output.stdout.splitlines()
+    for line in lines:
+        trimmed_line = line.strip()
+        print("--------------")
+        print(activation_string)
+        print(trimmed_line)
+        print("--------------")
+        if trimmed_line == activation_string:
+            print(
+                f"TBMR is already activated with the same license key: {tbmr_lic}, exiting"
+            )
+            return True
+
+    return False
+
+
+def activate_tbmr_license(tbmr_cid: str, tbmr_lic: str) -> bool:
     """Activate the TBMR software license"""
+
+    # If it is already activated with the same license key, we do not want to activate it again
+    if get_tbmr_license_status(tbmr_lic):
+        sys.exit(0)
 
     # Remove current .lic file
     if os.path.isfile("/etc/cbmr/TBMR.lic"):
@@ -132,11 +191,9 @@ def activate_tbmr_license(args: argparse.Namespace) -> bool:
 
     # Activate license
     print(
-        f"Trying to activate TBMR with license key: '{args.tbmr_lic}' and contract id: '{args.tbmr_cid}'"  # pylint:disable=line-too-long
+        f"Trying to activate TBMR with contract id: '{tbmr_cid}' and license key : '{tbmr_lic}'"  # pylint:disable=line-too-long
     )
-    proc_args = shlex.split(
-        f"licmgr -p tbmr --cid {args.tbmr_cid} --act {args.tbmr_lic}"
-    )
+    proc_args = shlex.split(f"licmgr -p tbmr --cid {tbmr_cid} --act {tbmr_lic}")
     output = subprocess.run(
         proc_args,
         stdout=subprocess.PIPE,
@@ -148,7 +205,6 @@ def activate_tbmr_license(args: argparse.Namespace) -> bool:
         print("Successfully activated TBMR")
         return True
 
-    print("Failed to activate TBMR")
     return False
 
 
@@ -168,6 +224,7 @@ def main() -> None:
     parser.add_argument(
         "--install", help="Needed for installation to happen", action="store_true"
     )
+    parser.add_argument("--activate", help="Activate TBMR license", action="store_true")
     parser.add_argument("--version", help="Version of client to install")
     parser.add_argument(
         "--tbmr_url",
@@ -186,22 +243,28 @@ def main() -> None:
     if args.install and not args.tbmr_url:
         print("--install requires that you supply --tbmr_url")
         sys.exit(1)
+
+    if args.install and args.activate:
+        print(
+            "Both --install and --activate is provided simultaneously, this is not allowed"
+        )
+        sys.exit(1)
     # You need to supply tbmr_lic either as an argument or an environment variable
-    tbmr_lic_env_name = "tbmr_lic"
-    tbmr_lic = os.environ.get(tbmr_lic_env_name)
-    if tbmr_lic is None:
-        if args.install and not args.tbmr_lic:
+    if args.activate:
+        tbmr_lic_env_name = "tbmr_lic"
+        tbmr_lic = os.environ.get(tbmr_lic_env_name)
+        if tbmr_lic is None and not args.tbmr_lic:
             print(
-                f"--install requires that you supply --tbmr_lic or set environment variable '{tbmr_lic_env_name}"
+                f"--activate requires that you supply --tbmr_lic or set environment variable '{tbmr_lic_env_name}'"  # pylint:disable=line-too-long
             )
             sys.exit(1)
     # You need to supply tbmr_cid either as an argument or an environment variable
-    tbmr_cid_env_name = "tbmr_cid"
-    tbmr_cid = os.environ.get(tbmr_cid_env_name)
-    if tbmr_cid is None:
-        if args.install and not args.tbmr_cid:
+    if args.activate:
+        tbmr_cid_env_name = "tbmr_cid"
+        tbmr_cid = os.environ.get(tbmr_cid_env_name)
+        if tbmr_cid is None and not args.tbmr_cid:
             print(
-                f"--install requires that you supply --tbmr_cid or set environment variable '{tbmr_cid_env_name}"
+                f"--activate requires that you supply --tbmr_cid or set environment variable '{tbmr_cid_env_name}'"  # pylint:disable=line-too-long
             )
             sys.exit(1)
 
@@ -221,15 +284,20 @@ def main() -> None:
     # Install TBMR
     if args.install:
         handle_installation(args, installed_version, download_dir)
-
-    # Remove download dir to save space
-    if os.path.isdir(download_dir):
-        shutil.rmtree(download_dir)
+        # Remove download dir to save space
+        if os.path.isdir(download_dir):
+            shutil.rmtree(download_dir)
 
     # Activate TBMR software licence
-    if args.tbmr_lic and args.tbmr_cid:
-        activation_result = activate_tbmr_license(args)
+    if args.activate:
+        # If it is not an env variable, we use the value from the provided argument
+        if tbmr_cid is None:
+            tbmr_cid = args.tbmr_cid
+        if tbmr_lic is None:
+            tbmr_lic = args.tbmr_lic
+        activation_result = activate_tbmr_license(tbmr_cid, tbmr_lic)
         if activation_result is False:
+            print("Failed to activate TBMR")
             sys.exit(1)
 
 

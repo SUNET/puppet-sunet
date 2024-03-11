@@ -25,6 +25,9 @@
 # @param monitor_backups   If we should monitor scheduled backups
 # @param version           The version of the client to install
 # @param backup_dirs       Specific directories to backup, default is to backup everything
+# @param install_tbmr      If set to true it will install "Bare Machine Recovery for Tivoli TSM (TBMR)"
+# @param tbmr_version      The version of TBMR to be installed (it has to match the version in $tbmr_url)
+# @param tbmr_url          The download URL for the TBMR installer (it has to match the version in $tbmr_version)
 class sunet::baas2(
   String        $nodename='',
   String        $tcpserveraddress='server2.backup.dco1.safedc.net',
@@ -136,6 +139,15 @@ class sunet::baas2(
       # Make sure the requested TBMR version is installed
       exec { "sunet-baas2-tbmr-bootstrap --install:"
         command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --install --version=${tbmr_version} --tbmr_url=${tbmr_url}",
+      }
+
+      # Activate the TBMR license
+      exec { "sunet-baas2-tbmr-bootstrap --activate:"
+        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate",
+        environment => [
+            "tbmr_cid=${tbmr_cid}",
+            "tbmr_lic=${tbmr_lic}",
+        ],
       }
     }
   }
