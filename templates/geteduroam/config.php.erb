@@ -1133,7 +1133,11 @@ $config = [
      'metadata.sources' => [
           [
               'type' => 'mdq',
+<% if @qa_federation == true %>
               'server' => 'https://mds.swamid.se/qa',
+<% else %>
+              'server' => 'https://mds.swamid.se',
+<% end -%>
               'validateCertificate' => [
                   '/var/www/cert/swamid.crt'
               ],

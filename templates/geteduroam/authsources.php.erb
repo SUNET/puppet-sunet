@@ -37,7 +37,11 @@ $config = [
 
         // The URL to the discovery service.
         // Can be NULL/unset, in which case a builtin discovery service will be used.
+<% if @qa_federation == true %>
         'discoURL' => 'https://ds.qa.swamid.se/ds',
+<% else %>
+        'discoURL' => 'https://service.seamlessaccess.org/ds',
+<% end -%>
 
         /*
          * If SP behind the SimpleSAMLphp in IdP/SP proxy mode requests

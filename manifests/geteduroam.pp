@@ -11,6 +11,7 @@ class sunet::geteduroam(
   String $freeradius_tag = 'latest',
   Array $app_admins = [],
   Array $required_scoped_affiliation = [],
+  Boolean $qa_federation = false,
 ){
 
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'root', mode => '0750'})
@@ -59,9 +60,17 @@ class sunet::geteduroam(
       content => template('sunet/geteduroam/authsources.php.erb'),
       mode    => '0755',
     }
-    file { '/opt/geteduroam/cert/swamid.crt':
-      content => file('sunet/geteduroam/swamid-qa.crt'),
-      mode    => '0755',
+
+    if $qa_federation {
+      file { '/opt/geteduroam/cert/swamid.crt':
+        content => file('sunet/geteduroam/swamid-qa.crt'),
+        mode    => '0755',
+        }
+    } else {
+      file { '/opt/geteduroam/cert/swamid.crt':
+        content => file('sunet/geteduroam/md-signer2.crt'),
+        mode    => '0755',
+        }
     }
     file { '/opt/geteduroam/cert/saml.key':
       group =>  'www-data',
