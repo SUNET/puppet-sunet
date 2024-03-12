@@ -179,8 +179,10 @@ def activate_tbmr_license(tbmr_cid: str, tbmr_lic: str) -> bool:
         sys.exit(0)
 
     # Remove current .lic file
-    if os.path.isfile("/etc/cbmr/TBMR.lic"):
+    try:
         os.remove("/etc/cbmr/TBMR.lic")
+    except FileNotFoundError:
+        pass
 
     # Activate license
     print(
@@ -267,8 +269,10 @@ def main() -> None:
     if args.install:
         handle_installation(args, installed_version, download_dir)
         # Remove download dir to save space
-        if os.path.isdir(download_dir):
+        try:
             shutil.rmtree(download_dir)
+        except FileNotFoundError:
+            pass
 
     # Activate TBMR software licence
     if args.activate:
