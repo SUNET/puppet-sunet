@@ -223,11 +223,6 @@ def main() -> None:
         "--tbmr_url",
         help="The download url for the TBMR .deb installer",
     )
-    parser.add_argument(
-        "--tbmr_lic",
-        help="The license key needed to activate TBMR",
-    )
-    parser.add_argument("--tbmr_cid", help="The customer contract id for TBMR")
     args = parser.parse_args()
 
     if args.install and not args.version:
@@ -242,12 +237,17 @@ def main() -> None:
             "Both --install and --activate is provided simultaneously, this is not allowed"
         )
         sys.exit(1)
-    if args.activate and not args.tbmr_lic:
-        print("--activate requires that you supply --tbmr_lic")
+
+    tbmr_lic_env_name = "TBMR_LIC"
+    tbmr_lic = os.environ.get(tbmr_lic_env_name)
+    if args.activate and tbmr_lic is None:
+        print(f"--activate requires env variable '{tbmr_lic_env_name}'")
         sys.exit(1)
-    # You need to supply tbmr_cid either as an argument or an environment variable
-    if args.activate and not args.tbmr_cid:
-        print("--activate requires that you supply --tbmr_cid")
+
+    tbmr_cid_env_name = "TBMR_CID"
+    tbmr_cid = os.environ.get(tbmr_cid_env_name)
+    if args.activate and tbmr_cid is None:
+        print(f"--activate requires env variable '{tbmr_cid_env_name}'")
         sys.exit(1)
 
     installed_version = get_installed_version()
@@ -272,7 +272,11 @@ def main() -> None:
 
     # Activate TBMR software licence
     if args.activate:
-        activation_result = activate_tbmr_license(args.tbmr_cid, args.tbmr_lic)
+        if not isinstance(tbmr_cid, str) or not isinstance(tbmr_lic, str):
+            raise TypeError(
+                f"expected type: 'str', tbmr_cid type: {type(tbmr_cid)}, tbmr_lic type: {type(tbmr_lic)}"  # pylint:disable=line-too-long
+            )
+        activation_result = activate_tbmr_license(tbmr_cid, tbmr_lic)
         if activation_result is False:
             print("Failed to activate TBMR")
             sys.exit(1)
