@@ -140,12 +140,12 @@ class sunet::baas2(
       }
 
       # Make sure the requested TBMR version is installed
-      exec { "sunet-baas2-tbmr-bootstrap --install:"
+      exec { "sunet-baas2-tbmr-bootstrap --install":
         command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --install --version=${tbmr_version} --tbmr_url=${tbmr_url}",
       }
 
       # Activate the TBMR license
-      exec { "sunet-baas2-tbmr-bootstrap --activate:"
+      exec { "sunet-baas2-tbmr-bootstrap --activate":
         command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate --tbmr_lic=${tbmr_lic} --tbmr_cid=${tbmr_cid}",
       }
     }
