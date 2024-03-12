@@ -66,3 +66,8 @@ SERVERNAME SafeDC
   domain <%= dir %>
 <% end -%>
 <% end -%>
+<% if @install_tbmr -%>
+
+* Collect TBMR information before doing the backup
+PRESCHEDULECMD '"/usr/bin/tbmrcfg"'
+<% end -%>
