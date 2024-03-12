@@ -66,3 +66,6 @@ SERVERNAME SafeDC
   domain <%= dir %>
 <% end -%>
 <% end -%>
+<% if @install_tbmr -%>
+PRESCHEDULECMD '"/usr/bin/tbmrcfg"'
+<% end -%>
