@@ -25,12 +25,18 @@
 # @param monitor_backups   If we should monitor scheduled backups
 # @param version           The version of the client to install
 # @param backup_dirs       Specific directories to backup, default is to backup everything
+# @param install_tbmr      If set to true it will install "Bare Machine Recovery for Tivoli TSM (TBMR)"
+# @param tbmr_version      The version of TBMR to be installed (it has to match the version in $tbmr_url)
+# @param tbmr_url          The download URL for the TBMR installer (it has to match the version in $tbmr_version)
 class sunet::baas2(
   String        $nodename='',
   String        $tcpserveraddress='server2.backup.dco1.safedc.net',
   Boolean       $monitor_backups=true,
   String        $version='8.1.17.2',
   Array[String] $backup_dirs = [],
+  Boolean       $install_tbmr=false,
+  String        $tbmr_version='9.5.2.3206-1',
+  String        $tbmr_url='https://s3.sto1.safedc.net/94f5b4f4aa674782b6bc4181943e67f1:tbmr/wab0snk8lrh6l8cjzgnaozm8siw7g7/tbmr_9.5.2.3206-1_amd64.deb',
 ) {
 
   # MUST be set properly in hiera to continue
@@ -119,6 +125,33 @@ class sunet::baas2(
         cmd         => '/usr/local/sbin/sunet-baas2-status',
         minute      => '26',
         ok_criteria => ['exit_status=0', 'max_age=3h'],
+      }
+    }
+
+    # TBMR section
+    # MUST be set properly in hiera to continue
+    $tbmr_lic = safe_hiera('tbmr_lic')
+    $tbmr_cid = safe_hiera('tbmr_cid')
+    if $install_tbmr and $tbmr_lic != 'NOT_SET_IN_HIERA' and $tbmr_cid != 'NOT_SET_IN_HIERA' {
+      file { '/usr/local/sbin/sunet-baas2-tbmr-bootstrap':
+        ensure  => 'file',
+        mode    => '0755',
+        owner   => 'root',
+        content => file('sunet/baas2/sunet-baas2-tbmr-bootstrap')
+      }
+
+      # Make sure the requested TBMR version is installed
+      exec { "sunet-baas2-tbmr-bootstrap --install":
+        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --install --version=${tbmr_version} --tbmr_url=${tbmr_url}",
+      }
+
+      # Activate the TBMR license
+      exec { "sunet-baas2-tbmr-bootstrap --activate":
+        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate",
+        environment => [
+            "TBMR_LIC=${tbmr_lic}",
+            "TBMR_CID=${tbmr_cid}",
+        ]
       }
     }
   }
