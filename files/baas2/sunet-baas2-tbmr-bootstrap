@@ -19,6 +19,7 @@ import shutil
 import subprocess
 import sys
 from typing import Union
+from typing import NoReturn
 
 
 def get_installed_version() -> Union[str, None]:
@@ -206,7 +207,7 @@ def main() -> None:
     class MyParser(argparse.ArgumentParser):
         """Class to provide full help message when supplying a faulty argument"""
 
-        def error(self, message):
+        def error(self, message: str) -> NoReturn:
             sys.stderr.write(f"error: {message}\n")
             self.print_help()
             sys.exit(2)
