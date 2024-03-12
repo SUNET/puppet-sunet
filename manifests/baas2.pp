@@ -146,7 +146,11 @@ class sunet::baas2(
 
       # Activate the TBMR license
       exec { "sunet-baas2-tbmr-bootstrap --activate":
-        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate --tbmr_lic=${tbmr_lic} --tbmr_cid=${tbmr_cid}",
+        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate",
+        environment => [
+            "TBMR_LIC=${tbmr_lic}",
+            "TBMR_CID=${tbmr_cid}",
+        ]
       }
     }
   }
