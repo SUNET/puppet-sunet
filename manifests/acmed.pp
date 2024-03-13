@@ -10,4 +10,9 @@ class sunet::acmed(
     ensure  => file,
     content => template('sunet/acmed/acme-dns-auth.py.erb'),
   }
+
+  $acmed_accounts = lookup('acmed_accounts', undef, undef, {})
+  file { '/etc/letsencrypt/acmedns.json':
+    content => inline_template("<%= @acmed_accounts.to_json %>\n"),
+    }
 }
