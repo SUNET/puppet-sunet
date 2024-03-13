@@ -1,5 +1,6 @@
 # acmed - automatated
 class sunet::acmed(
+  Array $domains,
   String $server = 'https://acme-d.sunet.se',
 ){
 
@@ -8,11 +9,12 @@ class sunet::acmed(
 
   file { '/etc/letsencrypt/acme-dns-auth.py':
     ensure  => file,
+    mode    => '0700',
     content => template('sunet/acmed/acme-dns-auth.py.erb'),
   }
 
   $acmed_accounts = lookup('acmed_accounts', undef, undef, {})
   file { '/etc/letsencrypt/acmedns.json':
     content => inline_template("<%= @acmed_accounts.to_json %>\n"),
-    }
+  }
 }
