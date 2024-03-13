@@ -163,9 +163,7 @@ def get_tbmr_license_status(tbmr_lic: str) -> bool:
     for line in lines:
         trimmed_line = line.strip()
         if trimmed_line == activation_string:
-            print(
-                f"TBMR is already activated with the same license key: {tbmr_lic}, exiting"
-            )
+            print("TBMR is already activated with the same license key, exiting")
             return True
 
     return False
@@ -185,9 +183,7 @@ def activate_tbmr_license(tbmr_cid: str, tbmr_lic: str) -> bool:
         pass
 
     # Activate license
-    print(
-        f"Trying to activate TBMR with contract id: '{tbmr_cid}' and license key : '{tbmr_lic}'"  # pylint:disable=line-too-long
-    )
+    print("Trying to activate license for TBMR")
     proc_args = shlex.split(f"licmgr -p tbmr --cid {tbmr_cid} --act {tbmr_lic}")
     output = subprocess.run(
         proc_args,
