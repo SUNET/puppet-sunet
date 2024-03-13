@@ -1,6 +1,5 @@
 # acmed - automatated
 class sunet::acmed(
-  Array $domains,
   String $server = 'https://acme-d.sunet.se',
 ){
 
