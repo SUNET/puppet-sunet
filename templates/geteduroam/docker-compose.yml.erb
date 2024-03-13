@@ -16,7 +16,7 @@ services:
       - 'ACME_URL=http://acme-c.sunet.se/'
 
   app:
-    image: docker.sunet.se/geteduroam-php-app:<%= @app_tag %>
+    image: docker.sunet.se/geteduroam-app:<%= @app_tag %>
 <% unless @resolvers.empty? -%>
     dns:
 <% @resolvers.each do |resolver| -%>
