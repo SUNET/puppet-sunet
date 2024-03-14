@@ -16,4 +16,10 @@ class sunet::acmed(
   file { '/etc/letsencrypt/acmedns.json':
     content => inline_template("<%= @acmed_accounts.to_json %>\n"),
   }
+  $domain_arg = join($acmed_accounts.keys, ' -d ')
+
+  exec {'certbot':
+    command     => "certbot certonly --no-eff-email --agree-tos -m noc@sunet.se --manual --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py --preferred-challenges dns -d ${domain_arg}",
+    refreshonly => true,
+  }
 }
