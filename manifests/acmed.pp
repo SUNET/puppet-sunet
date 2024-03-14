@@ -15,6 +15,7 @@ class sunet::acmed(
   $acmed_accounts = lookup('acmed_accounts', undef, undef, {})
   file { '/etc/letsencrypt/acmedns.json':
     content => inline_template("<%= @acmed_accounts.to_json %>\n"),
+    notify  => Exec['certbot'],
   }
   $domain_arg = join($acmed_accounts.keys, ' -d ')
 
