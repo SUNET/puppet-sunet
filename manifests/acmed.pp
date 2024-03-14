@@ -29,7 +29,7 @@ class sunet::acmed(
     refreshonly => true,
   }
 
-  sunet::scriptherder::cronjob { 'acmed_renew':
+  sunet::scriptherder::cronjob { 'certbot_acmed_renew':
     cmd     => '/usr/bin/certbot renew --post-hook "/etc/letsencrypt/certbot-acmed-renew-post-hook-wrapper"',
     special => 'daily',
   }
