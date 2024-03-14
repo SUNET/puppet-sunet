@@ -11,10 +11,10 @@ class sunet::acmed(
     mode    => '0700',
     content => template('sunet/acmed/acme-dns-auth.py.erb'),
   }
-  file { '/etc/letsencrypt/certbot-renew-post-hook-wrapper':
+  file { '/etc/letsencrypt/certbot-acmed-renew-post-hook-wrapper':
     ensure  => file,
     mode    => '0700',
-    content => file('sunet/acmed/certbot-renew-post-hook-wrapper'),
+    content => file('sunet/acmed/certbot-acmed-renew-post-hook-wrapper'),
   }
 
   $acmed_accounts = lookup('acmed_accounts', undef, undef, {})
@@ -27,5 +27,10 @@ class sunet::acmed(
   exec {'certbot':
     command     => "certbot certonly --no-eff-email --agree-tos -m noc@sunet.se --manual --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py --preferred-challenges dns -d ${domain_arg}",
     refreshonly => true,
+  }
+
+  sunet::scriptherder::cronjob { 'acmed_renew':
+    cmd     => '/usr/bin/certbot renew --post-hook "/etc/letsencrypt/certbot-acmed-renew-post-hook-wrapper"',
+    special => 'daily',
   }
 }
