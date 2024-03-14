@@ -49,4 +49,6 @@ services:
     volumes:
       - "/opt/geteduroam/cert:/etc/raddb/certs:ro"
       - "/opt/geteduroam/config/clients.conf:/etc/raddb/clients.conf"
+      - "/etc/letsencrypt/live/<%= @realm %>/fullchain.pem:/etc/letsencrypt/live/<%= @realm %>/fullchain.pem:ro"
+      - "/etc/letsencrypt/live/<%= @realm %>/privkey.pem:/etc/letsencrypt/live/<%= @realm %>/privkey.pem:ro"
 <% end %>
