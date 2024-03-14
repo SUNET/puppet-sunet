@@ -11,6 +11,11 @@ class sunet::acmed(
     mode    => '0700',
     content => template('sunet/acmed/acme-dns-auth.py.erb'),
   }
+  file { '/etc/letsencrypt/certbot-renew-post-hook-wrapper':
+    ensure  => file,
+    mode    => '0700',
+    content => file('sunet/acmed/certbot-renew-post-hook-wrapper'),
+  }
 
   $acmed_accounts = lookup('acmed_accounts', undef, undef, {})
   file { '/etc/letsencrypt/acmedns.json':
