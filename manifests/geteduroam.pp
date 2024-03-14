@@ -1,13 +1,13 @@
 # Get eduroam
 class sunet::geteduroam(
   String $domain,
+  String $realm,
   Array $resolvers = [],
   Boolean $mariadb = true,
   String $mariadb_host = $facts['ipaddress_default'],
   Boolean $app = true,
   Boolean $radius = true,
   String $app_tag = 'latest',
-  Integer $realm_version = 1,
   String $freeradius_tag = 'latest',
   Array $app_admins = [],
   Array $required_scoped_affiliation = [],
