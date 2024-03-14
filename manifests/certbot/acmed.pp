@@ -20,7 +20,7 @@ class sunet::certbot::acmed(
   $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})
   file { '/etc/letsencrypt/acmedns.json':
     content => inline_template("<%= @acmed_clients.to_json %>\n"),
-    notify  => Exec['certbot'],
+    notify  => Exec['certbot_issuing'],
   }
   $domain_arg = join($acmed_clients.keys, ' -d ')
 
