@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-set -e
-
-renew_post_hook='/etc/letsencrypt/certbot-acmed-renew-post-hook'
-if [ -x "${renew_post_hook}" ]; then
-    ${renew_post_hook}
-fi
