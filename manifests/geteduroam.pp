@@ -94,10 +94,6 @@ class sunet::geteduroam(
     class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
   }
 
-  file { '/opt/geteduroam/cert/radius.key': ensure => link, target => "/etc/letsencrypt/live/${realm}/privkey.pem" }
-  file { '/opt/geteduroam/cert/radius.pem': ensure => link, target => "/etc/letsencrypt/live/${realm}/fullchain.pem" }
-
-
   sunet::docker_compose { 'geteduroam':
     content          => template('sunet/geteduroam/docker-compose.yml.erb'),
     service_name     => 'geteduroam',
