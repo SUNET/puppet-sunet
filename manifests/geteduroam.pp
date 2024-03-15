@@ -29,11 +29,11 @@ class sunet::geteduroam(
       proto =>  'udp'
     }
 
-  file { '/etc/letsencrypt/renewal-hooks/deploy/geteduroam':
-    ensure  => file,
-    mode    => '0700',
-    content => file('sunet/geteduroam/certbot-renewal-hook'),
-  }
+    file { '/etc/letsencrypt/renewal-hooks/deploy/geteduroam':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/geteduroam/certbot-renewal-hook'),
+    }
 
     $shared_secret = lookup('shared_secret', undef, undef, undef)
     file { '/opt/geteduroam/config/clients.conf':
