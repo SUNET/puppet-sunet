@@ -12,7 +12,7 @@ define sunet::mariadb(
   $mariadb_database = lookup('mariadb_database', undef, undef,undef)
   $mariadb_backup_password = lookup('mariadb_root_password', undef, undef,'NOT_SET_IN_HIERA')
   $clients = lookup('mariadb_clients', undef, undef,['127.0.0.1'])
-  $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,['127.0.0.1'])
+  $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,[])
   $mariadb_dir = '/opt/mariadb'
   $server_id = 1000 + Integer($facts['networking']['hostname'][-1])
 
