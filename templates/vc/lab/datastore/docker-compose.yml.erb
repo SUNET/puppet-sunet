@@ -2,12 +2,25 @@
 version: "3.3"
 
 services:
-  vc_datastore:
-    container_name: "vc_datastore"
-    image: "docker.sunet.se/dc4eu/datastore:<%= @vc_version %>"
+  vc_apigw:
+    container_name: "vc_apigw"
+    image: "docker.sunet.se/dc4eu/apigw:lab-v2"
     restart: always
     ports:
       - 80:8080
+    volumes:
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - vc_redis
+      - vc_mongo
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  persistent:
+    container_name: "vc_persistent"
+    image: "docker.sunet.se/dc4eu/persistent:lab-v2"
+    restart: always
     volumes:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
