@@ -25,6 +25,7 @@
 # @param monitor_backups   If we should monitor scheduled backups
 # @param version           The version of the client to install
 # @param backup_dirs       Specific directories to backup, default is to backup everything
+# @param exclude_list      List of exclude statements
 # @param install_tbmr      If set to true it will install "Bare Machine Recovery for Tivoli TSM (TBMR)"
 # @param tbmr_version      The version of TBMR to be installed (it has to match the version in $tbmr_url)
 # @param tbmr_url          The download URL for the TBMR installer (it has to match the version in $tbmr_version)
@@ -34,6 +35,7 @@ class sunet::baas2(
   Boolean       $monitor_backups=true,
   String        $version='8.1.17.2',
   Array[String] $backup_dirs = [],
+  Array[String] $exclude_list = [],
   Boolean       $install_tbmr=false,
   String        $tbmr_version='9.5.2.3206-1',
   String        $tbmr_url='https://s3.sto1.safedc.net/94f5b4f4aa674782b6bc4181943e67f1:tbmr/wab0snk8lrh6l8cjzgnaozm8siw7g7/tbmr_9.5.2.3206-1_amd64.deb',
