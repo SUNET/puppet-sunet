@@ -55,6 +55,11 @@ SERVERNAME SafeDC
 * https://www.ibm.com/docs/en/tsmfsm/7.1.0?topic=SSSR2R_7.1.0/com.ibm.itsm.client.develop.doc/c_encryp_transp.htm
   include.encrypt /.../*
 
+<% if ! @exclude_list.empty? -%>
+<% @exclude_list.each do |entry| -%>
+  exclude <%= entry %>
+<% end -%>
+
 <% if ! @backup_dirs_transformed.empty? -%>
 * Configure a virtualmountpoint and domain for each backup dir. Trying to use
 * include/exclude statements for this results in backing up all directory
