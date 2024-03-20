@@ -16,9 +16,9 @@ services:
       - '/opt/frontend/scripts/haproxy-start.sh:/haproxy-start.sh:ro'
       - 'haproxy_data:/etc/haproxy'
       - 'haproxy_control:/var/run/haproxy-control'
-<% if @multi_cert.is_a? Array and @multi_cert.size > 1 -%>
+<% if @multi_certs.is_a? Array and @multi_certs.length > 1 -%>
   <% index = 0 %>
-  <% @multi_cert.each do |cert| -%>
+  <% @multi_certs.each do |cert| -%>
       - /opt/frontend/config/<%= @instance %>/certs/tls_certificate_bundle.<%= index %>.pem:<%= cert %>:ro
     <%- index += 1 -%>
   <% end -%>
