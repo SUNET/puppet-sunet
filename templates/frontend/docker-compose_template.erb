@@ -22,7 +22,7 @@ services:
       - /opt/frontend/config/<%= @instance %>/certs/tls_certificate_bundle.<%= index %>.pem:<%= cert %>:ro
     <%- index += 1 -%>
   <% end -%>
-<% else if @tls_certificate_bundle -%>
+<% elsif @tls_certificate_bundle -%>
       - /opt/frontend/config/<%= @instance %>/certs/tls_certificate_bundle.pem:<%= @tls_certificate_bundle %>:ro
 <% else -%>
       # tls_certificate_bundle not set in Puppet
