@@ -70,7 +70,7 @@ define sunet::frontend::load_balancer::website2(
   $numcerts = length($temp_certs)
   if $numcerts > 1 {
     $certnum = 0
-    $temp_certs.each do |$cert| {
+    $temp_certs.each |$cert| {
       if $cert != 'cer' {
         file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem.${certnum}":
             source => $tls_certificate_bundle,
