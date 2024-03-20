@@ -69,12 +69,14 @@ define sunet::frontend::load_balancer::website2(
   $temp_certs = shell_split($tls_certificate_bundle)
   $numcerts = length($temp_certs)
   if $numcerts > 1 {
-    $temp_certs.each |Integer $index, String $cert| {
+    $certnum = 0
+    $temp_certs.each do |$cert| {
       if $cert != 'cer' {
-        file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem.${index}":
+        file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem.${certnum}":
             source => $tls_certificate_bundle,
             notify => Sunet::Docker_compose["frontend-${instance}"],
         }
+        $certnum += 1
       }
       file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
           file => absent,
