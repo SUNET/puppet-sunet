@@ -66,12 +66,29 @@ define sunet::frontend::load_balancer::website2(
 
   # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
   # so the service can be restarted
-  file {
-    "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
-      source => $tls_certificate_bundle,
-      notify => Sunet::Docker_compose["frontend-${instance}"],
-  }
+  $temp_certs = shell_split($tls_certificate_bundle)
+  $numcerts = length($temp_certs)
+  if $numcerts > 1 {
+    $certnum = 0
+    $temp_certs.each do |$cert| {
+      if $cert != 'cer' {
+        file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem.${certnum}":
+            source => $tls_certificate_bundle,
+            notify => Sunet::Docker_compose["frontend-${instance}"],
+        }
+        $certnum += 1
+      }
+      file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
+          file => absent,
+      }
+    }
+  } else {
+    file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
+        source => $tls_certificate_bundle,
+        notify => Sunet::Docker_compose["frontend-${instance}"],
+    }
 
+  }
   # 'export' config to one YAML file per instance
   file {
     "${confdir}/${instance}/config.yml":
