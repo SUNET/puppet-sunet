@@ -66,19 +66,16 @@ define sunet::frontend::load_balancer::website2(
 
   # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
   # so the service can be restarted
-  $temp_certs = shell_split($tls_certificate_bundle)
-  $numcerts = length($temp_certs)
-  if $numcerts > 1 {
-    $temp_certs.each |Integer $index, String $cert| {
-      if $cert != 'cer' {
-        file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem.${index}":
-            source => $tls_certificate_bundle,
-            notify => Sunet::Docker_compose["frontend-${instance}"],
-        }
+  $multi_certs = shell_split($tls_certificate_bundle).filter |String $cert| { $cert != 'crt' }
+  if length($multi_certs) > 1 {
+    $multi_certs.each |Integer $index, String $cert| {
+      file { "${confdir}/${instance}/certs/tls_certificate_bundle.${index}.pem":
+          source => $cert,
+          notify => Sunet::Docker_compose["frontend-${instance}"],
       }
-      file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
-          file => absent,
-      }
+    }
+    file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
+        ensure => absent,
     }
   } else {
     file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
