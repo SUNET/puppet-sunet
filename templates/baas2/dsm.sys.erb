@@ -59,6 +59,7 @@ SERVERNAME SafeDC
 <% @exclude_list.each do |entry| -%>
   exclude <%= entry %>
 <% end -%>
+<% end -%>
 
 <% if ! @backup_dirs_transformed.empty? -%>
 * Configure a virtualmountpoint and domain for each backup dir. Trying to use
