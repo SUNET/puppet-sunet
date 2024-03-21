@@ -3,7 +3,7 @@
 set -e
 
 echo "Checking KeyDB cluster status,please standby..."
-cluster_status=$(keydb-cli -a "$(puppet lookup --render-as s keydb_password 2>/dev/null)" --tls --cert /etc/ssl/certs/$(hostname -f)_infra.crt --key /etc/ssl/private/$(hostname -f)_infra.key --cacert /etc/ssl/certs/infra.crt -h $(hostname -f) cluster nodes 2> /dev/null)
+cluster_status=$(redis-cli -a "$(puppet lookup --render-as s keydb_password 2>/dev/null)" --tls --cert /etc/ssl/certs/$(hostname -f)_infra.crt --key /etc/ssl/private/$(hostname -f)_infra.key --cacert /etc/ssl/certs/infra.crt -h $(hostname -f) cluster nodes 2> /dev/null)
 
 my_ip=$(echo "${cluster_status}" | grep myself, | awk '{print $2}' | cut -d : -f 1)
 
