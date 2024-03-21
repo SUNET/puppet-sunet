@@ -66,12 +66,24 @@ define sunet::frontend::load_balancer::website2(
 
   # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
   # so the service can be restarted
-  file {
-    "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
-      source => $tls_certificate_bundle,
-      notify => Sunet::Docker_compose["frontend-${instance}"],
-  }
+  $multi_certs = shell_split($tls_certificate_bundle).filter |String $cert| { $cert != 'crt' }
+  if length($multi_certs) > 1 {
+    $multi_certs.each |Integer $index, String $cert| {
+      file { "${confdir}/${instance}/certs/tls_certificate_bundle.${index}.pem":
+          source => $cert,
+          notify => Sunet::Docker_compose["frontend-${instance}"],
+      }
+    }
+    file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
+        ensure => absent,
+    }
+  } else {
+    file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
+        source => $tls_certificate_bundle,
+        notify => Sunet::Docker_compose["frontend-${instance}"],
+    }
 
+  }
   # 'export' config to one YAML file per instance
   file {
     "${confdir}/${instance}/config.yml":
@@ -83,9 +95,10 @@ define sunet::frontend::load_balancer::website2(
       ;
   }
 
+
   # Parameters used in frontend/docker-compose_template.erb
   $dns                    = pick_default($config['dns'], [])
-  $exposed_ports          = pick_default($config['exposed_ports'], ["443"])
+  $exposed_ports          = pick_default($config['exposed_ports'], ['443'])
   $frontendtools_imagetag = pick($config['frontendtools_imagetag'], 'stable')
   $frontendtools_volumes  = pick($config['frontendtools_volumes'], false)
   $haproxy_image          = pick($config['haproxy_image'], 'docker.sunet.se/library/haproxy')
