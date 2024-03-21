@@ -17,8 +17,8 @@ cert="/etc/ssl/certs/${fqdn}_infra.crt"
 key="/etc/ssl/private/${fqdn}_infra.key"
 ca="/etc/ssl/certs/infra.crt"
 password=$(puppet lookup --render-as s keydb_password 2> /dev/null)
-clusterid=$(redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER MYID 2> /dev/null)
-if (redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER NODES 2> /dev/null| grep -e "^${clusterid}"| grep -q slave); then
+clusterid=$(keydb-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER MYID 2> /dev/null)
+if (keydb-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER NODES 2> /dev/null| grep -e "^${clusterid}"| grep -q slave); then
   echo SLAVE, failing over to master
   if [ "${dryrun}" ]; then
     echo "No failover will happen in dryrun"
@@ -29,7 +29,7 @@ if (redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}
   if [ -f "${lock_file}" ] && [ "${force}" -ne 1 ]; then
     echo "Host is in maintainace mode (by ${lock_file}). No failover will happen."
   else
-    redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER FAILOVER 2> /dev/null
+    keydb-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER FAILOVER 2> /dev/null
   fi
 else
   echo "Node is MASTER, all is good."

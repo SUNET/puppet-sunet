@@ -24,6 +24,6 @@ services:
 <% if @tls == true -%>
       - /etc/ssl:/etc/ssl
 <% end %>
-    command: redis-server /data/server.conf
+    command: keydb-server /data/server.conf
     restart: always
 <% end %>
