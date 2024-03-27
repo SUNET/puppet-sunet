@@ -49,4 +49,17 @@ services:
     volumes:
       - "/opt/geteduroam/cert:/etc/raddb/certs:ro"
       - "/opt/geteduroam/config/clients.conf:/etc/raddb/clients.conf:ro"
+<% if @ocsp %>
+      - "/opt/geteduroam/config/eap.conf:/etc/raddb/mods-enabled/eap-eduroam:ro"
+<% end %>
+<% end %>
+
+<% if @ocsp %>
+  ocsp:
+    image: docker.sunet.se/geteduroam-ocsp:<%= @ocsp_tag %>
+    environment:
+      - SQLHOST=<%= @mariadb_host %>
+      - SQLUSER=geteduroam
+      - SQLDB=geteduroam
+      - SQLPASSWORD=<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>
 <% end %>

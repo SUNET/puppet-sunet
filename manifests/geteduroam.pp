@@ -7,8 +7,10 @@ class sunet::geteduroam(
   String $mariadb_host = $facts['ipaddress_default'],
   Boolean $app = true,
   Boolean $radius = true,
+  Boolean $ocsp = true,
   String $app_tag = 'latest',
   String $freeradius_tag = 'latest',
+  String $ocsp_tag = 'latest',
   Array $app_admins = [],
   Array $required_scoped_affiliation = [],
   Boolean $qa_federation = false,
@@ -92,6 +94,14 @@ class sunet::geteduroam(
       port => 443,
     }
     class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
+  }
+
+  if $ocsp {
+      file { '/opt/geteduroam/config/eap.conf':
+        content => template('sunet/geteduroam/eap.conf.erb'),
+        mode    => '0755',
+        }
+
   }
 
   sunet::docker_compose { 'geteduroam':
