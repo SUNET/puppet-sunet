@@ -614,7 +614,7 @@ def fix_ldd() -> None:
     if int(python_version[0]) < 3:
         raise RuntimeError("only python 3 is supported")
 
-    if int(python_version[1]) < 8:
+    if int(python_version[1]) < 10:
         # We have our local implementation of platform_freedesktop_os_release() to
         # be usable on ubuntu 18.04. This can be cleaned up when there are no
         # ubuntu 18.04 users of the tool.
