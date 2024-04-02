@@ -22,7 +22,7 @@ class sunet::starship(
   }
 
   exec { 'extract-starship':
-    command => "/usr/bin/tar tar --transform='flags=r;s|starship|starship-${version}|'  -vxzf /etc/puppet/cosmos-modules/sunet/files/starship/starship-x86_64-unknown-linux-musl-${version}.tar.gz -C /usr/local/bin",
+    command => "/usr/bin/tar --transform='flags=r;s|starship|starship-${version}|'  -vxzf /etc/puppet/cosmos-modules/sunet/files/starship/starship-x86_64-unknown-linux-musl-${version}.tar.gz -C /usr/local/bin",
     unless  => "/usr/bin/test -x /usr/local/bin/starship-${version}",
   }
 
