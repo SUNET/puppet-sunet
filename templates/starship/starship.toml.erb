@@ -15,15 +15,15 @@ $character\
 """
 
 [time]
-disabled=false
+disabled = false
 format = '$time '
 time_format = '%H:%M'
 [username]
 format = '[$user]()@'
 [hostname]
-ssh_symbol=''
+ssh_symbol = ''
 style = '<%= @host_color %>'
-format= '[$ssh_symbol$hostname]($style): '
+format = '[$ssh_symbol$hostname]($style): '
 
 <% if @check_cosmos %>
 [custom.cosmos]
