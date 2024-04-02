@@ -4,7 +4,7 @@ class sunet::starship(
   String $version = 'v1.18.2'
 ){
 
-  $prompt_color = $flavor ? {
+  $host_color = $flavor ? {
     eduid => '#008080',
     default => '#ff6600',
   }
