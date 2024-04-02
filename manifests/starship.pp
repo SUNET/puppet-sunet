@@ -1,6 +1,7 @@
 # The coolest prompt
 class sunet::starship(
   String $flavor = 'sunet',
+  String $version = 'v1.18.2'
 ){
 
   $prompt_color = $flavor ? {
@@ -18,5 +19,15 @@ class sunet::starship(
     ensure  => file,
     mode    => '0644',
     content => template('sunet/starship/starship.toml.erb'),
+  }
+
+  exec { 'extract-starship':
+    command => "/usr/bin/tar tar --transform='flags=r;s|starship|starship-${version}|'  -vxzf /etc/puppet/cosmos-modules/sunet/files/starship/starship-x86_64-unknown-linux-musl-${version}.tar.gz -C /usr/local/bin",
+    unless  => "/usr/bin/test -x /usr/local/bin/starship-${version}",
+  }
+
+  file { '/usr/local/bin/starship':
+    ensure => link,
+    target => "/usr/local/bin/starship-${version}"
   }
 }
