@@ -25,18 +25,24 @@ ssh_symbol=''
 style = '<%= @host_color %>'
 format= '[$ssh_symbol$hostname]($style): '
 
+<% if @check_cosmos %>
 [custom.cosmos]
 command = 'echo !COSMOS'
 when = ''' test -f /etc/no-automatic-cosmos '''
 style =''
+<% end -%>
+<% if @check_haproxy %>
 [custom.haproxy]
 command = 'echo !HAPROXY'
 when = '''test -d /var/haproxy-status && find /var/haproxy-status -type f -prune -empty | grep -q /var'''
 style =''
+<% end -%>
+<% if @check_localusers %>
 [custom.localusers]
 command = 'echo LOCAL_USERS'
 when = '''test -f /etc/multiverse/UNSAFE_allow_local_user'''
 style = 'bold red'
+<% end -%>
 
 [git_branch]
 format = '\([$branch]($style)\) '

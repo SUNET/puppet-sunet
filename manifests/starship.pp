@@ -1,7 +1,10 @@
 # The coolest prompt
 class sunet::starship(
   String $flavor = 'sunet',
-  String $version = 'v1.18.2'
+  String $version = 'v1.18.2',
+  Boolean $check_cosmos = true,
+  Boolean $check_haproxy = true,
+  Boolean $check_localusers = true,
 ){
 
   $host_color = $flavor ? {
