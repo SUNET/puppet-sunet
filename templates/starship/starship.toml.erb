@@ -29,13 +29,13 @@ format= '[$ssh_symbol$hostname]($style): '
 [custom.cosmos]
 command = 'echo !COSMOS'
 when = ''' test -f /etc/no-automatic-cosmos '''
-style =''
+style = 'bold red'
 <% end -%>
 <% if @check_haproxy %>
 [custom.haproxy]
 command = 'echo !HAPROXY'
 when = '''test -d /var/haproxy-status && find /var/haproxy-status -type f -prune -empty | grep -q /var'''
-style =''
+style = 'bold red'
 <% end -%>
 <% if @check_localusers %>
 [custom.localusers]
