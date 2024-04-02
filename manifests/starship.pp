@@ -30,4 +30,10 @@ class sunet::starship(
     ensure => link,
     target => "/usr/local/bin/starship-${version}"
   }
+
+  sunet::snippets::file_line { 'eval-starship_init_bash':
+    ensure   => 'present',
+    filename => '/root/.bashrc',
+    line     => 'eval "$(starship init bash)"',
+  }
 }
