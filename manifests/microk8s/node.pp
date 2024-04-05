@@ -7,7 +7,8 @@ class sunet::microk8s::node(
   Integer $websecure_nodeport = 30443,
 ) {
   # Loop through peers and do things that require their ip:s
-  include stdlib
+  include sunet::packages::snapd
+
   split($facts['microk8s_peers'], ',').each | String $peer| {
     unless $peer == 'unknown' {
       $peer_ip = $facts[join(['microk8s_peer_', $peer])]
@@ -21,11 +22,7 @@ class sunet::microk8s::node(
       }
     }
   }
-  package { 'snapd':
-    ensure   =>  latest,
-    provider => apt,
-  }
-  -> exec { 'install_microk8s':
+ exec { 'install_microk8s':
     command => "snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
   }
