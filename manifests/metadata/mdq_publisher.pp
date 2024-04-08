@@ -7,6 +7,7 @@ class sunet::metadata::mdq_publisher(
   Optional[String] $validate_cert='/var/www/html/md/md-signer2.crt',
   Optional[String] $extra_entities='',
   Optional[String] $xml_dir='md',
+  Optional[String] $imagetag='latest',
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
@@ -91,7 +92,7 @@ class sunet::metadata::mdq_publisher(
   }
   sunet::docker_run { 'swamid-mdq-publisher':
     image               => 'docker.sunet.se/swamid/mdq-publisher',
-    imagetag            => 'latest',
+    imagetag            => $imagetag,
     hostname            => $facts['networking']['fqdn'],
     volumes             => [
       '/etc/ssl/mdq:/etc/certs',
