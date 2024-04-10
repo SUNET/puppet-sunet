@@ -6,7 +6,7 @@ class sunet::vc::lab::datastore(
   String $mongo_pw                = lookup('mongo_pw'),
   String $interface               = "ens3",
   Boolean $tls_enabled            = lookup('tls_enabled'),
-  String $tls_cert_file_path      = lookup('tls_cert_file_path')
+  String $tls_cert_file_path      = lookup('tls_cert_file_path'),
   String $tls_key_file_path       = lookup('tls_key_file_path')
 ) {
   sunet::ssh_keys { 'vcops':
