@@ -1,7 +1,8 @@
 ---
 common:
   mongo:
-    uri: mongodb://<%= @mongo_user %>:<%= @mongo_pw %>@vc_mongo:27017
+    #uri: mongodb://<%= @mongo_user %>:<%= @mongo_pw %>@vc_mongo:27017
+    uri: mongodb://vc_mongo:27017
   production: <%= @production %>
   basic_auth:
     ladok: xyz
@@ -41,6 +42,10 @@ common:
 apigw:
   api_server:
     addr: :8080
+    tls:
+      enabled: <%= @tls_enabled %>
+      cert_file_path: <%= @tls_cert_file_path %>
+      key_file_path: <%= @tls_key_file_path %>
 
 persistent:
   api_server:

@@ -4,14 +4,29 @@ class sunet::vc::lab::datastore(
   Boolean $production             = false,
   String $mongo_user              = lookup('mongo_user'),
   String $mongo_pw                = lookup('mongo_pw'),
-  String $interface               = "ens3"
+  String $interface               = "ens3",
+  Boolean $tls_enabled            = lookup('tls_enabled'),
+  String $tls_cert_file_path      = lookup('tls_cert_file_path')
+  String $tls_key_file_path       = lookup('tls_key_file_path')
 ) {
-
   sunet::ssh_keys { 'vcops':
     config => lookup('vcops_ssh_config', undef, undef, {}),
   }
 
    package { 'make': ensure => 'installed' }
+
+   if $tls_enabled {
+    package { 
+      'certbot': ensure => 'installed'
+      'python3-requests': ensure => 'installed'
+    }
+
+    exec { 'download acme-d':
+      command => 'curl -o /etc/letsencrypt/acme-dns-auth.py https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py',
+      cwd => '/etc/letsencrypt/'
+      creates => ['/etc/letsencrypt/acme-dns-auth.py'],
+    }
+   }
 
   sunet::misc::system_user { 'sunet':
     username   => 'sunet',
