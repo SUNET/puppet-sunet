@@ -16,10 +16,8 @@ class sunet::vc::lab::datastore(
    package { 'make': ensure => 'installed' }
 
    if $tls_enabled {
-    package { 
-      'certbot': ensure => 'installed'
-      'python3-requests': ensure => 'installed'
-    }
+    package { 'certbot': ensure => 'installed' }
+    package { 'python3-requests': ensure => 'installed' }
 
     exec { 'download acme-d':
       command => 'curl -o /etc/letsencrypt/acme-dns-auth.py https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py',
