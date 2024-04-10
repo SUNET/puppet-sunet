@@ -21,8 +21,8 @@ class sunet::vc::lab::datastore(
 
     exec { 'download acme-d':
       command => 'curl -o /etc/letsencrypt/acme-dns-auth.py https://raw.githubusercontent.com/joohoi/acme-dns-certbot-joohoi/master/acme-dns-auth.py',
-      cwd => '/etc/letsencrypt/'
-      creates => ['/etc/letsencrypt/acme-dns-auth.py'],
+      cwd => '/etc/letsencrypt/',
+      creates => '/etc/letsencrypt/acme-dns-auth.py',
     }
    }
 
