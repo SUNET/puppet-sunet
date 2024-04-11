@@ -1,11 +1,14 @@
 # microk8s cluster node
 class sunet::microk8s::node(
-  String  $channel        = '1.27/stable',
-  Boolean $mayastor       = false,
-  Integer $failure_domain = 42,
+  String  $channel            = '1.27/stable',
+  Boolean $mayastor           = false,
+  Integer $failure_domain     = 42,
+  Integer $web_nodeport       = 30080,
+  Integer $websecure_nodeport = 30443,
 ) {
   # Loop through peers and do things that require their ip:s
-  include stdlib
+  include sunet::packages::snapd
+
   split($facts['microk8s_peers'], ',').each | String $peer| {
     unless $peer == 'unknown' {
       $peer_ip = $facts[join(['microk8s_peer_', $peer])]
@@ -19,11 +22,7 @@ class sunet::microk8s::node(
       }
     }
   }
-  package { 'snapd':
-    ensure   =>  latest,
-    provider => apt,
-  }
-  -> exec { 'install_microk8s':
+ exec { 'install_microk8s':
     command => "snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
   }
@@ -39,7 +38,7 @@ class sunet::microk8s::node(
   }
   -> sunet::misc::ufw_allow { 'microk8s_ports':
     from => 'any',
-    port => [8080, 8443, 16443, 10250, 10255, 25000, 12379, 10257, 10259, 19001],
+    port => [8080, 8443, 16443, 10250, 10255, 25000, 12379, 10257, 10259, 19001, 30443],
   }
   # This is how ufw::allow does it, but that lacks support for "on"
   -> exec { 'allow-outgoing-on-calico':
@@ -77,12 +76,23 @@ class sunet::microk8s::node(
       command  => '/snap/bin/microk8s enable community',
       provider => 'shell',
     }
+    $line1 ="/snap/bin/microk8s enable traefik --set ports.websecure.nodePort=${websecure_nodeport}"
+    $line2 = "--set  ports.web.nodePort=${web_nodeport} --set deployment.kind=DaemonSet"
+    $traefik_command = "${line1} ${line2}"
     unless any2bool($facts['microk8s_traefik']) {
       exec { 'enable_plugin_traefik':
-        command  => '/snap/bin/microk8s enable traefik',
+        command  => $traefik_command,
         provider => 'shell',
       }
     }
+  }
+  exec { 'alias_kubectl':
+    command  => '/usr/bin/snap alias microk8s.kubectl kubectl',
+    provider => 'shell',
+  }
+  exec { 'alias_helm':
+    command  => '/usr/bin/snap alias microk8s.helm helm',
+    provider => 'shell',
   }
   if $mayastor {
     package { "linux-modules-extra-${facts['kernelrelease']}":

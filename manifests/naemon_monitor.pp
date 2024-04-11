@@ -4,6 +4,7 @@ class sunet::naemon_monitor(
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
+  Array $thruk_extra_volumes = [],
   Array $resolvers = [],
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
@@ -20,6 +21,13 @@ class sunet::naemon_monitor(
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
 ){
+
+
+
+  $naemon_container = $::facts['dockerhost2'] ? {
+    yes => 'naemon_monitor-naemon-1',
+    default => 'naemon_monitor_naemon_1',
+  }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
       sunet::nftables::docker_expose { 'allow_http' :
@@ -68,7 +76,7 @@ class sunet::naemon_monitor(
 
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf':
     ensure  => file,
-    content => template('sunet/naemon_monitor/service-override.conf'),
+    content => template('sunet/naemon_monitor/service-override.conf.erb'),
     require => File['/etc/systemd/system/sunet-naemon_monitor.service.d/'],
   }
 
@@ -83,7 +91,12 @@ class sunet::naemon_monitor(
 
   file { '/opt/naemon_monitor/stop-monitor.sh':
     ensure  => file,
-    content => template('sunet/naemon_monitor/stop-monitor.sh'),
+    content => template('sunet/naemon_monitor/stop-monitor.sh.erb'),
+  }
+
+  file { '/etc/logrotate.d/naemon_monitor':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/logrotate.erb'),
   }
 
   file { '/opt/naemon_monitor/grafana.ini':
@@ -242,6 +255,14 @@ class sunet::naemon_monitor(
     content => template('sunet/naemon_monitor/naemon-contactgroups.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
+
+  sunet::scriptherder::cronjob { 'thrukmaintenance':
+    cmd           => '/usr/bin/docker exec --user www-data naemon_monitor-thruk-1 /usr/bin/thruk maintenance',
+    minute        => '50',
+    ok_criteria   => ['exit_status=0'],
+    warn_criteria => ['exit_status=1', 'max_age=24h'],
+  }
+
 
   class { 'nagioscfg':
     additional_entities => $additional_entities,
