@@ -16,7 +16,13 @@ services:
       - '/opt/frontend/scripts/haproxy-start.sh:/haproxy-start.sh:ro'
       - 'haproxy_data:/etc/haproxy'
       - 'haproxy_control:/var/run/haproxy-control'
-<% if @tls_certificate_bundle -%>
+<% if @multi_certs.is_a? Array and @multi_certs.size > 1 -%>
+<%- index = 0 -%>
+<% @multi_certs.each do |cert| -%>
+      - /opt/frontend/config/<%= @instance %>/certs/tls_certificate_bundle.<%= index %>.pem:<%= cert %>:ro
+<%- index += 1 -%>
+<% end -%>
+<% elsif @tls_certificate_bundle -%>
       - /opt/frontend/config/<%= @instance %>/certs/tls_certificate_bundle.pem:<%= @tls_certificate_bundle %>:ro
 <% else -%>
       # tls_certificate_bundle not set in Puppet

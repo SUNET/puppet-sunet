@@ -36,11 +36,12 @@ for node_name in all_hosts:
         if re.match(reg, node_name):
             if node_name == me:
                 if "sunet::dockerhost" in cls:
-                    if (
-                        "advanced_network" in cls["sunet::dockerhost"]
-                        and cls["sunet::dockerhost"]["advanced_network"]
-                    ):
-                        print("dockerhost_advanced_network=yes")
-                        sys.exit()
+                    if cls["sunet::dockerhost"] is not None:
+                        if (
+                            "advanced_network" in cls["sunet::dockerhost"]
+                            and cls["sunet::dockerhost"]["advanced_network"]
+                        ):
+                            print("dockerhost_advanced_network=yes")
+                            sys.exit()
 
 print("dockerhost_advanced_network=no")

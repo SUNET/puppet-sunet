@@ -43,10 +43,10 @@ echo "{
 if [ $(which docker) ]; then
   # Gather structured data docker fact
   docker_fact="${fact_dir}/docker_ps.json"
-  echo "{ 
-          \"docker_ps\": $(docker ps --format '{{json . }}' | sed 's/\\"//g' | jq -s .)
-       }" \
-    | jq . > ${docker_fact}
+  for container in $(docker ps -q); do
+    docker ps  --format '{{json . }}' --filter "id=${container}" | \
+      jq '. |= . + '{"ImageId":$(docker inspect --format '{{json .Image }}' ${container})'}'
+  done | jq --jsonargs '{"docker_ps":[inputs]}' > ${docker_fact}
 
 fi
 

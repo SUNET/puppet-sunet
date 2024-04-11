@@ -1,3 +1,3 @@
 #!/bin/bash
 
-mysql -N -B -e "show status like 'wsrep_cluster_size'"
+docker exec mariadb-db-1 mysql -u root -p'<%= @mariadb_root_password %>' -N -B -e "show status like 'wsrep_cluster_size'"

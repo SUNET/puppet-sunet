@@ -11,10 +11,12 @@ https://www.ibm.com/docs/en/SSEQVQ_8.1.15/pdf/b_ba_guide_unx_lnx.pdf
 
 Tools used before committing code:
 black sunet-baas2-bootstrap
+isort sunet-baas2-bootstrap
 pylint sunet-baas2-bootstrap
 mypy --strict sunet-baas2-bootstrap
 """
 import argparse
+import datetime
 import os
 import os.path
 import platform
@@ -74,7 +76,11 @@ def get_installed_version() -> Union[str, None]:
     # Homepage: http://www.ibm.com/software/tivoli/products/storage-mgr/
     try:
         proc = subprocess.run(
-            proc_args, check=True, capture_output=True, encoding="utf8"
+            proc_args,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf8",
         )
     except subprocess.CalledProcessError as exc:
         # If the package is not installed this is OK, we will install it
@@ -182,7 +188,9 @@ def verify_file_hash(checksum_file: str) -> None:
     checksum_file_dir = os.path.dirname(checksum_file)
 
     os.chdir(checksum_file_dir)
-    subprocess.run(proc_args, check=True, capture_output=True)
+    subprocess.run(
+        proc_args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     os.chdir(orig_dir)
 
 
@@ -228,7 +236,13 @@ def get_trust_labels(cert_db_file: str) -> List[str]:
     # * default, - personal, ! trusted, # secret key
     # !	"TSM server SafeDC self-signed key"
     proc_args = shlex.split(f"gsk8capicmd_64 -cert -list -db {cert_db_file} -stashed")
-    proc = subprocess.run(proc_args, capture_output=True, check=True, encoding="utf-8")
+    proc = subprocess.run(
+        proc_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+        encoding="utf-8",
+    )
 
     trusted_cert_labels = []
     for line in proc.stdout.splitlines():
@@ -247,13 +261,17 @@ def set_dsmc_password(password: str) -> None:
     # interactive prompts
     proc_args = shlex.split(f"dsmc set password {password} {password}")
     try:
-        subprocess.run(proc_args, capture_output=True, check=True)
+        subprocess.run(
+            proc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        )
     except subprocess.CalledProcessError:
         # Do not output the full command line since it contains secrets
         raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
 
 
-def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-locals
+def read_index_file(  # pylint:disable=too-many-locals
+    path: str, current_nodename: str
+) -> Dict[str, Any]:
     """parse a TSM.IDX file"""
     with open(path, "rb") as fileobj:
         data = fileobj.read()
@@ -302,15 +320,24 @@ def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-loc
         # Go to next entry
         entry_index += 1
 
-    # Create a set containing the unique index numbers we have seen
-    unique_indexes = {entry["index"] for entry in index_data["entries"]}
+    # Create a set containing the unique index numbers we have seen, and limit
+    # us to only looking at the current configured nodename as there may be
+    # older nodename entries with conflicting index numbers if the machine has
+    # changed nodenames over time.
+    nodename_indexes = [
+        entry["index"]
+        for entry in index_data["entries"]
+        if entry["nodename"] == current_nodename
+    ]
+    unique_indexes = set(nodename_indexes)
 
     # Make sure the number of entries matches the number of unique index values
     # we have seen, otherwise there are duplicate index values present and this
-    # is unexpected.
-    if len(unique_indexes) != len(index_data["entries"]):
+    # is unexpected. Since multiple nodenames leads to duplicate index numbers
+    # we again need to limit comparision to our current nodename.
+    if len(unique_indexes) != len(nodename_indexes):
         raise RuntimeError(
-            f'mismatch between number of unique index values we have parsed ({len(unique_indexes)}) compared to the number of entries: {len(index_data["entries"])}'  # pylint:disable=line-too-long
+            f"mismatch between number of unique index values we have parsed ({len(unique_indexes)}) compared to the number of entries: {len(nodename_indexes)}"  # pylint:disable=line-too-long
         )
 
     return index_data
@@ -409,7 +436,13 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
         f"gsk8capicmd_64 -secretkey -add -db {db_path} -label {label} -stashed -file {tmp_password_file}"  # pylint:disable=line-too-long
     )
     try:
-        subprocess.run(proc_args, capture_output=True, check=True, encoding="utf-8")
+        subprocess.run(
+            proc_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            encoding="utf-8",
+        )
     except subprocess.CalledProcessError as exc:
         # Cleanup before we crash
         os.remove(tmp_password_file)
@@ -418,7 +451,9 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
     os.remove(tmp_password_file)
 
 
-def set_encrypt_password(password_db: str, password: str) -> None:
+def set_encrypt_password(  # pylint:disable=too-many-locals
+    password_db: str, password: str
+) -> None:
     """The goal of this function is to configure the password used for encryption"""
 
     dsm_opt_path = "/opt/tivoli/tsm/client/ba/bin/dsm.opt"
@@ -432,18 +467,19 @@ def set_encrypt_password(password_db: str, password: str) -> None:
     if nodename is None:
         raise RuntimeError(f"unable to parse nodename from {dsm_sys_path}")
 
-    # Statically assigned label for now, seems to work and should not collide
-    # with a future timestamp because it has already passed.
-    label = "1680001337_0"
-
     if servername is None:
         print("unable to find servername in dsm.opt, exiting")
         sys.exit(1)
 
     tsm_idx_path = "/etc/adsm/TSM.IDX"
-    index_data = read_index_file(tsm_idx_path)
+    index_data = read_index_file(tsm_idx_path, nodename)
 
-    if len(index_data["entries"]) > 1:
+    # Filter out entries belonging to the currently configured nodename
+    nodename_entries = [
+        entry for entry in index_data["entries"] if entry["nodename"] == nodename
+    ]
+
+    if len(nodename_entries) > 1:
         print("more than one entry already exists, nothing to add")
         sys.exit(0)
 
@@ -451,11 +487,20 @@ def set_encrypt_password(password_db: str, password: str) -> None:
     encryption_index = 1
 
     # Verify encryption index is not already present in the IDX file
-    for entry in index_data["entries"]:
+    for entry in nodename_entries:
         if entry["index"] == encryption_index:
             raise RuntimeError(
                 f"we expected to add an entry with index {encryption_index} but it's already taken, this is unexpected"  # pylint:disable=line-too-long
             )
+
+    # Find an available label in the IDX file. In this case we have to consider
+    # entries for all present nodenames, not just our currently configured one.
+    ts = int(datetime.datetime.now().timestamp())
+    while True:
+        label = str(ts) + "_0"
+        if label not in [entry["label"] for entry in index_data["entries"]]:
+            break
+        ts += 1
 
     add_kdb_entry(password_db, label, password)
 
@@ -590,7 +635,18 @@ def fix_ldd() -> None:
     dsmc: error while loading shared libraries: libgsk8ssl_64.so: cannot open shared object file: No such file or directory # pylint:disable=line-too-long
     """
 
-    dist_info = platform.freedesktop_os_release()
+    python_version = platform.python_version_tuple()
+    if int(python_version[0]) < 3:
+        raise RuntimeError("only python 3 is supported")
+
+    if int(python_version[1]) < 10:
+        # We have our local implementation of platform_freedesktop_os_release() to
+        # be usable on ubuntu 18.04. This can be cleaned up when there are no
+        # ubuntu 18.04 users of the tool.
+        dist_info = freedesktop_os_release()
+    else:
+        dist_info = platform.freedesktop_os_release()
+
     if dist_info["ID"] != "debian":
         # This fix only applies to Debian
         return
@@ -608,6 +664,72 @@ def fix_ldd() -> None:
     # Flush the ldd cache
     subprocess.run("/usr/sbin/ldconfig", check=True)
 
+
+### START: UBUNTU 18.04 backport code
+# Code from
+# https://github.com/python/cpython/blob/3.12/Lib/platform.pyhttps://github.com/python/cpython/blob/3.12/Lib/platform.py
+# Added here to work on ubuntu 18. If no longer used just go back to calling
+# platform.freedesktop_os_release()
+
+### freedesktop.org os-release standard
+# https://www.freedesktop.org/software/systemd/man/os-release.html
+
+# /etc takes precedence over /usr/lib
+_os_release_candidates = ("/etc/os-release", "/usr/lib/os-release")
+_os_release_cache = None  # pylint:disable=invalid-name
+
+
+def _parse_os_release(lines):
+    # SUNET: import re locally so if/when this code is removed we dont forget
+    # to also remove an "re" import.
+    import re  # pylint:disable=import-outside-toplevel
+
+    # These fields are mandatory fields with well-known defaults
+    # in practice all Linux distributions override NAME, ID, and PRETTY_NAME.
+    info = {
+        "NAME": "Linux",
+        "ID": "linux",
+        "PRETTY_NAME": "Linux",
+    }
+
+    # NAME=value with optional quotes (' or "). The regular expression is less
+    # strict than shell lexer, but that's ok.
+    os_release_line = re.compile(
+        "^(?P<name>[a-zA-Z0-9_]+)=(?P<quote>[\"']?)(?P<value>.*)(?P=quote)$"
+    )
+    # unescape five special characters mentioned in the standard
+    os_release_unescape = re.compile(r"\\([\\\$\"\'`])")
+
+    for line in lines:
+        mo = os_release_line.match(line)
+        if mo is not None:
+            info[mo.group("name")] = os_release_unescape.sub(r"\1", mo.group("value"))
+
+    return info
+
+
+def freedesktop_os_release():
+    """Return operation system identification from freedesktop.org os-release"""
+    global _os_release_cache  # pylint:disable=global-statement
+
+    if _os_release_cache is None:
+        errno = None
+        for candidate in _os_release_candidates:
+            try:
+                with open(candidate, encoding="utf-8") as f:
+                    _os_release_cache = _parse_os_release(f)
+                break
+            except OSError as e:
+                errno = e.errno
+        else:
+            raise OSError(
+                errno, f"Unable to read files {', '.join(_os_release_candidates)}"
+            )
+
+    return _os_release_cache.copy()
+
+
+### END: UBUNTU 18.04 backport code
 
 if __name__ == "__main__":
     main()
