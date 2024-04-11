@@ -1,0 +1,89 @@
+# A cluster class
+class sunet::redictcluster(
+  Integer $numnodes = 3,
+  Boolean $hostmode = false,
+  Optional[Boolean] $tls = false,
+  Optional[String] $cluster_announce_ip = '',
+  Optional[Boolean] $automatic_rectify = false,
+  Optional[Boolean] $prevent_reboot = false,
+)
+{
+
+  # Allow the user to either specify the variable in cosmos-rules or in hiera
+  if $cluster_announce_ip == '' {
+    $__cluster_announce_ip = lookup('cluster_announce_ip', undef, undef, '')
+  } else {
+    $__cluster_announce_ip = $cluster_announce_ip
+  }
+  # Allow the user to use the explicit string ipaddress or ipaddress6 to use the corresponding facts
+  if $__cluster_announce_ip == 'ipaddress' {
+    $_cluster_announce_ip = $facts['ipaddress']
+  } elsif $__cluster_announce_ip == 'ipaddress6' {
+    $_cluster_announce_ip = $facts['ipaddress6']
+  } else {
+    $_cluster_announce_ip = $__cluster_announce_ip
+  }
+
+  $redict_password = safe_hiera('redict_password')
+
+  sunet::docker_compose { 'redictcluster_compose':
+    content          => template('sunet/redictcluster/docker-compose.yml.erb'),
+    service_name     => 'redict',
+    compose_dir      => '/opt/',
+    compose_filename => 'docker-compose.yml',
+    description      => 'redict Cluster',
+  }
+  file {'/etc/sysctl.d/55-vm-overcommit.conf':
+    ensure  => present,
+    content => template('sunet/redictcluster/55-vm-overcommit.conf.erb'),
+  }
+  file {'/opt/redict-rectify.sh':
+    ensure  => present,
+    mode    => '0755',
+    content => template('sunet/redictcluster/redict-rectify.sh.erb'),
+  }
+  if $automatic_rectify {
+    sunet::scriptherder::cronjob { 'redict-rectify':
+      cmd           => '/opt/redict-rectify.sh',
+      hour          => '*',
+      minute        => '*/10',
+      ok_criteria   => ['exit_status=0','max_age=2d'],
+      warn_criteria => ['exit_status=1','max_age=3d'],
+    }
+  }
+
+  if $prevent_reboot {
+    include sunet::packages::cowsay
+    file {'/etc/molly-guard/run.d/11-redictcluster':
+      ensure  => present,
+      mode    => '0755',
+      content => template('sunet/redictcluster/11-redictcluster.erb'),
+    }
+  }
+
+  range(0, $numnodes - 1).each |$i|{
+    $clusterportnum = 16379 + $i
+    $redictportnum = 6379 + $i
+
+    file { "/opt/redict/node-${i}":
+      ensure  => directory,
+    }
+    -> file { "/opt/redict/node-${i}/server.conf":
+      ensure  => present,
+      content => template('sunet/redictcluster/server.conf.erb'),
+    }
+    if $::facts['sunet_nftables_enabled'] == 'yes' or $::facts['dockerhost_advanced_network'] == 'yes' or $::facts['dockerhost2'] == 'yes' {
+      $ports = [$redictportnum, $clusterportnum]
+      $ports.each|$port| {
+        sunet::nftables::rule { "redict_port_${port}":
+          rule => "add rule inet filter input tcp dport ${port} counter accept comment \"allow-redict-${port}\""
+        }
+      }
+    } else {
+      sunet::misc::ufw_allow { "redict_port_${i}":
+        from => '0.0.0.0/0',
+        port => [$redictportnum,$clusterportnum],
+      }
+    }
+  }
+}
