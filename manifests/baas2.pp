@@ -33,7 +33,7 @@ class sunet::baas2(
   String        $nodename='',
   String        $tcpserveraddress='server2.backup.dco1.safedc.net',
   Boolean       $monitor_backups=true,
-  String        $version='8.1.17.2',
+  String        $version='8.1.22.0',
   Array[String] $backup_dirs = [],
   Array[String] $exclude_list = [],
   Boolean       $install_tbmr=false,
