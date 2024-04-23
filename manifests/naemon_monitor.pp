@@ -13,7 +13,7 @@ class sunet::naemon_monitor(
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
   String $grafana_tag = '9.1.6',
-  String $loki_tag = '2.9.0'
+  String $loki_tag = '2.9.0',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
