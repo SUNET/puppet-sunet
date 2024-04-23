@@ -13,6 +13,7 @@ class sunet::naemon_monitor(
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
   String $grafana_tag = '9.1.6',
+  String $loki_tag = '2.9.0'
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
@@ -107,9 +108,9 @@ class sunet::naemon_monitor(
     ensure  => file,
     content => template('sunet/naemon_monitor/histou.js'),
   }
-  file { '/opt/naemon_monitor/influxdb.yaml':
+  file { '/opt/naemon_monitor/loki.yaml':
     ensure  => file,
-    content => template('sunet/naemon_monitor/influxdb.yaml'),
+    content => template('sunet/naemon_monitor/loki.yaml'),
   }
   file { '/opt/naemon_monitor/data':
     ensure => directory,
