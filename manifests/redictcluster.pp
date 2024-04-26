@@ -67,6 +67,8 @@ class sunet::redictcluster(
 
     file { "/opt/redict/node-${i}":
       ensure  => directory,
+      owner   => '999',
+      group   => '999',
     }
     -> file { "/opt/redict/node-${i}/server.conf":
       ensure  => present,
