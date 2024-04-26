@@ -83,7 +83,7 @@ class sunet::server (
     }
   }
 
-  if $facts['dmi']['product']['name'] == 'OpenStack Compute' {
+  if $facts['dmi']['product']['name'] =~ /OpenStack\s(Compute|Nova)/ {
     class { 'sunet::iaas::server': }
   }
 }
