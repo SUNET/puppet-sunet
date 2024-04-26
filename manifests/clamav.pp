@@ -2,6 +2,8 @@
 class sunet::clamav (
   String $minute = '45',
   String $hour   = '*/2',
+  String $warn   = '3h',
+  String $crit   = '5h',
 ) {
 
   include sunet::packages::clamav
@@ -88,7 +90,7 @@ class sunet::clamav (
     cmd           => '/opt/clamav/scan.sh',
     minute        => $minute,
     hour          => $hour,
-    ok_criteria   => ['exit_status=0', 'max_age=3h'],
-    warn_criteria => ['exit_status=0', 'max_age=5h'],
+    ok_criteria   => ['exit_status=0', "max_age=${warn}"],
+    warn_criteria => ['exit_status=0', "max_age=${crit}"],
   }
 }
