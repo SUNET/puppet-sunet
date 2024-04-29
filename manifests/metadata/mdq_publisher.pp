@@ -71,8 +71,8 @@ class sunet::metadata::mdq_publisher(
   sunet::ici_ca::rp { 'infra': }
 
   $env_infra_ca = [
-    "PUBLISHER_CERT=/etc/ssl/certs/${facts['networking']['primary']}_infra.crt",
-    "PUBLISHER_KEY=/etc/ssl/private/${facts['networking']['primary']}_infra.key",
+    "PUBLISHER_CERT=/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
+    "PUBLISHER_KEY=/etc/ssl/private/${facts['networking']['fqdn']}_infra.key",
     ]
   sunet::docker_run { 'swamid-mdq-publisher':
     image               => 'docker.sunet.se/swamid/mdq-publisher',
