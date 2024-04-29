@@ -66,30 +66,10 @@ class sunet::metadata::mdq_publisher(
     ok_criteria   => ['exit_status=0', 'max_age=2h'],
     warn_criteria => ['exit_status=1', 'max_age=5h'],
   }
-  file {'/etc/ssl/mdq':
-    ensure => 'directory'
-  }
-  if ($cert_name != undef) {
-    file {'/etc/ssl/mdq/privkey.pem':
-      ensure => 'link',
-      target => "/etc/ssl/private/${cert_name}.key"
-    }
-    file {'/etc/ssl/mdq/cert.pem':
-      ensure => 'link',
-      target => "/etc/ssl/certs/${cert_name}.crt"
-    }
-  } else {
-    exec { "${title}_key":
-      command => 'openssl genrsa -out /etc/ssl/mdq/privkey.pem 4096',
-      onlyif  => 'test ! -f /etc/ssl/mdq/privkey.pem',
-      creates => '/etc/ssl/mdq/privkey.pem'
-    }
-    -> exec { "${title}_cert":
-      command => "openssl req -x509 -sha256 -new -days 3650 -subj \"/CN=${title}\" -key /etc/ssl/mdq/privkey.pem -out /etc/ssl/mdq/cert.pem", # lint:ignore:140chars
-      onlyif  => 'test ! -f /etc/ssl/mdq/cert.pem -a -f /etc/ssl/mdq/privkey.pem',
-      creates => '/etc/ssl/mdq/cert.pem'
-    }
-  }
+
+
+  sunet::ici_ca::rp { 'infra': }
+
   sunet::docker_run { 'swamid-mdq-publisher':
     image               => 'docker.sunet.se/swamid/mdq-publisher',
     imagetag            => $imagetag,
