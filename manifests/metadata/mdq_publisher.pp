@@ -83,7 +83,7 @@ class sunet::metadata::mdq_publisher(
       '/etc/ssl:/etc/ssl',
       '/var/www/html:/var/www/html'
     ],
-    env                 => $env + env_infra_ca,
+    env                 => $env + $env_infra_ca,
     uid_gid_consistency => false,
     ports               => ['443:443'],
   }
