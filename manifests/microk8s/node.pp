@@ -9,7 +9,9 @@ class sunet::microk8s::node(
 ) {
   # Loop through peers and do things that require their ip:s
   include sunet::packages::snapd
-  include sunet::packages::ufw
+  if $::operatingsystem == 'Debian' and versioncmp($::operatingsystemrelease, '12') >= 0 {
+    include sunet::packages::ufw
+  }
 
   split($facts['microk8s_peers'], ',').each | String $peer| {
     unless $peer == 'unknown' {
