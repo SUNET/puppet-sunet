@@ -2,6 +2,7 @@
 class sunet::microk8s::node(
   String  $channel            = '1.27/stable',
   Boolean $mayastor           = false,
+  Boolean $traefik            = true,
   Integer $failure_domain     = 42,
   Integer $web_nodeport       = 30080,
   Integer $websecure_nodeport = 30443,
@@ -22,7 +23,7 @@ class sunet::microk8s::node(
       }
     }
   }
- exec { 'install_microk8s':
+  exec { 'install_microk8s':
     command => "snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
   }
@@ -79,7 +80,7 @@ class sunet::microk8s::node(
     $line1 ="/snap/bin/microk8s enable traefik --set ports.websecure.nodePort=${websecure_nodeport}"
     $line2 = "--set  ports.web.nodePort=${web_nodeport} --set deployment.kind=DaemonSet"
     $traefik_command = "${line1} ${line2}"
-    unless any2bool($facts['microk8s_traefik']) {
+    unless any2bool($facts['microk8s_traefik']) && $traefik {
       exec { 'enable_plugin_traefik':
         command  => $traefik_command,
         provider => 'shell',
