@@ -9,6 +9,7 @@ class sunet::microk8s::node(
 ) {
   # Loop through peers and do things that require their ip:s
   include sunet::packages::snapd
+  include sunet::packages::ufw
 
   split($facts['microk8s_peers'], ',').each | String $peer| {
     unless $peer == 'unknown' {
