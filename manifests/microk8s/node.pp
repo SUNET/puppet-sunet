@@ -10,7 +10,7 @@ class sunet::microk8s::node(
   include sunet::packages::snapd
 
   $hiera_peers =  lookup('microk8s_peers', undef, undef, [])
-  if $fact['hostname'] =~ /(^kubew|k8sw-)[0-9]/ {
+  if $facts['hostname'] =~ /(^kubew|k8sw-)[0-9]/ {
     $type = 'worker'
   } else {
     $type = 'controller'
