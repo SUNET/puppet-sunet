@@ -18,7 +18,7 @@ class sunet::microk8s::node(
 
   if $peers != [] {
     $final_peers = $peers
-  } else if $hiera_peers != [] {
+  } elsif $hiera_peers != [] {
     $final_peers = $hiera_peers
   } else {
     $final_peers = map(split($facts['microk8s_peers'], ',').each | String $peer| {
