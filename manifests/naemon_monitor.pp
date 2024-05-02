@@ -31,16 +31,20 @@ class sunet::naemon_monitor(
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-      sunet::nftables::docker_expose { 'allow_http' :
+    sunet::nftables::docker_expose { 'allow_http' :
       iif           => $interface,
       allow_clients => 'any',
       port          => 80,
     }
-
-      sunet::nftables::docker_expose { 'allow_https' :
+    sunet::nftables::docker_expose { 'allow_https' :
       iif           => $interface,
       allow_clients => 'any',
       port          => 443,
+    }
+    sunet::nftables::docker_expose { 'allow_https' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 3100,
     }
   } else {
     sunet::misc::ufw_allow { 'allow-http':
@@ -50,6 +54,10 @@ class sunet::naemon_monitor(
     sunet::misc::ufw_allow { 'allow-https':
       from => 'any',
       port => '443'
+    }
+    sunet::misc::ufw_allow { 'allow-https':
+      from => 'any',
+      port => '3100'
     }
   }
 
