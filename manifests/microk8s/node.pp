@@ -28,7 +28,7 @@ class sunet::microk8s::node(
   }
     # Loop through peers and do things that require their ip:s
   $final_peers.each | String $peer_tuple| {
-    $peer_ip = split($peer_tuple, ':')[0]
+    $peer_ip = split($peer_tuple, ' ')[0]
     $peer = split($peer_tuple, ' ')[1]
     unless $peer == 'unknown' or $peer_ip == $facts['ipaddress'] {
       file_line { "hosts_${peer}":
