@@ -40,22 +40,22 @@ class sunet::microk8s::node(
   $private_worker_ports = [10250, 10255, 16443, 25000, 12379, 10257, 10259, 19001]
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     if $type == 'controller' {
-      sunet::nftables::allow( "nft_${peer}":
+      sunet::nftables::allow { "nft_${peer}":
         port => $private_controller_ports
         from => $peer_ip,
       }
-      sunet::nftables::allow( "nft_${peer}":
+      sunet::nftables::allow { "nft_${peer}":
         port => $public_controller_ports
         from => 'any',
       }
     } else {
-      sunet::nftables::allow( "nft_${peer}":
+      sunet::nftables::allow { "nft_${peer}":
         port => $private_worker_ports
         from => $peer_ip,
         }
       }
     }
-    sunet::nftables::allow( "nft_${peer}":
+    sunet::nftables::allow { "nft_${peer}":
       port  => [4789],
       from  => $peer_ip,
       proto => 'udp',
@@ -68,22 +68,22 @@ class sunet::microk8s::node(
     }
   } else {
     if $type == 'controller' {
-      sunet::misc::ufw_allow( "nft_${peer}":
+      sunet::misc::ufw_allow {"nft_${peer}":
         port => $private_controller_ports
         from => $peer_ip,
       }
-      sunet::misc::ufw_allow( "nft_${peer}":
+      sunet::misc::ufw_allow { "nft_${peer}":
         port => $public_controller_ports
         from => 'any',
       }
     } else {
-      sunet::misc::ufw_allow( "nft_${peer}":
+      sunet::misc::ufw_allow { "nft_${peer}":
         port => $private_worker_ports
         from => $peer_ip,
         }
       }
     }
-    sunet::misc::ufw_allow( "nft_${peer}":
+    sunet::misc::ufw_allow { "nft_${peer}":
       port  => [4789],
       from  => $peer_ip,
       proto => 'udp',
