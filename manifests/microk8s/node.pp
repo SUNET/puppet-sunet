@@ -53,13 +53,11 @@ class sunet::microk8s::node(
         port => $private_worker_ports,
         from => $peer_ip,
         }
-      }
     }
     sunet::nftables::allow { "nft_${peer}":
       port  => [4789],
       from  => $peer_ip,
       proto => 'udp',
-      }
     }
     file { '/etc/nftables/conf.d/500-microk8s-rules.nft':
       ensure  => file,
@@ -80,14 +78,12 @@ class sunet::microk8s::node(
       sunet::misc::ufw_allow { "nft_${peer}":
         port => $private_worker_ports,
         from => $peer_ip,
-        }
       }
     }
     sunet::misc::ufw_allow { "nft_${peer}":
       port  => [4789],
       from  => $peer_ip,
       proto => 'udp',
-      }
     }
     # This is how ufw::allow does it, but that lacks support for "on"
     exec { 'allow-outgoing-on-calico':
