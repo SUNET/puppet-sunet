@@ -62,7 +62,7 @@ class sunet::microk8s::node(
       }
       file { '/etc/nftables/conf.d/500-microk8s-rules.nft':
         ensure  => file,
-        content => template('sunet/500-microk8s-rules.nft.erb'),
+        content => template('sunet/microk8s/500-microk8s-rules.nft.erb'),
         mode    => '0644',
       }
     } else {
