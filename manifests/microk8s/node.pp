@@ -21,7 +21,7 @@ class sunet::microk8s::node(
   } elsif $hiera_peers != [] {
     $final_peers = $hiera_peers
   } else {
-    $final_peers = map(split($facts['microk8s_peers'], ',').each | String $peer| {
+    $final_peers = map(split($facts['microk8s_peers'], ',')) | String $peer| {
       $peer_ip = $facts[join(['microk8s_peer_', $peer])]
       "${peer_ip} ${peer}"
     }
