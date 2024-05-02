@@ -60,11 +60,6 @@ class sunet::microk8s::node(
         from  => $peer_ip,
         proto => 'udp',
       }
-      file { '/etc/nftables/conf.d/500-microk8s-rules.nft':
-        ensure  => file,
-        content => template('sunet/microk8s/500-microk8s-rules.nft.erb'),
-        mode    => '0644',
-      }
     } else {
       if $type == 'controller' {
         sunet::misc::ufw_allow {"nft_${peer}_private":
@@ -86,25 +81,33 @@ class sunet::microk8s::node(
         from  => $peer_ip,
         proto => 'udp',
       }
-      # This is how ufw::allow does it, but that lacks support for "on"
-      exec { 'allow-outgoing-on-calico':
-        command  => 'ufw allow out on vxlan.calico',
-        path     => '/usr/sbin:/bin:/usr/bin',
-        unless   => 'ufw status | grep -qE "ALLOW OUT   Anywhere (\(v6\) |)on vxlan.calico"',
-        provider => 'posix',
-      }
-      -> exec { 'allow-incomming-on-calico':
-        command  => 'ufw allow in on vxlan.calico',
-        path     => '/usr/sbin:/bin:/usr/bin',
-        unless   => 'ufw status | grep -qE "Anywhere (\(v6\) |)on vxlan.calico"',
-        provider => 'posix',
-      }
-      -> exec { 'iptables-allow-forward':
-        command  => 'iptables -P FORWARD ACCEPT',
-        path     => '/usr/sbin:/bin:/usr/bin',
-        provider => 'shell',
-        unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
-      }
+    }
+  }
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    file { '/etc/nftables/conf.d/500-microk8s-rules.nft':
+      ensure  => file,
+      content => template('sunet/microk8s/500-microk8s-rules.nft.erb'),
+      mode    => '0644',
+    }
+  } else {
+    # This is how ufw::allow does it, but that lacks support for "on"
+    exec { 'allow-outgoing-on-calico':
+      command  => 'ufw allow out on vxlan.calico',
+      path     => '/usr/sbin:/bin:/usr/bin',
+      unless   => 'ufw status | grep -qE "ALLOW OUT   Anywhere (\(v6\) |)on vxlan.calico"',
+      provider => 'posix',
+    }
+    -> exec { 'allow-incomming-on-calico':
+      command  => 'ufw allow in on vxlan.calico',
+      path     => '/usr/sbin:/bin:/usr/bin',
+      unless   => 'ufw status | grep -qE "Anywhere (\(v6\) |)on vxlan.calico"',
+      provider => 'posix',
+    }
+    -> exec { 'iptables-allow-forward':
+      command  => 'iptables -P FORWARD ACCEPT',
+      path     => '/usr/sbin:/bin:/usr/bin',
+      provider => 'shell',
+      unless   => 'iptables -L FORWARD | grep -q "Chain FORWARD (policy ACCEPT)"',
     }
   }
   exec { 'install_microk8s':
