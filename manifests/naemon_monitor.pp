@@ -41,7 +41,7 @@ class sunet::naemon_monitor(
       allow_clients => 'any',
       port          => 443,
     }
-    sunet::nftables::docker_expose { 'allow_https' :
+    sunet::nftables::docker_expose { 'allow_loki' :
       iif           => $interface,
       allow_clients => 'any',
       port          => 3100,
@@ -55,7 +55,7 @@ class sunet::naemon_monitor(
       from => 'any',
       port => '443'
     }
-    sunet::misc::ufw_allow { 'allow-https':
+    sunet::misc::ufw_allow { 'allow-loki':
       from => 'any',
       port => '3100'
     }
