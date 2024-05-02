@@ -116,6 +116,10 @@ class sunet::naemon_monitor(
     ensure  => file,
     content => template('sunet/naemon_monitor/histou.js'),
   }
+  file { '/opt/naemon_monitor/influxdb.yaml':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/influxdb.yaml'),
+  }
   file { '/opt/naemon_monitor/loki.yaml':
     ensure  => file,
     content => template('sunet/naemon_monitor/loki.yaml'),
