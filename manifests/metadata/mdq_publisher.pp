@@ -1,6 +1,7 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
   String $dir='/var/www/html',
+  Boolean $infra_cert_from_this_class = true,
   Optional[String] $cert_name=undef,
   Optional[Array] $env=[],
   Optional[Integer] $valid_until=12,
@@ -8,6 +9,7 @@ class sunet::metadata::mdq_publisher(
   Optional[String] $extra_entities='',
   Optional[String] $xml_dir='md',
   Optional[String] $imagetag='latest',
+
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
@@ -67,9 +69,9 @@ class sunet::metadata::mdq_publisher(
     warn_criteria => ['exit_status=1', 'max_age=5h'],
   }
 
-
-  sunet::ici_ca::rp { 'infra': }
-
+  if $infra_cert_from_this_class {
+    sunet::ici_ca::rp { 'infra': }
+  }
   $env_infra_ca = [
     "PUBLISHER_CERT=/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
     "PUBLISHER_KEY=/etc/ssl/private/${facts['networking']['fqdn']}_infra.key",
