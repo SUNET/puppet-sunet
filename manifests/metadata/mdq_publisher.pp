@@ -9,7 +9,6 @@ class sunet::metadata::mdq_publisher(
   Optional[String] $extra_entities='',
   Optional[String] $xml_dir='md',
   Optional[String] $imagetag='latest',
-
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
