@@ -1,6 +1,5 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
-  String $dir='/var/www/html',
   Boolean $infra_cert_from_this_class = true,
   Optional[Array] $env=[],
   Optional[Integer] $valid_until=12,
@@ -24,7 +23,7 @@ class sunet::metadata::mdq_publisher(
     $ssh_key_type = $signer['ssh_key_type']
     if ($ssh_key and $ssh_key_type) {
       sunet::rrsync {"${signer_name}-dir":
-        dir                => $dir,
+        dir                => '/var/www/html',
         ro                 => false,
         ssh_key            => $ssh_key,
         ssh_key_type       => $ssh_key_type,
