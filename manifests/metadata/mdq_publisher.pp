@@ -2,7 +2,6 @@
 class sunet::metadata::mdq_publisher(
   String $dir='/var/www/html',
   Boolean $infra_cert_from_this_class = true,
-  Optional[String] $cert_name=undef,
   Optional[Array] $env=[],
   Optional[Integer] $valid_until=12,
   Optional[String] $validate_cert='/var/www/html/md/md-signer2.crt',
