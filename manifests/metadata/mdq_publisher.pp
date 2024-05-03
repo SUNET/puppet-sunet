@@ -1,7 +1,6 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
-  String $dir='/var/www/html',
-  Optional[String] $cert_name=undef,
+  Boolean $infra_cert_from_this_class = true,
   Optional[Array] $env=[],
   Optional[Integer] $valid_until=12,
   Optional[String] $validate_cert='/var/www/html/md/md-signer2.crt',
@@ -24,7 +23,7 @@ class sunet::metadata::mdq_publisher(
     $ssh_key_type = $signer['ssh_key_type']
     if ($ssh_key and $ssh_key_type) {
       sunet::rrsync {"${signer_name}-dir":
-        dir                => $dir,
+        dir                => '/var/www/html',
         ro                 => false,
         ssh_key            => $ssh_key,
         ssh_key_type       => $ssh_key_type,
@@ -66,30 +65,14 @@ class sunet::metadata::mdq_publisher(
     ok_criteria   => ['exit_status=0', 'max_age=2h'],
     warn_criteria => ['exit_status=1', 'max_age=5h'],
   }
-  file {'/etc/ssl/mdq':
-    ensure => 'directory'
+
+  if $infra_cert_from_this_class {
+    sunet::ici_ca::rp { 'infra': }
   }
-  if ($cert_name != undef) {
-    file {'/etc/ssl/mdq/privkey.pem':
-      ensure => 'link',
-      target => "/etc/ssl/private/${cert_name}.key"
-    }
-    file {'/etc/ssl/mdq/cert.pem':
-      ensure => 'link',
-      target => "/etc/ssl/certs/${cert_name}.crt"
-    }
-  } else {
-    exec { "${title}_key":
-      command => 'openssl genrsa -out /etc/ssl/mdq/privkey.pem 4096',
-      onlyif  => 'test ! -f /etc/ssl/mdq/privkey.pem',
-      creates => '/etc/ssl/mdq/privkey.pem'
-    }
-    -> exec { "${title}_cert":
-      command => "openssl req -x509 -sha256 -new -days 3650 -subj \"/CN=${title}\" -key /etc/ssl/mdq/privkey.pem -out /etc/ssl/mdq/cert.pem", # lint:ignore:140chars
-      onlyif  => 'test ! -f /etc/ssl/mdq/cert.pem -a -f /etc/ssl/mdq/privkey.pem',
-      creates => '/etc/ssl/mdq/cert.pem'
-    }
-  }
+  $env_infra_ca = [
+    "PUBLISHER_CERT=/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
+    "PUBLISHER_KEY=/etc/ssl/private/${facts['networking']['fqdn']}_infra.key",
+    ]
   sunet::docker_run { 'swamid-mdq-publisher':
     image               => 'docker.sunet.se/swamid/mdq-publisher',
     imagetag            => $imagetag,
@@ -99,7 +82,7 @@ class sunet::metadata::mdq_publisher(
       '/etc/ssl:/etc/ssl',
       '/var/www/html:/var/www/html'
     ],
-    env                 => $env,
+    env                 => $env + $env_infra_ca,
     uid_gid_consistency => false,
     ports               => ['443:443'],
   }
