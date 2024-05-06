@@ -94,5 +94,5 @@ services:
       - "3100:3100"
     volumes:
       - '/opt/naemon_monitor/loki:/loki:rw'
-      - '/opt/naemon_monitor/loki-server.yaml:/etc/loki/local-config.yaml:ro
+      - '/opt/naemon_monitor/loki-server.yaml:/etc/loki/local-config.yaml:ro'
     command: -config.file=/etc/loki/local-config.yaml
