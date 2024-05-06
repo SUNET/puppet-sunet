@@ -85,9 +85,13 @@ services:
       - '/opt/naemon_monitor/influxdb.yaml:/etc/grafana/provisioning/datasources/nagflux.yaml'
       - '/opt/naemon_monitor/loki.yaml:/etc/grafana/provisioning/datasources/loki.yaml'
       - '/opt/naemon_monitor/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro'
+      - '/opt/naemon_monitor/grafana:/var/lib/grafana:rw'
   
   loki:
     image: grafana/loki:<%= @loki_tag %>
     ports:
       - "3100:3100"
+    volumes:
+      - '/opt/naemon_monitor/loki:/loki:rw'
+      - '/opt/naemon_monitor/loki-server.yaml:/etc/loki/local-config.yaml:ro
     command: -config.file=/etc/loki/local-config.yaml
