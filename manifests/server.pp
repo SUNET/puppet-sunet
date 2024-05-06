@@ -26,7 +26,7 @@ class sunet::server (
   Boolean $apparmor = false,
   Boolean $disable_ipv6_privacy = false,
   Boolean $disable_all_local_users = false,
-  Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
+  Array $mgmt_addresses = [lookup('mgmt_addresses', undef, undef, [])],
   Boolean $ssh_allow_from_anywhere = false,
 ) {
   if $fail2ban {
@@ -45,7 +45,7 @@ class sunet::server (
   }
 
   if $sshd_config {
-    $ssh_port = hiera('sunet_ssh_daemon_port', undef)
+    $ssh_port = lookup(sunet_ssh_daemon_port, undef, undef, undef)
     class { 'sunet::security::configure_sshd':
       port => $ssh_port,
     }
@@ -97,7 +97,7 @@ class sunet::server (
     file { '/usr/local/bin/sunet-reinstall':
       ensure  => file,
       mode    => '0755',
-      content => template('sunet/cloudimage/sunet-reinstall.erb'),
+      content => template('sunet/kvm/sunet-reinstall.erb'),
     }
     sunet::scriptherder::cronjob { 'sunet_reinstall':
       # sleep 150 to avoid running at the same time as the cronjob fetching new certificates

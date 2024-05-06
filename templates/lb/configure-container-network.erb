@@ -1,0 +1,229 @@
+#!/bin/bash
+#
+# Add all anycasted IP addresses for a frontend instance to it's network namespace.
+#
+# The network namespace used is the one of the haproxy container for the instance
+# specified as the only argument.
+#
+# This script sets up a virtual ethernet 'cable' into the container namespace.
+# The outside end is called e.g. br-www for instance www, and the inside end is
+# always called sarimner0.
+#
+# The haproxy-start.sh script waits for sarimner0 to come up before actually
+# starting haproxy.
+#
+
+INSTANCE=$1
+
+if [[ ! $INSTANCE ]]; then
+    echo "Syntax: ${0} instance"
+    exit 1
+fi
+
+SCRIPTSDIR=$(dirname $0)
+SITE_NAME=$(${SCRIPTSDIR}/frontend-config --instance ${INSTANCE} print_site_name)
+if [[ ! ${SITE_NAME} ]]; then
+    echo "$0: Could not get site_name for instance ${INSTANCE} using ${SCRIPTSDIR}/frontend-config"
+    exit 1
+fi
+
+MATCHNAME="${INSTANCE}_haproxy_1"
+MATCHNAME2="${INSTANCE}_haproxy_run_1"
+
+num_tries=60
+for retry in $(seq ${num_tries}); do
+    # Check for two names to handle more eventualities of how the instances are launced with docker-compose
+    # (docker-compose up results in instance_haproxy_1, docker-compose run haproxy results in instance_haproxy_run_1)
+    DOCKEROUT=$(docker ps --format='{{ .ID }}:{{ .Names }}' | grep -e ":${MATCHNAME}$" -e ":${MATCHNAME2}$" )
+    if [[ $DOCKEROUT ]]; then
+	DOCKERID=$(echo $DOCKEROUT | cut -d : -f 1)
+	CONTAINER=$(echo $DOCKEROUT | cut -d : -f 2)
+	DOCKERPID=$(docker inspect '--format={{ .State.Pid }}' ${DOCKERID} 2>&1 | grep -v 'No such object')
+	if [[ $DOCKERPID && $DOCKERPID != 0 ]]; then
+	    break
+	fi
+    fi
+    echo "$0: Container ${MATCHNAME}/${MATCHNAME2} not found (attempt ${retry}/${num_tries})"
+    sleep 2
+done
+
+if [[ ! $DOCKERPID || $DOCKERPID == 0 ]]; then
+    echo "$0: Could not find PID of docker container ${MATCHNAME}/${MATCHNAME2}"
+    exit 1
+fi
+
+NSPID=${DOCKERPID}
+
+mkdir -p /var/run/netns
+rm -f /var/run/netns/${INSTANCE}
+ln -s /proc/${NSPID}/ns/net /var/run/netns/${INSTANCE}
+
+echo "Container ${CONTAINER}/${DOCKERID} has pid ${DOCKERPID} - symlinking /var/run/netns/${INSTANCE} to /proc/${NSPID}/ns/net"
+
+VETHHOST="to_${INSTANCE}"
+VETHCONTAINER="ve1${INSTANCE}"
+
+# Enable IPv6 forwarding. Should ideally be done more selectively, but...
+sysctl net.ipv6.conf.all.forwarding=1
+
+set -x
+
+# Add a pair of virtual ethernet interfaces (think of them as a virtual cross-over ethernet cable)
+ip link del "${VETHHOST}"
+ip link add name "${VETHHOST}" mtu 1500 type veth peer name "${VETHCONTAINER}" mtu 1500
+if [ -f /var/run/netns/docker ]; then
+    # move VETHCONTAINER into the docker namespace and attach it to the bridge for this instance
+    ip link set "${VETHCONTAINER}" netns docker
+    ip -n docker link set "${VETHCONTAINER}" master "br-${INSTANCE}"
+else
+    ip link set "${VETHCONTAINER}" master "br-${INSTANCE}"
+fi
+ip link set "${VETHHOST}" up
+
+echo ""
+echo ""
+echo ""
+echo "$0: Network namespace and process diagnostics:"
+pgrep -a --ns "${DOCKERPID}"
+ip link show "${VETHHOST}"
+
+if [ -f /var/run/netns/docker ]; then
+    echo ""
+    echo ""
+    echo ""
+    echo "$0: Inside the docker namespace"
+    ip -n docker link show "${VETHCONTAINER}"
+    ip -n docker link show "br-${INSTANCE}"
+else
+    echo ""
+    echo ""
+    echo ""
+    echo "$0: In the host namespace"
+    ip link show "${VETHCONTAINER}"
+    ip link show "br-${INSTANCE}"
+fi
+
+echo ""
+echo ""
+echo ""
+echo "$0: Inside the instance namespace"
+ip -n "${INSTANCE}" link show "${VETHCONTAINER}"
+#ip -n "${INSTANCE}" link show "br-${INSTANCE}"
+
+if [ -f /var/run/netns/docker ]; then
+    # Move one end of the virtual ethernet cable from the docker namespace into the container namespace
+    ip -n docker link set "${VETHCONTAINER}" netns "${INSTANCE}" || {
+	echo "$0: FAILED to configure namespace, did ${CONTAINER} (pid ${DOCKERPID}) die?"
+	exit 1
+    }
+else
+    # Move one end of the virtual ethernet cable inside the network namespace of the docker container
+    ip link set "${VETHCONTAINER}" netns "${INSTANCE}" || {
+	echo "$0: FAILED to configure namespace, did ${CONTAINER} (pid ${DOCKERPID}) die?"
+	exit 1
+    }
+fi
+
+echo ""
+echo ""
+echo ""
+echo "$0: Renaming interface ${VETHCONTAINER} in the instance to sarimner0"
+# Rename interface inside container to sarimner0
+ip -n "${INSTANCE}" link set "${VETHCONTAINER}" name sarimner0
+
+# Docker likes to disable IPv6
+ip netns exec "${INSTANCE}" sysctl net.ipv6.conf.sarimner0.disable_ipv6=0
+# DAD interferes with haproxy's first bind() of the IPv6 addresses,
+# and should really not be needed inside the namespace
+ip netns exec "${INSTANCE}" sysctl net.ipv6.conf.sarimner0.accept_dad=0
+# Allow bind to IP address before it is configured.
+# XXX Disabled since I can't decide if that would be a bug or a feature in this case.
+# ip netns exec ${INSTANCE} sysctl net.ipv4.ip_nonlocal_bind=1
+# ip netns exec ${INSTANCE} sysctl net.ipv6.ip_nonlocal_bind=1
+
+echo ""
+echo ""
+echo ""
+echo "$0: Adding routing from host to the outside of the veth cable (${VETHHOST})"
+# Add IP addresses to the network namespace of the docker container
+for IP in $("${SCRIPTSDIR}"/frontend-config --instance "${INSTANCE}" print_ips); do
+    # The anycasted addresses are not suitable for use for outgoing connections. We can send packets
+    # just fine, but the responses may get routed to another frontend node. Therefore, we 'deprecate'
+    # them by setting preferred_lft to zero.
+    ip -n "${INSTANCE}" addr add "${IP}" dev sarimner0 preferred_lft 0
+    ip route add "${IP}" dev "${VETHHOST}"
+done
+
+echo ""
+echo ""
+echo ""
+echo "$0: Bringing sarimner0 online, signalling the haproxy startup to commence"
+ip -n "${INSTANCE}" link set sarimner0 up
+
+# Set up routing for return traffic to the anycasted IPv4 addresses out through the sarimner0 inteface,
+# rather than to the Docker network namespace where it will be dropped.
+#
+# This requires source address based routing, fairly easy to do in a namespace fortunately.
+host_main_if=$(ip -4 route list | grep ^default | awk '{print $5}')
+v4gw=$(ip -4 -o addr list "${host_main_if}" | awk '{print $4}' | head -1 | awk -F / '{print $1}')
+v6gw=$(ip -6 -o addr list "${VETHHOST}" | awk '{print $4}' | head -1 | awk -F / '{print $1}')
+
+if [[ $v4gw ]]; then
+    ip -n "${INSTANCE}" -4 route add "${v4gw}" dev sarimner0 table 234
+    ip -n "${INSTANCE}" -4 route add default via "${v4gw}" dev sarimner0 table 234
+fi
+if [[ $v6gw ]]; then
+    ip -n "${INSTANCE}" -6 route add "${v6gw}" dev sarimner0 table 234
+    ip -n "${INSTANCE}" -6 route add default via "${v6gw}" dev sarimner0 table 234
+fi
+
+for IP in $("${SCRIPTSDIR}"/frontend-config --instance "${INSTANCE}" print_ips); do
+    if [[ $IP == *:* ]]; then
+        ip -n "${INSTANCE}" -6 rule add from "${IP}" table 234 prio 1
+    else
+        ip -n "${INSTANCE}" -4 rule add from "${IP}" table 234 prio 1
+    fi
+done
+
+# Set up IPv6 routing back out of the container, now that the interface is up.
+
+#sysctl net.ipv6.conf.${VETHHOST}.accept_dad=0
+if [[ $v6gw ]]; then
+    ip -n "${INSTANCE}" -6 route add default via "${v6gw}" dev sarimner0
+else
+    echo "$0: Can't set up IPv6 routing from container, device ${VETHHOST} has no IPv6 address"
+fi
+
+# Now add one more IPv6 address to sarimner0, within a prefix we can NAT suitably for
+# haproxy to be able to reach backends/acme-c etc. using IPv6
+extra_addr=$(ip -n "${INSTANCE}" -o addr show dev sarimner0 scope link | \
+    awk '{print $4'} | sed -e 's/^....::\(.*\)/fd0c::\1/')
+if [[ $extra_addr ]]; then
+    ip -n "${INSTANCE}" addr add "${extra_addr}" dev sarimner0
+    only_addr=$(echo ${extra_addr} | cut -d / -f 1)  # add host route, not with /64
+    ip route add "${only_addr}" dev "${VETHHOST}"
+else
+    echo "$0: Can't set up a IPv6 address for outgoing traffic from container, no link-local address found"
+fi
+
+echo ""
+echo ""
+echo ""
+echo "$0: Routing rules inside the instance namespace"
+ip -n "${INSTANCE}" -4 rule list
+ip -n "${INSTANCE}" -6 rule list
+echo ""
+echo ""
+echo ""
+echo "$0: General routes inside the instance namespace"
+ip -n "${INSTANCE}" -4 route list
+ip -n "${INSTANCE}" -6 route list
+echo ""
+echo ""
+echo ""
+echo "$0: Routes for the anycasted addresses inside the instance namespace"
+ip -n "${INSTANCE}" -4 route list table 234
+ip -n "${INSTANCE}" -6 route list table 234
+echo ""
+echo ""
+echo ""

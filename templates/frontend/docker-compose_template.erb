@@ -1,27 +1,29 @@
 ---
-version: '3.4'
-
+version: '3'
 services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
     expose:
-<% if @varnish_enabled == true -%>
-      - 1080
-<%- end -%>
 <% @exposed_ports.each do |port| -%>
-      - <%= port %>
+      - "<%= port %>"
 <%- end -%>
     # No point in restarting the haproxy container - the systemd service ExecStartPost will not
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
     # nothing will work anyways until the whole service is restarted
     restart: 'no'
     volumes:
+      - '/dev/log:/dev/log'
       - '/opt/frontend/scripts/haproxy-start.sh:/haproxy-start.sh:ro'
-      - 'haproxy_control:/haproxy_control'
-      - 'haproxy_new_config:/new_config:ro'
-      - 'haproxy_running_config:/etc/haproxy'
-<% if @tls_certificate_bundle -%>
-      - <%= @tls_certificate_bundle_on_host -%>:<%= @tls_certificate_bundle_in_container -%>:ro
+      - 'haproxy_data:/etc/haproxy'
+      - 'haproxy_control:/var/run/haproxy-control'
+<% if @multi_certs.is_a? Array and @multi_certs.size > 1 -%>
+<%- index = 0 -%>
+<% @multi_certs.each do |cert| -%>
+      - /opt/frontend/config/<%= @instance %>/certs/tls_certificate_bundle.<%= index %>.pem:<%= cert %>:ro
+<%- index += 1 -%>
+<% end -%>
+<% elsif @tls_certificate_bundle -%>
+      - /opt/frontend/config/<%= @instance %>/certs/tls_certificate_bundle.pem:<%= @tls_certificate_bundle %>:ro
 <% else -%>
       # tls_certificate_bundle not set in Puppet
 <% end -%>
@@ -37,6 +39,7 @@ services:
       - '<%= server %>'
 <% end -%>
 <% end -%>
+
     depends_on:
       - config
       - monitor
@@ -45,10 +48,7 @@ services:
 <% if @varnish_enabled == true -%>
       - 'WAIT_FOR_CONTAINER=varnish'
 <% end -%>
-      - 'HAPROXY_RUNDIR=/dev/shm'  # needs to be writable by the haproxy user
-      - 'HAPROXY_NEW_CONFIG=/new_config/haproxy.cfg'
     command: /haproxy-start.sh
-    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['haproxy'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['haproxy'] -%>"
 
 <% if @varnish_enabled == true -%>
   varnish:
@@ -57,8 +57,6 @@ services:
       - "1080"
     volumes:
       - <%= @varnish_config %>:/etc/varnish/default.vcl:ro
-    tmpfs:
-      - '/var/lib/varnish:uid=<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>,gid=<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>,exec'
     command: varnishd -F -f /etc/varnish/default.vcl -s <%= @varnish_storage %> -a 0.0.0.0:1080
     restart: always
     depends_on:
@@ -69,17 +67,13 @@ services:
       - '<%= server %>'
 <% end -%>
 <% end -%>
-    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['varnish'] -%>"
 <% else -%>
   # varnish disabled
 <% end -%>
 
-
   config:
-    image: '<%= @frontendtools_image %>:<%= @frontendtools_imagetag %>'
+    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
     restart: always
-    depends_on:
-      - setup_volumes
     volumes:
 <% if @frontendtools_volumes.is_a? Array -%>
       # frontendtools_volumes :
@@ -90,18 +84,13 @@ services:
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/api/backends/<%= @site_name %>:/opt/frontend/api/backends/<%= @site_name %>:ro
-      - haproxy_new_config:/new_config:rw
-    environment:
-      - 'HAPROXY_NEW_CONFIG=/new_config/haproxy.cfg'
+      - haproxy_data:/etc/haproxy
     command: /opt/frontend/scripts/generate-haproxy-config --instance <%= @instance %> --haproxy_template <%= @haproxy_template_dir %>/haproxy.j2
-    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-config'] -%>"
 
 
   monitor:
-    image: '<%= @frontendtools_image %>:<%= @frontendtools_imagetag %>'
+    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
     restart: always
-    depends_on:
-      - setup_volumes
     volumes:
 <% if @frontendtools_volumes.is_a? Array -%>
       # frontendtools_volumes :
@@ -110,14 +99,14 @@ services:
 <% end -%>
 <% end -%>
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
-      - /opt/frontend/config/<%= @instance %>/config.yml:/opt/frontend/config/<%= @instance %>/config.yml:ro
+      - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/monitor/<%= @instance %>:/opt/frontend/monitor/<%= @instance %>:rw
-      - haproxy_control:/haproxy_control
+      - haproxy_control:/var/run/haproxy-control
     command: >
         /opt/frontend/scripts/monitor-haproxy
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
-            --stats_url "/haproxy_control/stats"
-            'site=<%= @site_name %>;group=<%= @monitor_group %>'
+            --stats_url /var/run/haproxy-control/stats
+            'site=<%= @site_name %>;group=default'
 <% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
 <% @dns.each do |server| -%>
@@ -128,42 +117,10 @@ services:
       - 'HOSTFQDN=<%= @fqdn %>'
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
-      - 'STATUSFN=/dev/shm/haproxy-status'  # need to be writable by user fe-monitor, and match the healthcheck
-      - 'STATSSOCKET=/haproxy_control/stats'  # need to match --stats_url in command
-    healthcheck:
-      test: 'head -1 /dev/shm/haproxy-status | grep -q ^UP'
-      interval: 2s
-      start_period: 1m
-    # need group fe-config to read configuration to calculate announce parameters XXX TODO NOT POSSIBLE
-    user: "<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>:<%= scope['sunet::frontend::load_balancer::users::user2uid']['fe-monitor'] -%>"
-
-
-  # This just needs to run once as root to allow the other containers to have user: something
-  setup_volumes:
-    image: 'docker.sunet.se/frontend/frontend-tools:<%= @frontendtools_imagetag %>'
-    labels:
-      - "se.sunet.check_docker_containers=run_once"
-    volumes:
-      - /etc/passwd:/etc/passwd:ro
-      - /etc/group:/etc/group:ro
-      - 'haproxy_control:/haproxy_control:rw'
-      - 'haproxy_new_config:/haproxy_new_config:rw'
-      - 'haproxy_running_config:/haproxy_running_config:rw'
-    # The fe-config user writes new config to this directory, and the haproxy user reads it
-    entrypoint: >
-       /bin/bash -c '
-         id;
-         export D="/haproxy_control"; chown -R haproxy:fe-monitor "$${D}"; chmod 2750 "$${D}"; find "$${D}" -ls;
-         export D="/haproxy_new_config"; chown -R fe-config:haproxy "$${D}"; chmod 2750 "$${D}"; find "$${D}" -ls;
-         export D="/haproxy_running_config"; chown -R haproxy:haproxy "$${D}"; chmod 700 "$${D}"; find "$${D}" -ls;
-         '
-    # In case a container with a set user gets committed to this image...
-    user: 'root:root'
 
 volumes:
+  haproxy_data:
   haproxy_control:
-  haproxy_new_config:
-  haproxy_running_config:
 
 # Provide user-friendly name of bridge interface
 networks:

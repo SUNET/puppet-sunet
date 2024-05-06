@@ -12,14 +12,46 @@ services:
       - "3000:3000"
       - "22022:22022"
     volumes:
-      - /opt/forgejo/data:/opt/forgejo/data
+      - /opt/forgejo/backups:/opt/forgejo/backups
       - /opt/forgejo/config:/opt/forgejo/config
+      - /opt/forgejo/data:/opt/forgejo/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+    networks:
+      - internal_network
+      - external_network
     environment:
       - USER=git
       - UID=<%= @uid %>
       - GID=<%= @gid %>
       - HOME=/data/git
       - GITEA_WORK_DIR=/opt/forgejo/data
+      - VIRTUAL_HOST=<%= @domain %>
+      - VIRTUAL_PATH=/
+      - VIRTUAL_PORT=3000
     entrypoint: gitea -c /opt/forgejo/config/app.ini
+  nginx:
+    image: docker.io/nginxproxy/nginx-proxy:latest
+    container_name: nginx
+    networks:
+      - internal_network
+      - external_network
+    dns:
+      - 89.32.32.32
+    ports:
+      - "443:443"
+    volumes:
+      - /etc/dehydrated/certs/:/etc/nginx/certs:ro
+      - /opt/nginx/template/nginx.tmpl:/app/nginx.tmpl
+      - /opt/nginx/conf:/etc/nginx/conf.d
+      - /opt/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/nginx/html:/usr/share/nginx/html
+      - /opt/nginx/vhost:/etc/nginx/vhost.d
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      - ENABLE_IPV6=true
+    restart: unless-stopped
+networks:
+  external_network:
+  internal_network:
+    internal: true

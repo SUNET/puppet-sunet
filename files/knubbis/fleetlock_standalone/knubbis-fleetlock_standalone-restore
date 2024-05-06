@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+#
+# Restore etcd backend for knubbis-fleetlock standalone service.
+# Verify the code with shellcheck before commiting changes.
+#
+
+snapshot_filename=$1
+if [ -z "$snapshot_filename" ]; then
+    echo "usage: $(basename "$0") <snapshot.db>"
+    exit 1
+fi
+
+# Make sure cosmos is disabled so it does not try to manage the same
+# directories as we are doing (or accidentally starting the service while we
+# are restoring the snapshot)
+disable_cosmos_file="/etc/no-automatic-cosmos"
+if ! [ -f "$disable_cosmos_file" ]; then
+    echo "disable cosmos before running this tool (create '$disable_cosmos_file') and make sure there is no existing process running."
+    exit 1
+fi
+
+container_name="knubbis-fleetlock_standalone_etcd_1"
+service_name="sunet-knubbis-fleetlock_standalone.service"
+
+if docker inspect --format="{{.Id}}" $container_name > /dev/null 2>&1; then
+   echo "container $container_name is currently running, run 'systemctl stop $service_name'"
+   exit 1
+fi
+
+py_yaml_to_json='
+import json
+import yaml
+with open("/opt/knubbis-fleetlock_standalone/docker-compose.yml") as fileobj:
+    data = yaml.safe_load(fileobj)
+print(json.dumps(data))
+'
+
+etcd_image=$(python3 -c "$py_yaml_to_json" | jq -r '.services.etcd.image')
+etcd_volumes=$(python3 -c "$py_yaml_to_json" | jq -r '.services.etcd.volumes[]' | grep "etcd-")
+etcd_user=$(python3 -c "$py_yaml_to_json" | jq -r '.services.etcd.user')
+
+# Build a string looking something like this:
+# -v /opt/knubbis-fleetlock/etcd-data:/etcd-data -v /opt/knubbis-fleetlock/etcd-backup:/etcd-backup
+# ... while also detecting the container mountpoints used for data and backups.
+volume_array=()
+data_host_dir=""
+restore_host_dir=""
+data_mount_point=""
+backup_mount_point=""
+backup_host_dir=""
+for volume in $etcd_volumes; do
+    dir_type=""
+    if echo "$volume" | grep -q -- "-data$"; then
+        dir_type="data"
+        data_host_dir=$(echo "$volume" | awk -F: '{print $1}')
+        restore_host_dir="${data_host_dir}-restore"
+        data_mount_point=$(echo "$volume" | awk -F: '{print $2}')
+    fi
+    if echo "$volume" | grep -q -- "-backup$"; then
+        dir_type="backup"
+        backup_host_dir=$(echo "$volume" | awk -F: '{print $1}')
+        backup_mount_point=$(echo "$volume" | awk -F: '{print $2}')
+    fi
+    if [ "$dir_type" = "data" ]; then
+        # We want to mount the restore dir rather than the actual data dir for
+        # the restore operation.
+        volume_array+=("-v" "$restore_host_dir:$data_mount_point")
+    else
+        volume_array+=("-v" "$volume")
+    fi
+done
+
+if [ -z "$data_mount_point" ]; then
+    echo "unable to find mountpoint used for etcd data"
+    exit 1
+fi
+
+if [ -z "$backup_mount_point" ]; then
+    echo "unable to find mountpoint used for etcd backups"
+    exit 1
+fi
+
+# We need to make sure the --data-dir is empty when we do a restore,
+# otherwise the operation will fail:
+# ===
+# Error: data-dir "/etcd-data" not empty or could not be read
+# ===
+#
+# Create an empty restore directory, this is what we will mount as the etcd
+# --data-dir for the restore operation.
+#
+# Make sure it has the same restrictive permissions expected by etcd so we can
+# just move it in place after the restore is completed.
+orig_umask=$(umask)
+umask 0077
+if ! mkdir -v "$restore_host_dir"; then
+    echo "unable to create '$restore_host_dir', manual removal needed"
+    exit 1
+fi
+# Reset umask
+umask "$orig_umask"
+# Prepare permissions
+if ! chown -v "$etcd_user" "$restore_host_dir"; then
+    echo "unable to set permissions for '$restore_host_dir'"
+    exit 1
+fi
+
+echo "using volume array:" "${volume_array[@]}"
+echo "etcd backup mount point: $backup_mount_point"
+echo "etcd data mount point: $data_mount_point"
+echo "etcd host directory: $data_host_dir"
+echo "host restore directory: $restore_host_dir"
+
+# Inspect that the requested snapshot filename exists via the host filesystem
+# so we do not need to start a container just for this
+host_snapshot_file="$backup_host_dir/$snapshot_filename"
+if ! [ -f "$host_snapshot_file" ]; then
+    echo "the requested backup file $host_snapshot_file does not exist, doing nothing"
+    exit 1
+fi
+# The file exists, so also create the path for reaching that same file from
+# inside the container.
+container_snapshot_file="$backup_mount_point/$snapshot_filename"
+
+# Do the actual restore, based on https://etcd.io/docs/v3.5/op-guide/recovery/
+# We are using all defaults for settings so we do not need the extra flags used
+# in that documentation.
+restore_command="docker run --rm ${volume_array[*]} --user $etcd_user $etcd_image etcdutl snapshot restore --data-dir $data_mount_point $container_snapshot_file"
+echo "running restore command: $restore_command"
+if ! $restore_command; then
+    echo "etcdutl snapshot restore failed"
+    exit 1
+fi
+
+# We now have a successful restore to the restore directory, so move the
+# original data-dir directory to a date based name
+# (2023-08-21_10-19-59_561848003). We replace ":" with "-" because this is
+# easier to tab-complete in the shell. Include nanoseconds to minimize risk of
+# collisions.
+date_dir="${data_host_dir}-$(date +%F_%T_%N | sed 's/:/-/g')"
+if [ -d "$date_dir" ]; then
+    echo "expected date based directory already exists, this is unexpected"
+    exit 1
+fi
+if ! mv -vT "$data_host_dir" "$date_dir"; then
+    echo "unable to move original data-dir to date based directory"
+    exit 1
+fi
+
+# Move the restore directory to the real data-dir location. There is a small
+# race here where a running cosmos/puppet might try to recreate the directory
+# at the same time, and this is why we ask people to disable cosmos at the
+# beginning of the script.
+if ! mv -vT "$restore_host_dir" "$data_host_dir"; then
+    echo "unable to move restore data-dir to real directory"
+    exit 1
+fi
+
+echo "restore completed, you can now run 'systemctl start $service_name' and remove '$disable_cosmos_file'"

@@ -17,8 +17,8 @@ services:
       - 443:443
     volumes:
       - /opt/pypi/nginx/etc/default.conf:/etc/nginx/sites-enabled/default.conf:ro
-      - /etc/dehydrated/certs/pypi.sunet.se.pem:/etc/nginx/ssl/<%= @fqdn %>.crt:ro
-      - /etc/dehydrated/certs/pypi.sunet.se.key:/etc/nginx/ssl/<%= @fqdn %>.key:ro
+      - /etc/dehydrated/certs/pypi.sunet.se.pem:/etc/nginx/ssl/<%= @servicename %>.crt:ro
+      - /etc/dehydrated/certs/pypi.sunet.se.key:/etc/nginx/ssl/<%= @servicename %>.key:ro
       - /opt/pypi/nginx/dhparam.pem:/etc/nginx/ssl/dhparam.pem:ro
       - /var/log/nginx:/var/log/nginx
       - /etc/passwd:/etc/passwd:ro

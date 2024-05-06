@@ -17,7 +17,6 @@ define sunet::exabgp::monitor::url(
   Integer          $prio  = 10,
   String           $path  = '/etc/bgp/monitor.d',
 ) {
-   require stdlib
    $check_url = $url ? {
       undef   => $name,
       default => $url
@@ -40,7 +39,6 @@ define sunet::exabgp::monitor::haproxy(
   String  $hookdir   = '/etc/bgp/hooks',
   Integer $prio      = 10,
 ) {
-  require stdlib
   $site = $name
   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, })
   $safe_title = regsubst($site, '[^0-9A-Za-z.\-]', '-', 'G')

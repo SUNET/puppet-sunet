@@ -1,25 +1,40 @@
-require stdlib
-
-class sunet::satosa($dehydrated_name=undef,
-                    $image='docker.sunet.se/satosa',  # NOTE: this image appears abandoned, you probably want docker.sunet.se/docker-satosa
-                    $tag='3.4-stable',
+# Class to run Satosa in docker-compose
+class sunet::satosa(
+  Optional[String] $dehydrated_name = undef,
+  String           $image           = 'docker.sunet.se/satosa',
+  String           $interface       = $::facts['interface_default'],
+  String           $satosa_tag      = '8.4.0',
+  Optional[String] $redirect_uri    = lookup('redirect_uri', Optional[String], undef, ''),
+  Boolean          $enable_oidc     = false,
 ) {
-  $proxy_conf = hiera('satosa_proxy_conf')
+
+  if ($::facts['sunet_satosa_exists'] == 'yes') {
+    $service_to_notify = Service['sunet-satosa']
+  }
+  else
+  {
+    $service_to_notify = undef
+  }
+
+  $proxy_conf = lookup('satosa_proxy_conf', undef, undef, undef)
   $default_conf = {
-    'STATE_ENCRYPTION_KEY'       => hiera('satosa_state_encryption_key'),
-    'USER_ID_HASH_SALT'          => hiera('satosa_user_id_hash_salt'),
+    'STATE_ENCRYPTION_KEY'       => lookup('satosa_state_encryption_key', undef, undef, undef),
+    'USER_ID_HASH_SALT'          => lookup('satosa_user_id_hash_salt', undef, undef, undef),
     'CUSTOM_PLUGIN_MODULE_PATHS' => ['plugins'],
     'COOKIE_STATE_NAME'          => 'SATOSA_STATE'
   }
   $merged_conf = merge($proxy_conf,$default_conf)
   ensure_resource('file','/etc', { ensure => directory } )
   ensure_resource('file','/etc/satosa', { ensure => directory } )
+  ensure_resource('file','/etc/satosa/', { ensure => directory } )
   ensure_resource('file','/etc/satosa/run', { ensure => directory } )
   ensure_resource('file','/etc/satosa/plugins', { ensure => directory } )
   ensure_resource('file','/etc/satosa/metadata', { ensure => directory } )
-  $key_data = {}
+  ensure_resource('file','/etc/satosa/md-signer2.crt', {
+    content  => file('sunet/md-signer2.crt')
+  })
   ['backend','frontend','metadata'].each |$id| {
-    if hiera("satosa_${id}_key",undef) != undef {
+    if lookup("satosa_${id}_key", undef, undef, undef) != undef {
       sunet::snippets::secret_file { "/etc/satosa/${id}.key": hiera_key => "satosa_${id}_key" }
       # assume cert is in cosmos repo
     } else {
@@ -30,49 +45,65 @@ class sunet::satosa($dehydrated_name=undef,
       }
     }
   }
-  sunet::docker_run {'satosa':
-    image    => $image,
-    imagetag => $tag,
-    volumes  => ['/etc/satosa:/etc/satosa','/etc/dehydrated:/etc/dehydrated'],
-    ports    => ['443:8000'],
-    env      => [
-      'DATA_DIR=/etc/satosa',
-      'METADATA_DIR=/etc/satosa/metadata',
-    ]
-  }
   file {'/etc/satosa/proxy_conf.yaml':
     content => inline_template("<%= @merged_conf.to_yaml %>\n"),
-    notify  => Sunet::Docker_run['satosa']
+    notify  => $service_to_notify,
   }
-  $plugins = hiera('satosa_config')
+  $plugins = lookup('satosa_config', undef, undef, undef)
   sort(keys($plugins)).each |$n| {
-    $conf = hiera($n)
+    $conf = lookup($n)
     $fn = $plugins[$n]
     file { $fn:
       content => inline_template("<%= @conf.to_yaml %>\n"),
-      notify  => Sunet::Docker_run['satosa']
+      notify  => $service_to_notify,
     }
   }
-  ufw::allow { 'satosa-allow-https':
-    ip   => 'any',
-    port => '443'
+
+  $json_configs = lookup('satosa_json_config', undef, undef, {})
+  sort(keys($json_configs)).each |$n| {
+    $conf = lookup($n)
+    $fn = $json_configs[$n]
+    file { $fn:
+      content => inline_template("<%= @conf.to_json %>\n"),
+      notify  => $service_to_notify,
+    }
+  }
+
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { 'allow_https' :
+      iif           => $interface,
+      allow_clients => 'any',
+      port          => 443,
+    }
+  } else {
+    sunet::misc::ufw_allow { 'allow-https':
+      from => 'any',
+      port => '443'
+    }
   }
   $dehydrated_status = $dehydrated_name ? {
     undef   => 'absent',
     default => 'present'
   }
-  sunet::docker_run {'alwayshttps':
-    ensure => $dehydrated_status,
-    image  => 'docker.sunet.se/always-https',
-    ports  => ['80:80'],
-    env    => ['ACME_URL=http://acme-c.sunet.se'],
-  }
-  ufw::allow { 'satosa-allow-http':
-    ensure => $dehydrated_status,
-    ip     => 'any',
-    port   => '80',
-  }
+
   if ($dehydrated_name) {
+    class { 'sunet::dehydrated::client':
+      domain    => $dehydrated_name,
+      ssl_links => true,
+    }
+
+    if $::facts['sunet_nftables_enabled'] == 'yes' {
+      sunet::nftables::docker_expose { 'allow_http' :
+        iif           => $interface,
+        allow_clients => 'any',
+        port          => 80,
+      }
+    } else {
+      sunet::misc::ufw_allow { 'allow-http':
+        from => 'any',
+        port => '80'
+      }
+    }
     file { '/etc/satosa/https.key': ensure => link, target => "/etc/dehydrated/certs/${dehydrated_name}.key" }
     file { '/etc/satosa/https.crt': ensure => link, target => "/etc/dehydrated/certs/${dehydrated_name}/fullchain.pem" }
   } else {
@@ -80,5 +111,21 @@ class sunet::satosa($dehydrated_name=undef,
       key_file  => '/etc/satosa/https.key',
       cert_file => '/etc/satosa/https.crt'
     }
+  }
+
+  service {'docker-satosa.service':
+    ensure => 'stopped',
+    enable => false,
+  }
+  service {'docker-alwayshttps.service':
+    ensure => 'stopped',
+    enable => false,
+  }
+  sunet::docker_compose { 'satosa_compose':
+    content          => template('sunet/satosa/docker-compose.yml.erb'),
+    service_name     => 'satosa',
+    compose_dir      => '/opt/',
+    compose_filename => 'docker-compose.yml',
+    description      => 'Satosa',
   }
 }

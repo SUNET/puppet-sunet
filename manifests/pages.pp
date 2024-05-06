@@ -1,7 +1,5 @@
-require stdlib
-
 class sunet::pages($host='127.0.0.1',$port='5000',$version='latest') {
-   $config = hiera("sunet_pages_sites")
+   $config = lookup('sunet_pages_sites', undef, undef, undef)
    file { ['/var/www','/var/cache/sunetpages']: ensure => 'directory' } ->
    user {'www-data': ensure => present, system => true } ->
    sunet::docker_run { 'sunet-pages-api':

@@ -13,6 +13,7 @@ ROOT_URL = https://<%= @domain %>/
 SSH_PORT = 22022
 START_SSH_SERVER = true
 
+
 [database]
 DB_TYPE = sqlite3
 PATH = /opt/forgejo/data/forgejo.db
@@ -23,7 +24,13 @@ SECRET_KEY = <%= @secret_key %>
 INTERNAL_TOKEN = <%= @internal_token %>
 
 [mailer]
-ENABLED = false
+ENABLED        = true
+PROTOCOL       = smtp+starttls
+FROM           = <%= @smtp_user%>@sunet.se
+SMTP_ADDR      = smtp.sunet.se
+SMTP_PORT      = 587
+USER           = <%= @smtp_user %>
+PASSWD         = `<%= @smtp_password %>`
 
 [oauth2]
 JWT_SECRET = <%= @jwt_secret %>
@@ -35,11 +42,16 @@ ENABLE_FEDERATED_AVATAR = false
 [repository]
 ROOT = /opt/forgejo/data/forgejo-repositories
 DEFAULT_BRANCH = main
-MAX_CREATION_LIMIT = 0
+MAX_CREATION_LIMIT = -1
 
 [service]
 DISABLE_REGISTRATION = false
 DEFAULT_ALLOW_CREATE_ORGANIZATION = false
+REQUIRE_SIGNIN_VIEW = false
+EMAIL_DOMAIN_ALLOWLIST = <%= @email_domain_whitelist %>
+ALLOW_ONLY_EXTERNAL_REGISTRATION = true
+SHOW_REGISTRATION_BUTTON = false
+ENABLE_NOTIFY_MAIL = true
 
 [CORS]
 ALLOW_DOMAIN = sunet.se
@@ -47,3 +59,10 @@ ALLOW_SUBDOMAIN = true
 X_FRAME_OPTIONS = SAMEORIGIN
 SCHEME = https
 ENABLED = true
+
+[actions]
+ENABLED = true
+DEFAULT_ACTIONS_URL = https://<%= @domain %>
+
+[indexer]
+REPO_INDEXER_ENABLED = true
