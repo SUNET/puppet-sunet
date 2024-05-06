@@ -133,6 +133,10 @@ class sunet::naemon_monitor(
       content => template('sunet/naemon_monitor/loki-server.yaml'),
     }
   }
+  file { '/opt/naemon_monitor/loki-server.yaml':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/loki-server.yaml'),
+  }
   file { '/opt/naemon_monitor/data':
     ensure => directory,
     owner  => 'www-data'
