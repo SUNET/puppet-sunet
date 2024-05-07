@@ -1,6 +1,7 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
   Boolean $infra_cert_from_this_class = true,
+  Bolean  $nftables_init = true,
   Optional[Array] $env=[],
   Optional[Integer] $valid_until=12,
   Optional[String] $validate_cert='/var/www/html/md/md-signer2.crt',
@@ -11,7 +12,7 @@ class sunet::metadata::mdq_publisher(
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
     include ufw
-  } else {
+  } elsif $nftables_init {
     notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
     ensure_resource ('class','sunet::nftables::init', {})
   }
