@@ -16,6 +16,7 @@ class sunet::mail::dovecot(
                                     '2001:6b0:6c::402/128'
                                   ],
   String $domain                 = 'sunet.dev',
+  String $environment            = 'test',
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
   String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
@@ -25,11 +26,8 @@ class sunet::mail::dovecot(
   include sunet::packages::xfsprogs # for /opt/dovecot/mail
 
   $hostname = $facts['networking']['fqdn']
-  # This looks esoteric, a longer example for parsing the hostname is available here:
-  # https://wiki.sunet.se/display/sunetops/Platform+naming+standards#Platformnamingstandards-Parsingthename
-  $my_environment = split(split($hostname, '[.]')[0],'[-]')[2]
 
-  $config = lookup($my_environment)
+  $config = lookup($environment)
 
   $replication_password = lookup('replication_password')
   $oauth_client_id = lookup('oauth_client_id')
