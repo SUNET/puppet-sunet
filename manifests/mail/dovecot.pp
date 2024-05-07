@@ -22,6 +22,7 @@ class sunet::mail::dovecot(
   String $dovecot_tag            = 'SUNET-1',
 )
 {
+  include sunet::packages::xfsprogs # for /opt/dovecot/mail
 
   $hostname = $facts['networking']['fqdn']
   # This looks esoteric, a longer example for parsing the hostname is available here:
