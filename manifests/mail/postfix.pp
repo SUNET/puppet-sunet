@@ -1,6 +1,7 @@
 # Postfix for SUNET
 class sunet::mail::postfix(
   String $domain                 = 'sunet.dev',
+  String $environment            = 'test',
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
@@ -10,11 +11,8 @@ class sunet::mail::postfix(
 {
 
   $hostname = $facts['networking']['fqdn']
-  # This looks esoteric, a longer example for parsing the hostname is available here:
-  # https://wiki.sunet.se/display/sunetops/Platform+naming+standards#Platformnamingstandards-Parsingthename
-  $my_environment = split(split($hostname, '[.]')[0],'[-]')[2]
 
-  $config = lookup($my_environment)
+  $config = lookup($environment)
   $db_hosts = join($config['db_hosts'], ' ')
   $relay_hosts = join($relay_servers, ', ')
   $nextcloud_db = 'nextcloud'
