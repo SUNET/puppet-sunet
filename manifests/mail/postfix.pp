@@ -60,4 +60,8 @@ class sunet::mail::postfix(
     }
   }
 
+  service { 'postfix':
+    ensure => 'stopped',
+  }
+
 }
