@@ -16,6 +16,7 @@ class sunet::mail::dovecot(
                                     '2001:6b0:6c::402/128'
                                   ],
   String $domain                 = 'sunet.dev',
+  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
   String $environment            = 'test',
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
@@ -43,8 +44,8 @@ class sunet::mail::dovecot(
   $nextcloud_mysql_server = 'intern-db1.sunet.drive.test.sunet.se'
 
 
-  $ssl_cert="/certs/imap.${domain}/fullchain.pem"
-  $ssl_key="/certs/imap.${domain}/privkey.pem"
+  $ssl_cert="/certs/${imap_domain}/fullchain.pem"
+  $ssl_key="/certs/${imap_domain}/privkey.pem"
   # Composefile
   sunet::docker_compose { 'dovecot':
     content          => template('sunet/mail/dovecot/docker-compose.erb.yml'),
