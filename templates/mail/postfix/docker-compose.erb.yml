@@ -3,6 +3,7 @@ version: "3.7"
 services:
   always-https:
     image: docker.sunet.se/always-https
+    network_mode: host
     dns:
       - 89.32.32.32
     ports:
