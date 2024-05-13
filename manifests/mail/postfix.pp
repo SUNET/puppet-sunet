@@ -2,6 +2,7 @@
 class sunet::mail::postfix(
   String $domain                 = 'sunet.dev',
   String $smtp_domain            = 'sunet-smtp.drive.test.sunet.se',
+  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
   String $environment            = 'test',
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
