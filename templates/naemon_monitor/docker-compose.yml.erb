@@ -28,6 +28,7 @@ services:
       - '/etc/naemon/conf.d/nagioscfg:/etc/naemon/conf.d/nagioscfg:ro'
       - '/etc/naemon/conf.d/cosmos:/etc/naemon/conf.d/cosmos:ro'
       - '/usr/lib/nagios/plugins/check_inodes:/usr/lib/nagios/plugins/check_inodes:ro'
+      - '/usr/lib/nagios/plugins/cosmos:/usr/lib/nagios/plugins/cosmos:ro'
       - '/var/lib/naemon/:/var/lib/naemon/'
       - '/var/log/naemon/:/var/log/naemon/'
       - '/var/nagflux/:/var/nagflux/'
