@@ -35,6 +35,9 @@ $config = [
         // Can be NULL/unset, in which case the user will be shown a list of available IdPs.
         'idp' => null,
 
+        // Force reauth to mitigate problmes with Google IdP when signed in with "the wrong" account
+        'ForceAuthn' => true,
+
         // The URL to the discovery service.
         // Can be NULL/unset, in which case a builtin discovery service will be used.
 <% if @qa_federation == true %>
