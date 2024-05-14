@@ -1,0 +1,53 @@
+proxy_cache_path  /opt/ levels=1:2    keys_zone=CACHE:10m inactive=24h  max_size=1g;
+server {
+  listen 80;
+  server_name files.<%= @vhost %>;
+  root /var/www/html;
+
+  keepalive_timeout 30;
+
+  location = / {
+    index index.html;
+  }
+
+  location / {
+    try_files $uri @s3;
+  }
+
+  set $s3_backend 'https://<%= @s3_alias_host %>';
+
+  location @s3 {
+    limit_except GET {
+      deny all;
+    }
+
+    resolver 89.32.32.32;
+    proxy_set_header Connection '';
+    proxy_set_header Authorization '';
+    proxy_hide_header Set-Cookie;
+    proxy_hide_header 'Access-Control-Allow-Origin';
+    proxy_hide_header 'Access-Control-Allow-Methods';
+    proxy_hide_header 'Access-Control-Allow-Headers';
+    proxy_hide_header x-amz-id-2;
+    proxy_hide_header x-amz-request-id;
+    proxy_hide_header x-amz-meta-server-side-encryption;
+    proxy_hide_header x-amz-server-side-encryption;
+    proxy_hide_header x-amz-bucket-region;
+    proxy_hide_header x-amzn-requestid;
+    proxy_ignore_headers Set-Cookie;
+    # Workaround for https://github.com/mastodon/mastodon/pull/25273 but still
+    # makes the URIs to the assets prettier.
+    proxy_pass $s3_backend$uri;
+    proxy_intercept_errors off;
+
+    proxy_cache CACHE;
+    proxy_cache_valid 200 48h;
+    proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+    proxy_cache_lock on;
+
+    expires 1y;
+    add_header Cache-Control public;
+    add_header 'Access-Control-Allow-Origin' '*';
+    add_header X-Cache-Status $upstream_cache_status;
+  }
+}

@@ -7,8 +7,13 @@
   "source": "git://github.com/SUNET/puppet-sunet",
   "project_page": "https://github.com/SUNET/puppet-sunet",
   "issues_url": "https://github.com/SUNET/puppet-sunet/issues",
-  "description": "Slices and dices - mostly ubuntu",
+  "description": "Slices and dices",
   "dependencies": [
-  
+    {
+      "name": "puppetlabs/stdlib"
+    },
+    {
+      "name": "puppetlabs/concat"
+    }
   ]
 }

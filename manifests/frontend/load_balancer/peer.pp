@@ -31,7 +31,7 @@ define sunet::frontend::load_balancer::peer(
   # gpg backend, so we couldn't put the password in secrets.yaml and just merge it in
   $md5 = $password_hiera_key ? {
     undef   => undef,
-    default => hiera($password_hiera_key, undef)
+    default => lookup($password_hiera_key, undef, undef, undef)
   }
 
   sunet::exabgp::neighbor { "peer_${name}":

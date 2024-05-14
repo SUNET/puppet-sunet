@@ -8,18 +8,19 @@ host_os="<%= @host_os %>"
 fact_dir="/var/lib/puppet/facts.d"
 export_endpoint="<%= @export_endpoint %>"
 # Gather packages
+parse_command="awk -v q='\"' '{print \"{\"q\"name\"q\": \"q\$1q\",\"q\"version\"q\": \"q\$2q\"}\"}' | jq -s ."
 
 case "${host_os}" in
   alpine)
     query_command="apk list -q"
-    parse_command="awk '{print \$1}' | sed 's/\-\\([0-9]\\)/ \1/' | awk -v q='\"' '{print \"\{ \"q\$1q\": \"q\$2q\" }\" }' | jq -s ."
+    parse_command="awk '{print \$1}' | sed 's/\-\\([0-9]\\)/ \1/' | ${parse_command}"
     ;;
   centos | fedora | redhat)
     query_command="rpm -qa"
+    parse_command="sed 's/\-\\([0-9]\\)/ \1/' |${parse_command}"
     ;;
   debian | ubuntu)
     query_command="dpkg-query -W"
-    parse_command="awk -v q='\"' '{print \"\{ \"q\$1q\": \"q\$2q\" \}\" }' | jq -s ."
     ;;
   *)
     query_command='echo {\"unknown\": \"none\"}'
@@ -42,10 +43,10 @@ echo "{
 if [ $(which docker) ]; then
   # Gather structured data docker fact
   docker_fact="${fact_dir}/docker_ps.json"
-  echo "{ 
-          \"docker_ps\": $(docker ps --format '{{json . }}' | sed 's/\\"//g' | jq -s .)
-       }" \
-    | jq . > ${docker_fact}
+  for container in $(docker ps -q); do
+    docker ps  --format '{{json . }}' --filter "id=${container}" | \
+      jq '. |= . + '{"ImageId":$(docker inspect --format '{{json .Image }}' ${container})'}'
+  done | jq --jsonargs '{"docker_ps":[inputs]}' > ${docker_fact}
 
 fi
 

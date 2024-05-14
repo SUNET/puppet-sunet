@@ -1,0 +1,47 @@
+[mysqld]
+
+# General
+binlog_format           = ROW
+character_set_server    = utf8mb4
+collation_server        = utf8mb4_general_ci
+default_storage_engine  = InnoDB
+local_infile            = 0
+max_allowed_packet      = 256M
+max_connections         = 750
+skip_external_locking   = ON
+skip_name_resolve       = ON
+
+# Binary logging and replication
+expire_logs_days        = 7
+gtid_domain_id          = 1000
+gtid_ignore_duplicates  = ON
+gtid_strict_mode        = ON
+log_bin                 = binlog
+log_slave_updates       = ON
+server_id               = <%= @server_id %>
+
+# Innodb
+innodb_autoinc_lock_mode        = 2
+innodb_buffer_pool_size         = 4G # 60-75% of total RAM
+innodb_file_per_table           = 1
+innodb_flush_log_at_trx_commit  = 0
+innodb_flush_method             = O_DIRECT
+innodb_io_capacity              = 2000 # IOPS dependent
+innodb_io_capacity_max          = 4000 # IOPS dependent
+innodb_log_file_size            = 512M
+innodb_read_io_threads          = 4    # CPU dependent
+innodb_rollback_on_timeout      = 1
+innodb_write_io_threads         = 4    # CPU dependent
+transaction_isolation           = 'READ-COMMITTED'
+
+# Galera
+wsrep_cluster_name              = "Sunet_MariaDB_Cluster"
+wsrep_gtid_domain_id            = 1000 # same on all Galera nodes in the same segment
+wsrep_gtid_mode                 = ON
+wsrep_log_conflicts             = ON
+wsrep_on                        = ON
+wsrep_provider                  = /usr/lib/galera/libgalera_smm.so
+wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0" # gmcast.segment same on all Galera nodes in the same segment
+wsrep_slave_threads             = 4    # CPU dependent
+wsrep_sst_method                = mariabackup
+wsrep_sync_wait                 = 1

@@ -4,9 +4,11 @@ class sunet::invent::receiver (
   String $interface  = 'ens3',
   String $vhost = 'invent.sunet.se'
 ){
-  $admin_password = lookup('invent_admin_password')
+  $admin_password = lookup('invent_admin_password', undef, undef, undef)
   $endpoints = ['hosts', 'images']
   $nginx_dirs = [ 'acme', 'certs','conf','dhparam','html','vhost' ]
+  $ni_host_key = lookup ('ni_host_key')
+  $ni_host_ip = lookup ('ni_host_ip')
 
   sunet::docker_compose { 'invent_reciver':
     content          => template('sunet/invent/receiver/docker-compose.yml.erb'),
@@ -47,10 +49,19 @@ class sunet::invent::receiver (
       allow_clients => 'any',
       port          => 443,
     }
+    sunet::nftables::rule { 'allow_rsync':
+      rule => "add rule inet filter input ip saddr {$ni_host_ip} tcp dport 22 counter accept comment \"allow-rsync-from-ni-host\""
+    }
   } else {
     sunet::misc::ufw_allow { 'receiver_ports':
       from => 'any',
       port => [80, 443],
     }
+  }
+
+  sunet::rrsync { '/opt/receiver/':
+    ssh_key_type       => 'ssh-ed25519',
+    ssh_key            => $ni_host_key,
+    use_sunet_ssh_keys => true,
   }
 }

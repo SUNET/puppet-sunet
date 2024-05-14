@@ -41,7 +41,7 @@ define sunet::ici_ca::autosign(
   }
 }
 
-# fetch certificate from ici-ca automatically
+# fetch certificate from ici-ca automatically and run a scriptherder job to see if it is valid
 define sunet::ici_ca::rp()
 {
   $host = $::fqdn
@@ -59,4 +59,15 @@ define sunet::ici_ca::rp()
     hour    => '1',
     minute  => '1'
   }
+  file { '/usr/bin/check_infra_cert_expire':
+    content => template('sunet/ici_ca/check_infra_cert_expire.erb'),
+    mode    => '0755'
+  }
+  sunet::scriptherder::cronjob { 'check_infra_cert':
+      cmd           => "/usr/bin/check_infra_cert_expire /etc/ssl/certs/${host}_infra.crt",
+      minute        => '30',
+      hour          => '8',
+      ok_criteria   => ['exit_status=0', 'max_age=26h'],
+      warn_criteria => ['exit_status=2', 'max_age=2d'],
+    }
 }

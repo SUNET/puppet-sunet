@@ -10,6 +10,7 @@ class sunet::mastodon::web(
   String $redis_port               = '6379',
   String $redis_user               = 'admin',
   String $s3_bucket                = 'mastodon',
+  String $s3_alias_path            = '/swift/v1/f7ddf8916b054d22a4b8245e1df640ea',
   String $s3_hostname              = 's3.sto3.safedc.net',
   String $s3_port                  = '443',
   String $saml_idp_sso_target_url  = 'https://idp-proxy-social.sunet.se/idp/sso',
@@ -20,6 +21,13 @@ class sunet::mastodon::web(
   String $smtp_server              = 'smtp.sunet.se',
   String $vhost                    = 'social.sunet.se',
 ) {
+
+  include sunet::packages::rclone
+  package{'fuse3':
+    ensure => 'installed'
+  }
+
+
   # Must set in hiera eyaml
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
@@ -35,8 +43,15 @@ class sunet::mastodon::web(
   $vaipd_public_key=safe_hiera('vaipd_public_key')
   $vapid_private_key=safe_hiera('vapid_private_key')
 
+  # Temp variables for s3 migration
+  $aws_access_key_id_new = safe_hiera('aws_access_key_id_new')
+  $aws_secret_access_key_new = safe_hiera('aws_secret_access_key_new')
+  $s3_alias_host_new = safe_hiera('s3_alias_host_new')
+  $aws_access_key_id_old = safe_hiera('aws_access_key_id_old')
+  $aws_secret_access_key_old = safe_hiera('aws_secret_access_key_old')
+  $s3_alias_host_old = safe_hiera('s3_alias_host_old')
+
   # Interpolated variables
-  $s3_endpoint = "https://${s3_hostname}:${s3_port}"
   $temp_array = split($vhost, '[.]')
   $smtp_user = $temp_array[0]
   $smtp_from_address = "${smtp_user}@sunet.se"
@@ -58,6 +73,27 @@ class sunet::mastodon::web(
     mode    => '0640',
     content => template('sunet/mastodon/web/mastodon.env.erb'),
   }
+  -> file { '/root/.rclone.conf':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    content => template('sunet/mastodon/web/rclone.conf.erb'),
+  }
+  -> file { '/usr/local/bin/sync_masto_s3':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0740',
+    content => template('sunet/mastodon/web/sync.erb.sh'),
+  }
+  -> file { '/opt/mastodon_web/files-nginx-vhost.conf':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    content => template('sunet/mastodon/web/files-nginx-vhost.conf.erb'),
+  }
   -> file { '/usr/local/bin/tootctl':
     ensure  => file,
     owner   => 'root',
@@ -73,6 +109,11 @@ class sunet::mastodon::web(
       group  => 'root',
       mode   => '0751',
     }
+  }
+  file { '/opt/mastodon_web/files-nginx-www-root/':
+    ensure => 'directory',
+    recurse => true,
+    source => 'puppet:///modules/sunet/mastodon/www',
   }
   $nginx_dirs = ['acme', 'certs', 'conf', 'dhparam', 'html', 'vhost']
   $nginx_dirs.each | $dir| {

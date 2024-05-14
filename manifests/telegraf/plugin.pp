@@ -5,7 +5,7 @@ define sunet::telegraf::plugin($plugin=undef,$config=undef) {
          default => $plugin
       }
       $params = $config ? {
-         undef   => hiera("telegraf_plugin_$title",{}),
+         undef   => lookup("telegraf_plugin_$title", undef, undef, {}),
          default => $config
       }
       file { "/etc/telegraf/telegraf.d/$_plugin.conf": 

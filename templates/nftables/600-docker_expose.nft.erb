@@ -2,14 +2,14 @@
 # DNAT packets to an exposed service running in a Docker container
 #
 <% if @saddr_v4.is_a? String -%>
-add rule ip nat prerouting iif <%= @iif %> <%= @proto -%> <%= @dport %> dnat to <%= @dnat_v4_addr %> comment "docker_expose <%= @name %>"
+add rule ip nat prerouting iifname <%= @iif %> <%= @proto -%> <%= @dport %> dnat to <%= @dnat_v4_addr %> comment "docker_expose <%= @name %>"
 <% if @ipaddress_default -%>
 add rule ip nat output oifname lo ip saddr <%= @ipaddress_default -%> ip daddr <%= @ipaddress_default -%> <%= @proto -%> <%= @dport %> dnat to <%= @dnat_v4_addr %> comment "docker_expose <%= @name %> loopback"
 add rule ip nat postrouting oifname <%= @iif %> ip saddr <%= @ipaddress_default -%> ip daddr <%= @dnat_v4_addr %> <%= @proto -%> <%= @dport %> comment "docker_expose <%= @name %> loopback"
 <% end -%>
 <% end -%>
 <% if @saddr_v6.is_a? String -%>
-add rule ip6 nat prerouting iif <%= @iif %> <%= @proto -%> <%= @dport %> dnat to [<%= @dnat_v6_addr %>]:<%= @dnat_v6_port %> comment "docker_expose <%= @name %> (v6 DNAT)"
+add rule ip6 nat prerouting iifname <%= @iif %> <%= @proto -%> <%= @dport %> dnat to [<%= @dnat_v6_addr %>]:<%= @dnat_v6_port %> comment "docker_expose <%= @name %> (v6 DNAT)"
 <% if @ipaddress6_default -%>
 add rule ip6 nat output oifname lo ip6 saddr <%= @ipaddress6_default -%> ip6 daddr <%= @ipaddress6_default %> <%= @proto -%> <%= @dport %> dnat to [<%= @dnat_v6_addr %>] comment "docker_expose <%= @name %> (v6 DNAT loopback)"
 add rule ip6 nat postrouting oifname <%= @iif %> ip6 saddr <%= @ipaddress6_default %> ip6 daddr <%= @dnat_v6_addr %> <%= @proto -%> <%= @dport %> comment "docker_expose <%= @name %> (v6 DNAT loopback)"
