@@ -1,0 +1,112 @@
+---
+version: "3.3"
+
+services:
+  apigw:
+    container_name: "vc_apigw"
+    image: "docker.sunet.se/dc4eu/apigw:<%= vc_version %>"
+    restart: always
+    ports:
+      - 80:8080
+    volumes:
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - vc_redis
+      - vc_mongo
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  issuer:
+    container_name: "vc_issuer"
+    image: "docker.sunet.se/dc4eu/issuer:<%= @vc_version %>"
+    restart: always
+    volumes:
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - redis
+      - mongo
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  verifier:
+    container_name: "vc_dev_verifier"
+    image: "docker.sunet.se/dc4eu/verifier:<%= @vc_version %>"
+    restart: always
+    volumes:
+      - ./cert:/cert:ro
+      - /opt/vc/config.yaml:/config.yaml:ro
+    depends_on:
+      - redis
+      - mongo
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  registry:
+    container_name: "vc_dev_registry"
+    image: "docker.sunet.se/dc4eu/registry:<%= @vc_version %>"
+    restart: always
+    volumes:
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - redis
+      - mongo
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  persistent:
+    container_name: "vc_persistent"
+    image: "docker.sunet.se/dc4eu/persistent:<%= @vc_version %>"
+    restart: always
+    volumes:
+      - /opt/vc/config.yaml:/config.yaml:ro
+      - /var/log/sunet:/var/log/sunet
+    depends_on:
+      - vc_redis
+      - vc_mongo
+    environment:
+      - "VC_CONFIG_YAML=config.yaml"
+
+  redis:
+    image: redis:alpine
+    container_name: "vc_redis"
+    restart: always
+    expose:
+      - 6379
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  mongo:
+    image: "mongo:<%= @mongodb_version %>"
+    container_name: "vc_mongo"
+    restart: always
+    expose:
+      - 27017
+    volumes:
+      - mongo_data:/data
+    environment:
+      - "MONGO_INITDB_ROOT_USERNAME=<%= @mongo_user %>"
+      - "MONGO_INITDB_ROOT_PASSWORD=<%= @mongo_pw %>"
+ 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: vc_jaeger
+    restart: always
+    ports:
+      - 16686:16686
+    expose:
+      - 4317
+    environment:
+      - "COLLECTOR_OTLP_ENABLED=true"
+
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-vc_interoperability
+
+volumes:
+  redis_data:
+  mongo_data:

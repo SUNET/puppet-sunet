@@ -1,0 +1,11 @@
+docker-pull: docker-pull-vc
+
+docker-pull-vc:
+	docker pull docker.sunet.se/dc4eu/apigw:<%= @vc_version %>
+	docker pull docker.sunet.se/dc4eu/issuer:<%= @vc_version %>
+	docker pull docker.sunet.se/dc4eu/verifier:<%= @vc_version %>
+	docker pull docker.sunet.se/dc4eu/registry:<%= @vc_version %>
+	docker pull docker.sunet.se/dc4eu/persistent:<%= @vc_version %>
+
+release: docker-pull
+	systemctl restart sunet-vc.service

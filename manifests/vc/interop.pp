@@ -1,4 +1,5 @@
-class sunet::vc::apigw(
+
+class sunet::vc::interop(
   String $vc_version              ="latest",
   String $interface               ="ens3",
   Boolean $production             =false,
@@ -36,7 +37,7 @@ class sunet::vc::apigw(
     mode   => '0600',
     owner  => 'root',
     group  => 'root',
-    content => template("sunet/vc/ha/apigw/config.yaml.erb")
+    content => template("sunet/vc/lab/interop/config.yaml.erb")
    }
 
   file { '/opt/vc/Makefile':
@@ -44,7 +45,7 @@ class sunet::vc::apigw(
     mode => '0744',
     owner => 'root',
     group => 'root',
-    content => template("sunet/vc/ha/apigw/Makefile.erb")
+    content => template("sunet/vc/lab/interop/Makefile.erb")
   }
 
   file { '/opt/vc/certs':
@@ -56,7 +57,7 @@ class sunet::vc::apigw(
 
   # Compose
   sunet::docker_compose { 'vc_gateway':
-    content          => template('sunet/vc/ha/apigw/docker-compose.yml.erb'),
+    content          => template('sunet/vc/lab/interop/docker-compose.yml.erb'),
     service_name     => 'vc',
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
