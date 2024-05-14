@@ -35,9 +35,24 @@ class sunet::lb::load_balancer(
 
     if has_key($config['load_balancer'], 'websites') {
       $websites = $config['load_balancer']['websites']
+
+      sunet::lb::load_balancer::configure_websites { 'websites':
+        interface => $interface,
+        websites  => $websites,
+        basedir   => $basedir,
+        confdir   => $confdir,
+        scriptdir => $scriptdir,
+      }
     } elsif has_key($config['load_balancer'], 'websites2') {
       # name used during migration
       $websites = $config['load_balancer']['websites2']
+      sunet::lb::load_balancer::configure_websites2 { 'websites':
+        interface => $interface,
+        websites  => $websites,
+        basedir   => $basedir,
+        confdir   => $confdir,
+        scriptdir => $scriptdir,
+      }
     } else {
       fail('Load balancer config contains neither "websites" nor "websites2"')
     }
@@ -48,13 +63,6 @@ class sunet::lb::load_balancer(
     ensure_resource('sunet::misc::create_dir', [$confdir, $scriptdir],
                     { owner => 'root', group => 'root', mode => '0755' })
 
-    sunet::lb::load_balancer::configure_websites { 'websites':
-      interface => $interface,
-      websites  => $websites,
-      basedir   => $basedir,
-      confdir   => $confdir,
-      scriptdir => $scriptdir,
-    }
 
     class { 'sunet::lb::load_balancer::services':
       interface => $interface,
