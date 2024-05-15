@@ -11,10 +11,6 @@ class sunet::vc::interop(
   String $tracing_endpoint_addr,
 ) {
 
-  sunet::ssh_keys { 'vcops':
-    config => lookup('vcops_ssh_config', undef, undef, {}),
-  }
-
  package { 'make': ensure => 'installed' }
 
   sunet::misc::system_user { 'sunet':
