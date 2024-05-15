@@ -1,3 +1,4 @@
 # created by puppet
+command[check_scriptherder]=<% if @use_sudo -%>sudo <% end -%>/usr/local/bin/scriptherder --mode check
 command[check_scripts]=<% if @use_sudo -%>sudo <% end -%>/usr/local/bin/scriptherder --mode check
 command[check_cosmos]=<% if @use_sudo -%>sudo <% end -%>/usr/local/bin/scriptherder --mode check cosmos
