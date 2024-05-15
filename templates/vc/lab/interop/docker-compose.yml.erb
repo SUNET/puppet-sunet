@@ -12,8 +12,8 @@ services:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     depends_on:
-      - vc_redis
-      - vc_mongo
+      - redis
+      - mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
@@ -64,8 +64,8 @@ services:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     depends_on:
-      - vc_redis
-      - vc_mongo
+      - redis
+      - mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
