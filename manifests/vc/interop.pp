@@ -9,7 +9,7 @@ class sunet::vc::interop(
   String $redis_password          = lookup('redis_password'),
   #String $redis_addr,
   String $redis_port = "6379",
-  String $tracing_endpoint_addr,
+  #String $tracing_endpoint_addr,
 ) {
 
  package { 'make': ensure => 'installed' }
