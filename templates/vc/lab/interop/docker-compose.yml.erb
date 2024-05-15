@@ -4,7 +4,7 @@ version: "3.3"
 services:
   apigw:
     container_name: "vc_apigw"
-    image: "docker.sunet.se/dc4eu/apigw:<%= vc_version %>"
+    image: "docker.sunet.se/dc4eu/apigw:<%= @vc_version %>"
     restart: always
     ports:
       - 80:8080
