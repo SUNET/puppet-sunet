@@ -21,6 +21,8 @@ class sunet::naemon_monitor(
   Array $exclude_hosts =  [],
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
+  Optional[Boolean] $gather_logs = false,
+  Optional[Boolean] $gather_metrics = false,
 ){
 
 
@@ -41,10 +43,12 @@ class sunet::naemon_monitor(
       allow_clients => 'any',
       port          => 443,
     }
-    sunet::nftables::docker_expose { 'allow_loki' :
-      iif           => $interface,
-      allow_clients => 'any',
-      port          => 3100,
+    if $gather_logs {
+      sunet::nftables::docker_expose { 'allow_loki' :
+        iif           => $interface,
+        allow_clients => 'any',
+        port          => 3100,
+      }
     }
   } else {
     sunet::misc::ufw_allow { 'allow-http':
@@ -55,9 +59,11 @@ class sunet::naemon_monitor(
       from => 'any',
       port => '443'
     }
-    sunet::misc::ufw_allow { 'allow-loki':
-      from => 'any',
-      port => '3100'
+    if $gather_logs {
+      sunet::misc::ufw_allow { 'allow-loki':
+        from => 'any',
+        port => '3100'
+      }
     }
   }
 
@@ -120,13 +126,15 @@ class sunet::naemon_monitor(
     ensure  => file,
     content => template('sunet/naemon_monitor/influxdb.yaml'),
   }
-  file { '/opt/naemon_monitor/loki.yaml':
-    ensure  => file,
-    content => template('sunet/naemon_monitor/loki.yaml'),
-  }
-  file { '/opt/naemon_monitor/loki-server.yaml':
-    ensure  => file,
-    content => template('sunet/naemon_monitor/loki-server.yaml'),
+  if $gather_logs {
+    file { '/opt/naemon_monitor/loki.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/loki.yaml'),
+    }
+    file { '/opt/naemon_monitor/loki-server.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/loki-server.yaml'),
+    }
   }
   file { '/opt/naemon_monitor/data':
     ensure => directory,
