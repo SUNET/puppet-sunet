@@ -1,6 +1,6 @@
 ---
 services:
-  apigw:
+  vc_apigw:
     container_name: "vc_apigw"
     image: "docker.sunet.se/dc4eu/apigw:<%= @vc_version %>"
     restart: always
@@ -10,12 +10,12 @@ services:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     depends_on:
-      - redis
-      - mongo
+      - vc_redis
+      - vc_mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-  issuer:
+  vc_issuer:
     container_name: "vc_issuer"
     image: "docker.sunet.se/dc4eu/issuer:<%= @vc_version %>"
     restart: always
@@ -23,12 +23,12 @@ services:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     depends_on:
-      - redis
-      - mongo
+      - vc_redis
+      - vc_mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-  verifier:
+  vc_verifier:
     container_name: "vc_verifier"
     image: "docker.sunet.se/dc4eu/verifier:<%= @vc_version %>"
     restart: always
@@ -36,12 +36,12 @@ services:
       - ./cert:/cert:ro
       - /opt/vc/config.yaml:/config.yaml:ro
     depends_on:
-      - redis
-      - mongo
+      - vc_redis
+      - vc_mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-  registry:
+  vc_registry:
     container_name: "vc_registry"
     image: "docker.sunet.se/dc4eu/registry:<%= @vc_version %>"
     restart: always
@@ -49,12 +49,12 @@ services:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     depends_on:
-      - redis
-      - mongo
+      - vc_redis
+      - vc_mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-  persistent:
+  vc_persistent:
     container_name: "vc_persistent"
     image: "docker.sunet.se/dc4eu/persistent:<%= @vc_version %>"
     restart: always
@@ -62,12 +62,12 @@ services:
       - /opt/vc/config.yaml:/config.yaml:ro
       - /var/log/sunet:/var/log/sunet
     depends_on:
-      - redis
-      - mongo
+      - vc_redis
+      - vc_mongo
     environment:
       - "VC_CONFIG_YAML=config.yaml"
 
-  redis:
+  vc_redis:
     image: redis:alpine
     container_name: "vc_redis"
     restart: always
@@ -77,7 +77,7 @@ services:
       - redis_data:/data
     command: redis-server --appendonly yes
 
-  mongo:
+  vc_mongo:
     image: "mongo:<%= @mongodb_version %>"
     container_name: "vc_mongo"
     restart: always
