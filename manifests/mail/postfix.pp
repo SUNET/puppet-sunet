@@ -1,6 +1,8 @@
 # Postfix for SUNET
 class sunet::mail::postfix(
   String $domain                 = 'sunet.dev',
+  String $smtp_domain            = 'sunet-smtp.drive.test.sunet.se',
+  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
   String $environment            = 'test',
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
@@ -19,14 +21,16 @@ class sunet::mail::postfix(
   $nextcloud_db_user ='nextcloud'
   $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
 
-  $smtpd_tls_cert_file="/certs/smtp.${domain}/fullchain.pem"
-  $smtpd_tls_key_file="/certs/smtp.${domain}/privkey.pem"
+  $smtpd_tls_cert_file="/certs/${smtp_domain}/fullchain.pem"
+  $smtpd_tls_key_file="/certs/${smtp_domain}/privkey.pem"
 
   package { 'exim4-base':
-    ensure => absent,
+    ensure   => absent,
     provider => 'apt',
   }
-
+  -> service { 'postfix':
+    ensure => 'stopped',
+  }
 
   # Composefile
   sunet::docker_compose { 'postfix':
@@ -58,10 +62,6 @@ class sunet::mail::postfix(
       ensure  => file,
       content =>  template("sunet/mail/postfix/${file}.erb.cf")
     }
-  }
-
-  service { 'postfix':
-    ensure => 'stopped',
   }
 
 }

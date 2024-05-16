@@ -1,21 +1,9 @@
 # Dovecot for SUNET mail
 class sunet::mail::dovecot(
   String $replication_partner,
-  Array[String] $allow_nets      = [
-                                    '192.121.208.200/32',
-                                    '2a0a:bcc0:40::59c/128',
-                                    '89.45.237.97/32',
-                                    '2001:6b0:40::2e3/128',
-                                    '89.46.21.22/32',
-                                    '2001:6b0:6c::33d/128',
-                                    '89.46.20.7/32',
-                                    '2001:6b0:6c::267/128',
-                                    '89.46.20.211/32',
-                                    '2001:6b0:6c::326/128',
-                                    '89.46.21.198/32',
-                                    '2001:6b0:6c::402/128'
-                                  ],
+  Array[String] $allow_nets,
   String $domain                 = 'sunet.dev',
+  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
   String $environment            = 'test',
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
@@ -43,8 +31,8 @@ class sunet::mail::dovecot(
   $nextcloud_mysql_server = 'intern-db1.sunet.drive.test.sunet.se'
 
 
-  $ssl_cert="/certs/imap.${domain}/fullchain.pem"
-  $ssl_key="/certs/imap.${domain}/privkey.pem"
+  $ssl_cert="/certs/${imap_domain}/fullchain.pem"
+  $ssl_key="/certs/${imap_domain}/privkey.pem"
   # Composefile
   sunet::docker_compose { 'dovecot':
     content          => template('sunet/mail/dovecot/docker-compose.erb.yml'),

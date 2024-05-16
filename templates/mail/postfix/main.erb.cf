@@ -52,7 +52,7 @@ relayhost = <%= @relay_hosts %>
 
 # Authentication
 smtpd_sasl_type = dovecot
-smtpd_sasl_path = inet:imap.<%= @domain %>:12346
+smtpd_sasl_path = inet:<%= @imap_domain %>:12346
 smtpd_sasl_auth_enable = yes
 
-virtual_transport = lmtp:imap.<%= @domain %>:24
+virtual_transport = lmtp:<%= @imap_domain %>:24
