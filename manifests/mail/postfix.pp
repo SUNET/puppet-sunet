@@ -25,10 +25,12 @@ class sunet::mail::postfix(
   $smtpd_tls_key_file="/certs/${smtp_domain}/privkey.pem"
 
   package { 'exim4-base':
-    ensure => absent,
+    ensure   => absent,
     provider => 'apt',
   }
-
+  -> service { 'postfix':
+    ensure => 'stopped',
+  }
 
   # Composefile
   sunet::docker_compose { 'postfix':
@@ -60,10 +62,6 @@ class sunet::mail::postfix(
       ensure  => file,
       content =>  template("sunet/mail/postfix/${file}.erb.cf")
     }
-  }
-
-  service { 'postfix':
-    ensure => 'stopped',
   }
 
 }
