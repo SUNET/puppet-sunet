@@ -1,14 +1,14 @@
 # Postfix for SUNET
 class sunet::mail::postfix(
-  String $domain                 = 'sunet.dev',
-  String $smtp_domain            = 'sunet-smtp.drive.test.sunet.se',
-  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
-  String $environment            = 'test',
+  String $domain,
+  String $smtp_domain,
+  String $imap_domain,
+  String $environment,
+  Array[String] $imap_servers,
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
   Array[String] $relay_servers   = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
-  Array[String] $imap_servers    = ['89.45.237.128', '89.46.21.203'],
 )
 {
 

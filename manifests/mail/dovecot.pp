@@ -2,9 +2,9 @@
 class sunet::mail::dovecot(
   String $replication_partner,
   Array[String] $allow_nets,
-  String $domain                 = 'sunet.dev',
-  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
-  String $environment            = 'test',
+  String $domain,
+  String $imap_domain,
+  String $environment,
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
   String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
