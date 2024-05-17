@@ -116,6 +116,11 @@ class sunet::naemon_monitor(
     owner  => 'www-data'
   }
 
+  file { '/usr/lib/nagios/plugins/cosmos':
+    ensure  => directory,
+    recurse => true,
+  }
+
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
     $nagioscfg_dirs.each |$dir| {
       ensure_resource('file',$dir, { ensure => directory} )
