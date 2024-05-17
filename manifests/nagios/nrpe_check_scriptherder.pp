@@ -1,7 +1,7 @@
 # Check Scriptherder
 define sunet::nagios::nrpe_check_scriptherder (
 ) {
-    $scriptherder_from_cosmos = $sunet::scriptherder::init::nrpe_sudo
+    $scriptherder_from_cosmos = $sunet::server::install_scriptherder
 
     # Scriptherder bundled with puppet requires sudo and provides it's own NRPE configuration
     if $scriptherder_from_cosmos != true {
