@@ -94,6 +94,32 @@ class sunet::forgejo (
     owner   => 'git',
     group   => 'git',
   }
+  -> file { '/etc/systemd/system/sunet-forgejo.service.d':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  -> file { '/etc/systemd/system/sunet-forgejo.service.d/01-execstartpost.conf':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0744',
+    content => "[Service]
+ExecStartPost=/bin/bash -c 'until docker inspect forgejo | jq .[0].State.Running | grep true ; do sleep 1 && echo -n . ; done'
+ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -d forgejo mkdir -p /tmp/gitea\n",
+  }
+  -> exec { 'forgejo_daemonreload_execstartpost':
+  subscribe   => File['/etc/systemd/system/sunet-forgejo.service.d/01-execstartpost.conf'],
+  command     => 'systemctl daemon-reload',
+  refreshonly => true,
+  }
+  -> exec { 'forgejo_override_execstartpost':
+  subscribe   => File['/etc/systemd/system/sunet-forgejo.service.d/01-execstartpost.conf'],
+  command     => 'systemctl restart sunet-forgejo.service',
+  refreshonly => true,
+  onlyif      => 'systemctl is-active sunet-forgejo.service',
+  }
   -> file{ '/root/.rclone.conf':
     ensure  => file,
     content => template('sunet/forgejo/rclone.conf.erb'),
