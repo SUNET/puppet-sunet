@@ -72,8 +72,7 @@ define sunet::ici_ca::rp(
         cmd           => "/usr/bin/check_infra_cert_expire /etc/ssl/certs/${host}_infra.crt",
         minute        => '30',
         hour          => '8',
-        ok_criteria   => ['exit_status=0', 'max_age=26h'],
-        warn_criteria => ['exit_status=2', 'max_age=1d'],
+        ok_criteria   => ['exit_status=0', 'max_age=25h'],
     }
   }
 }
