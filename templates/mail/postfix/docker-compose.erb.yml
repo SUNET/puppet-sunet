@@ -10,6 +10,7 @@ services:
     volumes:
       - /opt/postfix/config:/config
       - /etc/dehydrated/certs/:/certs
+      - /dev/log:/dev/log
     command:
       - /start.sh
     ports:
