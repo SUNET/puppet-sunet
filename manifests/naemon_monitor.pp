@@ -18,15 +18,12 @@ class sunet::naemon_monitor(
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
-  Array $exclude_hosts =  [],
+  Array $exclude_hosts = [],
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
-  Optional[Boolean] $gather_logs = false,
+  Optional[Boolean] $receive_logs = false,
   Optional[Boolean] $gather_metrics = false,
-){
-
-
-
+) {
   $naemon_container = $::facts['dockerhost2'] ? {
     yes => 'naemon_monitor-naemon-1',
     default => 'naemon_monitor_naemon_1',
@@ -43,7 +40,7 @@ class sunet::naemon_monitor(
       allow_clients => 'any',
       port          => 443,
     }
-    if $gather_logs {
+    if $receive_logs {
       sunet::nftables::docker_expose { 'allow_loki' :
         iif           => $interface,
         allow_clients => 'any',
@@ -53,21 +50,21 @@ class sunet::naemon_monitor(
   } else {
     sunet::misc::ufw_allow { 'allow-http':
       from => 'any',
-      port => '80'
+      port => '80',
     }
     sunet::misc::ufw_allow { 'allow-https':
       from => 'any',
-      port => '443'
+      port => '443',
     }
-    if $gather_logs {
+    if $receive_logs {
       sunet::misc::ufw_allow { 'allow-loki':
         from => 'any',
-        port => '3100'
+        port => '3100',
       }
     }
   }
 
-  class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
+  class { 'sunet::dehydrated::client': domain => $domain, ssl_links => true }
 
   if lookup('shib_key', undef, undef, undef) != undef {
     sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
@@ -126,7 +123,7 @@ class sunet::naemon_monitor(
     ensure  => file,
     content => template('sunet/naemon_monitor/influxdb.yaml'),
   }
-  if $gather_logs {
+  if $receive_logs {
     file { '/opt/naemon_monitor/loki.yaml':
       ensure  => file,
       content => template('sunet/naemon_monitor/loki.yaml'),
@@ -155,9 +152,9 @@ class sunet::naemon_monitor(
   }
 
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
-    $nagioscfg_dirs.each |$dir| {
-      ensure_resource('file',$dir, { ensure => directory} )
-    }
+  $nagioscfg_dirs.each |$dir| {
+    ensure_resource('file',$dir, { ensure => directory })
+  }
 
   nagioscfg::contactgroup {'alerts': }
 
@@ -300,7 +297,6 @@ class sunet::naemon_monitor(
     ok_criteria   => ['exit_status=0'],
     warn_criteria => ['exit_status=1', 'max_age=24h'],
   }
-
 
   class { 'nagioscfg':
     additional_entities => $additional_entities,
