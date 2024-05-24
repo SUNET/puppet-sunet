@@ -1,6 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost2(
   String $docker_version                      = 'installed',
+  String $docker_compose_version              = 'installed',
   String $docker_package_name                 = 'docker-ce',
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   Boolean $run_docker_cleanup                 = true,
@@ -105,7 +106,7 @@ class sunet::dockerhost2(
     require => Exec['dockerhost_apt_get_update'],
   }
   package { 'docker-compose-plugin' :
-    ensure  => $docker_version,
+    ensure  => $docker_compose_version,
     require => Exec['dockerhost_apt_get_update'],
   }
 

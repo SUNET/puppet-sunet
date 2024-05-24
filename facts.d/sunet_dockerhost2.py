@@ -35,8 +35,10 @@ for node_name in all_hosts:
     for reg, cls in iteritems(rules):
         if re.match(reg, node_name):
             if node_name == me:
-                if "sunet::dockerhost2" in cls:
-                    print("dockerhost2=yes")
-                    sys.exit()
+                if cls:
+                    for c in cls:
+                        if re.match("(.+)::dockerhost2$",c):
+                            print("dockerhost2=yes")
+                            sys.exit()
 
 print("dockerhost2=no")

@@ -1,34 +1,36 @@
 # Postfix for SUNET
 class sunet::mail::postfix(
-  String $domain                 = 'sunet.dev',
+  String $domain,
+  String $smtp_domain,
+  String $imap_domain,
+  String $environment,
+  Array[String] $imap_servers,
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
   Array[String] $relay_servers   = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
-  Array[String] $imap_servers    = ['89.45.237.128', '89.46.21.203'],
 )
 {
 
   $hostname = $facts['networking']['fqdn']
-  # This looks esoteric, a longer example for parsing the hostname is available here:
-  # https://wiki.sunet.se/display/sunetops/Platform+naming+standards#Platformnamingstandards-Parsingthename
-  $my_environment = split(split($hostname, '[.]')[0],'[-]')[2]
 
-  $config = lookup($my_environment)
+  $config = lookup($environment)
   $db_hosts = join($config['db_hosts'], ' ')
   $relay_hosts = join($relay_servers, ', ')
   $nextcloud_db = 'nextcloud'
   $nextcloud_db_user ='nextcloud'
   $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
 
-  $smtpd_tls_cert_file="/certs/smtp.${domain}/fullchain.pem"
-  $smtpd_tls_key_file="/certs/smtp.${domain}/privkey.pem"
+  $smtpd_tls_cert_file="/certs/${smtp_domain}/fullchain.pem"
+  $smtpd_tls_key_file="/certs/${smtp_domain}/privkey.pem"
 
   package { 'exim4-base':
-    ensure => absent,
+    ensure   => absent,
     provider => 'apt',
   }
-
+  -> service { 'postfix':
+    ensure => 'stopped',
+  }
 
   # Composefile
   sunet::docker_compose { 'postfix':
