@@ -4,6 +4,7 @@ class sunet::mail::postfix(
   String $smtp_domain,
   String $imap_domain,
   String $environment,
+  Array[String] $relaying_servers,
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
