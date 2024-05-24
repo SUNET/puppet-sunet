@@ -20,7 +20,7 @@ class sunet::nagios::nrpe(
     unless  => '/usr/bin/test -d /etc/systemd/system/nagios-nrpe-server.service.d/',
   }
   exec { "${name}_daemon_reload":
-    command     => '/usr/bin/systemd daemon-reload',
+    command     => '/usr/bin/systemctl daemon-reload',
     refreshonly => true,
   }
 
