@@ -86,7 +86,7 @@ class sunet::mail::dovecot(
   $commands.each |$command| {
     file { "/usr/local/bin/${command}":
       ensure  => file,
-      content =>  inline_template("#!/bin/bash\ndocker exec -ti dovecot_dovecot_1 ${command} \"\${@}\"\n"),
+      content =>  inline_template("#!/bin/bash\ndocker exec -ti dovecot-dovecot-1 ${command} \"\${@}\"\n"),
       mode    => '0700',
     }
   }
