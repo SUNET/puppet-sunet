@@ -1,23 +1,10 @@
 # Dovecot for SUNET mail
 class sunet::mail::dovecot(
   String $replication_partner,
-  Array[String] $allow_nets      = [
-                                    '192.121.208.200/32',
-                                    '2a0a:bcc0:40::59c/128',
-                                    '89.45.237.97/32',
-                                    '2001:6b0:40::2e3/128',
-                                    '89.46.21.22/32',
-                                    '2001:6b0:6c::33d/128',
-                                    '89.46.20.7/32',
-                                    '2001:6b0:6c::267/128',
-                                    '89.46.20.211/32',
-                                    '2001:6b0:6c::326/128',
-                                    '89.46.21.198/32',
-                                    '2001:6b0:6c::402/128'
-                                  ],
-  String $domain                 = 'sunet.dev',
-  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
-  String $environment            = 'test',
+  Array[String] $allow_nets,
+  String $domain,
+  String $imap_domain,
+  String $environment,
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
   String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
@@ -31,8 +18,6 @@ class sunet::mail::dovecot(
   $config = lookup($environment)
 
   $replication_password = lookup('replication_password')
-  $oauth_client_id = lookup('oauth_client_id')
-  $oauth_client_secret = lookup('oauth_client_secret')
   $master_password = lookup('master_password')
 
 
