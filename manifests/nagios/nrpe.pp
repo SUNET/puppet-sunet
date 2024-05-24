@@ -15,6 +15,24 @@ class sunet::nagios::nrpe(
   $nrpe_clients = lookup('nrpe_clients', undef, undef, ['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
   $allowed_hosts = join($nrpe_clients,',')
 
+  exec { "create_${name}_service_dir":
+    command => '/bin/mkdir -p /etc/systemd/system/nagios-nrpe-server.service.d/',
+    unless  => '/usr/bin/test -d /etc/systemd/system/nagios-nrpe-server.service.d/',
+  }
+  exec { "${name}_daemon_reload":
+    command     => '/usr/bin/systemd daemon-reload',
+    refreshonly => true,
+  }
+
+  file {
+    '/etc/systemd/system/nagios-nrpe-server.service.d/privatetmp.conf':
+      ensure  => file,
+      mode    => '0444',
+      content => template('sunet/nagioshost/systemd-override-privatetmp.conf.erb'),
+      require => [Exec["create_${name}_service_dir"], Package[$nrpe_service]],
+      notify  =>  [Exec["${name}_daemon_reload"],Service[$nrpe_service]],
+  }
+
   package {$nrpe_service:
       ensure => 'installed',
   }
