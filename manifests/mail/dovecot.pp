@@ -22,6 +22,7 @@ class sunet::mail::dovecot(
 
 
   $db_hosts = join($config['db_hosts'], ' host=')
+  ## FIXME: This is NOT what Nextcloud calls 'salt', but instead what they call 'secret'.
   $nextcloud_salt = lookup('nextcloud_salt')
   $nextcloud_db = 'nextcloud'
   $nextcloud_db_user ='nextcloud'
