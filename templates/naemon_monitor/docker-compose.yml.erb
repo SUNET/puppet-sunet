@@ -84,9 +84,9 @@ services:
     volumes:
       - '/opt/naemon_monitor/grafana.ini/:/etc/grafana/grafana.ini'
       - '/opt/naemon_monitor/influxdb.yaml:/etc/grafana/provisioning/datasources/nagflux.yaml'
-      <% if @receive_otel -%>
+<% if @receive_otel -%>
       - '/opt/naemon_monitor/loki.yaml:/etc/grafana/provisioning/datasources/loki.yaml'
-      <% end -%>
+<% end -%>
       - '/opt/naemon_monitor/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro'
       - '/opt/naemon_monitor/grafana:/var/lib/grafana:rw'
 
