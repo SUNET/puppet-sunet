@@ -27,7 +27,7 @@ class sunet::mail::dovecot(
   $nextcloud_db = 'nextcloud'
   $nextcloud_db_user ='nextcloud'
   $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
-  $nextcloud_mysql_server = $config['nextcloud_mysql_server']
+  $nextcloud_mysql_server = lookup('nextcloud_mysql_server')
 
 
   $ssl_cert="/certs/${imap_domain}/fullchain.pem"
