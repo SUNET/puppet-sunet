@@ -1,11 +1,11 @@
 # Postfix for SUNET
 class sunet::mail::postfix(
-  String $domain,
-  String $smtp_domain,
-  String $imap_domain,
+  String $alias_domains,
   String $environment,
+  String $imap_domain,
   Array[String] $imap_servers,
   Array[String] $relaying_servers,
+  String $smtp_domain,
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
