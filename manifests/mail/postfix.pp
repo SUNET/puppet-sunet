@@ -1,10 +1,10 @@
 # Postfix for SUNET
 class sunet::mail::postfix(
-  String $domain,
-  String $smtp_domain,
-  String $imap_domain,
+  String $alias_domains,
   String $environment,
+  String $imap_domain,
   Array[String] $relaying_servers,
+  String $smtp_domain,
   String $interface              = 'ens3',
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
@@ -40,7 +40,15 @@ class sunet::mail::postfix(
     compose_filename => 'docker-compose.yml',
     description      => 'Postfix',
   }
-  $ports = [25, 587]
+  $ports = [25]
+  $ports.each|$port| {
+    sunet::nftables::docker_expose { "mail_port_${port}":
+      allow_clients => $relay_hosts,
+      port          => $port,
+      iif           => $interface,
+    }
+  }
+  $ports = [587]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
