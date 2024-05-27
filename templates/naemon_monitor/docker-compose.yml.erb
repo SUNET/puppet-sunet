@@ -114,7 +114,7 @@ services:
       - "/opt/naemon_monitor/tempo-server.yaml:/etc/tempo.yaml"
       - "/opt/naemon_monitor/tempo:/var/tempo:rw"
 
-   mimir:
+  mimir:
     image: grafana/mimir:<%= @mimir_tag %>
     command: ["-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml"]
     ports:
