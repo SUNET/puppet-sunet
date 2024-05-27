@@ -40,7 +40,7 @@ class sunet::mail::dovecot(
     compose_filename => 'docker-compose.yml',
     description      => 'Dovecot',
   }
-  $ports = [24, 80, 143, 993, 4190, 12345, 12346]
+  $ports = [24, 143, 993, 4190, 12345, 12346]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
