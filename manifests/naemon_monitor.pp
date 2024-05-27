@@ -15,7 +15,7 @@ class sunet::naemon_monitor(
   String $grafana_tag = '11.0',
   String $loki_tag = '3.0.0',
   String $mimir_tag = '2.12.0',
-  String $tempo_tag = '2.4.2'
+  String $tempo_tag = '2.4.2',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
