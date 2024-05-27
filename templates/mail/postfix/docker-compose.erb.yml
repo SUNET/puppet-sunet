@@ -1,14 +1,6 @@
 version: "3.7"
 
 services:
-  always-https:
-    image: docker.sunet.se/always-https
-    dns:
-      - 89.32.32.32
-    ports:
-      - '80:80'
-    environment:
-      - 'ACME_URL=http://acme-c.sunet.se/'
   postfix:
     image: <%= @postfix_image %>:<%= @postfix_tag %>
     network_mode: host
@@ -18,6 +10,7 @@ services:
     volumes:
       - /opt/postfix/config:/config
       - /etc/dehydrated/certs/:/certs
+      - /dev/log:/dev/log
     command:
       - /start.sh
     ports:
