@@ -90,14 +90,36 @@ services:
       - '/opt/naemon_monitor/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro'
       - '/opt/naemon_monitor/grafana:/var/lib/grafana:rw'
 
-<% if @receive_logs -%>
-  
+<% if @receive_otel -%>
   loki:
     image: grafana/loki:<%= @loki_tag %>
     ports:
       - "3100:3100"
     volumes:
       - '/opt/naemon_monitor/loki:/loki:rw'
-      - '/opt/naemon_monitor/loki-server.yaml:/etc/loki/local-config.yaml:ro
+      - '/opt/naemon_monitor/loki-server.yaml:/etc/loki/local-config.yaml:ro'
     command: -config.file=/etc/loki/local-config.yaml
+
+  tempo:
+    image: grafana/tempo:<%= @mimir_tag %>
+    ports:
+      - "14268:14268"  # jaeger ingest
+      - "3200:3200"   # tempo
+      - "9095:9095" # tempo grpc
+      - "4317:4317"  # otlp grpc
+      - "4318:4318"  # otlp http
+      - "9411:9411"   # zipkin
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - "/opt/naemon_monitor/tempo-server.yaml:/etc/tempo.yaml"
+      - "/opt/naemon_monitor/tempo:/var/tempo:rw"
+
+   mimir:
+    image: grafana/mimir:<%= @mimir_tag %>
+    command: ["-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml"]
+    ports:
+      - "9009:9009"
+    volumes:
+      - "/opt/naemon_monitor/mimir-server.yaml:/etc/mimir.yaml:ro"
+      - "/opt/naemon_monitor/mimir:/data:rw"
 <% end -%>

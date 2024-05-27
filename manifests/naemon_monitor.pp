@@ -14,6 +14,8 @@ class sunet::naemon_monitor(
   String $nagflux_tag = 'latest',
   String $grafana_tag = '11.0',
   String $loki_tag = '3.0.0',
+  String $mimir_tag = '2.12.0',
+  String $tempo_tag = '2.4.2'
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
@@ -21,8 +23,8 @@ class sunet::naemon_monitor(
   Array $exclude_hosts = [],
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
-  Optional[Boolean] $receive_logs = false,
-  Optional[Boolean] $gather_metrics = false,
+  Optional[Boolean] $receive_otel = false,
+
 ) {
   $naemon_container = $::facts['dockerhost2'] ? {
     yes => 'naemon_monitor-naemon-1',
@@ -40,7 +42,7 @@ class sunet::naemon_monitor(
       allow_clients => 'any',
       port          => 443,
     }
-    if $receive_logs {
+    if $receive_otel {
       sunet::nftables::docker_expose { 'allow_loki' :
         iif           => $interface,
         allow_clients => 'any',
@@ -56,7 +58,7 @@ class sunet::naemon_monitor(
       from => 'any',
       port => '443',
     }
-    if $receive_logs {
+    if $receive_otel {
       sunet::misc::ufw_allow { 'allow-loki':
         from => 'any',
         port => '3100',
@@ -123,7 +125,11 @@ class sunet::naemon_monitor(
     ensure  => file,
     content => template('sunet/naemon_monitor/influxdb.yaml'),
   }
-  if $receive_logs {
+  file { '/opt/naemon_monitor/data':
+    ensure => directory,
+    owner  => 'www-data',
+  }
+  if $receive_otel {
     file { '/opt/naemon_monitor/loki.yaml':
       ensure  => file,
       content => template('sunet/naemon_monitor/loki.yaml'),
@@ -132,22 +138,26 @@ class sunet::naemon_monitor(
       ensure  => file,
       content => template('sunet/naemon_monitor/loki-server.yaml'),
     }
-  }
-  file { '/opt/naemon_monitor/loki-server.yaml':
-    ensure  => file,
-    content => template('sunet/naemon_monitor/loki-server.yaml'),
-  }
-  file { '/opt/naemon_monitor/data':
-    ensure => directory,
-    owner  => 'www-data'
-  }
-  file { '/opt/naemon_monitor/loki':
-    ensure => directory,
-    owner  => 'www-data'
+    file { '/opt/naemon_monitor/loki':
+      ensure => directory,
+      owner  => 'www-data',
+    }
+    file { '/opt/naemon_monitor/mimir':
+      ensure => directory,
+      owner  => 'www-data',
+    }
+    file { '/opt/naemon_monitor/mimir-server.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/mimir-server.yaml'),
+    }
+    file { '/opt/naemon_monitor/tempo':
+      ensure => directory,
+      owner  => 'www-data',
+    }
   }
   file { '/opt/naemon_monitor/grafana':
     ensure => directory,
-    owner  => 'www-data'
+    owner  => 'www-data',
   }
 
   file { '/usr/lib/nagios/plugins/cosmos':
