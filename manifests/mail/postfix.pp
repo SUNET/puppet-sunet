@@ -3,7 +3,6 @@ class sunet::mail::postfix(
   String $alias_domains,
   String $environment,
   String $imap_domain,
-  Array[String] $imap_servers,
   Array[String] $relaying_servers,
   String $smtp_domain,
   String $interface              = 'ens3',
