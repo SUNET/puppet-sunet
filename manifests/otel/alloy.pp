@@ -13,7 +13,6 @@ class sunet::otel::alloy (
     notify  => Service['alloy'],
     mode    => '0644',
     group   => 'root',
-    require => Package['alloy'],
     content => file( 'sunet/otel/grafana.gpg' ),
   }
   file { '/etc/apt/sources.list.d/grafana.list' :
@@ -21,7 +20,6 @@ class sunet::otel::alloy (
     notify  => Service['alloy'],
     mode    => '0644',
     group   => 'root',
-    require => Package['alloy'],
     content => 'deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main',
   }
   file { '/etc/alloy/config.alloy' :
@@ -29,13 +27,12 @@ class sunet::otel::alloy (
     notify  => Service['alloy'],
     mode    => '0644',
     group   => 'root',
-    require => Package['alloy'],
     content => template( 'sunet/otel/config.alloy' ),
   }
   package { 'alloy':
     ensure => 'installed',
   }
-  -> service { 'alloy':
+  service { 'alloy':
     ensure  => 'running',
     enable  => 'true',
     require => Package['alloy'],
