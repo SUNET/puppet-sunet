@@ -154,6 +154,10 @@ class sunet::naemon_monitor(
       ensure => directory,
       owner  => 'www-data',
     }
+    file { '/opt/naemon_monitor/tempo-server.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/tempo-server.yaml'),
+    }
   }
   file { '/opt/naemon_monitor/grafana':
     ensure => directory,
