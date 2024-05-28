@@ -22,6 +22,13 @@ class sunet::naemon_monitor(
   Array[Optional[String]] $optout_checks = [],
 ){
 
+
+
+  $naemon_container = $::facts['dockerhost2'] ? {
+    yes => 'naemon_monitor-naemon-1',
+    default => 'naemon_monitor_naemon_1',
+  }
+
   if $::facts['sunet_nftables_enabled'] == 'yes' {
       sunet::nftables::docker_expose { 'allow_http' :
       iif           => $interface,
@@ -69,7 +76,7 @@ class sunet::naemon_monitor(
 
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf':
     ensure  => file,
-    content => template('sunet/naemon_monitor/service-override.conf'),
+    content => template('sunet/naemon_monitor/service-override.conf.erb'),
     require => File['/etc/systemd/system/sunet-naemon_monitor.service.d/'],
   }
 
@@ -84,7 +91,7 @@ class sunet::naemon_monitor(
 
   file { '/opt/naemon_monitor/stop-monitor.sh':
     ensure  => file,
-    content => template('sunet/naemon_monitor/stop-monitor.sh'),
+    content => template('sunet/naemon_monitor/stop-monitor.sh.erb'),
   }
 
   file { '/etc/logrotate.d/naemon_monitor':
@@ -107,6 +114,11 @@ class sunet::naemon_monitor(
   file { '/opt/naemon_monitor/data':
     ensure => directory,
     owner  => 'www-data'
+  }
+
+  file { '/usr/lib/nagios/plugins/cosmos':
+    ensure  => directory,
+    recurse => true,
   }
 
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
