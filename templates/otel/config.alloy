@@ -24,6 +24,6 @@ otelcol.processor.batch "otel" {
 
 otelcol.exporter.otlp "default" {
   client {
-    endpoint = "<%= @otel-receiver %>"
+    endpoint = "<%= @otel_receiver %>"
   }
 }
