@@ -22,6 +22,9 @@ class sunet::otel::alloy (
     group   => 'root',
     content => 'deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main',
   }
+  package { 'alloy':
+    ensure => 'installed',
+  }
   file { '/etc/alloy/config.alloy' :
     ensure  => 'file',
     notify  => Service['alloy'],
@@ -29,9 +32,7 @@ class sunet::otel::alloy (
     group   => 'root',
     content => template( 'sunet/otel/config.alloy' ),
   }
-  package { 'alloy':
-    ensure => 'installed',
-  }
+
   service { 'alloy':
     ensure  => 'running',
     enable  => 'true',
