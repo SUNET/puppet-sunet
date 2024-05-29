@@ -16,16 +16,21 @@ otelcol.receiver.otlp "otel" {
 prometheus.exporter.unix "default" {
   include_exporter_metrics = true
 }
+prometheus.exporter.unix "default" {
+  include_exporter_metrics = true
+}
+discovery.relabel "node_exporter" { 
+    // workaround that the job name get set to 'integrations/unix' instead of 'node' that the dashboard expects
+  targets = prometheus.exporter.unix.default.targets
+  rule {
+    action       = "replace"
+    target_label = "job"
+    replacement  = "node"
+  }
+}
 prometheus.scrape "default" {
-  targets = concat(
-    prometheus.exporter.unix.default.targets,
-    [{
-      // Self-collect metrics
-      job         = "alloy",
-      __address__ = "127.0.0.1:12345",
-    }],
-  )
-   forward_to = [
+  targets = discovery.relabel.node_exporter.output
+  forward_to = [
     otelcol.receiver.prometheus.default.receiver,
   ]
 }
@@ -45,5 +50,8 @@ otelcol.processor.batch "otel" {
 otelcol.exporter.otlp "default" {
   client {
     endpoint = "<%= @otel_receiver %>"
+    tls {
+      insecure = true
+    }
   }
 }

@@ -126,6 +126,5 @@ services:
     ports:
       - "4317-4318:4317-4318"
     volumes:
-      - "/opt/naemon_monitor/mimir-server.yaml:/etc/mimir.yaml:ro"
-      - "/opt/naemon_monitor/mimir:/data:rw"
+      - "/opt/naemon_monitor/alloy-server.alloy:/etc/alloy/config.alloy:ro"
 <% end -%>
