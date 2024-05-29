@@ -106,8 +106,6 @@ services:
       - "14268:14268"  # jaeger ingest
       - "3200:3200"   # tempo
       - "9095:9095" # tempo grpc
-      - "4317:4317"  # otlp grpc
-      - "4318:4318"  # otlp http
       - "9411:9411"   # zipkin
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
@@ -119,6 +117,14 @@ services:
     command: ["-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml"]
     ports:
       - "9009:9009"
+    volumes:
+      - "/opt/naemon_monitor/mimir-server.yaml:/etc/mimir.yaml:ro"
+      - "/opt/naemon_monitor/mimir:/data:rw"
+  alloy: #Router for otel
+    image: grafana/alloy:<%= @alloy_tag %>
+    command: ["-config.file=/etc/alloy/config.alloy"]
+    ports:
+      - "4317-4318:4317-4318"
     volumes:
       - "/opt/naemon_monitor/mimir-server.yaml:/etc/mimir.yaml:ro"
       - "/opt/naemon_monitor/mimir:/data:rw"

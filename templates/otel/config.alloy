@@ -13,7 +13,27 @@ otelcol.receiver.otlp "otel" {
     traces  = [otelcol.processor.batch.otel.input]
   }
 }
-
+prometheus.exporter.unix "default" {
+  include_exporter_metrics = true
+}
+prometheus.scrape "default" {
+  targets = concat(
+    prometheus.exporter.unix.default.targets,
+    [{
+      // Self-collect metrics
+      job         = "alloy",
+      __address__ = "127.0.0.1:12345",
+    }],
+  )
+   forward_to = [
+    otelcol.receiver.prometheus.default.receiver,
+  ]
+}
+otelcol.receiver.prometheus "default" {
+  output {
+    metrics = [otelcol.exporter.otlp.default.input]
+  }
+}
 otelcol.processor.batch "otel" {
   output {
     metrics = [otelcol.exporter.otlp.default.input]

@@ -16,6 +16,7 @@ class sunet::naemon_monitor(
   String $loki_tag = '3.0.0',
   String $mimir_tag = '2.12.0',
   String $tempo_tag = '2.4.2',
+  String $alloy_tag = 'v1.1.0',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
@@ -43,10 +44,15 @@ class sunet::naemon_monitor(
       port          => 443,
     }
     if $receive_otel {
-      sunet::nftables::docker_expose { 'allow_loki' :
+      sunet::nftables::docker_expose { 'allow_otel_grpc' :
         iif           => $interface,
         allow_clients => 'any',
-        port          => 3100,
+        port          => 4317,
+      }
+      sunet::nftables::docker_expose { 'allow_otel_http' :
+        iif           => $interface,
+        allow_clients => 'any',
+        port          => 4318,
       }
     }
   } else {
@@ -59,9 +65,13 @@ class sunet::naemon_monitor(
       port => '443',
     }
     if $receive_otel {
-      sunet::misc::ufw_allow { 'allow-loki':
+      sunet::misc::ufw_allow { 'allow-otel-grpc':
         from => 'any',
-        port => '3100',
+        port => '4317',
+      }
+      sunet::misc::ufw_allow { 'allow-otel-http':
+        from => 'any',
+        port => '4318',
       }
     }
   }
@@ -157,6 +167,10 @@ class sunet::naemon_monitor(
     file { '/opt/naemon_monitor/tempo-server.yaml':
       ensure  => file,
       content => template('sunet/naemon_monitor/tempo-server.yaml'),
+    }
+    file { '/opt/naemon_monitor/alloy-server.alloy':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/alloy-server.alloy'),
     }
   }
   file { '/opt/naemon_monitor/grafana':
