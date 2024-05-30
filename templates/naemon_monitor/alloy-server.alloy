@@ -24,7 +24,7 @@ otelcol.processor.batch "example" {
 
 otelcol.exporter.otlp "monitor_tempo" {
 	client {
-		endpoint = "tempo"
+		endpoint = "tempo:4317"
 	}
 }
 
@@ -46,7 +46,7 @@ otelcol.exporter.loki "monitor_loki" {
 
 loki.write "monitor_loki" {
 	endpoint {
-		url = "loki:3100"
+		url = "http://loki:3100/loki/api/v1/push"
 
 		
 	}
