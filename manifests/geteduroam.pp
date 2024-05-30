@@ -2,6 +2,7 @@
 class sunet::geteduroam(
   String $domain,
   String $realm,
+  Hash $customers,
   Array $resolvers = [],
   Boolean $mariadb = true,
   String $mariadb_host = $facts['ipaddress_default'],
@@ -12,7 +13,6 @@ class sunet::geteduroam(
   String $freeradius_tag = 'latest',
   String $ocsp_tag = 'latest',
   Array $app_admins = [],
-  Array $required_scoped_affiliation = [],
   Boolean $qa_federation = false,
 ){
 
