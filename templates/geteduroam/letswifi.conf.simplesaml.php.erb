@@ -1,8 +1,8 @@
 <?php return [
   'auth.service' => 'SimpleSAMLAuth',
   'auth.admin' => [
-<%- @app_admins.each do |app| -%>
-    '<%= app %>',
+<%- @app_admins.each do |admin| -%>
+    '<%= admin %>',
 <%- end -%>
   ],
   'auth.params' => [
