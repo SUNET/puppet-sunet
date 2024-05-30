@@ -1,54 +1,48 @@
 <?php return [
-	'auth.service' => 'SimpleSAMLAuth',
-	'auth.admin' => [
+  'auth.service' => 'SimpleSAMLAuth',
+  'auth.admin' => [
 <%- @app_admins.each do |app| -%>
-          '<%= app %>',
+    '<%= app %>',
 <%- end -%>
-	],
-	'auth.params' => [
-			'autoloadInclude' => dirname( __DIR__ ) . '/simplesamlphp/src/_autoload.php',
-			'authSource' => 'default-sp',
-		],
-	'realm.selector' => null, // one of null, getparam or httphost
-    'realm.default' => '<%= @realm %>',
-	'realm.auth' => [
-			'<%= @realm %>' => [
-					'userIdAttribute' => 'subject-id',
-                    'authzAttributeValue' => [
-                      // eduPersonScopedAffiliation
-                      'urn:oid:1.3.6.1.4.1.5923.1.1.1.9' => [
+  ],
+  'auth.params' => [
+    'autoloadInclude' => dirname( __DIR__ ) . '/simplesamlphp/src/_autoload.php',
+    'authSource' => 'default-sp',
+  ],
+  'realm.selector' => null, // one of null, getparam or httphost
+  'realm.default' => '<%= @realm %>',
+  'realm.auth' => [
+    '<%= @realm %>' => [
+      'userIdAttribute' => 'subject-id',
+      'authzAttributeValue' => [
+        // eduPersonScopedAffiliation
+        'urn:oid:1.3.6.1.4.1.5923.1.1.1.9' => [
 <%- @required_scoped_affiliation.each do |aff| -%>
-                          '<%= aff %>',
+          '<%= aff %>',
 <%- end -%>
-                                    ],
-                      ],
-                      // eduPersonScopedAffiliation
-                      'userRealmPrefixAttribute' => 'urn:oid:1.3.6.1.4.1.5923.1.1.1.9',
-                                        'userRealmPrefixValueMap' => [
-                                                'member@sunet.se' => 'sunet',
-                                                '*' => null,
-                                                ],
-				    ],
-		    ],
-
+        ],
+      ],
+      // eduPersonScopedAffiliation
+      'userRealmPrefixAttribute' => 'urn:oid:1.3.6.1.4.1.5923.1.1.1.9',
+      'userRealmPrefixValueMap' => [
+        'member@sunet.se' => 'sunet',
+        '*' => null,
+      ],
+    ],
+  ],
 <%- if @mariadb -%>
-	'pdo.dsn' => 'mysql:host=<%= @mariadb_host %>;dbname=geteduroam',
-	'pdo.username' => 'geteduroam',
-	'pdo.password' => '<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>',
+  'pdo.dsn' => 'mysql:host=<%= @mariadb_host %>;dbname=geteduroam',
+  'pdo.username' => 'geteduroam',
+  'pdo.password' => '<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>',
 <%- else %>
-	'pdo.dsn' => 'sqlite:' . dirname( __DIR__ ) . '/var/letswifi-dev.sqlite',
-    'pdo.username' => null,
-    'pdo.password' => null,
+  'pdo.dsn' => 'sqlite:' . dirname( __DIR__ ) . '/var/letswifi-dev.sqlite',
+  'pdo.username' => null,
+  'pdo.password' => null,
 <%- end -%>
-	//'signing.cert' => __DIR__ . DIRECTORY_SEPARATOR . 'signing.pem',
-	'oauth.clients' => (require __DIR__ . DIRECTORY_SEPARATOR . 'clients.php') + [
-			[
-				'clientId' => 'no.fyrkat.oauth',
-				'redirectUris' => ['http://[::1]/callback/'],
-				'scopes' => ['eap-metadata', 'testscope'],
-				'refresh' => false,
-				// uncomment for client_credentials flow, and remove the "
-				//'clientSecret' => '"s3cret',
-			],
-		],
+  'oauth.clients' => (require __DIR__ . DIRECTORY_SEPARATOR . 'clients.php') + [[
+    'clientId' => 'no.fyrkat.oauth',
+    'redirectUris' => ['http://[::1]/callback/'],
+    'scopes' => ['eap-metadata', 'testscope'],
+    'refresh' => false,
+  ],],
 ];
