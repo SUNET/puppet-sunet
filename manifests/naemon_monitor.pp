@@ -1,5 +1,8 @@
-# Run naemon with Thruk
-class sunet::naemon_monitor(
+# @summary Run naemon with Thruk.
+# @param receive_otel Feature flag to enable the LGTM stack
+# @param otel_retention Number of hours to keep logs, defaults to 3 months
+
+class sunet::naemon_monitor (
   String $domain,
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
@@ -25,7 +28,7 @@ class sunet::naemon_monitor(
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
   Optional[Boolean] $receive_otel = false,
-
+  String $otel_retention = '2232h',
 ) {
   $naemon_container = $::facts['dockerhost2'] ? {
     yes => 'naemon_monitor-naemon-1',

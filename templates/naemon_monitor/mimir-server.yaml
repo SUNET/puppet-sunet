@@ -42,3 +42,6 @@ server:
 store_gateway:
   sharding_ring:
     replication_factor: 1
+limits:
+  # Delete from storage metrics data older than x.
+  compactor_blocks_retention_period: <%= @otel_retention %>

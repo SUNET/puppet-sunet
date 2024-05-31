@@ -45,7 +45,7 @@ ruler:
   alertmanager_url: http://localhost:9093
 
 limits_config:
-  retention_period: 2232h #3 months
+  retention_period: <%= @otel_retention %>
   retention_stream:
   - selector: '{namespace="debug"}'
     priority: 1
