@@ -29,11 +29,7 @@
       'userRealmPrefixValueMap' => [
 <%- @customers.each do |org, affs| -%>
   <%- affs.each do |aff| -%>
-    <%- if aff == "member" -%>
-        'member@<%= org %>' => '<%= org.gsub('.', '-') %>',
-    <%- else -%>
-        '<%= aff %>@<%= org %>' => '<%= org.gsub('.', '-') %>-<%= aff %>',
-    <%- end -%>
+        '<%= aff %>@<%= org %>' => '<%= org.gsub('.', '-') %>--<%= aff %>',
   <%- end -%>
 <%- end -%>
       ],
