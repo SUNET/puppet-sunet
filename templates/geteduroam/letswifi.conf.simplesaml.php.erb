@@ -17,16 +17,25 @@
       'authzAttributeValue' => [
         // eduPersonScopedAffiliation
         'urn:oid:1.3.6.1.4.1.5923.1.1.1.9' => [
-<%- @required_scoped_affiliation.each do |aff| -%>
-          '<%= aff %>',
+<%- @customers.each do |org, affs| -%>
+  <%- affs.each do |aff| -%>
+          '<%= aff %>@<%= org %>',
+<%- end -%>
 <%- end -%>
         ],
       ],
       // eduPersonScopedAffiliation
       'userRealmPrefixAttribute' => 'urn:oid:1.3.6.1.4.1.5923.1.1.1.9',
       'userRealmPrefixValueMap' => [
-        'member@sunet.se' => 'sunet',
-        '*' => null,
+<%- @customers.each do |org, affs| -%>
+  <%- affs.each do |aff| -%>
+    <%- if aff == "member" -%>
+        'member@<%= org %>' => '<%= org %>',
+    <%- else -%>
+        '<%= aff %>@<%= org %>' => '<%= org %>-<%= aff %>',
+    <%- end -%>
+  <%- end -%>
+<%- end -%>
       ],
     ],
   ],
