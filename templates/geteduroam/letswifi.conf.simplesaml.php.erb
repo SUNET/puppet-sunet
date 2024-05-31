@@ -30,9 +30,9 @@
 <%- @customers.each do |org, affs| -%>
   <%- affs.each do |aff| -%>
     <%- if aff == "member" -%>
-        'member@<%= org %>' => '<%= org %>',
+        'member@<%= org %>' => '<%= org.gsub('.', '-') %>',
     <%- else -%>
-        '<%= aff %>@<%= org %>' => '<%= org %>-<%= aff %>',
+        '<%= aff %>@<%= org %>' => '<%= org.gsub('.', '-') %>-<%= aff %>',
     <%- end -%>
   <%- end -%>
 <%- end -%>
