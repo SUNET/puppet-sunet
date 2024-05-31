@@ -6,11 +6,12 @@ class sunet::security::allow_ssh (
   Integer       $port,
   Array[String] $mgmt_addresses = [],
   Boolean       $allow_from_anywhere = false,
+  Boolean       $nftables_init = true,
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
     include ufw
-  } else {
+  } elsif $nftables_init {
     notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
     ensure_resource ('class','sunet::nftables::init', {})
   }

@@ -1,6 +1,7 @@
 # Install docker from https://get.docker.com/ubuntu
 class sunet::dockerhost2(
   String $docker_version                      = 'installed',
+  String $docker_compose_version              = 'installed',
   String $docker_package_name                 = 'docker-ce',
   Enum['stable', 'edge', 'test'] $docker_repo = 'stable',
   Boolean $run_docker_cleanup                 = true,
@@ -11,6 +12,7 @@ class sunet::dockerhost2(
   Boolean $nat                                = true,
 ) {
 
+  $container_name_delimiter = '-'
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
 
@@ -104,7 +106,7 @@ class sunet::dockerhost2(
     require => Exec['dockerhost_apt_get_update'],
   }
   package { 'docker-compose-plugin' :
-    ensure  => $docker_version,
+    ensure  => $docker_compose_version,
     require => Exec['dockerhost_apt_get_update'],
   }
 
