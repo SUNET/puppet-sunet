@@ -1,7 +1,7 @@
 # @summary Run naemon with Thruk.
 # @param receive_otel Feature flag to enable the LGTM stack
 # @param otel_retention Number of hours to keep logs, metrics and traces, defaults to 3 months
-
+#
 class sunet::naemon_monitor (
   String $domain,
   String $influx_password = lookup('influx_password', String, undef, ''),
