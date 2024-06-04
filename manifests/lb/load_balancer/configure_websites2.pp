@@ -7,6 +7,7 @@ define sunet::lb::load_balancer::configure_websites2($websites, $basedir, $confd
       'confdir'         => $confdir,
       'scriptdir'       => $scriptdir,
       'config'          => $config,
+      'interface'       => $interface,
       })
   }
 }

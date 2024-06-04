@@ -4,6 +4,7 @@ define sunet::frontend::load_balancer::website2(
   String  $confdir,
   String  $scriptdir,
   Hash    $config,
+  String  $interface = 'eth0',
   Integer $api_port = 8080,
 ) {
   $instance  = $name
@@ -49,6 +50,19 @@ define sunet::frontend::load_balancer::website2(
     $tls_certificate_bundle = $config['tls_certificate_bundle']
     $config2 = $config
   }
+
+
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
+     # OLD setup
+     $_docker_ip = $::facts['ipaddress_docker0']
+     # On old setups, containers can't reach IPv6 only ACME-C backend directly, but have to go through
+     # a proxy process (always-https) running on the frontend host itself.
+     $_letsencrypt_override_address = $::facts['ipaddress_default']
+   } else {
+     # NEW setup with Docker in namespace
+     $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
+     $_letsencrypt_override_address = undef
+   }
 
   # Add IP and hostname of the host running the container - used to reach the
   # acme-c proxy in eduid
@@ -147,22 +161,55 @@ define sunet::frontend::load_balancer::website2(
     start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
   }
 
-  if has_key($config, 'allow_ports') {
-    each($config['frontends']) | $k, $v | {
-      # k should be a frontend FQDN and $v a hash with ips in it:
-      #   $v = {ips => [192.0.2.1]}}
-      if is_hash($v) and has_key($v, 'ips') {
-        sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
-          from => 'any',
-          to   => $v['ips'],
-          port => $config['allow_ports'],
+
+
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
+    # OLD way
+    if has_key($config, 'allow_ports') {
+      each($config['frontends']) | $k, $v | {
+        # k should be a frontend FQDN and $v a hash with ips in it:
+        #   $v = {ips => [192.0.2.1]}}
+        if is_hash($v) and has_key($v, 'ips') {
+          sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
+            from => 'any',
+            to   => $v['ips'],
+            port => $config['allow_ports'],
+          }
         }
       }
     }
+
+    # old, traffic was routed to "br-foo"
+    exec { "workaround_allow_forwarding_to_${instance}":
+      command => "/usr/sbin/ufw route allow out on br-${instance}",
+    }
+    # new, traffic is routed into "to_foo" which is connected to the "br-foo" (which resides in another network ns)
+    exec { "workaround_allow_forwarding_to_${instance}_2":
+      command => "/usr/sbin/ufw route allow out on to_${instance}",
+    }
+  } else {
+    # NEW way, configure forwarding and IPv6 NAT (for haproxy to reach ipv6-only backends) using
+    # an nftables drop-in file.
+
+    $frontend_ips = sunet::lb::load_balancer::get_all_frontend_ips($config)
+
+    # Variables used in template
+    #
+    $tcp_dport = sunet::format_nft_set('dport', pick($config['allow_ports'], []))
+    $frontend_ips_v4 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 4) })
+    $frontend_ips_v6 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 6) })
+    $external_interface = pick($config['external_interface'], $::facts['interface_default'], $interface)
+    #
+    ensure_resource('file', "/etc/nftables/conf.d/700-frontend-${instance}.nft", {
+      ensure  => 'file',
+      mode    => '0400',
+      content => template('sunet/lb/700-frontend-instance_nftables.nft.erb'),
+      notify  => Service['nftables'],
+    })
   }
-  exec { "workaround_allow_forwarding_to_${instance}":
-    command => "/usr/sbin/ufw route allow out on br-${instance}",
-  }
+
+
+
 
   if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
     sunet::dehydrated::client_define { $name :
