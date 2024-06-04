@@ -11,15 +11,6 @@ class sunet::ntp(
     }
   }
 
-  # Install updated augeas lens from https://github.com/hercules-team/augeas/blob/master/lenses/ntp.aug
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') <= 0 {
-    file {
-      '/usr/share/augeas/lenses/dist/ntp.aug':
-        content => template("sunet/ntp/ntp.aug.erb"),
-        ;
-    }
-  }
-
   package { 'ntp': ensure => 'installed' }
   service { 'ntp':
     name       => 'ntp',
