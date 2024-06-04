@@ -1,0 +1,63 @@
+otelcol.receiver.otlp "otel" {
+  grpc {
+    endpoint = "127.0.0.1:4317"
+  }
+
+  http {
+    endpoint = "127.0.0.1:4318"
+  }
+
+  output {
+    metrics = [otelcol.processor.batch.otel.input]
+    logs    = [otelcol.processor.batch.otel.input]
+    traces  = [otelcol.processor.batch.otel.input]
+  }
+}
+prometheus.exporter.unix "default" {
+  include_exporter_metrics = true
+}
+loki.relabel "journal" {
+  forward_to = []
+
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+}
+
+discovery.relabel "node_exporter" { 
+    // workaround that the job name get set to 'integrations/unix' instead of 'node' that the dashboard expects
+  targets = prometheus.exporter.unix.default.targets
+  rule {
+    action       = "replace"
+    target_label = "job"
+    replacement  = "node"
+  }
+}
+prometheus.scrape "default" {
+  targets = discovery.relabel.node_exporter.output
+  forward_to = [
+    otelcol.receiver.prometheus.default.receiver,
+  ]
+}
+otelcol.receiver.prometheus "default" {
+  output {
+    metrics = [otelcol.exporter.otlp.default.input]
+  }
+}
+otelcol.processor.batch "otel" {
+  output {
+    metrics = [otelcol.exporter.otlp.default.input]
+    logs    = [otelcol.exporter.otlp.default.input]
+    traces  = [otelcol.exporter.otlp.default.input]
+  }
+}
+
+otelcol.exporter.otlp "default" {
+  client {
+    endpoint = "<%= @otel_receiver %>"
+    tls {
+      insecure = true
+    }
+  }
+}
