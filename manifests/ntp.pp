@@ -4,8 +4,13 @@ class sunet::ntp(
   $set_servers = [],
   $add_servers = [],  # backwards compatibility
 ) {
+
+  # Get facts for distro/release
+  $distro = $facts['os']['distro']['id']
+  $release = $facts['os']['distro']['release']['full']
+
   # Help Puppet understand to use systemd for Ubuntu 16.04 hosts
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+  if $distro == 'Ubuntu' and versioncmp($release, '15.04') >= 0 {
     Service {
       provider => 'systemd',
     }
@@ -49,7 +54,7 @@ class sunet::ntp(
     }
   }
 
-  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
+  if $distro == 'Ubuntu' and versioncmp($release, '15.04') >= 0 {
     include sunet::systemd_reload
 
     # replace init.d script with systemd service file to get Restart=always
