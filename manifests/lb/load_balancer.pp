@@ -28,6 +28,12 @@ class sunet::lb::load_balancer(
 
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
+    $confdir = "${basedir}/config"
+    $scriptdir = "${basedir}/scripts"
+    $apidir = "${basedir}/api"
+
+    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
+                    { owner => 'root', group => 'root', mode => '0755' })
 
     if has_key($config['load_balancer'], 'websites') and has_key($config['load_balancer'], 'websites2') {
       fail("Can't configure websites and websites2 at the same time unfortunately")
@@ -56,13 +62,6 @@ class sunet::lb::load_balancer(
     } else {
       fail('Load balancer config contains neither "websites" nor "websites2"')
     }
-
-    $confdir = "${basedir}/config"
-    $scriptdir = "${basedir}/scripts"
-
-    ensure_resource('sunet::misc::create_dir', [$confdir, $scriptdir],
-                    { owner => 'root', group => 'root', mode => '0755' })
-
 
     class { 'sunet::lb::load_balancer::services':
       interface => $interface,
