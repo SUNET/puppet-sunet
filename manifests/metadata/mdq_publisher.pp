@@ -1,7 +1,9 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
   Boolean $infra_cert_from_this_class = true,
-  Boolean  $nftables_init = true,
+  Boolean $nftables_init = true,
+  Optional[String] $publisher_cert="/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
+  Optional[String] $publisher_key="/etc/ssl/private/${facts['networking']['fqdn']}_infra.key",
   Optional[Array] $env=[],
   Optional[Integer] $valid_until=12,
   Optional[String] $validate_cert='/var/www/html/md/md-signer2.crt',
@@ -70,20 +72,21 @@ class sunet::metadata::mdq_publisher(
   if $infra_cert_from_this_class {
     sunet::ici_ca::rp { 'infra': }
   }
-  $env_infra_ca = [
-    "PUBLISHER_CERT=/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
-    "PUBLISHER_KEY=/etc/ssl/private/${facts['networking']['fqdn']}_infra.key",
-    ]
+  $env_certs = [
+        "PUBLISHER_CERT=${publisher_cert}",
+        "PUBLISHER_KEY=${publisher_key}",
+  ]
+
   sunet::docker_run { 'swamid-mdq-publisher':
     image               => 'docker.sunet.se/swamid/mdq-publisher',
     imagetag            => $imagetag,
     hostname            => $facts['networking']['fqdn'],
     volumes             => [
-      '/etc/ssl/mdq:/etc/certs',
       '/etc/ssl:/etc/ssl',
-      '/var/www/html:/var/www/html'
+      '/var/www/html:/var/www/html',
+      '/etc/dehydrated:/etc/dehydrated',
     ],
-    env                 => $env + $env_infra_ca,
+    env                 => $env + $env_certs,
     uid_gid_consistency => false,
     ports               => ['443:443'],
   }
