@@ -35,7 +35,7 @@ define sunet::ssh_keys(
           $_name = pick($keydb[$keyname]['name'], $keyname)
           $_type = pick($keydb[$keyname]['type'], 'ssh-rsa')
           $_key = $keydb[$keyname]['key']
-          if has_key($keydb[$keyname], 'options') {
+          if 'options' in $keydb[$keyname] {
             sprintf('%s %s %s %s', $keydb[$keyname]['options'], $_type, $_key, $_name)
           } else {
             sprintf('%s %s %s', $_type, $_key, $_name)
