@@ -102,7 +102,7 @@ define sunet::lb::load_balancer::website2(
   file {
     "${confdir}/${instance}/config.yml":
       ensure  => 'file',
-      group   => 'sunetfrontend',
+      group   => 'fe-config',
       mode    => '0640',
       force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
