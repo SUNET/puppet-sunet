@@ -31,7 +31,7 @@ define sunet::ssh_keys(
   if $keydb =~ Hash[String, Hash] {
     each ($config) | String $username, Array[String] $keys | {
       $authorized_keys = map(sort($keys)) | String $keyname | {
-        if has_key($keydb, $keyname) {
+        if $keyname in $keydb {
           $_name = pick($keydb[$keyname]['name'], $keyname)
           $_type = pick($keydb[$keyname]['type'], 'ssh-rsa')
           $_key = $keydb[$keyname]['key']
