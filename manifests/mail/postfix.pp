@@ -40,16 +40,16 @@ class sunet::mail::postfix(
     compose_filename => 'docker-compose.yml',
     description      => 'Postfix',
   }
-  $ports = [25]
-  $ports.each|$port| {
+  $restricted_ports = [25]
+  $restricted_ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => $relay_hosts,
       port          => $port,
       iif           => $interface,
     }
   }
-  $ports = [587]
-  $ports.each|$port| {
+  $open_ports = [587]
+  $open_ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
       port          => $port,
