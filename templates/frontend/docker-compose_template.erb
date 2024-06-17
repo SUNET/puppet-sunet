@@ -3,7 +3,7 @@ version: '3'
 services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
-<%- if @set_fqdn %>
+<% if @set_fqdn -%>
     hostname: <%= @facts['fqdn'] %>
 <%- end -%>
     expose:
