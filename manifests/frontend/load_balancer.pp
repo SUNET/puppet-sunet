@@ -13,7 +13,6 @@ class sunet::frontend::load_balancer(
   Integer $haproxy     = $base_uidgid + 10,
   Integer $telegraf    = $base_uidgid + 11,
   Integer $varnish     = $base_uidgid + 12,
-  Boolean $set_fqdn    = false,
 ) {
   $config = lookup('sunet_frontend', undef, undef, undef)
   if $config =~ Hash[String, Hash] {
