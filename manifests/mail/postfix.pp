@@ -65,6 +65,7 @@ class sunet::mail::postfix(
   $config_files = [
     'main',
     'master',
+    'mysql-relay-recipient-maps',
     'mysql-virtual-mailbox-domains',
     'mysql-virtual-mailbox-maps'
   ]
