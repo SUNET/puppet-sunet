@@ -36,7 +36,6 @@ smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
 smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated reject_unauth_destination
 smtpd_client_restrictions = permit_mynetworks, permit_sasl_authenticated, reject
 myhostname = <%= @hostname %>
-local_recipient_maps =
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
 virtual_mailbox_domains = mysql:/config/mysql-virtual-mailbox-domains.cf
