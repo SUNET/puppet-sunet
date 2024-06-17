@@ -1,9 +1,11 @@
 # Postfix for SUNET
 class sunet::mail::postfix(
+  String $account_domain,
   String $alias_domains,
   String $environment,
   String $imap_domain,
   Array[String] $relaying_servers,
+  String $short_domain,
   String $smtp_domain,
   String $interface              = 'ens3',
   Array[String] $mydestination   = ['$myhostname', 'localhost.localdomain', 'localhost'],
