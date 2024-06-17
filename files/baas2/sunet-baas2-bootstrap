@@ -11,10 +11,12 @@ https://www.ibm.com/docs/en/SSEQVQ_8.1.15/pdf/b_ba_guide_unx_lnx.pdf
 
 Tools used before committing code:
 black sunet-baas2-bootstrap
+isort sunet-baas2-bootstrap
 pylint sunet-baas2-bootstrap
 mypy --strict sunet-baas2-bootstrap
 """
 import argparse
+import datetime
 import os
 import os.path
 import platform
@@ -267,7 +269,9 @@ def set_dsmc_password(password: str) -> None:
         raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
 
 
-def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-locals
+def read_index_file(  # pylint:disable=too-many-locals
+    path: str, current_nodename: str
+) -> Dict[str, Any]:
     """parse a TSM.IDX file"""
     with open(path, "rb") as fileobj:
         data = fileobj.read()
@@ -316,15 +320,24 @@ def read_index_file(path: str) -> Dict[str, Any]:  # pylint:disable=too-many-loc
         # Go to next entry
         entry_index += 1
 
-    # Create a set containing the unique index numbers we have seen
-    unique_indexes = {entry["index"] for entry in index_data["entries"]}
+    # Create a set containing the unique index numbers we have seen, and limit
+    # us to only looking at the current configured nodename as there may be
+    # older nodename entries with conflicting index numbers if the machine has
+    # changed nodenames over time.
+    nodename_indexes = [
+        entry["index"]
+        for entry in index_data["entries"]
+        if entry["nodename"] == current_nodename
+    ]
+    unique_indexes = set(nodename_indexes)
 
     # Make sure the number of entries matches the number of unique index values
     # we have seen, otherwise there are duplicate index values present and this
-    # is unexpected.
-    if len(unique_indexes) != len(index_data["entries"]):
+    # is unexpected. Since multiple nodenames leads to duplicate index numbers
+    # we again need to limit comparision to our current nodename.
+    if len(unique_indexes) != len(nodename_indexes):
         raise RuntimeError(
-            f'mismatch between number of unique index values we have parsed ({len(unique_indexes)}) compared to the number of entries: {len(index_data["entries"])}'  # pylint:disable=line-too-long
+            f"mismatch between number of unique index values we have parsed ({len(unique_indexes)}) compared to the number of entries: {len(nodename_indexes)}"  # pylint:disable=line-too-long
         )
 
     return index_data
@@ -438,7 +451,9 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
     os.remove(tmp_password_file)
 
 
-def set_encrypt_password(password_db: str, password: str) -> None:
+def set_encrypt_password(  # pylint:disable=too-many-locals
+    password_db: str, password: str
+) -> None:
     """The goal of this function is to configure the password used for encryption"""
 
     dsm_opt_path = "/opt/tivoli/tsm/client/ba/bin/dsm.opt"
@@ -452,18 +467,19 @@ def set_encrypt_password(password_db: str, password: str) -> None:
     if nodename is None:
         raise RuntimeError(f"unable to parse nodename from {dsm_sys_path}")
 
-    # Statically assigned label for now, seems to work and should not collide
-    # with a future timestamp because it has already passed.
-    label = "1680001337_0"
-
     if servername is None:
         print("unable to find servername in dsm.opt, exiting")
         sys.exit(1)
 
     tsm_idx_path = "/etc/adsm/TSM.IDX"
-    index_data = read_index_file(tsm_idx_path)
+    index_data = read_index_file(tsm_idx_path, nodename)
 
-    if len(index_data["entries"]) > 1:
+    # Filter out entries belonging to the currently configured nodename
+    nodename_entries = [
+        entry for entry in index_data["entries"] if entry["nodename"] == nodename
+    ]
+
+    if len(nodename_entries) > 1:
         print("more than one entry already exists, nothing to add")
         sys.exit(0)
 
@@ -471,11 +487,20 @@ def set_encrypt_password(password_db: str, password: str) -> None:
     encryption_index = 1
 
     # Verify encryption index is not already present in the IDX file
-    for entry in index_data["entries"]:
+    for entry in nodename_entries:
         if entry["index"] == encryption_index:
             raise RuntimeError(
                 f"we expected to add an entry with index {encryption_index} but it's already taken, this is unexpected"  # pylint:disable=line-too-long
             )
+
+    # Find an available label in the IDX file. In this case we have to consider
+    # entries for all present nodenames, not just our currently configured one.
+    ts = int(datetime.datetime.now().timestamp())
+    while True:
+        label = str(ts) + "_0"
+        if label not in [entry["label"] for entry in index_data["entries"]]:
+            break
+        ts += 1
 
     add_kdb_entry(password_db, label, password)
 
@@ -499,10 +524,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="version of client to install")
     parser.add_argument(
-        "--install", help="version of client to install", action="store_true"
+        "--install", help="install backup client", action="store_true"
     )
     parser.add_argument(
-        "--register", help="version of client to install", action="store_true"
+        "--register", help="register client with backup server", action="store_true"
     )
     args = parser.parse_args()
 

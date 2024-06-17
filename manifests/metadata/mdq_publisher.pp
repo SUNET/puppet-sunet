@@ -1,17 +1,20 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
-  String $dir='/var/www/html',
-  Optional[String] $cert_name=undef,
+  Boolean $infra_cert_from_this_class = true,
+  Boolean $nftables_init = true,
+  Optional[String] $publisher_cert="/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
+  Optional[String] $publisher_key="/etc/ssl/private/${facts['networking']['fqdn']}_infra.key",
   Optional[Array] $env=[],
   Optional[Integer] $valid_until=12,
   Optional[String] $validate_cert='/var/www/html/md/md-signer2.crt',
   Optional[String] $extra_entities='',
   Optional[String] $xml_dir='md',
+  Optional[String] $imagetag='latest',
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
     include ufw
-  } else {
+  } elsif $nftables_init {
     notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
     ensure_resource ('class','sunet::nftables::init', {})
   }
@@ -23,7 +26,7 @@ class sunet::metadata::mdq_publisher(
     $ssh_key_type = $signer['ssh_key_type']
     if ($ssh_key and $ssh_key_type) {
       sunet::rrsync {"${signer_name}-dir":
-        dir                => $dir,
+        dir                => '/var/www/html',
         ro                 => false,
         ssh_key            => $ssh_key,
         ssh_key_type       => $ssh_key_type,
@@ -65,40 +68,25 @@ class sunet::metadata::mdq_publisher(
     ok_criteria   => ['exit_status=0', 'max_age=2h'],
     warn_criteria => ['exit_status=1', 'max_age=5h'],
   }
-  file {'/etc/ssl/mdq':
-    ensure => 'directory'
+
+  if $infra_cert_from_this_class {
+    sunet::ici_ca::rp { 'infra': }
   }
-  if ($cert_name != undef) {
-    file {'/etc/ssl/mdq/privkey.pem':
-      ensure => 'link',
-      target => "/etc/ssl/private/${cert_name}.key"
-    }
-    file {'/etc/ssl/mdq/cert.pem':
-      ensure => 'link',
-      target => "/etc/ssl/certs/${cert_name}.crt"
-    }
-  } else {
-    exec { "${title}_key":
-      command => 'openssl genrsa -out /etc/ssl/mdq/privkey.pem 4096',
-      onlyif  => 'test ! -f /etc/ssl/mdq/privkey.pem',
-      creates => '/etc/ssl/mdq/privkey.pem'
-    }
-    -> exec { "${title}_cert":
-      command => "openssl req -x509 -sha256 -new -days 3650 -subj \"/CN=${title}\" -key /etc/ssl/mdq/privkey.pem -out /etc/ssl/mdq/cert.pem", # lint:ignore:140chars
-      onlyif  => 'test ! -f /etc/ssl/mdq/cert.pem -a -f /etc/ssl/mdq/privkey.pem',
-      creates => '/etc/ssl/mdq/cert.pem'
-    }
-  }
+  $env_certs = [
+        "PUBLISHER_CERT=${publisher_cert}",
+        "PUBLISHER_KEY=${publisher_key}",
+  ]
+
   sunet::docker_run { 'swamid-mdq-publisher':
     image               => 'docker.sunet.se/swamid/mdq-publisher',
-    imagetag            => 'latest',
+    imagetag            => $imagetag,
     hostname            => $facts['networking']['fqdn'],
     volumes             => [
-      '/etc/ssl/mdq:/etc/certs',
       '/etc/ssl:/etc/ssl',
-      '/var/www/html:/var/www/html'
+      '/var/www/html:/var/www/html',
+      '/etc/dehydrated:/etc/dehydrated',
     ],
-    env                 => $env,
+    env                 => $env + $env_certs,
     uid_gid_consistency => false,
     ports               => ['443:443'],
   }
