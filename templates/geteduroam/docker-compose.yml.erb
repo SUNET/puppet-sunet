@@ -63,3 +63,10 @@ services:
       - SQLDB=geteduroam
       - SQLPASSWORD=<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>
 <% end %>
+
+  haproxy:
+    image: haproxy:3.0.2
+    ports:
+      - 3306:3306
+    volumes:
+      - "/opt/geteduroam/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg"

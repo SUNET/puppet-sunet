@@ -22,6 +22,11 @@ class sunet::geteduroam(
   if $mariadb {
     sunet::mariadb { 'geteduroam_db':
     }
+  } else {
+    file { '/opt/geteduroam/haproxy.cfg':
+      content => template('sunet/geteduroam/haproxy.cfg.erb'),
+      mode    => '0755',
+    }
   }
 
   if $radius {
