@@ -35,15 +35,9 @@
       ],
     ],
   ],
-<%- if @mariadb -%>
   'pdo.dsn' => 'mysql:host=<%= @mariadb_host %>;dbname=geteduroam',
   'pdo.username' => 'geteduroam',
   'pdo.password' => '<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>',
-<%- else %>
-  'pdo.dsn' => 'sqlite:' . dirname( __DIR__ ) . '/var/letswifi-dev.sqlite',
-  'pdo.username' => null,
-  'pdo.password' => null,
-<%- end -%>
   'oauth.clients' => (require __DIR__ . DIRECTORY_SEPARATOR . 'clients.php') + [[
     'clientId' => 'no.fyrkat.oauth',
     'redirectUris' => ['http://[::1]/callback/'],

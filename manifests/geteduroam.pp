@@ -5,7 +5,7 @@ class sunet::geteduroam(
   Hash $customers,
   Array $resolvers = [],
   Boolean $mariadb = true,
-  String $mariadb_host = $facts['ipaddress_default'],
+  String $mariadb_host = "haproxy",
   Boolean $app = true,
   Boolean $radius = true,
   Boolean $ocsp = true,
