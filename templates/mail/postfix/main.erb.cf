@@ -38,9 +38,9 @@ smtpd_client_restrictions = permit_mynetworks, permit_sasl_authenticated, reject
 myhostname = <%= @hostname %>
 alias_maps = hash:/etc/aliases
 alias_database = hash:/etc/aliases
+virtual_alias_maps = mysql:/config/mysql-virtual-alias-maps.cf
 virtual_mailbox_domains = mysql:/config/mysql-virtual-mailbox-domains.cf
 virtual_mailbox_maps = mysql:/config/mysql-virtual-mailbox-maps.cf
-relay_recipient_maps = mysql:/config/mysql-relay-recipient-maps.cf
 mydestination = <%= @mydestination.join(",") %> 
 mynetworks = 127.0.0.0/8 [::ffff:127.0.0.0]/104 [::1]/128 <% @relaying_servers.each do |relay| -%> <%= relay %><% end %>
 mailbox_size_limit = 0
