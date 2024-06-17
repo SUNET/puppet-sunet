@@ -2,4 +2,4 @@ user = <%= @nextcloud_db_user %>
 password = <%= @nextcloud_mysql_password %>
 hosts = <%= @db_hosts %>
 dbname = <%= @nextcloud_db%>
-query = SELECT UNIQUE(1) FROM oc_accounts_data WHERE value = REPLACE('%s', '<%= @account_domain %>, '<%= @short_domain %>') and name = 'email'
+query = SELECT UNIQUE(1) FROM oc_accounts_data WHERE value = REPLACE('%s', '<%= @account_domain %>', '<%= @short_domain %>') and name = 'email'
