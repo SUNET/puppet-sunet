@@ -65,7 +65,7 @@ services:
 <% end %>
 
   haproxy:
-    image: haproxy:3.0.2
+    image: haproxy:<%= @haproxy_tag %>
     ports:
       - 3306:3306
     volumes:

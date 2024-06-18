@@ -12,6 +12,7 @@ class sunet::geteduroam(
   String $app_tag = 'latest',
   String $freeradius_tag = 'latest',
   String $ocsp_tag = 'latest',
+  String $haproxy_tag = '3.0.2',
   Array $app_admins = [],
   Boolean $qa_federation = false,
 ){
