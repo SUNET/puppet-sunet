@@ -24,7 +24,7 @@ class sunet::geteduroam(
     }
   } else {
 
-    $db_servers = safe_hiera('mariadb_cluster_nodes')
+    $db_servers = lookup('mariadb_cluster_nodes', Array, undef, [])
     file { '/opt/geteduroam/haproxy.cfg':
       content => template('sunet/geteduroam/haproxy.cfg.erb'),
       mode    => '0755',
