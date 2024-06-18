@@ -15,8 +15,8 @@ listen mysql-cluster
     mode tcp
     option mysql-check
     balance first
-    server internal-dco-test-db-2.geteduroam.sunet.se 89.47.190.31:3306 check
-    server internal-sto1-test-db-1.geteduroam.sunet.se 192.121.208.16:3306 check
-    server internal-sto3-test-db-3.geteduroam.sunet.se 89.45.237.51:3306 check
+<%- @db_servers.each do |db| -%>
+    server <%= db %> <%= db %>:3306 check
+<%- end -%>
 
 
