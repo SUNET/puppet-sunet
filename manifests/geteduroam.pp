@@ -46,6 +46,16 @@ class sunet::geteduroam(
   if $app {
     ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/var', { owner => 'root', group => 'www-data', mode => '0770'})
 
+    file {'/etc/ssl/private/infra.pem':
+      ensure => 'link',
+      target => "/etc/ssl/private/${facts['networking']['fqdn']}_infra.pem"
+    }
+
+    file {'/etc/ssl/private/infra.key':
+      ensure => 'link',
+      target => "/etc/ssl/private/${facts['networking']['fqdn']}_infra.key"
+    }
+
     if lookup('saml_metadata_key', undef, undef, undef) != undef {
       sunet::snippets::secret_file { '/opt/geteduroam/cert/saml.key': hiera_key => 'saml_metadata_key' }
       # assume cert is in cosmos repo
