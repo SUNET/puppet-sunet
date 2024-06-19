@@ -4,8 +4,6 @@ class sunet::geteduroam(
   String $realm,
   Hash $customers,
   Array $resolvers = [],
-  Boolean $mariadb = true,
-  String $mariadb_host = "haproxy",
   Boolean $app = true,
   Boolean $radius = true,
   Boolean $ocsp = true,
@@ -20,16 +18,10 @@ class sunet::geteduroam(
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'root', mode => '0750'})
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/cert', { owner => 'root', group => 'root', mode => '0755'})
 
-  if $mariadb {
-    sunet::mariadb { 'geteduroam_db':
-    }
-  } else {
-
-    $db_servers = lookup('mariadb_cluster_nodes', Array, undef, [])
-    file { '/opt/geteduroam/haproxy.cfg':
-      content => template('sunet/geteduroam/haproxy.cfg.erb'),
-      mode    => '0755',
-    }
+  $db_servers = lookup('mariadb_cluster_nodes', Array, undef, [])
+  file { '/opt/geteduroam/haproxy.cfg':
+    content => template('sunet/geteduroam/haproxy.cfg.erb'),
+    mode    => '0755',
   }
 
   if $radius {

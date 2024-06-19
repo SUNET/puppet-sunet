@@ -35,7 +35,7 @@
       ],
     ],
   ],
-  'pdo.dsn' => 'mysql:host=<%= @mariadb_host %>;dbname=geteduroam',
+  'pdo.dsn' => 'mysql:host=haproxy;dbname=geteduroam',
   'pdo.username' => 'geteduroam',
   'pdo.password' => '<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>',
   'oauth.clients' => (require __DIR__ . DIRECTORY_SEPARATOR . 'clients.php') + [[
