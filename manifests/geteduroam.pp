@@ -104,7 +104,6 @@ class sunet::geteduroam(
       from => 'any',
       port => 443,
     }
-    class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
   }
 
   if $ocsp {
