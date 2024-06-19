@@ -12,7 +12,7 @@ services:
     ports:
       - '443:443'
     volumes:
-      - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
+      - "/etc/ssl/private/:/etc/ssl/private/:ro"
       - "/opt/geteduroam/var:/var/www/var:rw"
       - "/opt/geteduroam/cert:/var/www/cert:ro"
       - "/opt/geteduroam/config/letswifi.conf.php:/var/www/etc/letswifi.conf.php:ro"
