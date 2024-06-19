@@ -114,7 +114,7 @@ class sunet::nagios(
       require => Package['nagios-nrpe-server'],
       content => template('sunet/nagioshost/check_reboot.erb'),
   }
-  if ($facts['os']['name'] == 'Ubuntu' and facts['os']['release']['major'] == '16.04') {
+  if ($facts['os']['name'] == 'Ubuntu' and $facts['os']['release']['major'] == '16.04') {
     file { '/usr/lib/nagios/plugins/check_memory':
       ensure  => 'file',
       mode    => '0751',
