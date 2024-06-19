@@ -62,7 +62,7 @@ class sunet::geteduroam(
     }
 
     if lookup('saml_metadata_key', undef, undef, undef) != undef {
-      sunet::snippets::secret_file { '/opt/geteduroam/cert/saml.key': hiera_key => 'saml_metadata_key' }
+      sunet::snippets::secret_file { '/opt/geteduroam/cert/saml.key': hiera_key => 'saml_metadata_key', group =>  'www-data',  mode  => '0750', }
       # assume cert is in cosmos repo
     } else {
       # make key pair
@@ -95,10 +95,6 @@ class sunet::geteduroam(
         content => file('sunet/geteduroam/md-signer2.crt'),
         mode    => '0755',
         }
-    }
-    file { '/opt/geteduroam/cert/saml.key':
-      group =>  'www-data',
-      mode  => '0750',
     }
     sunet::nftables::allow { 'expose-allow-http':
       from => 'any',
