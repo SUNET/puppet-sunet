@@ -1,6 +1,7 @@
 version: '3.2'
 
 services:
+<% if @app %>
   app:
     image: docker.sunet.se/geteduroam-app:<%= @app_tag %>
 <% unless @resolvers.empty? -%>
