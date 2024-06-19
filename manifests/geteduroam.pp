@@ -46,6 +46,11 @@ class sunet::geteduroam(
   if $app {
     ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/var', { owner => 'root', group => 'www-data', mode => '0770'})
 
+    # Ugly workaround since nunoc-ops install the class on all machines
+    if $facts['networking']['fqdn'] != 'get-app-1.test.eduroam.se' {
+      sunet::ici_ca::rp { 'infra': }
+    }
+
     file {'/etc/ssl/private/infra.pem':
       ensure => 'link',
       target => "/etc/ssl/private/${facts['networking']['fqdn']}_infra.pem"
