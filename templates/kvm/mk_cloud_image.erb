@@ -109,6 +109,9 @@ fi
 if [ "x${rng}" != "x" ]; then
    install_options="${install_options} --rng='${rng}'"
 fi
+if dpkg --compare-versions ${VERSION_ID} ge 24.04 ; then
+    install_options="${install_options} --import"
+fi
 
 # destroy and undefine the domain if there is one (to allow reinstallation by removing the primary disk file)
 rm -f "/var/lib/libvirt/qemu/nvram/${hostname}_VARS.fd"  # need to remove UEFI NVRAM file if it exists
