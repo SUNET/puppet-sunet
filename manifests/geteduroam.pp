@@ -2,7 +2,7 @@
 class sunet::geteduroam(
   String $domain,
   String $realm,
-  Hash $customers,
+  Hash $customers = {},
   Array $resolvers = [],
   Boolean $app = true,
   Boolean $radius = true,
