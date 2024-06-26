@@ -27,30 +27,30 @@ class sunet::lb::load_balancer(
   }
 
   $config = hiera_hash('sunet_frontend')
-  if $config =~ Hash[String, Hash] {
-    $confdir = "${basedir}/config"
-    $scriptdir = "${basedir}/scripts"
-    $apidir = "${basedir}/api"
 
-    ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
-                    { owner => 'root', group => 'root', mode => '0755' })
+  $confdir = "${basedir}/config"
+  $scriptdir = "${basedir}/scripts"
+  $apidir = "${basedir}/api"
 
-    $websites = $config['load_balancer']['websites']
+  ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
+                  { owner => 'root', group => 'root', mode => '0755' })
 
-    sunet::lb::load_balancer::configure_websites { 'websites':
-      interface => $interface,
-      websites  => $websites,
-      basedir   => $basedir,
-      confdir   => $confdir,
-      scriptdir => $scriptdir,
-    }
+  $websites = $config['load_balancer']['websites']
 
-    class { 'sunet::lb::load_balancer::services':
-      interface => $interface,
-      router_id => $router_id,
-      basedir   => $basedir,
-      config    => $config,
-    }
+  sunet::lb::load_balancer::configure_websites { 'websites':
+    interface => $interface,
+    websites  => $websites,
+    basedir   => $basedir,
+    confdir   => $confdir,
+    scriptdir => $scriptdir,
+  }
+
+  class { 'sunet::lb::load_balancer::services':
+    interface => $interface,
+    router_id => $router_id,
+    basedir   => $basedir,
+    config    => $config,
+  }
 
   # Create snakeoil bundle as fallback certificate for haproxy
   $snakeoil_key = '/etc/ssl/private/ssl-cert-snakeoil.key'
