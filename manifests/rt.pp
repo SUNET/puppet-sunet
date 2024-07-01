@@ -3,10 +3,10 @@ class sunet::rt (
 ) {
 
     # Password for RT's root user
-    $rt_root_password = hiera('rt_root_password', 'NOT_SET_IN_HIERA')
+    $rt_root_password = safe_hiera('rt_root_password')
 
     # Password for postgres database
-    $postgres_password = hiera('postgres_password', 'NOT_SET_IN_HIERA')
+    $postgres_password = safe_hiera('postgres_password')
 
     # The following is used by the PostgreSQL container
     user { 'postgres': ensure => present,

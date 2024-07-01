@@ -2,7 +2,7 @@
 class sunet::frontend::route_reflector(
   String $router_id = $::ipaddress_default,
 ) {
-  $config = hiera_hash('sunet_frontend')
+  $config = lookup('sunet_frontend', undef, undef, undef)
   if $config =~ Hash[String, Hash] {
     $ignore_peers_h = $config['route_reflector']['peers'].filter | $peer, $params | {
       has_key($params, 'monitor') and $params['monitor'] == false

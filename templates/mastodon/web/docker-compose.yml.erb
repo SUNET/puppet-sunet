@@ -1,0 +1,132 @@
+version: "3.7"
+
+services:
+  nginx:
+    image: docker.io/nginxproxy/nginx-proxy:latest
+    container_name: nginx
+    networks:
+      - internal_network
+      - external_network
+    dns:
+      - 89.32.32.32
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
+    volumes:
+      - /opt/mastodon_web/nginx/certs:/etc/nginx/certs:ro
+      - /opt/mastodon_web/nginx/conf:/etc/nginx/conf.d
+      - /opt/mastodon_web/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/mastodon_web/nginx/html:/usr/share/nginx/html
+      - /opt/mastodon_web/nginx/vhost:/etc/nginx/vhost.d
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    environment:
+      - ENABLE_IPV6=true
+    restart: unless-stopped
+
+  acme:
+    image: docker.io/nginxproxy/acme-companion:latest
+    container_name: acme
+    networks:
+      - external_network
+    dns:
+      - 89.32.32.32
+    volumes:
+      - /opt/mastodon_web/nginx/acme:/etc/acme.sh
+      - /opt/mastodon_web/nginx/certs:/etc/nginx/certs:rw
+      - /opt/mastodon_web/nginx/conf:/etc/nginx/conf.d
+      - /opt/mastodon_web/nginx/dhparam:/etc/nginx/dhparam
+      - /opt/mastodon_web/nginx/html:/usr/share/nginx/html
+      - /opt/mastodon_web/nginx/vhost:/etc/nginx/vhost.d:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - NGINX_PROXY_CONTAINER=nginx
+      - DEFAULT_EMAIL=noc@sunet.se
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
+  web:
+    image: tootsuite/mastodon:<%= @mastodon_version %>
+    container_name: web
+    restart: always
+    env_file:
+      - mastodon.env
+    command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
+    networks:
+      - external_network
+      - internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:3000/health || exit 1"]
+    ports:
+      - "127.0.0.1:3000:3000"
+    dns:
+      - 89.32.32.32
+    volumes:
+      - /opt/mastodon_web/mastodon:/mastodon/public/system
+    environment:
+      - VIRTUAL_HOST=<%= @vhost %>
+      - VIRTUAL_PATH=/
+      - VIRTUAL_PORT=3000
+      - LETSENCRYPT_HOST=<%= @vhost %>
+      - ES_ENABLED=false
+
+  streaming:
+    container_name: streaming
+    image: tootsuite/mastodon:<%= @mastodon_version %>
+    restart: always
+    env_file: mastodon.env
+    command: node ./streaming
+    dns:
+      - 89.32.32.32
+    networks:
+      - external_network
+      - internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider --proxy=off localhost:4000/api/v1/streaming/health || exit 1"]
+    ports:
+      - "127.0.0.1:4000:4000"
+    environment:
+      - VIRTUAL_HOST=<%= @vhost %>
+      - VIRTUAL_PATH=/api/v1/streaming
+      - VIRTUAL_PORT=4000
+
+  sidekiq:
+    container_name: sidekiq
+    image: tootsuite/mastodon:<%= @mastodon_version %>
+    restart: always
+    env_file: mastodon.env
+    command: bundle exec sidekiq
+    dns:
+      - 89.32.32.32
+    networks:
+      - external_network
+      - internal_network
+    volumes:
+      - /opt/mastodon_web/mastodon:/mastodon/public/system
+    extra_hosts:
+      <%= @smtp_server %>: <%= @smtp_ip %>
+
+  files:
+    container_name: files
+    image: nginx:latest
+    restart: always
+    dns:
+      - 89.32.32.32
+    networks:
+      - external_network
+      - internal_network
+    volumes:
+      - /opt/mastodon_web/files-nginx-vhost.conf:/etc/nginx/conf.d/default.conf:ro
+      - /opt/mastodon_web/files-nginx-www-root:/var/www/html:ro
+    environment:
+      - VIRTUAL_HOST=files.<%= @vhost %>
+      - VIRTUAL_PATH=/
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=files.<%= @vhost %>
+
+networks:
+  external_network:
+  internal_network:
+    internal: true

@@ -10,7 +10,7 @@ class sunet::tools {
                    'strace',
                    'lsof',
                    ]
-  $extra_tools = $::operatingsystem ? {
+  $extra_tools = $facts['os']['name'] ? {
     'Ubuntu' => ['update-manager-core',
                  'unattended-upgrades',
                  'rng-tools',

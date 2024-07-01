@@ -1,0 +1,19 @@
+#!/bin/bash
+
+cur_branch=$(git branch --show-current)
+new_tagname=$(git tag --contains="$(git rev-parse HEAD)")
+
+# It is ok if the new tagname is empty, it means that this is an untagged commit and we just move on
+if [[ -z ${new_tagname} ]]; then
+	exit 0
+fi
+
+# It is also ok if the new tagname matches the name of the branch
+if [[ ${new_tagname} =~ ${cur_branch} ]]; then
+	exit 0
+fi
+
+# All other cases means that the new tagname is set, but does not match the name of the branch so we reject it
+echo "Your tag: ${new_tagname} does not match the name of the branch: ${cur_branch}."
+echo "To push anyway run again with the --no-verify option"
+exit 1

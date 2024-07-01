@@ -1,0 +1,14 @@
+#!/bin/sh
+
+STATUS=`<%= @scriptdir %>/haproxy-status --syslog 'site=<%= @site %>'`
+
+if [ "x`echo $STATUS | grep ^UP\ `" != "x" ]; then
+    exec <%= @hookdir %>/<%= @site %>_UP.sh
+elif [ "x`echo $STATUS | grep ^DOWN\ `" != "x" ]; then
+    exec <%= @hookdir %>/<%= @site %>_DOWN.sh
+fi
+
+echo "UNKNOWN STATUS for <%= @site %>:"
+echo "$STATUS"
+
+exit 1

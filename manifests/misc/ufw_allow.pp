@@ -6,7 +6,7 @@ define sunet::misc::ufw_allow(
   $proto  = 'tcp',  # Allow traffic using this protocol (or list of protocols).
   $ensure = 'present',
   ) {
-  if $::sunet_nftables_opt_in == 'yes' or ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
     if $ensure == 'present' {
       ensure_resource('sunet::nftables::ufw_allow_compat', $name, {
         from  => $from,

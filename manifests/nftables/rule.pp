@@ -22,13 +22,13 @@ define sunet::nftables::rule(
     owner => 'root',
     group => 'root',
     mode  => '0400',
+    notify  => Service['nftables'],
   })
 
   concat::fragment { $name:
     target  => $rules_fn,
     order   => '1000',
     content => sprintf("%s\n", $rule),
-    notify  => Service['nftables'],
     require => Package['nftables'],
   }
 }

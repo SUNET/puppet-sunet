@@ -1,19 +1,21 @@
-class sunet::server(
-  $fail2ban = true,
-  $encrypted_swap = true,
-  $ethernet_bonding = true,
-  $sshd_config = true,
-  $ntpd_config = true,
-  $scriptherder = true,
-  $unattended_upgrades = false,
-  $unattended_upgrades_use_template = false,
-  $apparmor = false,
-  $disable_ipv6_privacy = false,
-  $disable_all_local_users = false,
-  Array $mgmt_addresses = [safe_hiera('mgmt_addresses', [])],
-  Optional[Boolean] $ssh_allow_from_anywhere = false,
+# Base class for all Sunet hosts
+class sunet::server (
+  Boolean $fail2ban = true,
+  Boolean $encrypted_swap = true,
+  Boolean $ethernet_bonding = true,
+  Boolean $nftables_init = true,
+  Boolean $sshd_config = true,
+  Boolean $ntpd_config = true,
+  Boolean $scriptherder = true,
+  Boolean $install_scriptherder = false,  # Change to true when all repos have removed their copy of scriptherder
+  Boolean $unattended_upgrades = false,
+  Boolean $unattended_upgrades_use_template = false,
+  Boolean $apparmor = false,
+  Boolean $disable_ipv6_privacy = false,
+  Boolean $disable_all_local_users = false,
+  Array $mgmt_addresses = [lookup('mgmt_addresses', undef, undef, [])],
+  Boolean $ssh_allow_from_anywhere = false,
 ) {
-
   if $fail2ban {
     # Configure fail2ban to lock out SSH scanners
     class { 'sunet::fail2ban': }
@@ -30,48 +32,15 @@ class sunet::server(
   }
 
   if $sshd_config {
-    $ssh_port = hiera('sunet_ssh_daemon_port', undef)
+    $ssh_port = lookup(sunet_ssh_daemon_port, undef, undef, undef)
     class { 'sunet::security::configure_sshd':
       port => $ssh_port,
     }
-    if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
-      notice('Enabling UFW')
-      include ufw
-    } else {
-      notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
-      ensure_resource ('class','sunet::nftables::init', { })
-    }
-    if $ssh_allow_from_anywhere {
-      sunet::misc::ufw_allow { 'allow-ssh-from-all':
-        from => 'any',
-        port => pick($ssh_port, 22),
-      }
-    } else {
-      # Remove any existing rule from when ssh_allow_from_anywhere was true as default
-      ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh', {
-        ensure => 'absent',
-        from   => 'any',
-        to     => 'any',
-        proto  => 'tcp',
-        port   => sprintf('%s', pick($ssh_port, 22)),
-      })
-
-      if $::ipaddress_default {
-        # Also remove historical allow-any-to-my-IP rules
-        ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
-          ensure => 'absent',
-          from   => 'any',
-          to     => $::ipaddress_default,
-          proto  => 'tcp',
-          port   => sprintf('%s', pick($ssh_port, 22)),
-        })
-      }
-    }
-    if $mgmt_addresses != [] {
-      sunet::misc::ufw_allow { 'allow-ssh-from-mgmt':
-        from => $mgmt_addresses,
-        port => pick($ssh_port, 22),
-      }
+    class { 'sunet::security::allow_ssh':
+      allow_from_anywhere => $ssh_allow_from_anywhere,
+      mgmt_addresses      => flatten($mgmt_addresses),
+      nftables_init       => $nftables_init,
+      port                => pick($ssh_port, 22),
     }
   }
 
@@ -80,7 +49,7 @@ class sunet::server(
   }
 
   if $scriptherder {
-    sunet::snippets::scriptherder { 'sunet_scriptherder': }
+    ensure_resource('class', 'sunet::scriptherder::init', { install => $install_scriptherder })
   }
 
   if $unattended_upgrades {
@@ -101,11 +70,11 @@ class sunet::server(
     class { 'sunet::security::disable_all_local_users': }
   }
 
-  if $::is_virtual == true {
+  if $::facts['is_virtual'] == true {
     file { '/usr/local/bin/sunet-reinstall':
       ensure  => file,
       mode    => '0755',
-      content => template('sunet/cloudimage/sunet-reinstall.erb'),
+      content => template('sunet/kvm/sunet-reinstall.erb'),
     }
     sunet::scriptherder::cronjob { 'sunet_reinstall':
       # sleep 150 to avoid running at the same time as the cronjob fetching new certificates
@@ -114,5 +83,9 @@ class sunet::server(
       warn_criteria => ['exit_status=0', 'max_age=49h'],
       special       => 'daily',
     }
+  }
+
+  if $facts['dmi']['product']['name'] =~ /OpenStack\s(Compute|Nova)/ {
+    class { 'sunet::iaas::server': }
   }
 }

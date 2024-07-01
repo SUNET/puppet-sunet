@@ -1,13 +1,14 @@
 define sunet::misc::system_user(
-  String                  $group,
-  Optional[String]        $username = undef,
-  Boolean                 $system = true,
-  Boolean                 $managehome = false,
-  String                  $shell = '/bin/false',
-  Optional[String]        $home = undef,
-  Optional[Integer]       $uid = undef,
-  Optional[Integer]       $gid = undef,
-  Optional[Array[String]] $groups = undef,
+  String                    $group,
+  Optional[String]          $username = undef,
+  Boolean                   $system = true,
+  Boolean                   $managehome = false,
+  String                    $shell = '/bin/false',
+  Enum['present', 'absent'] $ensure = 'present',
+  Optional[String]          $home = undef,
+  Optional[Integer]         $uid = undef,
+  Optional[Integer]         $gid = undef,
+  Optional[Array[String]]   $groups = undef,
 ) {
 
   $_username = $username ? {
@@ -16,13 +17,13 @@ define sunet::misc::system_user(
   }
 
   ensure_resource('group', $group, {
-    ensure => present,
+    ensure => $ensure,
     name   => $group,
     gid    => $gid,
   })
 
   ensure_resource('user', $name, {
-    ensure     => 'present',
+    ensure     => $ensure,
     name       => $_username,
     membership => 'minimum',
     system     => $system,

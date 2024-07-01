@@ -1,0 +1,90 @@
+# When running KVM via libvirt the "default" network is configured with
+# <forward mode='nat'/>. This means libvirt will create iptables rules built
+# into its code at startup. Since these changes are only supplied to the
+# "iptables" command, and not persisted in any files, a later "systemctl reload
+# nftables" will make those rules disappear, resulting in broken networking for
+# KVM guests using the default virbr0 bridge for connectivity.
+#
+# This nft script mimics the NAT rules created by libvirt, here is how the
+# NAT-specific rules look after starting libvirt (created by iptables which is
+# automatically translating them to nftables rules behind the scenes):
+# ===
+# table ip nat {
+#        chain LIBVIRT_PRT {
+#                ip saddr 192.168.122.0/24 ip daddr 224.0.0.0/24 counter packets 0 bytes 0 return
+#                ip saddr 192.168.122.0/24 ip daddr 255.255.255.255 counter packets 0 bytes 0 return
+#                meta l4proto tcp ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade to :1024-65535
+#                meta l4proto udp ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade to :1024-65535
+#                ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade
+#        }
+#
+#        chain POSTROUTING {
+#                type nat hook postrouting priority srcnat; policy accept;
+#                counter packets 0 bytes 0 jump LIBVIRT_PRT
+#        }
+#}
+# table ip6 nat {
+#        chain LIBVIRT_PRT {
+#        }
+#
+#        chain POSTROUTING {
+#                type nat hook postrouting priority srcnat; policy accept;
+#                counter packets 0 bytes 0 jump LIBVIRT_PRT
+#        }
+#}
+# ===
+#
+# There are some more rules created by libvirt related to filtering, but lets
+# start with only the masquerading and see if anything else needs adding later.
+#
+# The specific network used (192.168.122.0/24) is based on the network
+# assigned to the "default" network, which can be seen with:
+# "virsh net-dumpxml default --inactive"
+#
+# A final difference is that we use the "inet" family instead of ip + ip6. Our
+# other rules are all using the inet family (which allows both ip4 and ip6
+# rules) so lets keep it that way.
+
+table inet sunet-kvm-<%= @bridge_name %> {
+	chain sunet-kvm-postrouting {
+		type nat hook postrouting priority srcnat; policy accept;
+
+		ip saddr <%= @bridge_v4_cidr %> ip daddr 224.0.0.0/24 counter return
+		ip saddr <%= @bridge_v4_cidr %> ip daddr 255.255.255.255 counter return
+		meta l4proto tcp ip saddr <%= @bridge_v4_cidr %> ip daddr != <%= @bridge_v4_cidr %> counter masquerade to :1024-65535
+		meta l4proto udp ip saddr <%= @bridge_v4_cidr %> ip daddr != <%= @bridge_v4_cidr %> counter masquerade to :1024-65535
+		ip saddr <%= @bridge_v4_cidr %> ip daddr != <%= @bridge_v4_cidr %> counter masquerade
+	}
+}
+
+# Allow traffic to pass over the virbr0 interface, based on the following
+# created by libvirt:
+# ===
+# chain LIBVIRT_FWO {
+#         iifname "virbr0" ip saddr 192.168.122.0/24 counter packets 0 bytes 0 accept
+#         iifname "virbr0" counter packets 0 bytes 0 reject
+# }
+#
+# chain FORWARD {
+#         type filter hook forward priority filter; policy accept;
+#         counter packets 0 bytes 0 jump LIBVIRT_FWX
+#         counter packets 0 bytes 0 jump LIBVIRT_FWI
+#         counter packets 0 bytes 0 jump LIBVIRT_FWO
+# }
+#
+# chain LIBVIRT_FWI {
+#         oifname "virbr0" ip daddr 192.168.122.0/24 ct state related,established counter packets 0 bytes 0 accept
+#         oifname "virbr0" counter packets 0 bytes 0 reject
+# }
+#
+# chain LIBVIRT_FWX {
+#         iifname "virbr0" oifname "virbr0" counter packets 0 bytes 0 accept
+# }
+# ===
+#
+# We add the rules to the already existing "filter" table "forward" chain created in
+# /etc/nftables.conf to make it easier to read the overall rules.
+
+add rule inet filter forward iifname "<%= @bridge_name %>" ip saddr <%= @bridge_v4_cidr %> counter accept
+add rule inet filter forward oifname "<%= @bridge_name %>" ip daddr <%= @bridge_v4_cidr %> ct state related,established counter accept
+add rule inet filter forward iifname "<%= @bridge_name %>" oifname "<%= @bridge_name %>" counter accept

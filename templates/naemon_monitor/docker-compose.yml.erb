@@ -1,0 +1,87 @@
+version: '3.2'
+
+services:
+  always-https:
+    image: docker.sunet.se/always-https
+<% unless @resolvers.empty? -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+    ports:
+      - '80:80'
+    environment:
+      - 'ACME_URL=http://acme-c.sunet.se/'
+
+  naemon:
+    image: docker.sunet.se/naemon:<%= @naemon_tag %>
+<% unless @resolvers.empty? -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+    ports:
+      - '127.0.0.1:6666:6666'
+    volumes:
+      - '/etc/naemon/conf.d/nagioscfg:/etc/naemon/conf.d/nagioscfg:ro'
+      - '/etc/naemon/conf.d/cosmos:/etc/naemon/conf.d/cosmos:ro'
+      - '/usr/lib/nagios/plugins/check_inodes:/usr/lib/nagios/plugins/check_inodes:ro'
+      - '/usr/lib/nagios/plugins/cosmos:/usr/lib/nagios/plugins/cosmos:ro'
+      - '/var/lib/naemon/:/var/lib/naemon/'
+      - '/var/log/naemon/:/var/log/naemon/'
+      - '/var/nagflux/:/var/nagflux/'
+<%- @naemon_extra_volumes.each do |extra_volume| -%>
+      - "<%= extra_volume %>"
+<%- end -%>
+
+  thruk:
+    image: docker.sunet.se/thruk:<%= @thruk_tag %>
+<% unless @resolvers.empty? -%>
+    dns:
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+    ports:
+      - '443:443'
+    volumes:
+      - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
+      - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
+      - '/opt/naemon_monitor/data:/var/lib/thruk'
+<%- @thruk_extra_volumes.each do |extra_volume| -%>
+      - "<%= extra_volume %>"
+<%- end -%>
+    environment:
+<%- @thruk_env.each do |environ| -%>
+      - "<%= environ %>"
+<%- end -%>
+
+  influxdb:
+    image: influxdb:<%= @influxdb_tag %>
+    volumes:
+      - '/var/lib/influxdb:/var/lib/influxdb'
+    environment:
+<%- @influx_env.each do |environ| -%>
+      - "<%= environ %>"
+<%- end -%>
+
+  histou:
+    image: docker.sunet.se/histou:<%= @histou_tag %>
+
+  nagflux:
+    image: docker.sunet.se/nagflux:<%= @nagflux_tag %>
+    volumes:
+      - '/var/nagflux/:/var/nagflux/'
+    environment:
+<%- @nagflux_env.each do |environ| -%>
+      - "<%= environ %>"
+<%- end -%>
+
+  grafana:
+    image: grafana/grafana:<%= @grafana_tag %>
+    volumes:
+      - '/opt/naemon_monitor/grafana.ini/:/etc/grafana/grafana.ini'
+      - '/opt/naemon_monitor/influxdb.yaml:/etc/grafana/provisioning/datasources/nagflux.yaml'
+      - '/opt/naemon_monitor/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro'

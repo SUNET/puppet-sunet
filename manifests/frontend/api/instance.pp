@@ -6,7 +6,7 @@ define sunet::frontend::api::instance(
   String        $basedir = '/opt/frontend/api',
 ) {
 
-  if $::sunet_nftables_opt_in != 'yes' and ! ( $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 ) {
+  if $::facts['sunet_nftables_enabled'] != 'yes' {
     sunet::misc::ufw_allow { "allow_backends_${name}":
       from => $backend_ips,
       port => $api_port,
