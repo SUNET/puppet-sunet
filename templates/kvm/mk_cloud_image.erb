@@ -72,7 +72,7 @@ fi
 # solve bootstrapping of new kvm hosts where no vms exist already
 virsh pool-list | grep -qe "^\s*${pool_name}.*active" || {
     virsh pool-create-as --name "${pool_name}" --target "${images_dir}" --type dir --build
-    if dpkg --compare-versions "${VERSION_ID}" lt 24.04 ; then
+    if [ "${ID}" = "debian" ] || ([ "${ID}" = "ubuntu" ] && dpkg --compare-versions "${VERSION_ID}" lt 24.04) ; then
         virsh pool-autostart "${pool_name}"
         virsh pool-start "${pool_name}"
     fi
@@ -109,7 +109,7 @@ fi
 if [ "x${rng}" != "x" ]; then
    install_options="${install_options} --rng='${rng}'"
 fi
-if dpkg --compare-versions "${VERSION_ID}" ge 24.04 ; then
+if [ "${ID}" = "ubuntu" ] && dpkg --compare-versions "${VERSION_ID}" ge 24.04 ; then
     install_options="${install_options} --import"
 fi
 
