@@ -2,9 +2,9 @@
 class sunet::mail::dovecot(
   String $replication_partner,
   Array[String] $allow_nets,
-  String $domain                 = 'sunet.dev',
-  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
-  String $environment            = 'test',
+  String $domain,
+  String $imap_domain,
+  String $environment,
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
   String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
@@ -18,17 +18,16 @@ class sunet::mail::dovecot(
   $config = lookup($environment)
 
   $replication_password = lookup('replication_password')
-  $oauth_client_id = lookup('oauth_client_id')
-  $oauth_client_secret = lookup('oauth_client_secret')
   $master_password = lookup('master_password')
 
 
   $db_hosts = join($config['db_hosts'], ' host=')
+  ## FIXME: This is NOT what Nextcloud calls 'salt', but instead what they call 'secret'.
   $nextcloud_salt = lookup('nextcloud_salt')
   $nextcloud_db = 'nextcloud'
   $nextcloud_db_user ='nextcloud'
   $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
-  $nextcloud_mysql_server = 'intern-db1.sunet.drive.test.sunet.se'
+  $nextcloud_mysql_server = $config['nextcloud_mysql_server']
 
 
   $ssl_cert="/certs/${imap_domain}/fullchain.pem"
@@ -41,7 +40,7 @@ class sunet::mail::dovecot(
     compose_filename => 'docker-compose.yml',
     description      => 'Dovecot',
   }
-  $ports = [24, 80, 143, 993, 4190, 12345, 12346]
+  $ports = [24, 143, 993, 4190, 12345, 12346]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
@@ -88,7 +87,7 @@ class sunet::mail::dovecot(
   $commands.each |$command| {
     file { "/usr/local/bin/${command}":
       ensure  => file,
-      content =>  inline_template("#!/bin/bash\ndocker exec -ti dovecot_dovecot_1 ${command} \"\${@}\"\n"),
+      content =>  inline_template("#!/bin/bash\ndocker exec -ti dovecot-dovecot-1 ${command} \"\${@}\"\n"),
       mode    => '0700',
     }
   }

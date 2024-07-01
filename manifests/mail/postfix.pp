@@ -1,14 +1,17 @@
 # Postfix for SUNET
 class sunet::mail::postfix(
-  String $domain                 = 'sunet.dev',
-  String $smtp_domain            = 'sunet-smtp.drive.test.sunet.se',
-  String $imap_domain            = 'sunet-imap.drive.test.sunet.se',
-  String $environment            = 'test',
+  String $account_domain,
+  String $alias_domains,
+  String $environment,
+  String $imap_domain,
+  Array[String] $relaying_servers,
+  String $short_domain,
+  String $smtp_domain,
   String $interface              = 'ens3',
+  Array[String] $mydestination   = ['$myhostname', 'localhost.localdomain', 'localhost'],
   String $postfix_image          = 'docker.sunet.se/mail/postfix',
   String $postfix_tag            = 'SUNET-1',
   Array[String] $relay_servers   = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
-  Array[String] $imap_servers    = ['89.45.237.128', '89.46.21.203'],
 )
 {
 
@@ -25,10 +28,12 @@ class sunet::mail::postfix(
   $smtpd_tls_key_file="/certs/${smtp_domain}/privkey.pem"
 
   package { 'exim4-base':
-    ensure => absent,
+    ensure   => absent,
     provider => 'apt',
   }
-
+  -> service { 'postfix':
+    ensure => 'stopped',
+  }
 
   # Composefile
   sunet::docker_compose { 'postfix':
@@ -38,8 +43,16 @@ class sunet::mail::postfix(
     compose_filename => 'docker-compose.yml',
     description      => 'Postfix',
   }
-  $ports = [25, 80, 587]
-  $ports.each|$port| {
+  $restricted_ports = [25]
+  $restricted_ports.each|$port| {
+    sunet::nftables::docker_expose { "mail_port_${port}":
+      allow_clients => $relay_hosts,
+      port          => $port,
+      iif           => $interface,
+    }
+  }
+  $open_ports = [587]
+  $open_ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
       port          => $port,
@@ -60,10 +73,6 @@ class sunet::mail::postfix(
       ensure  => file,
       content =>  template("sunet/mail/postfix/${file}.erb.cf")
     }
-  }
-
-  service { 'postfix':
-    ensure => 'stopped',
   }
 
 }

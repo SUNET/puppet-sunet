@@ -5,7 +5,7 @@ class sunet::motd {
       mode     => '0644',
       content  => "
 
-This machine (${::fqdn}) is running ${::operatingsystem} ${::operatingsystemrelease} 
+This machine (${facts['networking']['fqdn']}) is running ${facts['os']['name']} ${facts['os']['release']['major']} 
 using puppet version ${::puppetversion} and cosmos
 
 "
