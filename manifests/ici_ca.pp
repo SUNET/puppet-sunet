@@ -9,8 +9,23 @@ define sunet::ici_ca(
   $public_repo_url = undef,
   $public_repo_dir = undef,
 ) {
-  apt::ppa { 'ppa:leifj/ici': }
-  package { 'ici': ensure => latest }
+  # Package is not built for anything newer than trusty
+  if ($facts['os']['name'] == 'Ubuntu' and $facts['os']['release']['major'] == '22.04') {
+    package { 'opensc': ensure => latest }
+    package { 'libengine-pkcs11-openssl': ensure => latest }
+
+    file { '/root/ici_1.10-1ubuntu1_all.deb':
+      content => file('sunet/files/ici_ca/ici_1.10-1ubuntu1_all.deb'),
+      mode    => '0755'
+    }
+    exec { "install_ici_deb":
+      command => "/usr/bin/dpkg -i /root/ici_1.10-1ubuntu1_all.deb",
+      creates => "/usr/bin/ici"
+    }
+  } else {
+    apt::ppa { 'ppa:leifj/ici': }
+    package { 'ici': ensure => latest }
+  }
   exec { "${name}_setup_ca":
     command => "/usr/bin/ici ${name} init",
     creates => "/var/lib/ici/${name}"
