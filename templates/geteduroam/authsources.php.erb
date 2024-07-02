@@ -29,7 +29,7 @@ $config = [
         'certificate' => '/var/www/cert/saml.pem',
 
         // The entity ID of this SP.
-        'entityID' => 'https://get.test.eduroam.se/',
+        'entityID' => 'https://<%= @domain %>/',
 
         // The entity ID of the IdP this SP should contact.
         // Can be NULL/unset, in which case the user will be shown a list of available IdPs.
