@@ -15,7 +15,7 @@ define sunet::ici_ca(
     package { 'libengine-pkcs11-openssl': ensure => latest }
 
     file { '/root/ici_1.10-1ubuntu1_all.deb':
-      content => file('sunet/files/ici_ca/ici_1.10-1ubuntu1_all.deb'),
+      content => file('sunet/ici_ca/ici_1.10-1ubuntu1_all.deb'),
       mode    => '0755'
     }
     exec { "install_ici_deb":
