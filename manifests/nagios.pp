@@ -53,7 +53,7 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_load':
     command_line => "/usr/lib/nagios/plugins/check_load -w ${loadw} -c ${loadc}"
   }
-  if $::fqdn == 'docker.sunet.se' {
+  if $facts['networking']['fqdn'] == 'docker.sunet.se' {
     sunet::nagios::nrpe_command {'check_root':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /'
     }
@@ -65,7 +65,7 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_boot':
     command_line => '/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /boot'
   }
-  if $::fqdn == 'docker.sunet.se' {
+  if $facts['networking']['fqdn'] == 'docker.sunet.se' {
     sunet::nagios::nrpe_command {'check_var':
       command_line => '/usr/lib/nagios/plugins/check_disk -w 4% -c 2% -p /var'
     }
@@ -114,7 +114,7 @@ class sunet::nagios(
       require => Package['nagios-nrpe-server'],
       content => template('sunet/nagioshost/check_reboot.erb'),
   }
-  if ($::operatingsystem == 'Ubuntu' and $::operatingsystemmajrelease == '16.04') {
+  if ($facts['os']['name'] == 'Ubuntu' and $facts['os']['release']['major'] == '16.04') {
     file { '/usr/lib/nagios/plugins/check_memory':
       ensure  => 'file',
       mode    => '0751',

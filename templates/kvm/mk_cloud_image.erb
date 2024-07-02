@@ -23,6 +23,8 @@ install_options="<%= @install_options %>"
 sb_args="<%= @sb_args %>"
 os_info=""
 
+. /etc/os-release
+
 if ! echo "${install_options}" | grep -q -- '--osinfo'; then
     os_info_base="--osinfo "
     image_file=$(basename "${src_image}")
@@ -70,8 +72,10 @@ fi
 # solve bootstrapping of new kvm hosts where no vms exist already
 virsh pool-list | grep -qe "^\s*${pool_name}.*active" || {
     virsh pool-create-as --name "${pool_name}" --target "${images_dir}" --type dir --build
-    virsh pool-autostart "${pool_name}"
-    virsh pool-start "${pool_name}"
+    if [ "${ID}" = "debian" ] || ([ "${ID}" = "ubuntu" ] && dpkg --compare-versions "${VERSION_ID}" lt 24.04) ; then
+        virsh pool-autostart "${pool_name}"
+        virsh pool-start "${pool_name}"
+    fi
 }
 virsh pool-refresh "${pool_name}"
 
@@ -104,6 +108,9 @@ if [ "x${description}" != "x" ]; then
 fi
 if [ "x${rng}" != "x" ]; then
    install_options="${install_options} --rng='${rng}'"
+fi
+if [ "${ID}" = "ubuntu" ] && dpkg --compare-versions "${VERSION_ID}" ge 24.04 ; then
+    install_options="${install_options} --import"
 fi
 
 # destroy and undefine the domain if there is one (to allow reinstallation by removing the primary disk file)

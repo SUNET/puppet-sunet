@@ -46,7 +46,7 @@ define sunet::ici_ca::rp(
   Boolean $monitor_infra_cert = true,
 ) {
 
-  $host = $::fqdn
+  $host = $facts['networking']['fqdn']
   $ca = $name
 
   file { '/usr/bin/dl_ici_cert':
