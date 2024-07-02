@@ -39,7 +39,6 @@ services:
 <% if @ocsp %>
       - "/opt/geteduroam/config/eap.conf:/etc/raddb/mods-enabled/eap-eduroam:ro"
 <% end %>
-<% end %>
 
 <% if @ocsp %>
   ocsp:
@@ -49,6 +48,7 @@ services:
       - SQLUSER=geteduroam
       - SQLDB=geteduroam
       - SQLPASSWORD=<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>
+<% end %>
 <% end %>
 
   haproxy:
