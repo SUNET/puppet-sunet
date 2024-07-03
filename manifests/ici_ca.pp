@@ -13,6 +13,9 @@ define sunet::ici_ca(
   if ($facts['os']['name'] == 'Ubuntu' and $facts['os']['release']['major'] == '22.04') {
     package { 'opensc': ensure => latest }
     package { 'libengine-pkcs11-openssl': ensure => latest }
+    # Needed because: "/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so: undefined"
+    # https://stackoverflow.com/questions/76758096/where-is-engine-pkcs11-so
+    file { "/usr/lib/engines/engine_pkcs11.so": ensure => link, target => "/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so" }
 
     file { '/root/ici_1.10-1ubuntu1_all.deb':
       content => file('sunet/ici_ca/ici_1.10-1ubuntu1_all.deb'),
