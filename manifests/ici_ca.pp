@@ -15,6 +15,9 @@ define sunet::ici_ca(
     package { 'libengine-pkcs11-openssl': ensure => latest }
     # Needed because: "/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so: undefined"
     # https://stackoverflow.com/questions/76758096/where-is-engine-pkcs11-so
+    exec { '/usr/bin/mkdir -p /usr/lib/engines':
+      unless  => "/usr/bin/test -d /usr/lib/engine"
+    }
     file { "/usr/lib/engines/engine_pkcs11.so": ensure => link, target => "/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so" }
 
     file { '/root/ici_1.10-1ubuntu1_all.deb':
