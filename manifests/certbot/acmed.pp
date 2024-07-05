@@ -33,6 +33,10 @@ class sunet::certbot::acmed(
         port => 22,
       }
     }
+    sunet::ssh_keys { 'agent-keys':
+      config            => safe_hiera('acmed_agent_ssh_keys_mapping', {}),
+      key_database_name => 'acmed_agent_ssh_keys_db'
+    }
   } else {
     $key_path = '/root/.ssh/id_acmed_agent'
 
