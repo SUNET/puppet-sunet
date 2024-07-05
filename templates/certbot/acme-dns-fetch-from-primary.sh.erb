@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -e
+
+full_deploy=0
+if [ ! -d /etc/letsencrypt/live ]; then
+	full_deploy=1
+fi
+
+if [ "${full_deploy}" == 1 ]; then
+	targetdir=/etc/letsencrypt/
+else
+	targetdir=$(mktemp -d /tmp/acmed-agent.XXXXX)
+fi
+
+rsync -e "ssh -i $HOME/.ssh/id_acmed_agent" -az -v root@<%= scope.call_function('safe_hiera', ['acmed_primary'])  %>: "${targetdir}"
+
+certs_to_deply=()
+if [ "${full_deploy}" == 1 ]; then
+	for dir in "${targetdir}"/live/*; do
+		basename=$(basename "${dir}")
+		if [ "$basename" == "README" ]; then
+			continue
+		else
+			certs_to_deply+=("${basename}")
+		fi
+	done
+else
+	for dir in "${targetdir}"/live/*; do
+		basename=$(basename "${dir}")
+		if [ "$basename" == "README" ]; then
+			continue
+		else
+			if [ ! -d "/etc/letsencrypt/live/${basename}" ]; then
+				certs_to_deply+=("${basename}")
+				continue
+			fi
+		fi
+		if ! cmp -s "/etc/letsencrypt/live/${basename}/fullchain.pem" "${targetdir}/live/${basename}/fullchain.pem"; then
+			certs_to_deply+=("${basename}")
+		fi
+
+	done
+fi
+
+if [ "${full_deploy}" == 0 ]; then
+	rsync -av --delete "${targetdir}/" /etc/letsencrypt/
+	rm -rf "${targetdir}"
+fi
+
+for cert in "${certs_to_deply[@]}"; do
+	echo "Running deploy hook(s) for ${cert}."
+	for hook in /etc/letsencrypt/renewal-hooks/deploy/*; do
+		RENEWED_LINEAGE="/etc/letsencrypt/live/${cert}" "${hook}"
+	done
+done

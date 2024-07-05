@@ -40,6 +40,15 @@ class sunet::certbot::acmed(
   } else {
     $key_path = '/root/.ssh/id_acmed_agent'
 
+    exec { '/usr/bin/mkdir -p /opt/certbot/libexec':
+      unless  => '/usr/bin/test -d /opt/certbot/libexec'
+    }
+    file { '/opt/certbot/libexec/acme-dns-fetch-from-primary.sh':
+      ensure  => file,
+      mode    => '0700',
+      content => template('sunet/certbot/acme-dns-fetch-from-primary.sh.erb'),
+    }
+
     if lookup('acmed_agent_ssh_key', undef, undef, undef) {
       ensure_resource('sunet::snippets::secret_file', $key_path, {
         hiera_key => 'acmed_agent_ssh_key',
