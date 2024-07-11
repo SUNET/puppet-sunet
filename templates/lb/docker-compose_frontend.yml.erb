@@ -11,6 +11,7 @@ services:
     ports:
       - "<%= scope['sunet::lb::load_balancer::services::api_port'] -%>:8080"
     user: "<%= scope['sunet::lb::load_balancer::users::user2uid']['fe-api'] -%>:<%= scope['sunet::lb::load_balancer::users::user2uid']['fe-api'] -%>"
+    network_mode: host
 
   telegraf:
     image: "<%= scope['sunet::lb::load_balancer::services::telegraf_image'] -%>:<%= scope['sunet::lb::load_balancer::services::telegraf_imagetag'] -%>"
@@ -23,10 +24,4 @@ services:
     ports:
       - "<%= scope['sunet::lb::load_balancer::services::statsd_port'] -%>:8125/udp"
     user: "<%= scope['sunet::lb::load_balancer::users::user2uid']['telegraf'] -%>:<%= scope['sunet::lb::load_balancer::users::user2uid']['telegraf'] -%>"
-
-
-
-networks:
-  default:
-    driver_opts:
-      com.docker.network.bridge.name: br-frontend
+    network_mode: host
