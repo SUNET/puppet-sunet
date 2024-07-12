@@ -147,7 +147,7 @@ class sunet::dockerhost2(
       '/usr/local/bin/check_docker_containers':
         ensure  => file,
         mode    => '0755',
-        content => template('sunet/dockerhost/check_docker_containers.erb'),
+        content => template('sunet/dockerhost/check_docker_containers_noversion.erb'),
         ;
       '/usr/local/bin/restart_unhealthy_containers':
         ensure  => file,
