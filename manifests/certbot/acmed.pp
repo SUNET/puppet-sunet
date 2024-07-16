@@ -48,6 +48,13 @@ class sunet::certbot::acmed(
       mode    => '0700',
       content => template('sunet/certbot/acme-dns-fetch-from-primary.sh.erb'),
     }
+    sunet::scriptherder::cronjob { 'fetch-cert-from-primary':
+      cmd           => '/opt/certbot/libexec/acme-dns-fetch-from-primary.sh',
+      minute        => '27',
+      hour          => '*',
+      ok_criteria   => ['exit_status=0', 'max_age=3h'],
+      warn_criteria => ['exit_status=0', 'max_age=5h'],
+    }
 
     if lookup('acmed_agent_ssh_key', undef, undef, undef) {
       ensure_resource('sunet::snippets::secret_file', $key_path, {
