@@ -1,3 +1,4 @@
+# Adding cosmos information to motd
 class sunet::motd {
   file {'motd':
     ensure  => file,
