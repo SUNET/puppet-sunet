@@ -1,5 +1,8 @@
 # Adding cosmos information to motd
 class sunet::motd {
+  file { '/etc/motd.tail':
+      ensure  => absent,
+  }
   file {'motd':
     ensure  => file,
     path    => '/etc/update-motd.d/60-sunet',
