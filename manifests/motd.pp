@@ -4,6 +4,6 @@ class sunet::motd {
     ensure  => file,
     path    => '/etc/update-motd.d/60-sunet',
     mode    => '0755',
-    content => "echo \"This machine (${facts['networking']['fqdn']}) is running ${facts['os']['name']} ${facts['os']['release']['major']} using puppet version ${facts['puppetversion']} and cosmos\""
+    content => "#!/bin/sh\necho \"This machine (${facts['networking']['fqdn']}) is running ${facts['os']['name']} ${facts['os']['release']['major']} using puppet version ${facts['puppetversion']} and cosmos\""
   }
 }
