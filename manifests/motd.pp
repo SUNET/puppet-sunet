@@ -6,7 +6,7 @@ class sunet::motd {
     content => "
 
 This machine (${facts['networking']['fqdn']}) is running ${facts['os']['name']} ${facts['os']['release']['major']}
-using puppet version ${::puppetversion} and cosmos
+using puppet version ${facts['puppetversion']} and cosmos
 
 "
   }
