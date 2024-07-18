@@ -5,7 +5,12 @@ class sunet::fleetlock_client (
   $fleetlock_config =  lookup('fleetlook_config', undef, undef, undef)
 
   if $fleetlock_config =~ Hash {
-    file { '/etc/sunet-fleetlock/sunet-fleetlock.conf':
+    $config_dir = '/etc/sunet-fleetlock'
+    exec { "sudo-make-me-a-sandwich_${config_dir}":
+      command => "/bin/mkdir -p ${config_dir}",
+      unless  => "/usr/bin/test -d ${config_dir}",
+    }
+    file { "${config_dir}/sunet-fleetlock.conf":
     ensure  => file,
     mode    => '0700',
     content => template('sunet/fleetlock_client/sunet-fleetlock.conf.erb'),
