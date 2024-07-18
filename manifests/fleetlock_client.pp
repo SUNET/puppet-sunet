@@ -1,6 +1,6 @@
 # Setup and configure the Sunet fleetlock client
 class sunet::fleetlock_client (
-  Boolean $cosmos_with_fleetlock = True,
+  Boolean $cosmos_with_fleetlock = true,
 ){
   $fleetlock_config =  lookup('fleetlook_config', undef, undef, undef)
 
