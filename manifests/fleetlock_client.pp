@@ -2,7 +2,7 @@
 class sunet::fleetlock_client (
   Boolean $cosmos_with_fleetlock = true,
 ){
-  $fleetlock_config =  lookup('fleetlook_config', undef, undef, undef)
+  $fleetlock_config =  lookup('fleetlock_config', undef, undef, undef)
 
   if $fleetlock_config =~ Hash {
     $config_dir = '/etc/sunet-fleetlock'
@@ -20,7 +20,7 @@ class sunet::fleetlock_client (
   }
 
   if $cosmos_with_fleetlock {
-    $cosmos_fleetlock_config = lookup('cosmos_fleetlook_config', undef, undef, undef)
+    $cosmos_fleetlock_config = lookup('cosmos_fleetlock_config', undef, undef, undef)
     if $cosmos_fleetlock_config =~ Hash {
       file { '/etc/run-cosmos-fleetlock-conf':
       ensure  => file,
