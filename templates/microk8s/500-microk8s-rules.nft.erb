@@ -1,22 +1,16 @@
-table ip filter {
-  chain OUTPUT {
-    oifname "vxlan.calico" counter packets 0 bytes 0 accept
-  }
-  chain INPUT {
-    iifname "vxlan.calico" counter packets 0 bytes 0 accept
-  }
-  chain FORWARD {
-     type filter hook forward priority filter; policy accept;
-  }
-}
-table ip6 filter {
-  chain OUTPUT {
-    oifname "vxlan.calico" counter packets 0 bytes 0 accept
-  }
-  chain INPUT {
-    iifname "vxlan.calico" counter packets 0 bytes 0 accept
-  }
-  chain FORWARD {
-     type filter hook forward priority filter; policy accept;
-  }
-}
+add rule inet filter input iifname "vxlan.calico" counter accept
+add rule inet filter forward iifname "vxlan.calico" counter accept
+add rule inet filter forward iifname "cali*" counter accept
+add rule inet filter forward oifname "cali*" counter accept
+<% if @type == 'controller' -%>
+add rule inet filter input tcp dport @microk8s_public_controller_ports counter accept comment "Allow the world to access public_ports"
+add rule inet filter input tcp ip saddr @microk8s_peers_v4 tcp dport @microk8s_private_controller_ports counter accept comment "Allow the members of the cluster to access private controller ports"
+add rule inet filter input tcp ip6 saddr @microk8s_peers_v6 tcp dport @microk8s_private_controller_ports counter accept comment "Allow the members of the cluster to access private controller ports"
+<% end -%>
+<% if @type == 'worker' -%>
+add rule inet filter input tcp ip saddr @microk8s_peers_v4 tcp dport @microk8s_private_worker_ports counter accept comment "Allow the members of the cluster to access private worker ports"
+add rule inet filter input tcp ip6 saddr @microk8s_peers_v6 tcp dport @microk8s_private_worker_ports counter accept comment "Allow the members of the cluster to access private worker ports"
+<% end -%>
+add rule inet filter input tcp ip saddr @microk8s_peers_v4 udp dport 4789 counter accept comment "Allow the members of the cluster to access private VXLAN"
+add rule inet filter input tcp ip6 saddr @microk8s_peers_v6 udp dport 4789 counter accept comment "Allow the members of the cluster to access private VXLAN"
+

@@ -1,0 +1,10 @@
+add set inet filter microk8s_public_controller_ports {type inet_service \; elements={8080, 8443, 16443} \;}
+add set inet filter microk8s_private_controller_ports {type inet_service \; elements={10250, 10255, 25000, 12379, 10257, 10259, 19001} \;}
+add set inet filter microk8s_private_worker_ports {type inet_service \; elements={10250, 10255, 16443, 25000, 12379, 10257, 10259, 19001} \;}
+add set inet filter microk8s_peers_v4 {type ipv4_addr}
+add set inet filter microk8s_peers_v6 {type ipv6_addr}
+
+<% @customers.each do | peer | -%>
+add element inet filter microk8s_peers_v4 { "<%= peer{'ip4'} %>" }
+add element inet filter microk8s_peers_v6 { "<%= peer{'ip6'} %>" }
+<% end -%>
