@@ -22,8 +22,9 @@ class sunet::microk8s::node(
     $final_peers = $hiera_peers
   } elsif $facts['configured_hosts_in_cosmos']['sunet::microk8s::node'] != [] {
     $facts['configured_hosts_in_cosmos']['sunet::microk8s::node'].each | String $_host| {
-      $final_peers[$_host]['ip4'] = dns_a($_host)
-      $final_peers[$_host]['ip6'] = dns_aaaa($_host)
+      $final_peers = { $_host  => { 'ip4' => dns_a($_host),
+                                    'ip6' => dns_aaaa($_host) }
+      }
     }
   } 
   # Loop through peers and do things that require their ip:s
