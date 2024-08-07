@@ -39,7 +39,7 @@ class sunet::chrony(
   }
 
   exec { 'chronyc reload sources':
-      refreshonly => true,
+    refreshonly => true,
   }
 
   file { '/etc/chrony/sources.d/sunet.sources':
