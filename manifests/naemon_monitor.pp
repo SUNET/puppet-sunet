@@ -1,5 +1,8 @@
-# Run naemon with Thruk
-class sunet::naemon_monitor(
+# @summary Run naemon with Thruk.
+# @param receive_otel Feature flag to enable the LGTM stack
+# @param otel_retention Number of hours to keep logs, metrics and traces, defaults to 3 months
+#
+class sunet::naemon_monitor (
   String $domain,
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
@@ -12,47 +15,71 @@ class sunet::naemon_monitor(
   String $influxdb_tag = '1.8',
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
-  String $grafana_tag = '9.1.6',
+  String $grafana_tag = '11.0',
+  String $loki_tag = '3.0.0',
+  String $mimir_tag = '2.12.0',
+  String $tempo_tag = '2.4.2',
+  String $alloy_tag = 'v1.1.0',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
-  Array $exclude_hosts =  [],
+  Array $exclude_hosts = [],
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
-){
-
-
-
+  Optional[Boolean] $receive_otel = false,
+  String $otel_retention = '2232h',
+) {
   $naemon_container = $::facts['dockerhost2'] ? {
     yes => 'naemon_monitor-naemon-1',
     default => 'naemon_monitor_naemon_1',
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-      sunet::nftables::docker_expose { 'allow_http' :
+    sunet::nftables::docker_expose { 'allow_http' :
       iif           => $interface,
       allow_clients => 'any',
       port          => 80,
     }
-
-      sunet::nftables::docker_expose { 'allow_https' :
+    sunet::nftables::docker_expose { 'allow_https' :
       iif           => $interface,
       allow_clients => 'any',
       port          => 443,
     }
+    if $receive_otel {
+      sunet::nftables::docker_expose { 'allow_otel_grpc' :
+        iif           => $interface,
+        allow_clients => 'any',
+        port          => 4317,
+      }
+      sunet::nftables::docker_expose { 'allow_otel_http' :
+        iif           => $interface,
+        allow_clients => 'any',
+        port          => 4318,
+      }
+    }
   } else {
     sunet::misc::ufw_allow { 'allow-http':
       from => 'any',
-      port => '80'
+      port => '80',
     }
     sunet::misc::ufw_allow { 'allow-https':
       from => 'any',
-      port => '443'
+      port => '443',
+    }
+    if $receive_otel {
+      sunet::misc::ufw_allow { 'allow-otel-grpc':
+        from => 'any',
+        port => '4317',
+      }
+      sunet::misc::ufw_allow { 'allow-otel-http':
+        from => 'any',
+        port => '4318',
+      }
     }
   }
 
-  class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
+  class { 'sunet::dehydrated::client': domain => $domain, ssl_links => true }
 
   if lookup('shib_key', undef, undef, undef) != undef {
     sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
@@ -113,7 +140,45 @@ class sunet::naemon_monitor(
   }
   file { '/opt/naemon_monitor/data':
     ensure => directory,
-    owner  => 'www-data'
+    owner  => 'www-data',
+  }
+  if $receive_otel {
+    file { '/opt/naemon_monitor/loki.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/loki.yaml'),
+    }
+    file { '/opt/naemon_monitor/loki-server.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/loki-server.yaml'),
+    }
+    file { '/opt/naemon_monitor/loki':
+      ensure => directory,
+      owner  => 'www-data',
+    }
+    file { '/opt/naemon_monitor/mimir':
+      ensure => directory,
+      owner  => 'www-data',
+    }
+    file { '/opt/naemon_monitor/mimir-server.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/mimir-server.yaml'),
+    }
+    file { '/opt/naemon_monitor/tempo':
+      ensure => directory,
+      owner  => 'www-data',
+    }
+    file { '/opt/naemon_monitor/tempo-server.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/tempo-server.yaml'),
+    }
+    file { '/opt/naemon_monitor/alloy-server.alloy':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/alloy-server.alloy'),
+    }
+  }
+  file { '/opt/naemon_monitor/grafana':
+    ensure => directory,
+    owner  => 'www-data',
   }
 
   file { '/usr/lib/nagios/plugins/cosmos':
@@ -122,9 +187,9 @@ class sunet::naemon_monitor(
   }
 
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
-    $nagioscfg_dirs.each |$dir| {
-      ensure_resource('file',$dir, { ensure => directory} )
-    }
+  $nagioscfg_dirs.each |$dir| {
+    ensure_resource('file',$dir, { ensure => directory })
+  }
 
   nagioscfg::contactgroup {'alerts': }
 
@@ -267,7 +332,6 @@ class sunet::naemon_monitor(
     ok_criteria   => ['exit_status=0'],
     warn_criteria => ['exit_status=1', 'max_age=24h'],
   }
-
 
   class { 'nagioscfg':
     additional_entities => $additional_entities,
