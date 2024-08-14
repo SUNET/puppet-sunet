@@ -227,6 +227,7 @@ define sunet::lb::load_balancer::website(
       ensure  => 'file',
       mode    => '0400',
       content => template('sunet/lb/700-frontend-instance_nftables.nft.erb'),
+      validate_cmd => "nft -c -f %",
       notify  => Service['nftables'],
     })
   }

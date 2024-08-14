@@ -5,7 +5,7 @@ define sunet::pollinate($device = '/dev/random') {
     } else {
       apt::ppa {'ppa:ndn/pollen': ensure => absent }
     }
-    package {'pollinate': ensure => installed }
+    package {'pollinate': ensure => absent }
     file { '/etc/default/pollinate':
       ensure => file,
       owner  => root,
