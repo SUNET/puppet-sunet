@@ -23,7 +23,7 @@ class sunet::fleetlock_client (
     if $cosmos_fleetlock_config =~ Hash {
       file { '/etc/run-cosmos-fleetlock-conf':
       ensure  => file,
-      mode    => '0700',
+      mode    => '0600',
       content => template('sunet/fleetlock_client/run-cosmos-fleetlock-conf.erb'),
       }
     } else {
