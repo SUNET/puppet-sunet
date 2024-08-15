@@ -6,9 +6,8 @@ class sunet::fleetlock_client (
 
   if $fleetlock_config =~ Hash {
     $config_dir = '/etc/sunet-fleetlock'
-    exec { "sudo-make-me-a-sandwich_${config_dir}":
-      command => "/bin/mkdir -p ${config_dir}",
-      unless  => "/usr/bin/test -d ${config_dir}",
+    file { $config_dir:
+      ensure =>  'directory',
     }
     file { "${config_dir}/sunet-fleetlock.conf":
     ensure  => file,
