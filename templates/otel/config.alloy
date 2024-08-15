@@ -20,12 +20,29 @@ otelcol.processor.batch "otel" {
     traces  = [otelcol.exporter.otlp.default.input]
   }
 }
+loki.relabel "journal" {
+  forward_to = []
 
-
+  rule {
+    source_labels = ["__journal__systemd_unit"]
+    target_label  = "unit"
+  }
+}
+otelcol.receiver.loki "default" {
+  output {
+    logs = [otelcol.exporter.otlp.default.input]
+  }
+}
+loki.source.journal "read"  {
+  forward_to    = [otelcol.receiver.loki.default.receiver]
+  relabel_rules = loki.relabel.journal.rules
+  labels        = {component = "loki.source.journal"}
+}
 
 // Export local metrics, work the same as the older prometheus-node-exporter
 prometheus.exporter.unix "default" {
   include_exporter_metrics = true
+  enable_collectors = ["systemd", "processes"]
 }
 // Listen to prometheus
 otelcol.receiver.prometheus "default" {
@@ -48,18 +65,20 @@ discovery.file "targetsd" {
 }
 // scrape our own metrics 
 prometheus.scrape "default" {
-  targets = [discovery.relabel.node_exporter.output, discovery.file.targetsd.targets]
+  targets = discovery.relabel.node_exporter.output
   forward_to = [
     otelcol.receiver.prometheus.default.receiver,
   ]
 }
-
+prometheus.scrape "targetsd" {
+  targets = discovery.file.targetsd.targets
+  forward_to = [
+    otelcol.receiver.prometheus.default.receiver,
+  ]
+}
 // Write everything to the receiver below. 
 otelcol.exporter.otlp "default" {
   client {
-    endpoint = "<%= @otel_receiver %>"
-    tls {
-      insecure = true
-    }
+    endpoint = "<%= @otel_receiver %>:4317"
   }
 }
