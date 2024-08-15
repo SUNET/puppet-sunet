@@ -1,4 +1,3 @@
-
 otelcol.receiver.otlp "example" {
   grpc {
     endpoint = "[::]:4317"
@@ -37,7 +36,6 @@ otelcol.exporter.otlp "monitor_tempo" {
 		endpoint = "tempo:4317"
 	}
 }
-
 
 otelcol.exporter.prometheus "monitor_mimir" {
         forward_to = [prometheus.remote_write.monitor_mimir.receiver]

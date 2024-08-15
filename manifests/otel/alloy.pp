@@ -20,6 +20,12 @@ class sunet::otel::alloy (
   package { 'alloy':
     ensure => 'installed',
   }
+  file { '/etc/alloy' :
+    ensure => 'directory',
+    notify => Service['alloy'],
+    mode   => '0644',
+    group  => 'root',
+  }
   file { '/etc/alloy/targets.d' :
     ensure => 'directory',
     notify => Service['alloy'],
