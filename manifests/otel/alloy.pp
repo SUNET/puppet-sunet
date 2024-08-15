@@ -17,6 +17,10 @@ class sunet::otel::alloy (
     group   => 'root',
     content => 'deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main',
   }
+  exec { 'alloy_update':
+    command => 'apt update',
+    unless  => 'dpkg -l alloy',
+  }
   package { 'alloy':
     ensure => 'installed',
   }
