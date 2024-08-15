@@ -1,10 +1,20 @@
+
 otelcol.receiver.otlp "example" {
   grpc {
     endpoint = "[::]:4317"
+    tls {
+      cert_file = "/etc/dehydrated/fullchain.pem"
+      key_file = "/etc/dehydrated/privkey.pem"
+    }
   }
+
 
   http {
     endpoint = "[::]:4318"
+    tls {
+      cert_file = "/etc/dehydrated/fullchain.pem"
+      key_file = "/etc/dehydrated/privkey.pem"
+    }
   }
 
   output {

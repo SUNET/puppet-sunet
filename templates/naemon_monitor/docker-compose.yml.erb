@@ -127,4 +127,5 @@ services:
       - "4317-4318:4317-4318"
     volumes:
       - "/opt/naemon_monitor/alloy-server.alloy:/etc/alloy/config.alloy:ro"
+      - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
 <% end -%>
