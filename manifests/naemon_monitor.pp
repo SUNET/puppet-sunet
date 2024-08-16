@@ -31,7 +31,7 @@ class sunet::naemon_monitor (
   String $otel_retention = '2232h',
 ) {
   $naemon_container = $::facts['dockerhost2'] ? {
-    yes => 'naemon_monitor-naemon-1',
+    'yes' => 'naemon_monitor-naemon-1',
     default => 'naemon_monitor_naemon_1',
   }
 
@@ -88,13 +88,13 @@ class sunet::naemon_monitor (
 
   $thruk_admins_string = inline_template('ADMIN_USERS=<%- @thruk_admins.each do |user| -%><%= user %>,<%- end -%>')
   $thruk_users_string = inline_template('READONLY_USERS=<%- @thruk_users.each do |user| -%><%= user %>,<%- end -%>')
-  $thruk_env = [ $thruk_admins_string, $thruk_users_string ]
+  $thruk_env = [$thruk_admins_string, $thruk_users_string]
 
   if $influx_password == '' {
     err('ERROR: influx password not set')
   }
-  $influx_env =  [ 'INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux']
-  $nagflux_env =  [ "INFLUXDB_ADMIN_PASSWORD=${influx_password}" ]
+  $influx_env = ['INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux']
+  $nagflux_env = ["INFLUXDB_ADMIN_PASSWORD=${influx_password}"]
 
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/':
     ensure  => directory,
@@ -146,9 +146,27 @@ class sunet::naemon_monitor (
     group   => 'root',
     owner   => 'root',
   }
-  file { '/opt/naemon_monitor/influxdb.yaml':
+  file { '/opt/naemon_monitor/grafana-provision':
+    ensure => directory,
+    mode   => '0644',
+    group  => 'root',
+    owner  => 'root',
+  }
+  file { '/opt/naemon_monitor/grafana-provision/datasources':
+    ensure => directory,
+    mode   => '0644',
+    group  => 'root',
+    owner  => 'root',
+  }
+  file { '/opt/naemon_monitor/grafana-provision/dashboards':
+    ensure => directory,
+    mode   => '0644',
+    group  => 'root',
+    owner  => 'root',
+  }
+  file { '/opt/naemon_monitor/grafana-provision/datasources':
     ensure  => file,
-    content => template('sunet/naemon_monitor/influxdb.yaml'),
+    content => template('sunet/nanaemon_monitor/grafana-provision/datasources/influxdb.yaml'),
     mode    => '0644',
     group   => 'root',
     owner   => 'root',
@@ -160,9 +178,37 @@ class sunet::naemon_monitor (
     group  => 'root',
   }
   if $receive_otel {
-    file { '/opt/naemon_monitor/loki.yaml':
+    file { '/opt/naemon_monitor/grafana-provision/datasources/loki.yaml':
       ensure  => file,
-      content => template('sunet/naemon_monitor/loki.yaml'),
+      content => template('sunet/naemon_monitor/grafana-provision/datasources/loki.yaml'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/grafana-provision/datasources/mimir.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/grafana-provision/datasources/mimir.yaml'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/grafana-provision/datasources/tempo.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/grafana-provision/datasources/tempo.yaml'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/grafana-provision/dashboards/overview.json':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/grafana-provision/dashboards/overview.json'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/grafana-provision/dashboards/node-export-full.json':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/grafana-provision/dashboards/node-export-full.json'),
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
@@ -239,10 +285,10 @@ class sunet::naemon_monitor (
     })
   }
 
-  nagioscfg::contactgroup {'alerts': }
+  nagioscfg::contactgroup { 'alerts': }
 
   unless 'load' in $optout_checks {
-    nagioscfg::service {'check_load':
+    nagioscfg::service { 'check_load':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_load',
@@ -251,7 +297,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'users' in $optout_checks {
-    nagioscfg::service {'check_users':
+    nagioscfg::service { 'check_users':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_users',
@@ -260,7 +306,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'zombie_procs' in $optout_checks {
-    nagioscfg::service {'check_zombie_procs':
+    nagioscfg::service { 'check_zombie_procs':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_zombie_procs',
@@ -269,7 +315,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'total_procs' in $optout_checks {
-    nagioscfg::service {'check_total_procs':
+    nagioscfg::service { 'check_total_procs':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_total_procs_lax',
@@ -278,7 +324,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'dynamic_disk' in $optout_checks {
-    nagioscfg::service {'check_dynamic_disk':
+    nagioscfg::service { 'check_dynamic_disk':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_dynamic_disk',
@@ -287,7 +333,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'uptime' in $optout_checks {
-    nagioscfg::service {'check_uptime':
+    nagioscfg::service { 'check_uptime':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_uptime',
@@ -296,7 +342,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'reboot' in $optout_checks {
-    nagioscfg::service {'check_reboot':
+    nagioscfg::service { 'check_reboot':
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_reboot',
       description    => 'Reboot Needed',
@@ -305,7 +351,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'memory' in $optout_checks {
-    nagioscfg::service {'check_memory':
+    nagioscfg::service { 'check_memory':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_memory',
@@ -314,7 +360,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'entropy' in $optout_checks {
-    nagioscfg::service {'check_entropy':
+    nagioscfg::service { 'check_entropy':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_entropy',
@@ -323,7 +369,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'ntp_time' in $optout_checks {
-    nagioscfg::service {'check_ntp_time':
+    nagioscfg::service { 'check_ntp_time':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_ntp_time',
@@ -332,7 +378,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'scriptherder' in $optout_checks {
-    nagioscfg::service {'check_scriptherder':
+    nagioscfg::service { 'check_scriptherder':
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_scriptherder',
       description    => 'Scriptherder Status',
@@ -341,7 +387,7 @@ class sunet::naemon_monitor (
     }
   }
   unless 'apt' in $optout_checks {
-    nagioscfg::service {'check_apt':
+    nagioscfg::service { 'check_apt':
       use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_apt',
