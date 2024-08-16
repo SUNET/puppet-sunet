@@ -158,7 +158,6 @@ class sunet::naemon_monitor (
     owner  => 'www-data',
     mode   => '0644',
     group  => 'root',
-    owner   => 'root',
   }
   if $receive_otel {
     file { '/opt/naemon_monitor/loki.yaml':
