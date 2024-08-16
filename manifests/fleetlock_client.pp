@@ -8,11 +8,15 @@ class sunet::fleetlock_client (
     $config_dir = '/etc/sunet-fleetlock'
     file { $config_dir:
       ensure =>  'directory',
+      group  => 'root',
+      owner  => 'root',
     }
     file { "${config_dir}/sunet-fleetlock.conf":
     ensure  => file,
-    mode    => '0700',
     content => template('sunet/fleetlock_client/sunet-fleetlock.conf.erb'),
+    group   => 'root',
+    mode    => '0700',
+    owner   => 'root',
     }
   } else {
     warning('No fleetlock configuration available')
