@@ -119,76 +119,126 @@ class sunet::naemon_monitor (
   file { '/opt/naemon_monitor/stop-monitor.sh':
     ensure  => file,
     content => template('sunet/naemon_monitor/stop-monitor.sh.erb'),
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
   }
 
   file { '/etc/logrotate.d/naemon_monitor':
     ensure  => file,
     content => template('sunet/naemon_monitor/logrotate.erb'),
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
   }
 
   file { '/opt/naemon_monitor/grafana.ini':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana.ini'),
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
   }
   file { '/opt/naemon_monitor/histou.js':
     ensure  => file,
     content => template('sunet/naemon_monitor/histou.js'),
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
   }
   file { '/opt/naemon_monitor/influxdb.yaml':
     ensure  => file,
     content => template('sunet/naemon_monitor/influxdb.yaml'),
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
   }
   file { '/opt/naemon_monitor/data':
     ensure => directory,
     owner  => 'www-data',
+    mode   => '0644',
+    group  => 'root',
+    owner   => 'root',
   }
   if $receive_otel {
     file { '/opt/naemon_monitor/loki.yaml':
       ensure  => file,
       content => template('sunet/naemon_monitor/loki.yaml'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
     }
     file { '/opt/naemon_monitor/loki-server.yaml':
       ensure  => file,
       content => template('sunet/naemon_monitor/loki-server.yaml'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
     }
     file { '/opt/naemon_monitor/loki':
       ensure => directory,
       owner  => 'www-data',
+      mode   => '0644',
+      group  => 'root',
+      owner   => 'root',
     }
     file { '/opt/naemon_monitor/mimir':
       ensure => directory,
       owner  => 'www-data',
+      mode   => '0644',
+      group  => 'root',
+      owner   => 'root',
     }
     file { '/opt/naemon_monitor/mimir-server.yaml':
       ensure  => file,
       content => template('sunet/naemon_monitor/mimir-server.yaml'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
     }
     file { '/opt/naemon_monitor/tempo':
       ensure => directory,
       owner  => 'www-data',
+      mode   => '0644',
+      group  => 'root',
+      owner   => 'root',
     }
     file { '/opt/naemon_monitor/tempo-server.yaml':
       ensure  => file,
       content => template('sunet/naemon_monitor/tempo-server.yaml'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
     }
     file { '/opt/naemon_monitor/alloy-server.alloy':
       ensure  => file,
       content => template('sunet/naemon_monitor/alloy-server.alloy'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
     }
   }
   file { '/opt/naemon_monitor/grafana':
     ensure => directory,
     owner  => 'www-data',
+    mode   => '0644',
+    group  => 'root',
   }
 
   file { '/usr/lib/nagios/plugins/cosmos':
     ensure  => directory,
     recurse => true,
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
   }
 
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
   $nagioscfg_dirs.each |$dir| {
     ensure_resource('file',$dir, { ensure => directory })
+    mode   => '0644',
+    group  => 'root',
+    owner  => 'root',
   }
 
   nagioscfg::contactgroup {'alerts': }
@@ -305,23 +355,35 @@ class sunet::naemon_monitor (
   file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':
     ensure  => file,
     mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
+
     content => template('sunet/naemon_monitor/naemon-hostgroups.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
   file { '/etc/naemon/conf.d/cosmos/naemon-host.cfg':
     ensure  => file,
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
     content => template('sunet/naemon_monitor/naemon-host.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
   file { '/etc/naemon/conf.d/cosmos/naemon-service.cfg':
     ensure  => file,
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
     content => template('sunet/naemon_monitor/naemon-service.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
 
   file { '/etc/naemon/conf.d/cosmos/naemon-contactgroups.cfg':
     ensure  => file,
+    mode    => '0644',
+    group   => 'root',
+    owner   => 'root',
     content => template('sunet/naemon_monitor/naemon-contactgroups.cfg.erb'),
     require => File['/etc/naemon/conf.d/cosmos/'],
   }
