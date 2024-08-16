@@ -176,17 +176,15 @@ class sunet::naemon_monitor (
     }
     file { '/opt/naemon_monitor/loki':
       ensure => directory,
-      owner  => 'www-data',
+      owner  => 'root',
       mode   => '0644',
       group  => 'root',
-      owner   => 'root',
     }
     file { '/opt/naemon_monitor/mimir':
       ensure => directory,
-      owner  => 'www-data',
+      owner  => 'root',
       mode   => '0644',
       group  => 'root',
-      owner   => 'root',
     }
     file { '/opt/naemon_monitor/mimir-server.yaml':
       ensure  => file,
@@ -197,10 +195,9 @@ class sunet::naemon_monitor (
     }
     file { '/opt/naemon_monitor/tempo':
       ensure => directory,
-      owner  => 'www-data',
+      owner  => 'root',
       mode   => '0644',
       group  => 'root',
-      owner   => 'root',
     }
     file { '/opt/naemon_monitor/tempo-server.yaml':
       ensure  => file,
