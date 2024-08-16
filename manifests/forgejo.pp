@@ -10,12 +10,6 @@ class sunet::forgejo (
   package { 'duplicity':
     ensure => latest,
   }
-  sunet::docker_run {'alwayshttps':
-    ensure => 'present',
-    image  => 'docker.sunet.se/always-https',
-    ports  => ['80:80'],
-    env    => ['ACME_URL=http://acme-c.sunet.se'],
-  }
   # gitea generate secret INTERNAL_TOKEN
   $internal_token = lookup('internal_token', undef, undef, undef)
   # gitea generate secret JWT_SECRET

@@ -29,6 +29,8 @@
 # Author: Fredrik Thulin <fredrik@thulin.net>
 #
 
+#NOTE: 'docker-compose' is obsolete, we have replaced it with 'docker compose <>' command.
+
 """
 Start a frontend instance, with locking to not start simultaneously with another instance.
 
@@ -87,7 +89,7 @@ _defaults = {'syslog': True,
              'debug': True,
              'lockfile': '/var/lock/start-frontend',
              'lock_retry': 60,
-             'compose_bin': '/usr/local/bin/docker-compose'
+             'docker_bin': '/usr/bin/docker'
              }
 
 def parse_args(defaults=None):
@@ -136,10 +138,10 @@ def parse_args(defaults=None):
                         type=int, default=defaults['lock_retry'],
                         help = 'Seconds to wait for a lock before giving up',
     )
-    parser.add_argument('--compose_bin',
-                        dest = 'compose_bin',
-                        type=str, default=defaults['compose_bin'],
-                        help = 'Full path to docker-compose binary',
+    parser.add_argument('--docker_bin',
+                        dest = 'docker_bin',
+                        type=str, default=defaults['docker_bin'],
+                        help = 'Full path to docker binary',
     )
     args = parser.parse_args()
     return args
@@ -241,7 +243,8 @@ def main(myname='start-frontend', args=None, logger_in=None):
             logger.info('Starting frontend instance {!r}'.format(args.name))
             # Get a matching name for the compose container
             os.environ['COMPOSE_OPTIONS'] = '--name {!s}_compose'.format(args.name)
-            os.execv(args.compose_bin, [args.compose_bin,
+            os.execv(args.docker_bin, [args.docker_bin,
+                                        'compose',
                                         '-f', args.compose_file,
                                         'up',
                                         '--force-recreate',
