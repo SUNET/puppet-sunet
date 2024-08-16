@@ -199,6 +199,13 @@ class sunet::naemon_monitor (
       group   => 'root',
       owner   => 'root',
     }
+    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/default.yaml':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/default.yaml'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
     file { '/opt/naemon_monitor/grafana-provisioning/dashboards/overview.json':
       ensure  => file,
       content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/overview.json'),
