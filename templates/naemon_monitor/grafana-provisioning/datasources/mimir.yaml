@@ -10,8 +10,7 @@ datasources:
     jsonData:
       httpMethod: POST
       manageAlerts: true
-      prometheusType: Prometheus
-      prometheusVersion: 2.44.0
+      prometheusType: Mimir
       cacheLevel: 'High'
       disableRecordingRules: false
       incrementalQueryOverlapWindow: 10m
