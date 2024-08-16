@@ -217,7 +217,7 @@ class sunet::naemon_monitor (
   file { '/opt/naemon_monitor/grafana':
     ensure => directory,
     owner  => 'www-data',
-    mode   => '0644',
+    mode   => '0664',
     group  => 'root',
   }
 
