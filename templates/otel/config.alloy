@@ -27,6 +27,10 @@ loki.relabel "journal" {
     source_labels = ["__journal__systemd_unit"]
     target_label  = "unit"
   }
+  rule {
+    source_labels = ["__journal__hostname"]
+    target_label  = "hostname"
+  }
 }
 otelcol.receiver.loki "default" {
   output {
