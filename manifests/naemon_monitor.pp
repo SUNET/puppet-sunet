@@ -146,27 +146,27 @@ class sunet::naemon_monitor (
     group   => 'root',
     owner   => 'root',
   }
-  file { '/opt/naemon_monitor/grafana-provision':
+  file { '/opt/naemon_monitor/grafana-provisioning':
     ensure => directory,
     mode   => '0644',
     group  => 'root',
     owner  => 'root',
   }
-  file { '/opt/naemon_monitor/grafana-provision/datasources':
+  file { '/opt/naemon_monitor/grafana-provisioning/datasources':
     ensure => directory,
     mode   => '0644',
     group  => 'root',
     owner  => 'root',
   }
-  file { '/opt/naemon_monitor/grafana-provision/dashboards':
+  file { '/opt/naemon_monitor/grafana-provisioning/dashboards':
     ensure => directory,
     mode   => '0644',
     group  => 'root',
     owner  => 'root',
   }
-  file { '/opt/naemon_monitor/grafana-provision/datasources':
+  file { '/opt/naemon_monitor/grafana-provisioning/datasources':
     ensure  => file,
-    content => template('sunet/naemon_monitor/grafana-provision/datasources/influxdb.yaml'),
+    content => template('sunet/naemon_monitor/grafana-provisioning/datasources/influxdb.yaml'),
     mode    => '0644',
     group   => 'root',
     owner   => 'root',
@@ -178,37 +178,37 @@ class sunet::naemon_monitor (
     group  => 'root',
   }
   if $receive_otel {
-    file { '/opt/naemon_monitor/grafana-provision/datasources/loki.yaml':
+    file { '/opt/naemon_monitor/grafana-provisioning/datasources/loki.yaml':
       ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provision/datasources/loki.yaml'),
+      content => template('sunet/naemon_monitor/grafana-provisioning/datasources/loki.yaml'),
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
     }
-    file { '/opt/naemon_monitor/grafana-provision/datasources/mimir.yaml':
+    file { '/opt/naemon_monitor/grafana-provisioning/datasources/mimir.yaml':
       ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provision/datasources/mimir.yaml'),
+      content => template('sunet/naemon_monitor/grafana-provisioning/datasources/mimir.yaml'),
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
     }
-    file { '/opt/naemon_monitor/grafana-provision/datasources/tempo.yaml':
+    file { '/opt/naemon_monitor/grafana-provisioning/datasources/tempo.yaml':
       ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provision/datasources/tempo.yaml'),
+      content => template('sunet/naemon_monitor/grafana-provisioning/datasources/tempo.yaml'),
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
     }
-    file { '/opt/naemon_monitor/grafana-provision/dashboards/overview.json':
+    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/overview.json':
       ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provision/dashboards/overview.json'),
+      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/overview.json'),
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
     }
-    file { '/opt/naemon_monitor/grafana-provision/dashboards/node-export-full.json':
+    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/node-export-full.json':
       ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provision/dashboards/node-export-full.json'),
+      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/node-export-full.json'),
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
