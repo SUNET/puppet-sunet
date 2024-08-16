@@ -166,7 +166,7 @@ class sunet::naemon_monitor (
   }
   file { '/opt/naemon_monitor/grafana-provision/datasources':
     ensure  => file,
-    content => template('sunet/nanaemon_monitor/grafana-provision/datasources/influxdb.yaml'),
+    content => template('sunet/naemon_monitor/grafana-provision/datasources/influxdb.yaml'),
     mode    => '0644',
     group   => 'root',
     owner   => 'root',
