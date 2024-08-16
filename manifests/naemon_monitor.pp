@@ -235,10 +235,12 @@ class sunet::naemon_monitor (
 
   $nagioscfg_dirs = ['/etc/', '/etc/naemon/', '/etc/naemon/conf.d/', '/etc/naemon/conf.d/nagioscfg/', '/etc/naemon/conf.d/cosmos/']
   $nagioscfg_dirs.each |$dir| {
-    ensure_resource('file',$dir, { ensure => directory })
-    mode   => '0644',
-    group  => 'root',
-    owner  => 'root',
+    ensure_resource('file',$dir, {
+        ensure => directory,
+        mode   => '0644',
+        group  => 'root',
+        owner  => 'root',
+    })
   }
 
   nagioscfg::contactgroup {'alerts': }
