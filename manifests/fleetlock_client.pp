@@ -12,11 +12,11 @@ class sunet::fleetlock_client (
       owner  => 'root',
     }
     file { "${config_dir}/sunet-fleetlock.conf":
-    ensure  => file,
-    content => template('sunet/fleetlock_client/sunet-fleetlock.conf.erb'),
-    group   => 'root',
-    mode    => '0700',
-    owner   => 'root',
+      ensure  => file,
+      content => template('sunet/fleetlock_client/sunet-fleetlock.conf.erb'),
+      group   => 'root',
+      mode    => '0700',
+      owner   => 'root',
     }
   } else {
     warning('No fleetlock configuration available')
@@ -26,9 +26,9 @@ class sunet::fleetlock_client (
     $cosmos_fleetlock_config = lookup('cosmos_fleetlock_config', undef, undef, undef)
     if $cosmos_fleetlock_config =~ Hash {
       file { '/etc/run-cosmos-fleetlock-conf':
-      ensure  => file,
-      mode    => '0600',
-      content => template('sunet/fleetlock_client/run-cosmos-fleetlock-conf.erb'),
+        ensure  => file,
+        mode    => '0600',
+        content => template('sunet/fleetlock_client/run-cosmos-fleetlock-conf.erb'),
       }
     } else {
       warning('Cosmos instructed to use fleetlock but no configuration available')
