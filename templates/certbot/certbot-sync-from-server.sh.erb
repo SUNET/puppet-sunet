@@ -29,6 +29,7 @@ for file_system_entity in "${targetdir}"/live/*; do
     if [ -d "/etc/letsencrypt/live/${basename}" ]; then
       # … but is it changed?
       if ! cmp -s "/etc/letsencrypt/live/${basename}/fullchain.pem" "${targetdir}/live/${basename}/fullchain.pem"; then
+        # Yes, changed! - deploy!
         certs_to_deploy+=("${basename}")
       fi
     else
