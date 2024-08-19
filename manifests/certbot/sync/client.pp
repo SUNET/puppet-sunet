@@ -1,7 +1,7 @@
 # the certbot sync client
 class sunet::certbot::sync::client(
 ){
-  $key_path = '/root/.ssh/id_acmed_agent'
+  $key_path = '/root/.ssh/certbot_sync_client'
 
   exec { '/usr/bin/mkdir -p /opt/certbot/libexec':
     unless  => '/usr/bin/test -d /opt/certbot/libexec'
