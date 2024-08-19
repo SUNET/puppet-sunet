@@ -16,32 +16,27 @@ fi
 rsync -e "ssh -i $HOME/.ssh/id_certbot_sync_client" -az -v root@<%= scope.call_function('safe_hiera', ['certbot_sync_server'])  %>: "${targetdir}"
 
 certs_to_deploy=()
-if [ "${bootstrap}" == 1 ]; then
-	for file_system_entity in "${targetdir}"/live/*; do
-		basename=$(basename "${file_system_entity}")
-		if [ "$basename" == "README" ]; then
-			continue
-		else
+for file_system_entity in "${targetdir}"/live/*; do
+	basename=$(basename "${file_system_entity}")
+	if [ "$basename" == "README" ]; then
+		continue
+	fi
+    # Everthing is new - deploy all!
+    if [ "${bootstrap}" == 1 ]; then
+	    certs_to_deploy+=("${basename}")
+    else
+        # Cert exists…
+		if [ -d "/etc/letsencrypt/live/${basename}" ]; then
+            # … but is it changed?
+		    if ! cmp -s "/etc/letsencrypt/live/${basename}/fullchain.pem" "${targetdir}/live/${basename}/fullchain.pem"; then
+			    certs_to_deploy+=("${basename}")
+		    fi
+        else
+            # Cert is new - better deploy
 			certs_to_deploy+=("${basename}")
-		fi
-	done
-else
-	for file_system_entity in "${targetdir}"/live/*; do
-		basename=$(basename "${file_system_entity}")
-		if [ "$basename" == "README" ]; then
-			continue
-		else
-			if [ ! -d "/etc/letsencrypt/live/${basename}" ]; then
-				certs_to_deploy+=("${basename}")
-				continue
-			fi
-		fi
-		if ! cmp -s "/etc/letsencrypt/live/${basename}/fullchain.pem" "${targetdir}/live/${basename}/fullchain.pem"; then
-			certs_to_deploy+=("${basename}")
-		fi
-
-	done
-fi
+        fi
+    fi
+done
 
 if [ "${bootstrap}" == 0 ]; then
 	rsync -av --delete "${targetdir}/" /etc/letsencrypt/
