@@ -2,12 +2,12 @@
 
 set -e
 
-full_deploy=0
+bootstrap=0
 if [ ! -d /etc/letsencrypt/live ]; then
-	full_deploy=1
+	bootstrap=1
 fi
 
-if [ "${full_deploy}" == 1 ]; then
+if [ "${bootstrap}" == 1 ]; then
 	targetdir=/etc/letsencrypt/
 else
 	targetdir=$(mktemp -d /tmp/certbot_sync.XXXXX)
@@ -16,7 +16,7 @@ fi
 rsync -e "ssh -i $HOME/.ssh/id_certbot_sync_client" -az -v root@<%= scope.call_function('safe_hiera', ['certbot_sync_server'])  %>: "${targetdir}"
 
 certs_to_deply=()
-if [ "${full_deploy}" == 1 ]; then
+if [ "${bootstrap}" == 1 ]; then
 	for dir in "${targetdir}"/live/*; do
 		basename=$(basename "${dir}")
 		if [ "$basename" == "README" ]; then
@@ -43,7 +43,7 @@ else
 	done
 fi
 
-if [ "${full_deploy}" == 0 ]; then
+if [ "${bootstrap}" == 0 ]; then
 	rsync -av --delete "${targetdir}/" /etc/letsencrypt/
 	rm -rf "${targetdir}"
 fi
