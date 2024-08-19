@@ -15,14 +15,14 @@ fi
 
 rsync -e "ssh -i $HOME/.ssh/id_certbot_sync_client" -az -v root@<%= scope.call_function('safe_hiera', ['certbot_sync_server'])  %>: "${targetdir}"
 
-certs_to_deply=()
+certs_to_deploy=()
 if [ "${bootstrap}" == 1 ]; then
 	for dir in "${targetdir}"/live/*; do
 		basename=$(basename "${dir}")
 		if [ "$basename" == "README" ]; then
 			continue
 		else
-			certs_to_deply+=("${basename}")
+			certs_to_deploy+=("${basename}")
 		fi
 	done
 else
@@ -32,12 +32,12 @@ else
 			continue
 		else
 			if [ ! -d "/etc/letsencrypt/live/${basename}" ]; then
-				certs_to_deply+=("${basename}")
+				certs_to_deploy+=("${basename}")
 				continue
 			fi
 		fi
 		if ! cmp -s "/etc/letsencrypt/live/${basename}/fullchain.pem" "${targetdir}/live/${basename}/fullchain.pem"; then
-			certs_to_deply+=("${basename}")
+			certs_to_deploy+=("${basename}")
 		fi
 
 	done
@@ -48,7 +48,7 @@ if [ "${bootstrap}" == 0 ]; then
 	rm -rf "${targetdir}"
 fi
 
-for cert in "${certs_to_deply[@]}"; do
+for cert in "${certs_to_deploy[@]}"; do
 	echo "Running deploy hook(s) for ${cert}."
 	for hook in /etc/letsencrypt/renewal-hooks/deploy/*; do
 		RENEWED_LINEAGE="/etc/letsencrypt/live/${cert}" "${hook}"
