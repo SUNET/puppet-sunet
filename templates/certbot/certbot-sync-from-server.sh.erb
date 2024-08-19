@@ -34,8 +34,8 @@ for file_system_entity in "${targetdir}"/live/*; do
     else
       # Cert is new - better deploy
       certs_to_deploy+=("${basename}")
-      fi
     fi
+  fi
 done
 
 if [ "${bootstrap}" == 0 ]; then
