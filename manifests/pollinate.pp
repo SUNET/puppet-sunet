@@ -12,5 +12,7 @@ define sunet::pollinate($device = '/dev/random') {
       group  => root,
       content => template('sunet/pollen/pollinate.erb')
     }
+    cron { 'repollinate': ensure => absent,
+    }
   }
 }
