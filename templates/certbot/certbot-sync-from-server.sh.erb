@@ -19,21 +19,21 @@ certs_to_deploy=()
 for file_system_entity in "${targetdir}"/live/*; do
 	basename=$(basename "${file_system_entity}")
 	if [ "$basename" == "README" ]; then
-		continue
+        continue
 	fi
     # Everthing is new - deploy all!
     if [ "${bootstrap}" == 1 ]; then
 	    certs_to_deploy+=("${basename}")
     else
         # Cert exists…
-		if [ -d "/etc/letsencrypt/live/${basename}" ]; then
+	    if [ -d "/etc/letsencrypt/live/${basename}" ]; then
             # … but is it changed?
 		    if ! cmp -s "/etc/letsencrypt/live/${basename}/fullchain.pem" "${targetdir}/live/${basename}/fullchain.pem"; then
 			    certs_to_deploy+=("${basename}")
 		    fi
         else
             # Cert is new - better deploy
-			certs_to_deploy+=("${basename}")
+		    certs_to_deploy+=("${basename}")
         fi
     fi
 done
@@ -46,6 +46,6 @@ fi
 for cert in "${certs_to_deploy[@]}"; do
 	echo "Running deploy hook(s) for ${cert}."
 	for hook in /etc/letsencrypt/renewal-hooks/deploy/*; do
-		RENEWED_LINEAGE="/etc/letsencrypt/live/${cert}" "${hook}"
+	    RENEWED_LINEAGE="/etc/letsencrypt/live/${cert}" "${hook}"
 	done
 done
