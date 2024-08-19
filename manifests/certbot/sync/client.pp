@@ -18,9 +18,9 @@ class sunet::certbot::sync::client(
     ok_criteria   => ['exit_status=0', 'max_age=3h'],
     warn_criteria => ['exit_status=0', 'max_age=5h'],
   }
-  if lookup('acmed_agent_ssh_key', undef, undef, undef) {
+  if lookup('certbot_sync_client_ssh_key', undef, undef, undef) {
     ensure_resource('sunet::snippets::secret_file', $key_path, {
-      hiera_key => 'acmed_agent_ssh_key',
+      hiera_key => 'certbot_sync_client_ssh_key',
     })
   } else {
     if (!find_file($key_path)){
