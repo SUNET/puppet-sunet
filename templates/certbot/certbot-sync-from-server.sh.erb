@@ -17,8 +17,8 @@ rsync -e "ssh -i $HOME/.ssh/id_certbot_sync_client" -az -v root@<%= scope.call_f
 
 certs_to_deploy=()
 if [ "${bootstrap}" == 1 ]; then
-	for dir in "${targetdir}"/live/*; do
-		basename=$(basename "${dir}")
+	for file_system_entity in "${targetdir}"/live/*; do
+		basename=$(basename "${file_system_entity}")
 		if [ "$basename" == "README" ]; then
 			continue
 		else
@@ -26,8 +26,8 @@ if [ "${bootstrap}" == 1 ]; then
 		fi
 	done
 else
-	for dir in "${targetdir}"/live/*; do
-		basename=$(basename "${dir}")
+	for file_system_entity in "${targetdir}"/live/*; do
+		basename=$(basename "${file_system_entity}")
 		if [ "$basename" == "README" ]; then
 			continue
 		else
