@@ -6,13 +6,13 @@ class sunet::certbot::sync::client(
   exec { '/usr/bin/mkdir -p /opt/certbot/libexec':
     unless  => '/usr/bin/test -d /opt/certbot/libexec'
   }
-  file { '/opt/certbot/libexec/acme-dns-fetch-from-primary.sh':
+  file { '/opt/certbot/libexec/certbot-sync-from-server.sh':
     ensure  => file,
     mode    => '0700',
-    content => template('sunet/certbot/acme-dns-fetch-from-primary.sh.erb'),
+    content => template('sunet/certbot/certbot-sync-from-server.sh.erb'),
   }
-  sunet::scriptherder::cronjob { 'fetch-cert-from-primary':
-    cmd           => '/opt/certbot/libexec/acme-dns-fetch-from-primary.sh',
+  sunet::scriptherder::cronjob { 'certbot-sync-from-server':
+    cmd           => '/opt/certbot/libexec/certbot-sync-from-server.sh',
     minute        => '27',
     hour          => '*',
     ok_criteria   => ['exit_status=0', 'max_age=3h'],
