@@ -20,14 +20,8 @@ define sunet::ici_ca(
     }
     file { "/usr/lib/engines/engine_pkcs11.so": ensure => link, target => "/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so" }
 
-    file { '/root/ici_1.10-1ubuntu1_all.deb':
-      content => file('sunet/ici_ca/ici_1.10-1ubuntu1_all.deb'),
-      mode    => '0755'
-    }
-    exec { "install_ici_deb":
-      command => "/usr/bin/dpkg -i /root/ici_1.10-1ubuntu1_all.deb",
-      creates => "/usr/bin/ici"
-    }
+    apt::ppa { 'ppa:sunet/ppa': }
+    package { 'ici': ensure => latest }
   } else {
     apt::ppa { 'ppa:leifj/ici': }
     package { 'ici': ensure => latest }
