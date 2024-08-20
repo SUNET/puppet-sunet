@@ -36,7 +36,7 @@ define sunet::ici_ca(
   }
   if $public_repo_dir and $public_repo_url {
     cron { 'ici_publish':
-      command => "test -f /var/lib/ici/${name}/ca.crt && /usr/bin/ici ${name} gencrl && /usr/bin/ici ${name} publish ${public_repo_dir}",
+      command => "test -f /var/lib/ici/${name}/ca.crt && /usr/bin/ici ${name} gencrl && /usr/bin/ici ${name} publish html ${public_repo_dir}",
       user    => 'root',
       minute  => '*/5'
     }
