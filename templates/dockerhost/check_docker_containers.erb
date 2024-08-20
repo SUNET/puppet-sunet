@@ -188,9 +188,11 @@ def _collect_compose_service(compose_file: str, service_name: str, logger: loggi
         # Check that we have a version 2 or 3 compose file.
         # We don't know how services will be defined in future versions, so we don't accept them.
         version = data.get("version", "x")
+<% if @docker_class == 'sunet::dockerhost2' %>
         if version[0] not in ["2", "3"]:
             logger.debug(f'Skipping {compose_file!s}, unknown version "{version!r}"')
             return []
+<% end %>
         for service in data.get("services", []):
             container_name = data["services"][service].get("container_name", f"{service_name!s}<%= @container_name_delimiter %>{service!s}<%= @container_name_delimiter %>1")
             res.append(container_name)
