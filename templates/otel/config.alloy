@@ -34,7 +34,9 @@ loki.relabel "journal" {
 }
 otelcol.receiver.loki "default" {
   output {
-    logs = [otelcol.exporter.otlp.default.input]
+    metrics = [otelcol.processor.batch.otel.input]
+    logs    = [otelcol.processor.batch.otel.input]
+    traces  = [otelcol.processor.batch.otel.input]
   }
 }
 loki.source.journal "read"  {
