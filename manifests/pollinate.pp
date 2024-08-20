@@ -5,18 +5,12 @@ define sunet::pollinate($device = '/dev/random') {
     } else {
       apt::ppa {'ppa:ndn/pollen': ensure => absent }
     }
-    package {'pollinate': ensure => installed }
+    package {'pollinate': ensure => absent }
     file { '/etc/default/pollinate':
-      ensure => file,
-      owner  => root,
-      group  => root,
-      content => template('sunet/pollen/pollinate.erb')
+      ensure => absent,
     }
     cron {'repollinate':
-      command => 'pollinate -r',
-      user    => root,
-      hour    => '*',
-      minute  => '0'
+      command => 'pollinate -r', ensure => absent,
     }
   }
 }
