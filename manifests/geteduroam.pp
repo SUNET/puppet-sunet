@@ -2,24 +2,26 @@
 class sunet::geteduroam(
   String $domain,
   String $realm,
+  Hash $customers = {},
   Array $resolvers = [],
-  Boolean $mariadb = true,
-  String $mariadb_host = $facts['ipaddress_default'],
   Boolean $app = true,
   Boolean $radius = true,
+  Boolean $ocsp = true,
   String $app_tag = 'latest',
   String $freeradius_tag = 'latest',
+  String $ocsp_tag = 'latest',
+  String $haproxy_tag = '3.0.2',
   Array $app_admins = [],
-  Array $required_scoped_affiliation = [],
   Boolean $qa_federation = false,
 ){
 
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'root', mode => '0750'})
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/cert', { owner => 'root', group => 'root', mode => '0755'})
 
-  if $mariadb {
-    sunet::mariadb { 'geteduroam_db':
-    }
+  $db_servers = lookup('mariadb_cluster_nodes', Array, undef, [])
+  file { '/opt/geteduroam/haproxy.cfg':
+    content => template('sunet/geteduroam/haproxy.cfg.erb'),
+    mode    => '0755',
   }
 
   if $radius {
@@ -44,8 +46,23 @@ class sunet::geteduroam(
   if $app {
     ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/var', { owner => 'root', group => 'www-data', mode => '0770'})
 
+    # Ugly workaround since nunoc-ops install the class on all machines
+    if $facts['networking']['fqdn'] != 'get-app-1.test.eduroam.se' {
+      sunet::ici_ca::rp { 'infra': }
+    }
+
+    file {'/etc/ssl/private/infra.pem':
+      ensure => 'link',
+      target => "/etc/ssl/private/${facts['networking']['fqdn']}_infra.pem"
+    }
+
+    file {'/etc/ssl/private/infra.key':
+      ensure => 'link',
+      target => "/etc/ssl/private/${facts['networking']['fqdn']}_infra.key"
+    }
+
     if lookup('saml_metadata_key', undef, undef, undef) != undef {
-      sunet::snippets::secret_file { '/opt/geteduroam/cert/saml.key': hiera_key => 'saml_metadata_key' }
+      sunet::snippets::secret_file { '/opt/geteduroam/cert/saml.key': hiera_key => 'saml_metadata_key', group =>  'www-data',  mode  => '0750', }
       # assume cert is in cosmos repo
     } else {
       # make key pair
@@ -79,10 +96,6 @@ class sunet::geteduroam(
         mode    => '0755',
         }
     }
-    file { '/opt/geteduroam/cert/saml.key':
-      group =>  'www-data',
-      mode  => '0750',
-    }
     sunet::nftables::allow { 'expose-allow-http':
       from => 'any',
       port => 80,
@@ -91,12 +104,15 @@ class sunet::geteduroam(
       from => 'any',
       port => 443,
     }
-    class { 'sunet::dehydrated::client': domain =>  $domain, ssl_links => true }
   }
 
-  file { '/opt/geteduroam/cert/radius.key': ensure => link, target => "/etc/letsencrypt/live/${realm}/privkey.pem" }
-  file { '/opt/geteduroam/cert/radius.pem': ensure => link, target => "/etc/letsencrypt/live/${realm}/fullchain.pem" }
+  if $ocsp {
+      file { '/opt/geteduroam/config/eap.conf':
+        content => template('sunet/geteduroam/eap.conf.erb'),
+        mode    => '0755',
+        }
 
+  }
 
   sunet::docker_compose { 'geteduroam':
     content          => template('sunet/geteduroam/docker-compose.yml.erb'),
