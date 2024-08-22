@@ -188,7 +188,7 @@ def _collect_compose_service(compose_file: str, service_name: str, logger: loggi
         # Check that we have a version 2 or 3 compose file.
         # We don't know how services will be defined in future versions, so we don't accept them.
         version = data.get("version", "x")
-<% if @facts['dockerhost2'] =! 'yes' %>
+<% if @facts['dockerhost2'] != 'yes' %>
         if version[0] not in ["2", "3"]:
             logger.debug(f'Skipping {compose_file!s}, unknown version "{version!r}"')
             return []
