@@ -1,5 +1,6 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
+  Boolean $development_feature_flag = false,
   Boolean $infra_cert_from_this_class = true,
   Boolean $nftables_init = true,
   Optional[String] $publisher_cert="/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
@@ -78,16 +79,34 @@ class sunet::metadata::mdq_publisher(
   ]
 
 
-  service { 'docker-swamid-mdq-publisher':
-    ensure => 'stopped',
-    enable =>  false
+  if $development_feature_flag {
+    notice('development_feature_flag enabled')
+    service { 'docker-swamid-mdq-publisher':
+      ensure => 'stopped',
+      enable =>  false
+    }
+    sunet::docker_compose { 'mdq_publisher':
+      content          => template('sunet/metadata/docker-compose-mdq.yml.erb'),
+      service_name     => 'mdq_publisher',
+      compose_dir      => '/opt/',
+      compose_filename => 'docker-compose.yml',
+      description      => 'Metadata Query Protocol Publisher',
+    }
   }
-  sunet::docker_compose { 'mdq_publisher':
-    content          => template('sunet/metadata/docker-compose-mdq.yml.erb'),
-    service_name     => 'mdq_publisher',
-    compose_dir      => '/opt/',
-    compose_filename => 'docker-compose.yml',
-    description      => 'Metadata Query Protocol Publisher',
+  else {
+    sunet::docker_run { 'swamid-mdq-publisher':
+      image               => 'docker.sunet.se/swamid/mdq-publisher',
+      imagetag            => $imagetag,
+      hostname            => $facts['networking']['fqdn'],
+      volumes             => [
+        '/etc/ssl:/etc/ssl',
+        '/var/www/html:/var/www/html',
+        '/etc/dehydrated:/etc/dehydrated',
+      ],
+      env                 => $env + $env_certs,
+      uid_gid_consistency => false,
+      ports               => ['443:443'],
+    }
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
