@@ -1,6 +1,6 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
-  Boolean $development_feature_flag = false,
+  Boolean $docker_compose = false,
   Boolean $infra_cert_from_this_class = true,
   Boolean $nftables_init = true,
   Optional[String] $publisher_cert="/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
@@ -79,8 +79,7 @@ class sunet::metadata::mdq_publisher(
   ]
 
 
-  if $development_feature_flag {
-    notice('development_feature_flag enabled')
+  if $docker_compose {
     service { 'docker-swamid-mdq-publisher':
       ensure => 'stopped',
       enable =>  false
