@@ -115,6 +115,8 @@ define sunet::docker_run(
       }
     } else {
 
+      warning("This service requires the legacy class `docker_run`. It's recommended to migrate towards the native docker compose class `sunet::docker_compose` instead.")
+
       # Create a useful default network bridge for containers.
       #
       # Docker DNS isn't available on the default 'bridge' interface, so another
