@@ -178,6 +178,16 @@ class sunet::naemon_monitor (
     group  => 'root',
   }
   if $receive_otel {
+    # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone editors
+    # and admins can be manually assigned via gui. 
+    $allowed_users_string = join($thruk_admins + $thruk_users,' ')
+    file { '/opt/naemon_monitor/groups.txt':
+      ensure  => file,
+      content => inline_template('editors:<%= @allowed_users_string-%>'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
     file { '/opt/naemon_monitor/grafana-provisioning/datasources/loki.yaml':
       ensure  => file,
       content => template('sunet/naemon_monitor/grafana-provisioning/datasources/loki.yaml'),
