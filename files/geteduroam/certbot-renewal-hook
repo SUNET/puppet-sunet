@@ -7,3 +7,5 @@ install -m 644 ${RENEWED_LINEAGE}/fullchain.pem \
 install -m 640 -g 101 \
     ${RENEWED_LINEAGE}/privkey.pem \
     /opt/geteduroam/cert/radius.key
+
+docker restart geteduroam-radius-1
