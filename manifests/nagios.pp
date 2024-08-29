@@ -77,7 +77,7 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_zombie_procs':
     command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
   }
-  if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
+  if $facts =~ Hash and 'cosmos' in $facts and ('frontend_server' in $facts['cosmos']['host_roles']) {
     # There are more processes than normal on frontend hosts
     $_procw = $procsw + 350
     $_procc = $procsc + 350
