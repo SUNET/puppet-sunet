@@ -12,6 +12,8 @@ class sunet::dockerhost2(
   Boolean $nat                                = true,
 ) {
 
+  include apt
+
   $container_name_delimiter = '-'
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
