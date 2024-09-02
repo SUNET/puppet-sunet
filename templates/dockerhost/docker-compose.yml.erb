@@ -51,6 +51,7 @@ services:
 <% end -%>
 <% end -%>
     image: <%= @image_tag %>
+    pull_policy: always
 
 networks:
   docker:
