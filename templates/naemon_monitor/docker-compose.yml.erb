@@ -83,5 +83,46 @@ services:
     image: grafana/grafana:<%= @grafana_tag %>
     volumes:
       - '/opt/naemon_monitor/grafana.ini/:/etc/grafana/grafana.ini'
-      - '/opt/naemon_monitor/influxdb.yaml:/etc/grafana/provisioning/datasources/nagflux.yaml'
+      - '/opt/naemon_monitor/grafana-provisioning:/etc/grafana/provisioning:ro'
       - '/opt/naemon_monitor/histou.js:/usr/share/grafana/public/dashboards/histou.js:ro'
+      - '/opt/naemon_monitor/grafana:/var/lib/grafana:rw'
+
+<% if @receive_otel -%>
+  loki:
+    image: grafana/loki:<%= @loki_tag %>
+    ports:
+      - "3100:3100"
+    volumes:
+      - '/opt/naemon_monitor/loki:/loki:rw'
+      - '/opt/naemon_monitor/loki-server.yaml:/etc/loki/local-config.yaml:ro'
+    command: -config.file=/etc/loki/local-config.yaml
+
+  tempo:
+    image: grafana/tempo:<%= @tempo_tag %>
+    ports:
+      - "14268:14268"  # jaeger ingest
+      - "3200:3200"   # tempo
+      - "9095:9095" # tempo grpc
+      - "9411:9411"   # zipkin
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - "/opt/naemon_monitor/tempo-server.yaml:/etc/tempo.yaml"
+      - "/opt/naemon_monitor/tempo:/var/tempo:rw"
+
+  mimir:
+    image: grafana/mimir:<%= @mimir_tag %>
+    command: ["-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml"]
+    ports:
+      - "9009:9009"
+    volumes:
+      - "/opt/naemon_monitor/mimir-server.yaml:/etc/mimir.yaml:ro"
+      - "/opt/naemon_monitor/mimir:/data:rw"
+  alloy: #Router for otel
+    image: grafana/alloy:<%= @alloy_tag %>
+    command: ["run", "/etc/alloy/config.alloy"]
+    ports:
+      - "4317-4318:4317-4318"
+    volumes:
+      - "/opt/naemon_monitor/alloy-server.alloy:/etc/alloy/config.alloy:ro"
+      - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
+<% end -%>
