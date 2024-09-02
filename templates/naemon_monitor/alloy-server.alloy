@@ -1,0 +1,61 @@
+otelcol.receiver.otlp "example" {
+  grpc {
+    endpoint = "[::]:4317"
+    tls {
+      cert_file = "/etc/dehydrated/fullchain.pem"
+      key_file = "/etc/dehydrated/privkey.pem"
+    }
+  }
+
+
+  http {
+    endpoint = "[::]:4318"
+    tls {
+      cert_file = "/etc/dehydrated/fullchain.pem"
+      key_file = "/etc/dehydrated/privkey.pem"
+    }
+  }
+
+  output {
+    metrics = [otelcol.processor.batch.example.input]
+    logs    = [otelcol.processor.batch.example.input]
+    traces  = [otelcol.processor.batch.example.input]
+  }
+}
+
+otelcol.processor.batch "example" {
+  output {
+    metrics = [otelcol.exporter.prometheus.monitor_mimir.input]
+    logs    = [otelcol.exporter.loki.monitor_loki.input]
+    traces  = [otelcol.exporter.otlp.monitor_tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "monitor_tempo" {
+	client {
+		endpoint = "tempo:4317"
+	}
+}
+
+otelcol.exporter.prometheus "monitor_mimir" {
+        forward_to = [prometheus.remote_write.monitor_mimir.receiver]
+    }
+
+prometheus.remote_write "monitor_mimir" {
+    endpoint {
+        url = "http://mimir:9009/api/v1/push"
+
+    }
+}
+
+otelcol.exporter.loki "monitor_loki" {
+	forward_to = [loki.write.monitor_loki.receiver]
+}
+
+loki.write "monitor_loki" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+
+		
+	}
+}
