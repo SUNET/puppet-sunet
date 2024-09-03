@@ -119,7 +119,7 @@ class sunet::naemon_monitor (
   file { '/opt/naemon_monitor/stop-monitor.sh':
     ensure  => file,
     content => template('sunet/naemon_monitor/stop-monitor.sh.erb'),
-    mode    => '0644',
+    mode    => '0744',
     group   => 'root',
     owner   => 'root',
   }
