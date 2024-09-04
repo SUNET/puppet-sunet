@@ -46,7 +46,7 @@ class sunet::mail::postfix(
   $restricted_ports = [25]
   $restricted_ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
-      allow_clients => $relay_hosts,
+      allow_clients => $relaying_servers,
       port          => $port,
       iif           => $interface,
     }
