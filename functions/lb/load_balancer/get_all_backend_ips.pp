@@ -2,7 +2,7 @@
 function sunet::lb::load_balancer::get_all_backend_ips(
   Hash[String, Hash] $config,
 ) >> Array[String] {
-  if 'websites" in $config['load_balancer'] {
+  if 'websites' in $config['load_balancer'] {
     $websites = $config['load_balancer']['websites']
   } else {
     fail('Load balancer config does not contain "websites"')
@@ -12,7 +12,7 @@ function sunet::lb::load_balancer::get_all_backend_ips(
     if 'backends' in $v1 {
       map($v1['backends']) | $backend_name, $v2 | {
         map($v2) | $backend_fqdn, $v3 | {
-          if 'ips' in $v3 {
+          'ips' in $v3 ? {
             true => $v3['ips'],
             false => []
           }
