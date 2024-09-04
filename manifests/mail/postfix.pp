@@ -19,7 +19,7 @@ class sunet::mail::postfix(
 
   $config = lookup($environment)
   $db_hosts = join($config['db_hosts'], ' ')
-  $relay_hosts = join($relaying_servers, ', ')
+  $relay_hosts = join($relay_servers, ', ')
   $incomming_servers = $relaying_servers.map |$server| { 
     regsubst($server, '[\\[\\]]', '', 'G')
   }
