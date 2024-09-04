@@ -19,7 +19,7 @@ class sunet::mail::postfix(
 
   $config = lookup($environment)
   $db_hosts = join($config['db_hosts'], ' ')
-  $relay_hosts = join($relay_servers, ', ')
+  $relay_hosts = join($relaying_servers, ', ')
   $nextcloud_db = 'nextcloud'
   $nextcloud_db_user ='nextcloud'
   $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
