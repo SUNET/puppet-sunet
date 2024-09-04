@@ -20,6 +20,11 @@ class sunet::mail::postfix(
   $config = lookup($environment)
   $db_hosts = join($config['db_hosts'], ' ')
   $relay_hosts = join($relaying_servers, ', ')
+  $incomming_servers = $relaying_servers.map |$server| { 
+    $filtered = regsubst($server, '/[\[\]]/', '', 'EG')
+    notice($filtered)
+    $filtered
+  }
   $nextcloud_db = 'nextcloud'
   $nextcloud_db_user ='nextcloud'
   $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
@@ -46,7 +51,7 @@ class sunet::mail::postfix(
   $restricted_ports = [25]
   $restricted_ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
-      allow_clients => $relaying_servers,
+      allow_clients => $incomming_servers,
       port          => $port,
       iif           => $interface,
     }
