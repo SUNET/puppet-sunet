@@ -2,6 +2,7 @@
 if [ -e /var/snap/microk8s/current/var/lock/clustered.lock ]; then
   echo 'microk8s_role=worker'
   echo 'microk8s=yes'
+  echo 'microk8s_peers=unknown'
 elif [ -f /snap/bin/microk8s ]; then
   echo 'microk8s_role=controller'
   echo 'microk8s=yes'
