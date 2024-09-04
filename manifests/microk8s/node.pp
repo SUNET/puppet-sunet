@@ -15,76 +15,104 @@ class sunet::microk8s::node(
   } else {
     $type = 'controller'
   }
-
   if $peers != [] {
     $final_peers = $peers
   } elsif $hiera_peers != [] {
     $final_peers = $hiera_peers
   } elsif $facts['configured_hosts_in_cosmos']['sunet::microk8s::node'] != [] {
-    $facts['configured_hosts_in_cosmos']['sunet::microk8s::node'].each | String $_host| {
-      $final_peers = { $_host  => { 'ip4' => dns_a($_host),
-                                    'ip6' => dns_aaaa($_host) }
-      }
-    }
-  } 
+    $final_peers = $facts['configured_hosts_in_cosmos']['sunet::microk8s::node']
+  }
+  $public_controller_ports = [8080, 8443, 16443]
+  $private_controller_ports = [10250, 10255, 25000, 12379, 10257, 10259, 19001]
+  $private_worker_ports = [10250, 10255, 16443, 25000, 12379, 10257, 10259, 19001]
+
   # Loop through peers and do things that require their ip:s
-  $final_peers.each | String $peer, Hash $ips| {
-    unless $peer == 'unknown' or $ips['ip4'] == $facts['ipaddress'] {
+  $final_peers.each | String $peer| {
+    $ip4 = dns_lookup4($peer)
+    if $ip4 == nil {
+      warning("Missing ipv4 address for ${peer}")
+    }
+    $ip6 = dns_lookup6($peer)
+    if $ip6 == nil {
+      warning("Missing ipv6 address for ${peer}")
+    }
+    unless $peer == 'unknown' or $ip4 == $facts['ipaddress'] {
       file_line { "hosts_${peer}_ip4":
         path => '/etc/hosts',
-        line => "${ips['ip4']} ${peer}",
+        line => "${ip4} ${peer}",
       }
       file_line { "hosts_${peer}_ip6":
         path => '/etc/hosts',
-        line => "${ips['ip6']} ${peer}",
+        line => "${ip6} ${peer}",
       }
     }
-
-    $public_controller_ports = [8080, 8443, 16443]
-    $private_controller_ports = [10250, 10255, 25000, 12379, 10257, 10259, 19001]
-    $private_worker_ports = [10250, 10255, 16443, 25000, 12379, 10257, 10259, 19001]
-
-    if $type == 'controller' {
-      sunet::misc::ufw_allow { "nft_${peer}_private":
-        port => $private_controller_ports,
-        from => $ips['ip4'],
-      }
-      sunet::misc::ufw_allow { "nft_${peer}_private":
-        port => $private_controller_ports,
-        from => $ips['ip6'],
-      }
-      sunet::misc::ufw_allow { "nft_${peer}_public":
-        port => $public_controller_ports,
-        from => 'any',
+    if $::facts['sunet_nftables_enabled'] == 'yes' {
+      if $type == 'controller' {
+        sunet::nftables::allow { "nft_${peer}_private_ip4":
+          port => $private_controller_ports,
+          from => $ip4,
+        }
+        sunet::nftables::allow { "nft_${peer}_private_ip6":
+          port => $private_controller_ports,
+          from => $ip6,
+        }
+        sunet::nftables::allow { "nft_${peer}_public":
+          port => $public_controller_ports,
+          from => 'any',
+        }
+      } else {
+        sunet::nftables::allow { "nft_${peer}_private":
+          port => $private_worker_ports,
+          from => $peer_ip,
+        }
+        sunet::nftables::allow { "nft_${peer}_udp_ip4":
+          port  => [4789],
+          from  => $ip4,
+          proto => 'udp',
+        }
+        sunet::nftables::allow { "nft_${peer}_udp_ip6":
+          port  => [4789],
+          from  => $ip6,
+          proto => 'udp',
+        }
       }
     } else {
-      sunet::misc::ufw_allow { "nft_${peer}_private":
-        port => $private_worker_ports,
-        from => $ips['ip4'],
-      }
-      sunet::misc::ufw_allow { "nft_${peer}_private":
-        port => $private_worker_ports,
-        from => $ips['ip6'],
+      if $type == 'controller' {
+        sunet::misc::ufw_allow { "nft_${peer}_private_ip4":
+          port => $private_controller_ports,
+          from => $ip4,
+        }
+        sunet::misc::ufw_allow { "nft_${peer}_private_ip6":
+          port => $private_controller_ports,
+          from => $ip6,
+        }
+        sunet::misc::ufw_allow { "nft_${peer}_public":
+          port => $public_controller_ports,
+          from => 'any',
+        }
+      } else {
+        sunet::misc::ufw_allow { "nft_${peer}_private_ip4":
+          port => $private_worker_ports,
+          from => $ip4,
+        }
+        sunet::misc::ufw_allow { "nft_${peer}_private_ip6":
+          port => $private_worker_ports,
+          from => $ip6,
+        }
       }
     }
-    sunet::misc::ufw_allow { "nft_${peer}_udp":
+    sunet::misc::ufw_allow { "nft_${peer}_udp_ip4":
       port  => [4789],
-      from  => $ips['ip4'],
+      from  => $ip4,
       proto => 'udp',
     }
-    sunet::misc::ufw_allow { "nft_${peer}_udp":
+    sunet::misc::ufw_allow { "nft_${peer}_udp_ip6":
       port  => [4789],
-      from  => $ips['ip6'],
+      from  => $ip6,
       proto => 'udp',
     }
   }
-
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-    file { '/etc/nftables/conf.d/499-microk8s-sets.nft':
-      ensure  => file,
-      content => template('sunet/microk8s/499-microk8s-sets.nft.erb'),
-      mode    => '0644',
-    }
     file { '/etc/nftables/conf.d/500-microk8s-rules.nft':
       ensure  => file,
       content => template('sunet/microk8s/500-microk8s-rules.nft.erb'),
@@ -162,8 +190,8 @@ class sunet::microk8s::node(
   }
   $namespaces = lookup('microk8s_secrets', undef, undef, {})
   $namespaces.each |String $namespace, Hash $secrets| {
-      $secrets.each |String $name, Array $secret| {
-        set_microk8s_secret($namespace, $name, $secret)
+    $secrets.each |String $name, Array $secret| {
+      set_microk8s_secret($namespace, $name, $secret)
     }
   }
 }
