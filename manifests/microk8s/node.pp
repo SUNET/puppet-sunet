@@ -22,18 +22,14 @@ class sunet::microk8s::node(
     $final_peers = $hiera_peers
   }
   elsif $facts['configured_hosts_in_cosmos']['sunet::microk8s::node'] != [] {
-    $final_peers = map($facts['configured_hosts_in_cosmos']['sunet::microk8s::node']) | String $peer| {
-      $ips = dns_lookup($peer)
-      Hash($peer,$ips)
-    }
+    $final_peers = $facts['configured_hosts_in_cosmos']['sunet::microk8s::node']
   } else {
     warning('Unable to figure out our peers, leaving BROKEN firewalls')
   }
   notice('microk8s peers: ',$final_peers)
   # Loop through peers and do things that require their ip:s
-  $final_peers.each | String $peer_tuple| {
-    $peer_ip = split($peer_tuple, ' ')[0]
-    $peer = split($peer_tuple, ' ')[1]
+  $final_peers.each | String $peer| {
+    $peer_ip = dns_lookup($peer)
     unless $peer == 'unknown' or $facts['ipaddress'] in $peer_ip {
       $peer_ip.each | String $ip | {
         file_line { "hosts_${peer}_${ip}":
