@@ -2,3 +2,5 @@ add rule inet filter input iifname "vxlan.calico" counter accept
 add rule inet filter forward iifname "vxlan.calico" counter accept
 add rule inet filter forward iifname "cali*" counter accept
 add rule inet filter forward oifname "cali*" counter accept
+add rule inet filter forward ip saddr 10.1.0.0/16 counter accept
+add rule inet filter forward ip daddr 10.1.0.0/16 counter accept
