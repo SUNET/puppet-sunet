@@ -27,6 +27,9 @@ class sunet::microk8s::node(
     warning('Unable to figure out our peers, leaving BROKEN firewalls')
   }
   notice('microk8s peers: ',$final_peers)
+  $public_controller_ports = [8080, 8443, 16443]
+  $private_controller_ports = [10250, 10255, 25000, 12379, 10257, 10259, 19001]
+  $private_worker_ports = [10250, 10255, 16443, 25000, 12379, 10257, 10259, 19001]
   # Loop through peers and do things that require their ip:s
   $final_peers.each | String $peer| {
     $peer_ip = dns_lookup($peer)
@@ -38,9 +41,6 @@ class sunet::microk8s::node(
         }
       }
     }
-    $public_controller_ports = [8080, 8443, 16443]
-    $private_controller_ports = [10250, 10255, 25000, 12379, 10257, 10259, 19001]
-    $private_worker_ports = [10250, 10255, 16443, 25000, 12379, 10257, 10259, 19001]
     if $::facts['sunet_nftables_enabled'] == 'yes' {
       if $type == 'controller' {
         sunet::nftables::allow { "nft_${peer}_private":
