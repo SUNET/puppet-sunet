@@ -239,9 +239,9 @@ class sunet::naemon_monitor (
     }
     file { '/opt/naemon_monitor/loki':
       ensure => directory,
-      owner  => 'root',
+      owner  => '10001',
       mode   => '0644',
-      group  => 'root',
+      group  => '10001',
     }
     file { '/opt/naemon_monitor/mimir':
       ensure => directory,

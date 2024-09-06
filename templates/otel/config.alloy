@@ -1,10 +1,11 @@
-// Listen to localhost for open telemetry. 
+// Listen to all interfaces to help with dockers sending data
+// Note that we don't open the firewall for external hosts
 otelcol.receiver.otlp "otel" {
   grpc {
-    endpoint = "127.0.0.1:4317"
+    endpoint = "[::]:4317"
   }
   http {
-    endpoint = "127.0.0.1:4318"
+    endpoint = "[::]:4318"
   }
   output {
     metrics = [otelcol.processor.batch.otel.input]

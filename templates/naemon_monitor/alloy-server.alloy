@@ -32,9 +32,13 @@ otelcol.processor.batch "example" {
 }
 
 otelcol.exporter.otlp "monitor_tempo" {
-	client {
-		endpoint = "tempo:4317"
-	}
+  client {
+    endpoint = "tempo:4317"
+    tls {
+      insecure             = true
+      insecure_skip_verify = true
+    }
+  }
 }
 
 otelcol.exporter.prometheus "monitor_mimir" {
