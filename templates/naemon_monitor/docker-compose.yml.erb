@@ -104,6 +104,9 @@ services:
       - "3200:3200"   # tempo
       - "9095:9095" # tempo grpc
       - "9411:9411"   # zipkin
+    expose: #Only used between dockers
+      - "4317"  #grpc otel
+      - "4318"  #http otel
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
       - "/opt/naemon_monitor/tempo-server.yaml:/etc/tempo.yaml"
