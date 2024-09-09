@@ -27,14 +27,14 @@ otelcol.processor.batch "example" {
   output {
     metrics = [otelcol.exporter.prometheus.monitor_mimir.input]
     logs    = [otelcol.exporter.loki.monitor_loki.input]
-    traces  = [otelcol.exporter.otlp.monitor_tempo.input]
+    traces  = [otelcol.exporter.otlphttp.monitor_tempo.input]
   }
 }
 
-otelcol.exporter.otlp "monitor_tempo" {
-	client {
-		endpoint = "tempo:4317"
-	}
+otelcol.exporter.otlphttp "monitor_tempo" {
+  client {
+    endpoint = "http://tempo:4318"
+  }
 }
 
 otelcol.exporter.prometheus "monitor_mimir" {

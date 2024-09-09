@@ -18,7 +18,7 @@ class sunet::naemon_monitor (
   String $grafana_tag = '11.1.4',
   String $loki_tag = '3.1.1',
   String $mimir_tag = '2.13.0',
-  String $tempo_tag = '2.4.2',
+  String $tempo_tag = '2.6.0',
   String $alloy_tag = 'v1.3.0',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
@@ -239,9 +239,9 @@ class sunet::naemon_monitor (
     }
     file { '/opt/naemon_monitor/loki':
       ensure => directory,
-      owner  => 'root',
+      owner  => '10001',
       mode   => '0644',
-      group  => 'root',
+      group  => '10001',
     }
     file { '/opt/naemon_monitor/mimir':
       ensure => directory,
@@ -258,9 +258,9 @@ class sunet::naemon_monitor (
     }
     file { '/opt/naemon_monitor/tempo':
       ensure => directory,
-      owner  => 'root',
+      owner  => '10001',
       mode   => '0644',
-      group  => 'root',
+      group  => '10001',
     }
     file { '/opt/naemon_monitor/tempo-server.yaml':
       ensure  => file,
