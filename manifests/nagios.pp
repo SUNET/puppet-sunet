@@ -4,6 +4,8 @@ include concat
 class sunet::nagios(
   $nrpe_service = 'nagios-nrpe-server',
   $command_timeout = 60,
+  $procsw          = 150,
+  $procsc          = 200,
 ) {
 
   $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
@@ -79,17 +81,19 @@ class sunet::nagios(
       command_line => '/usr/lib/nagios/plugins/check_procs -w 150 -c 200'
     }
   } else {
-    if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
-      # There are more processes than normal on frontend hosts
-      sunet::nagios::nrpe_command {'check_total_procs_lax':
-        command_line => '/usr/lib/nagios/plugins/check_procs -k -w 500 -c 750'
+      if is_hash($facts) and has_key($facts, 'cosmos') and ('frontend_server' in $facts['cosmos']['host_roles']) {
+        $_procw = $procsw + 350
+        $_procc = $procsc + 350
+      } else {
+        $_procw = $procsw
+        $_procc = $procsc
       }
-    } else {
-      sunet::nagios::nrpe_command {'check_total_procs_lax':
-        command_line => '/usr/lib/nagios/plugins/check_procs -k -w 150 -c 200'
-      }
-    }
   }
+
+  sunet::nagios::nrpe_command {'check_total_procs_lax':
+    command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
+  }
+
   sunet::nagios::nrpe_command {'check_uptime':
     command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
   }
