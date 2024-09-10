@@ -28,12 +28,18 @@ class sunet::influx(
       ports    => ['8086:8086'],
     }
   } else {
-    sunet::docker_compose { 'influxdb2':
-      content          => template('sunet/influx/docker-compose-influxdb2.yml.erb'),
-      service_name     => 'influxdb2',
-      compose_dir      => '/opt/',
-      compose_filename => 'docker-compose-influxdb2.yml',
-      description      => 'influxdb2',
+    # MUST be set properly in hiera to continue
+    $influxdb_init_username = safe_hiera('influxdb_init_username')
+    $influxdb_init_password = safe_hiera('influxdb_init_password')
+    $influxdb_init_admin_token = safe_hiera('influxdb_init_admin_token')
+    if $influxdb_init_username != 'NOT_SET_IN_HIERA' and $influxdb_init_password != 'NOT_SET_IN_HIERA' and $influxdb_init_admin_token != 'NOT_SET_IN_HIERA' {
+      sunet::docker_compose { 'influxdb2':
+        content          => template('sunet/influx/docker-compose-influxdb2.yml.erb'),
+        service_name     => 'influxdb2',
+        compose_dir      => '/opt/',
+        compose_filename => 'docker-compose-influxdb2.yml',
+        description      => 'influxdb2',
+      }
     }
   }
 
