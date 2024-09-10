@@ -68,7 +68,7 @@ class sunet::influx(
       path    => '/etc/letsencrypt/renewal-hooks/post/certbot-acmed-renew-post-hook',
       mode    => '0500',
       owner   => 'root',
-      content => template('sunet/influx/certbot-acmed-renew-post-hook')
+      content => template('sunet/influx/certbot-acmed-renew-post-hook.erb')
     }
   }
 
