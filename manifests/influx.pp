@@ -40,6 +40,8 @@ class sunet::influx(
         compose_filename => 'docker-compose-influxdb2.yml',
         description      => 'influxdb2',
       }
+    } else {
+      notice("You need to set influxdb_init_username, influxdb_init_password, influxdb_init_admin_token in eyaml")
     }
   }
 
