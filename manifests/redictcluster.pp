@@ -82,7 +82,11 @@ class sunet::redictcluster(
         }
       }
     } else {
-      sunet::misc::ufw_allow { "redict_port_${i}":
+      sunet::misc::ufw_allow { "redict_port_${i}_v6":
+        from => '::/0',
+        port => [$redictportnum,$clusterportnum],
+      }
+      sunet::misc::ufw_allow { "redict_port_${i}_v4":
         from => '0.0.0.0/0',
         port => [$redictportnum,$clusterportnum],
       }
