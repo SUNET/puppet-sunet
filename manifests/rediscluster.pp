@@ -80,9 +80,13 @@ class sunet::rediscluster(
         }
       }
     } else {
-      sunet::misc::ufw_allow { "redis_port_${i}":
+      sunet::misc::ufw_allow { "redis_port_${i}_v6":
         port => [$redisportnum,$clusterportnum],
-        from => ['::/0', '0.0.0.0/0'],
+        from => '::/0',
+      }
+      sunet::misc::ufw_allow { "redis_port_${i}_v4":
+        port => [$redisportnum,$clusterportnum],
+        from => '0.0.0.0/0',
       }
     }
   }
