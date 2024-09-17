@@ -1,9 +1,3 @@
-# Mariadb cluster definefor SUNET
-define sunet::mariadb(){
-  warning('Please transition to the class "sunet::mariadb::server" instead of this define')
-  require sunet::mariadb::server
-}
-
 # Mariadb cluster class for SUNET
 class sunet::mariadb::server(
   $mariadb_version=latest,
