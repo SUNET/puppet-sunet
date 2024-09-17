@@ -1,3 +1,10 @@
+# Mariadb cluster definefor SUNET
+define sunet::mariadb(){
+
+  require sunet::mariadb
+
+}
+
 # Mariadb cluster class for SUNET
 class sunet::mariadb(
   $mariadb_version=latest,
