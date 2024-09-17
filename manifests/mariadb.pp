@@ -1,12 +1,12 @@
 # Mariadb cluster definefor SUNET
 define sunet::mariadb(){
 
-  require sunet::mariadb
+  require sunet::mariadb::server
 
 }
 
 # Mariadb cluster class for SUNET
-class sunet::mariadb(
+class sunet::mariadb::server(
   $mariadb_version=latest,
   $bootstrap=0,
   $ports = [3306, 4444, 4567, 4568],
