@@ -1,5 +1,5 @@
 # Mariadb cluster class for SUNET
-define sunet::mariadb(
+class sunet::mariadb(
   $mariadb_version=latest,
   $bootstrap=0,
   $ports = [3306, 4444, 4567, 4568],
