@@ -84,7 +84,7 @@ class sunet::bankidp(
     class { 'sunet::frontend::register_sites':
       sites => {
         $service_name => {
-          frontends => ['sthb-b-1.sunet.se', 'tug-lb-1.sunet.se'],
+          frontends => ['sthb-lb-1.sunet.se', 'tug-lb-1.sunet.se'],
           port      => '443',
         }
       }
