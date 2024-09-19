@@ -12,7 +12,7 @@ services:
       - /opt/mariadb/init:/docker-entrypoint-initdb.d
       - /opt/mariadb/scripts:/scripts
     network_mode: host
-<%- if @dns -%>
+<%- if !@dns.empty? -%>
     dns:
       - <%= @dns %>
 <%- end -%>
