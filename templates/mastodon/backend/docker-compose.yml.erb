@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  postgres:
+    container_name: postgres
+    restart: always
+    image: postgres:14-alpine
+    dns:
+      - 89.32.32.32
+    ports:
+      - "5432:5432"
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+    volumes:
+      - /opt/mastodon_backend/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=password
+      - POSTGRES_USER=<%= @db_user %>
+      - POSTGRES_PASSWORD=<%= @db_pass %>
+      - POSTGRES_DB=<%= @db_name %>
+
+  redis:
+    container_name: redis
+    restart: always
+    image: redis:6-alpine
+    dns:
+      - 89.32.32.32
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+    command: redis-server /data/server.conf
+    volumes:
+      - /opt/mastodon_backend/redis:/data

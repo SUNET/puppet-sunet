@@ -1,6 +1,3 @@
-include stdlib
-include concat
-
 define sunet::sudoer($user_name = undef, $command_line = undef, $collection = undef) {
   $file = $collection ? {
     undef   => $name,

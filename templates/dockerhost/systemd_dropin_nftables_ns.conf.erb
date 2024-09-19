@@ -45,6 +45,19 @@ ExecStartPre=-/sbin/ip -6 route list
 # in the hosts namespace too.
 ExecStartPre=/usr/bin/nsenter -t 1 -n -- /sbin/sysctl -w net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1
 
+# Route traffic from the container networks to the docker IP in the namespace, and let dockers iptables
+# rules handle the rest.
+ExecStartPre=/usr/bin/nsenter -t 1 -n -- /sbin/ip route add fd0c::/16 via fd00::2
+
+# Un-NATed packets from the containers appear quite frequently on the to_docker interface (looks like RST
+# packets when then connection is already closed for example), and gets logged as martian packets. Disable that.
+#
+# For some reason, this gets logged even though net.ipv4.conf.to_docker.log_martians = 0:
+#
+#   [Mon Mar 21 07:36:02 2022] IPv4: martian source 130.242.x.y from 172.16.8.4, on dev to_docker
+#
+# on Linux 4.15 at least, so we disable all martian logging.
+ExecStartPre=/sbin/sysctl -w net.ipv4.conf.all.log_martians=0
 
 # Setup named namespace for easier troubleshooting from the outside.
 ExecStartPost=-/bin/mkdir -p /var/run/netns

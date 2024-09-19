@@ -3,7 +3,7 @@ version: '3'
 services:
 
   auth_server:
-    image: 'docker.sunet.se/sunet/sunet-auth-server:<%= scope.function_safe_hiera(["auth_server_tag"]) %>'
+    image: 'docker.sunet.se/sunet/sunet-auth-server:<%= @auth_server_tag %>'
     restart: always
     expose:
       - 8080
@@ -17,9 +17,40 @@ services:
       - "app_name=auth-server"
       - "config_file=/opt/sunet/etc/config.yaml"
       - "app_entrypoint=auth_server.run:app"
+      - "username=<%= @username %>"
+      - "group=<%= @group %>"
+
+<% if @saml_sp -%>
+  # mongodb and pyff are only needed if we want to run a stateful service like a SAML SP
+  mongodb:
+    image: "docker.sunet.se/library/mongo:5.0.14"
+    restart: always
+    expose:
+      - 27017
+    volumes:
+      - mongodbdata:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: <%= @mongodb_root_username %>
+      MONGO_INITDB_ROOT_PASSWORD: <%= @mongodb_root_password %>
+
+  pyff:
+    image: 'docker.sunet.se/pyff:2.0.0'
+    restart: always
+    expose:
+      - 8080
+    volumes:
+      - /opt/sunet/<%= @service_name %>-pyff/etc/mdx.fd:/opt/pyff/mdx.fd:ro
+      - /opt/sunet/<%= @service_name %>-pyff/etc/md-signer2.crt:/opt/pyff/md-signer2.crt:ro
+      - /etc/passwd:/etc/passwd:ro
+      - /etc/group:/etc/group:ro
+    environment:
+       - LOGLEVEL=INFO
+       - PIPELINE=/opt/pyff/mdx.fd
+       - UPDATE_FREQUENCY=900
+<% end %>
 
   haproxy:
-    image: 'docker.sunet.se/eduid/haproxy:<%= scope.function_safe_hiera(["haproxy_tag"]) %>'
+    image: 'docker.sunet.se/eduid/haproxy:<%= @haproxy_tag %>'
     restart: always
     ports:
       - <%= @port %>:443
@@ -31,3 +62,12 @@ services:
      - auth_server
     depends_on:
      - auth_server
+
+volumes:
+  mongodbdata:
+
+# Provide user-friendly name of bridge interface
+networks:
+  default:
+    driver_opts:
+      com.docker.network.bridge.name: br-<%= @service_name[0,12] %>  # bridge name can not be longer than 15 chars

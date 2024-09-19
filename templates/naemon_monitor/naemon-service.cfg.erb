@@ -1,0 +1,16 @@
+define service {
+  name                           naemon-service                     ; The 'name' of this service template
+  action_url                     /grafana/dashboard/script/histou.js?host=$HOSTNAME$&service=$SERVICEDISPLAYNAME$&theme=light&annotations=true'
+  contact_groups                 naemon-admins                              ; Notifications get sent out to everyone in the 'admins' group
+  event_handler_enabled          1                                   ; Service event handler is enabled
+  flap_detection_enabled         1                                   ; Flap detection is enabled
+  max_check_attempts             3                                   ; Re-check the service up to 3 times in order to determine its final (hard) state
+  notification_interval          0                                   ; Re-notify about service problems every hour
+  notification_options           u,w,c,r                             ; Send notifications about warning, unknown, critical, and recovery events
+  notification_period            24x7                                ; Notifications can be sent out at any time
+  obsess_over_service            1                                   ; We should obsess over this service (if necessary)
+  process_perf_data              1                                   ; Process performance data
+  register                       0                                   ; DONT REGISTER THIS DEFINITION - ITS NOT A REAL SERVICE, JUST A TEMPLATE!
+  retain_nonstatus_information   1                                   ; Retain non-status information across program restarts
+  retain_status_information      1                                   ; Retain status information across program restarts
+}

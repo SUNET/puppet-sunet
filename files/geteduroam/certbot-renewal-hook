@@ -1,0 +1,9 @@
+#!/bin/sh -eu
+# vim: ai ts=4 sts=4 et sw=4
+
+install -m 644 ${RENEWED_LINEAGE}/fullchain.pem \
+    /opt/geteduroam/cert/radius.pem
+# group 101 is freerad inside the container
+install -m 640 -g 101 \
+    ${RENEWED_LINEAGE}/privkey.pem \
+    /opt/geteduroam/cert/radius.key

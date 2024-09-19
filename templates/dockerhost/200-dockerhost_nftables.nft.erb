@@ -1,4 +1,7 @@
 table ip nat {
+        chain output {
+		type nat hook output priority -100; policy accept;
+	}
         chain prerouting {
 		type nat hook prerouting priority -100; policy accept;
 	}
@@ -7,6 +10,9 @@ table ip nat {
         }
 }
 table ip6 nat {
+        chain output {
+		type nat hook output priority -100; policy accept;
+	}
         chain prerouting {
 		type nat hook prerouting priority -100; policy accept;
 	}
@@ -16,19 +22,20 @@ table ip6 nat {
 }
 
 #
-# SNAT packages _from_ Docker. Can't use iifname in postrouting rules.
+# SNAT packages _from_ Docker.
 #
-add rule ip nat postrouting ip saddr { 172.16.0.0/12 } oif eth0 counter masquerade comment "SNAT traffic from Docker"
-add rule ip6 nat postrouting ip6 saddr { <%= scope['sunet::dockerhost::docker_network_v6'] -%> } oif eth0 counter masquerade comment "SNAT traffic from Docker"
+add rule ip nat postrouting ip saddr { 172.16.0.0/12 } iifname to_docker counter masquerade comment "SNAT traffic from Docker"
+add rule ip6 nat postrouting ip6 saddr { fd00::2/128 } iifname to_docker counter masquerade comment "SNAT traffic from Docker"
+add rule ip6 nat postrouting ip6 saddr { fd0c::/16 } iifname to_docker counter masquerade comment "SNAT traffic from Docker"
 
 #
-# Allow forwarding packages from docker to eth0
+# Allow forwarding packages from docker
 #
 add rule inet filter forward ct state established counter accept
-add rule inet filter forward iifname to_docker oif eth0 counter accept comment "Forward traffic from Docker"
+add rule inet filter forward iifname to_docker counter accept comment "Forward traffic from Docker"
 
 #
-# Allow ICMP from eth0 to Docker. Necessary for path-mtu at least.
+# Allow ICMP to Docker. Necessary for path-mtu at least.
 #
-add rule inet filter forward iif eth0 oifname to_docker ip protocol icmp counter accept comment "Allow ICMP to Docker"
-add rule inet filter forward iif eth0 oifname to_docker ip6 nexthdr icmpv6 counter accept comment "Allow ICMP to Docker"
+add rule inet filter forward oifname to_docker ip protocol icmp counter accept comment "Allow ICMP to Docker"
+add rule inet filter forward oifname to_docker ip6 nexthdr icmpv6 counter accept comment "Allow ICMP to Docker"

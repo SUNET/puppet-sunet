@@ -36,6 +36,11 @@ Facter.add('tls_certificates') do
                 }
   filenames.each do | full_fn |
     #debug("TLS certificate candidate: #{this}")
+    if File.zero?(full_fn)
+      warn("TLS certificate candidate file #{full_fn} has empty size, skipping")
+      next
+    end
+
     fn = File.basename(full_fn)
     parts = fn.split('_')
     hostpart = parts.slice!(0)
@@ -70,7 +75,7 @@ Facter.add('tls_certificates') do
               'key'    => '/etc/ssl/private/ssl-cert-snakeoil.key'
              }
   snakeoil.each do | key, fn |
-    if File.exist? fn
+    if File.exist?(fn) && ! File.zero?(fn)
       res['snakeoil'] ||= {}
       res['snakeoil'][key] = fn
     end

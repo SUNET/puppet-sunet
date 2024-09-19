@@ -1,0 +1,12 @@
+# A simple wildcard hostgroup
+define hostgroup {
+  hostgroup_name  all
+  alias           All Servers
+  members         *
+}
+# Predefine empty group that we can use in puppet-nagioscfg in order to migrate
+# away from the 'nrpe' group created from the cosmos-db.
+define hostgroup {
+  hostgroup_name  from_puppet-nagioscfg
+  alias           from_puppet-nagioscfg
+}

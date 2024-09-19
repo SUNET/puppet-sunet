@@ -9,6 +9,28 @@ class sunet::cgit(
     String $www_user        = 'www-data',
     String $git_group       = 'git',
 ) {
+    # How to configure access to repositories with cgit and gitolite:
+    #
+    # In gitolite-admin/conf/gitolite.conf:
+    # If you set R = daemon then the Git daemon provides unauthenticated access
+    # to the repository without any transport encryption using git://.
+    # This will also  make the repository visible on https://your-site.tld and
+    # therefore make it possible to also clone using HTTPS.
+    # Please observe that allocating any rights to "gitweb" is a no-op and has
+    # no meaning for the current configuration of cgit.
+    #
+    # cgit configuration:
+    # If you want to provide unauthenticated access using git://, i.e. with any
+    # transport encryption, but hide the repo on https://your-site.tld, you can
+    # put an cgitrc file in the bare repo with following content, which will make
+    # cgit completely ignore the repo:
+    # ignore=1
+    #
+    # To only make cgit hide the repo so that you can still clone it using HTTPS
+    # and view it on https://git.sunet.se if providing the correct path, add the
+    # follwing to a cgitrc file in the bare repo:
+    # hide=1
+
     package { $package: ensure => latest } ->
 
     exec { 'let web user read git repos':
@@ -62,7 +84,7 @@ class sunet::cgit(
     exec { 'enable 010-cgit':
         command => 'a2ensite 010-cgit',
         creates => '/etc/apache2/sites-enabled/010-cgit.conf',
-        onlyif  => 'test -s /etc/ssl/certs/git-prod-1.sunet.se.crt',
+        onlyif  => "test -s /etc/ssl/certs/$fqdn.crt",
         notify  => Service['apache2'],
     }
 

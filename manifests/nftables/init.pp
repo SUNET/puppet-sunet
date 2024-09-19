@@ -1,6 +1,7 @@
 # Setup nftables on a host
 class sunet::nftables::init(
   Boolean $default_log = true,
+  Boolean $enabled     = true,
 ) {
     package { 'nftables':
         ensure => 'present',
@@ -8,6 +9,11 @@ class sunet::nftables::init(
 
     file { '/etc/nftables/':
         ensure => 'directory',
+    }
+    if ($enabled) {
+      $service = 'running'
+    } else {
+      $service = 'stopped'
     }
 
     file { '/etc/nftables/conf.d/':
@@ -36,7 +42,7 @@ class sunet::nftables::init(
     }
 
     service { 'nftables':
-        ensure => 'running',
-        enable => true,
+        ensure => $service,
+        enable => $enabled,
     }
 }

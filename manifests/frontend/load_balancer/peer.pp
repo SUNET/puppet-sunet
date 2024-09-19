@@ -1,8 +1,8 @@
 define sunet::frontend::load_balancer::peer(
   String           $as,
   String           $remote_ip,
-  Optional[String] $local_ip  = undef,
-  Optional[String] $router_id = undef,
+  Optional[String] $local_ip  = " ",
+  Optional[String] $router_id = " ",
   Optional[String] $password_hiera_key = undef,
 ) {
   # If $local_ip is not set, default to either $::ipaddress_default or $::ipaddress6_default
@@ -31,7 +31,7 @@ define sunet::frontend::load_balancer::peer(
   # gpg backend, so we couldn't put the password in secrets.yaml and just merge it in
   $md5 = $password_hiera_key ? {
     undef   => undef,
-    default => hiera($password_hiera_key, undef)
+    default => lookup($password_hiera_key, undef, undef, undef)
   }
 
   sunet::exabgp::neighbor { "peer_${name}":

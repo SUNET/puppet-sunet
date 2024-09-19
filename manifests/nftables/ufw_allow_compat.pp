@@ -11,9 +11,10 @@ define sunet::nftables::ufw_allow_compat(
 
     $rules_fn = "/etc/nftables/conf.d/${ruleset}.nft"
     ensure_resource('concat', $rules_fn, {
-      owner => 'root',
-      group => 'root',
-      mode  => '0400',
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0400',
+      notify => Service['nftables'],
     })
 
     $src_v4 = filter(flatten([$from])) | $this | { is_ipaddr($this, 4) }
@@ -36,7 +37,6 @@ define sunet::nftables::ufw_allow_compat(
           target  => $rules_fn,
           order   => '2000',
           content => $rule_v4,
-          notify  => Service['nftables'],
         }
       }
 
@@ -51,7 +51,6 @@ define sunet::nftables::ufw_allow_compat(
           target  => $rules_fn,
           order   => '3000',
           content => $rule_v6,
-          notify  => Service['nftables'],
         }
       }
     }

@@ -1,12 +1,13 @@
-# Last Modified: Fri Mar 22 20:42:12 2019
+# Last Modified: Tue Nov 22 09:53:13 2022
 #include <tunables/global>
 
 /usr/lib/cgit/cgit.cgi {
   #include <abstractions/base>
+  #include <abstractions/nameservice>
 
   /etc/cgitrc r,
+  /lib/x86_64-linux-gnu/ld-*.so mr,
   @{HOME}/repositories/ r,
   @{HOME}/repositories/** r,
-  /lib/x86_64-linux-gnu/ld-*.so mr,
 
 }

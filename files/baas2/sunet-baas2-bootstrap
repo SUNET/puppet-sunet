@@ -1,0 +1,735 @@
+#!/usr/bin/env python3
+# pylint:disable=invalid-name
+# pylint:enable=invalid-name
+"""
+This tool manages the installation of IBM Spectrum Protect Backup-Archive
+Client for the Safespring Backup 2.0 service
+
+Operations based on a combination of:
+https://docs.safespring.com/backup/install/linux/
+https://www.ibm.com/docs/en/SSEQVQ_8.1.15/pdf/b_ba_guide_unx_lnx.pdf
+
+Tools used before committing code:
+black sunet-baas2-bootstrap
+isort sunet-baas2-bootstrap
+pylint sunet-baas2-bootstrap
+mypy --strict sunet-baas2-bootstrap
+"""
+import argparse
+import datetime
+import os
+import os.path
+import platform
+import shlex
+import shutil
+import struct
+import subprocess
+import sys
+import tarfile
+from typing import Any, Dict, List, Union
+
+# Discovered by running "hexdump -C /etc/adsm/TSM.IDX"
+PREFIX_SIZE = 2
+INDEX_SIZE = 1
+SERVERNAME_MAX_SIZE = 256
+NODENAME_MAX_SIZE = 130
+LABEL_MAX_SIZE = 256
+# Each entry starts with the bytes EF 05
+PREFIX_EXPECTED_BYTES = b"\xef\x05"
+ENTRY_SIZE = (
+    PREFIX_SIZE + INDEX_SIZE + SERVERNAME_MAX_SIZE + NODENAME_MAX_SIZE + LABEL_MAX_SIZE
+)
+
+# Struct format string based on above numbers (INDEX_SIZE is replaced by an unsigned char "B")
+STRUCT_FORMAT = (
+    f"{PREFIX_SIZE}sB{SERVERNAME_MAX_SIZE}s{NODENAME_MAX_SIZE}s{LABEL_MAX_SIZE}s"
+)
+# Verify our manually counted sizes matches the size resulting from our struct
+# format string
+if ENTRY_SIZE != struct.calcsize(STRUCT_FORMAT):
+    print(
+        f"ENTRY_SIZE ({ENTRY_SIZE}) does not match struct format string size ({struct.calcsize(STRUCT_FORMAT)})"  # pylint:disable=line-too-long
+    )
+    sys.exit(1)
+
+
+def get_installed_version() -> Union[str, None]:
+    """Return current installed version string or None if not installed"""
+    proc_args = shlex.split("dpkg --status tivsm-ba")
+    # If not installed:
+    #
+    # $ dpkg --status tivsm-ba
+    # dpkg-query: package 'tivsm-ba' is not installed and no information is available
+    # Use dpkg --info (= dpkg-deb --info) to examine archive files.
+    #
+    # If installed:
+    #
+    # $ dpkg --status tivsm-ba
+    # Package: tivsm-ba
+    # Status: install ok installed
+    # Section: Utilities/Archiving
+    # Maintainer: IBM
+    # Architecture: amd64
+    # Version: 8.1.15-2
+    # Pre-Depends: tivsm-api64 (= 8.1.15-2)
+    # Description: This is the IBM Spectrum Protect Linux BA Client
+    # Homepage: http://www.ibm.com/software/tivoli/products/storage-mgr/
+    try:
+        proc = subprocess.run(
+            proc_args,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf8",
+        )
+    except subprocess.CalledProcessError as exc:
+        # If the package is not installed this is OK, we will install it
+        if " is not installed " in exc.stderr:
+            return None
+        raise exc
+
+    # Parse out the package information
+    package_info = {}
+    for line in proc.stdout.splitlines():
+        key, value = line.split(": ", maxsplit=2)
+        package_info[key] = value
+
+    if "Version" not in package_info:
+        raise KeyError("no 'Version' field parsed from dpkg output")
+
+    # The debian package version "8.1.15-2" matches the "upstream" version
+    # "Version 8, Release 1, Level 15.2" and this in turn matches the
+    # "filename" version 8.1.15.2, so replace the hyphen with a dot.
+    return package_info["Version"].replace("-", ".")
+
+
+def get_tar_url(version_string: str) -> str:
+    """figure out the URL to the tar file given a version"""
+
+    # It turns out IBM separates the downloads into "maintenance" and "patches":
+    #
+    # example "maintenance" URL:
+    # https://public.dhe.ibm.com/storage/tivoli-storage-management/maintenance/client/v8r1/Linux/LinuxX86_DEB/BA/v8117/8.1.17.0-TIV-TSMBAC-LinuxX86_DEB.tar
+    #
+    # example "patches" URL:
+    # https://public.dhe.ibm.com/storage/tivoli-storage-management/patches/client/v8r1/Linux/LinuxX86_DEB/v8115/8.1.15.1-TIV-TSMBAC-LinuxX86_DEB.tar
+    #
+    base_url = "https://public.dhe.ibm.com/storage/tivoli-storage-management"
+
+    # The version string has four parts, e.g. 8.1.15.2. The dsmc client presents this as:
+    # Version: 8, Release 1, Level: 15.2
+    version_string_parts = version_string.split(".")
+    if len(version_string_parts) != 4:
+        raise IndexError(
+            f"unexpected number of version parts: {len(version_string_parts)}"
+        )
+
+    # Convert to int for easier comparisions
+    version = int(version_string_parts[0])
+    release = int(version_string_parts[1])
+    level_first = int(version_string_parts[2])
+    level_last = int(version_string_parts[3])
+
+    # From what we can tell, a version ending in .0 lives under "maintenance"
+    # while anything else lives under "patches".
+    # Also, the path name directy after after client/ (e.g. "v8r1") is
+    # basically "v<version>r<release>" and the later path name "v8117" is
+    # corresponds to "v<version><release><level_first>"
+    if level_last == 0:
+        url = (
+            base_url
+            + f"/maintenance/client/v{version}r{release}/Linux/LinuxX86_DEB/BA/v{version}{release}{level_first}/{version_string}-TIV-TSMBAC-LinuxX86_DEB.tar"  # pylint:disable=line-too-long
+        )
+    else:
+        url = (
+            base_url
+            + f"/patches/client/v{version}r{release}/Linux/LinuxX86_DEB/v{version}{release}{level_first}/{version_string}-TIV-TSMBAC-LinuxX86_DEB.tar"  # pylint:disable=line-too-long
+        )
+
+    return url
+
+
+def download_file(url: str, download_dir: str) -> str:
+    """downloads the file pointed to by url, returns path to downloaded file"""
+
+    os.makedirs(download_dir, exist_ok=True)
+
+    filename = url.split("/")[-1]
+
+    file_path = f"{download_dir}/{filename}"
+
+    if os.path.isfile(file_path):
+        print(f"file {file_path} already exists, not downloading")
+        return file_path
+
+    proc_args = shlex.split(f"curl --fail --silent --output {file_path} {url}")
+    subprocess.run(proc_args, check=True)
+
+    print(f"downloaded file: {file_path}")
+
+    return file_path
+
+
+def extract_tar_file(tar_file: str, dst_dir: str) -> None:
+    """extract a tar file to a destination directory"""
+    with tarfile.open(tar_file) as tar:
+        tar.extractall(path=dst_dir)
+
+
+def verify_file_hash(checksum_file: str) -> None:
+    """given a checksum file, verify the contents"""
+    proc_args = shlex.split(f"sha256sum -c {checksum_file}")
+
+    # The file path inside the checksum file is relative, and there is no way
+    # to tell sha256sum to go to another directory. Therefore we need to change
+    # to the download dir temporarily.
+
+    orig_dir = os.getcwd()
+    checksum_file_dir = os.path.dirname(checksum_file)
+
+    os.chdir(checksum_file_dir)
+    subprocess.run(
+        proc_args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    os.chdir(orig_dir)
+
+
+def install_deb_files(dir_name: str) -> None:
+    """install deb files located in the given directory, in the expected order"""
+    prefix_tuple = (
+        "gskcrypt64_",
+        "gskssl64_",
+        "tivsm-api64.amd64.deb",
+        "tivsm-ba.amd64.deb",
+    )
+
+    found_files = []
+    with os.scandir(dir_name) as entries:
+        for entry in entries:
+            if entry.is_file() and entry.name.startswith(prefix_tuple):
+                found_files.append(entry.path)
+
+    if len(found_files) != 4:
+        raise ValueError(f"unexpected number of found deb files: {len(found_files)}")
+
+    # We need to install the files in the order they are written in
+    # tuple_prefix (because of deb dependencies), which may be different from
+    # the order we found them in the directory scan, so loop over the prefixes
+    # to set the order:
+    for prefix in prefix_tuple:
+        for path in found_files:
+            if os.path.basename(path).startswith(prefix):
+                proc_args = shlex.split(f"dpkg -i {path}")
+                subprocess.run(proc_args, check=True)
+
+
+def install_root_cert(ca_file_path: str) -> None:
+    """add cert at file path to the dsmcert.kdb database file"""
+    proc_args = shlex.split(f"dsmcert -add -server SafeDC -file {ca_file_path}")
+    subprocess.run(proc_args, check=True)
+
+
+def get_trust_labels(cert_db_file: str) -> List[str]:
+    """extract a list of trusted cert labels from an existing dsmcert.kdb file"""
+    # # gsk8capicmd_64 -cert -list -db /opt/tivoli/tsm/client/ba/bin/dsmcert.kdb -stashed
+    # Certificates found
+    # * default, - personal, ! trusted, # secret key
+    # !	"TSM server SafeDC self-signed key"
+    proc_args = shlex.split(f"gsk8capicmd_64 -cert -list -db {cert_db_file} -stashed")
+    proc = subprocess.run(
+        proc_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=True,
+        encoding="utf-8",
+    )
+
+    trusted_cert_labels = []
+    for line in proc.stdout.splitlines():
+        # lines starting with "!" is a trusted cert label
+        if line.startswith("!\t"):
+            trusted_cert_label = line.lstrip('!\t"').rstrip('"')
+            trusted_cert_labels.append(trusted_cert_label)
+
+    return trusted_cert_labels
+
+
+def set_dsmc_password(password: str) -> None:
+    """set password for dsmc client"""
+    # The UX of this is kind of weird, but by running this with the same
+    # password twice we can set the password without having to handle
+    # interactive prompts
+    proc_args = shlex.split(f"dsmc set password {password} {password}")
+    try:
+        subprocess.run(
+            proc_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True
+        )
+    except subprocess.CalledProcessError:
+        # Do not output the full command line since it contains secrets
+        raise RuntimeError("unable to run 'dsmc set password', bad password?") from None
+
+
+def read_index_file(  # pylint:disable=too-many-locals
+    path: str, current_nodename: str
+) -> Dict[str, Any]:
+    """parse a TSM.IDX file"""
+    with open(path, "rb") as fileobj:
+        data = fileobj.read()
+
+    if len(data) % ENTRY_SIZE != 0:
+        raise RuntimeError(
+            f"the IDX file length ({len(data)}) is not evenly divisible by expected entry size ({ENTRY_SIZE}), this is unexpected"  # pylint:disable=line-too-long
+        )
+
+    num_entries = int(len(data) / ENTRY_SIZE)
+
+    index_data: Dict[str, Any] = {"raw_data": data, "entries": []}
+
+    entry_index = 0
+    while entry_index < num_entries:
+        # Set the entry offset in the file based on what entry we are on,
+        # starting with 0 for the first entry and then going forward.
+        prefix_offset = entry_index * ENTRY_SIZE
+
+        (
+            prefix_bytes,
+            index,
+            servername_bytes,
+            nodename_bytes,
+            label_bytes,
+        ) = struct.unpack(
+            STRUCT_FORMAT, data[prefix_offset : prefix_offset + ENTRY_SIZE]
+        )
+
+        if prefix_bytes != PREFIX_EXPECTED_BYTES:
+            raise ValueError(f"unexpected start of IDX entry at index {entry_index}")
+
+        servername = servername_bytes.decode(encoding="utf-8").rstrip("\x00")
+        nodename = nodename_bytes.decode(encoding="utf-8").rstrip("\x00")
+        label = label_bytes.decode(encoding="utf-8").rstrip("\x00")
+
+        index_data["entries"].append(
+            {
+                "servername": servername,
+                "nodename": nodename,
+                "label": label,
+                "index": index,
+            }
+        )
+
+        # Go to next entry
+        entry_index += 1
+
+    # Create a set containing the unique index numbers we have seen, and limit
+    # us to only looking at the current configured nodename as there may be
+    # older nodename entries with conflicting index numbers if the machine has
+    # changed nodenames over time.
+    nodename_indexes = [
+        entry["index"]
+        for entry in index_data["entries"]
+        if entry["nodename"] == current_nodename
+    ]
+    unique_indexes = set(nodename_indexes)
+
+    # Make sure the number of entries matches the number of unique index values
+    # we have seen, otherwise there are duplicate index values present and this
+    # is unexpected. Since multiple nodenames leads to duplicate index numbers
+    # we again need to limit comparision to our current nodename.
+    if len(unique_indexes) != len(nodename_indexes):
+        raise RuntimeError(
+            f"mismatch between number of unique index values we have parsed ({len(unique_indexes)}) compared to the number of entries: {len(nodename_indexes)}"  # pylint:disable=line-too-long
+        )
+
+    return index_data
+
+
+def upper_if_ascii(string: str) -> str:
+    """Take a string and return the .upper() version of it, but only for ascii
+    characters. This matches the behaviour shown by 'dsmc set password'"""
+    out_string = ""
+    for char in string:
+        if ord(char) < 128:
+            out_string += char.upper()
+        else:
+            out_string += char
+
+    return out_string
+
+
+def build_index_entry(index: int, servername: str, nodename: str, label: str) -> bytes:
+    """Build a binary entry suitable for appending to the TSM.IDX file"""
+
+    servername_uppercase = upper_if_ascii(servername)
+    servername_bytes = bytes(servername_uppercase, "utf-8")
+    if len(servername_bytes) > SERVERNAME_MAX_SIZE:
+        raise ValueError(
+            f"servername '{servername_uppercase}' byte string is too long ({len(servername_bytes)}), max is {SERVERNAME_MAX_SIZE}"  # pylint:disable=line-too-long
+        )
+
+    nodename_bytes = bytes(nodename, "utf-8")
+    if len(nodename_bytes) > NODENAME_MAX_SIZE:
+        raise ValueError(
+            f"nodename '{nodename}' byte string is too long ({len(nodename_bytes)}), max is {NODENAME_MAX_SIZE}"  # pylint:disable=line-too-long
+        )
+
+    label_bytes = bytes(label, "utf-8")
+    if len(label_bytes) > LABEL_MAX_SIZE:
+        raise ValueError(
+            f"label '{label}' byte string is too long ({len(nodename_bytes)}), max is {LABEL_MAX_SIZE}"  # pylint:disable=line-too-long
+        )
+
+    entry = struct.pack(
+        STRUCT_FORMAT,
+        PREFIX_EXPECTED_BYTES,
+        index,
+        servername_bytes,
+        nodename_bytes,
+        label_bytes,
+    )
+
+    if len(entry) != ENTRY_SIZE:
+        raise RuntimeError(
+            "ENTRY_SIZE ({ENTRY_SIZE}) does not match actual entry size ({len(entry)}), something is wrong"  # pylint:disable=line-too-long
+        )
+
+    return entry
+
+
+def get_servername(path: str) -> Union[str, None]:
+    """Extract servername from dsm.opt"""
+    servername = None
+    with open(path, "r", encoding="utf-8") as fileobj:
+        for line in fileobj.readlines():
+            if "SERVERNAME" in line:
+                servername = line.split(maxsplit=1)[1].rstrip()
+                break
+
+    return servername
+
+
+def get_nodename(path: str) -> Union[str, None]:
+    """Extract nodename from dsm.sys"""
+    # TODO(patlu): Only support one nodename, if someone uses more than one
+    # SERVERNAME stanza this will break.
+    nodename = None
+    with open(path, "r", encoding="utf-8") as fileobj:
+        for line in fileobj.readlines():
+            if "NODENAME" in line:
+                nodename = line.split(maxsplit=1)[1].rstrip()
+                break
+
+    return nodename
+
+
+def add_kdb_entry(db_path: str, label: str, password: str) -> None:
+    """Add a password entry to the TSM.KDB file"""
+
+    # The -add command requires the use of a file that the password is read
+    # from, so we need to create this file in a location that is only readable
+    # by root
+    tmp_password_file = "/root/sunet-baas2-bootstrap-encryption-secret.tmp"
+
+    with open(tmp_password_file, "w", encoding="utf-8") as fileobj:
+        fileobj.write(password)
+
+    proc_args = shlex.split(
+        f"gsk8capicmd_64 -secretkey -add -db {db_path} -label {label} -stashed -file {tmp_password_file}"  # pylint:disable=line-too-long
+    )
+    try:
+        subprocess.run(
+            proc_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+            encoding="utf-8",
+        )
+    except subprocess.CalledProcessError as exc:
+        # Cleanup before we crash
+        os.remove(tmp_password_file)
+        raise exc
+
+    os.remove(tmp_password_file)
+
+
+def set_encrypt_password(  # pylint:disable=too-many-locals
+    password_db: str, password: str
+) -> None:
+    """The goal of this function is to configure the password used for encryption"""
+
+    dsm_opt_path = "/opt/tivoli/tsm/client/ba/bin/dsm.opt"
+    dsm_sys_path = "/opt/tivoli/tsm/client/ba/bin/dsm.sys"
+
+    servername = get_servername(dsm_opt_path)
+    if servername is None:
+        raise RuntimeError(f"unable to parse servername from {dsm_opt_path}")
+
+    nodename = get_nodename(dsm_sys_path)
+    if nodename is None:
+        raise RuntimeError(f"unable to parse nodename from {dsm_sys_path}")
+
+    if servername is None:
+        print("unable to find servername in dsm.opt, exiting")
+        sys.exit(1)
+
+    tsm_idx_path = "/etc/adsm/TSM.IDX"
+    index_data = read_index_file(tsm_idx_path, nodename)
+
+    # Filter out entries belonging to the currently configured nodename
+    nodename_entries = [
+        entry for entry in index_data["entries"] if entry["nodename"] == nodename
+    ]
+
+    if len(nodename_entries) > 1:
+        print("more than one entry already exists, nothing to add")
+        sys.exit(0)
+
+    # We expect to use index 1 for the encryption secret
+    encryption_index = 1
+
+    # Verify encryption index is not already present in the IDX file
+    for entry in nodename_entries:
+        if entry["index"] == encryption_index:
+            raise RuntimeError(
+                f"we expected to add an entry with index {encryption_index} but it's already taken, this is unexpected"  # pylint:disable=line-too-long
+            )
+
+    # Find an available label in the IDX file. In this case we have to consider
+    # entries for all present nodenames, not just our currently configured one.
+    ts = int(datetime.datetime.now().timestamp())
+    while True:
+        label = str(ts) + "_0"
+        if label not in [entry["label"] for entry in index_data["entries"]]:
+            break
+        ts += 1
+
+    add_kdb_entry(password_db, label, password)
+
+    entry = build_index_entry(
+        index=encryption_index, servername=servername, nodename=nodename, label=label
+    )
+
+    updated_index_data = index_data["raw_data"] + entry
+
+    idx_tmp_file = tsm_idx_path + ".sunet.tmp"
+
+    with open(idx_tmp_file, "wb") as file:
+        file.write(updated_index_data)
+
+    os.rename(idx_tmp_file, tsm_idx_path)
+
+
+def main() -> None:
+    """the starting point of the program"""
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--version", help="version of client to install")
+    parser.add_argument(
+        "--install", help="install backup client", action="store_true"
+    )
+    parser.add_argument(
+        "--register", help="register client with backup server", action="store_true"
+    )
+    args = parser.parse_args()
+
+    if args.install and not args.version:
+        print("--install requires that you supply --version")
+        sys.exit(1)
+
+    installed_version = get_installed_version()
+
+    # This is the directory used for downloading temporary files when
+    # installing the client. It will be automatically removed when installation
+    # is done.
+    download_dir = "/var/cache/sunet-baas2-bootstrap"
+
+    if installed_version is None and args.install is False:
+        print(
+            "The client is not currently installed, you need to run the tool with --install"
+        )
+        sys.exit(1)
+
+    if args.install:
+        handle_installation(args, installed_version, download_dir)
+
+    # We use a separate flag for registering the client because we need
+    # puppet to modify configuration files in the middle of things. Basically
+    # the steps performed by puppet are:
+    # * Run script with --install --version=X.Y.Z
+    # * Modify configuration files (expecting directory trees to have been
+    #   created by installation)
+    # * Run script with --register
+    if args.register:
+        handle_registration()
+
+    # Remove download dir to save space
+    if os.path.isdir(download_dir):
+        shutil.rmtree(download_dir)
+
+
+def handle_installation(
+    args: argparse.Namespace, installed_version: Union[str, None], download_dir: str
+) -> None:
+    """Overall handler for installing the TSM client"""
+    if installed_version != args.version:
+        print(f"installing version: {args.version}")
+        url = get_tar_url(args.version)
+        print(f"url is: {url}")
+        tar_file = download_file(url, download_dir)
+        checksum_file = download_file(url + ".sha256sum.txt", download_dir)
+        verify_file_hash(checksum_file)
+        extract_tar_file(tar_file, download_dir)
+        install_deb_files(download_dir)
+        fix_ldd()
+
+    root_cert_needed = False
+    root_cert_file = "/opt/tivoli/tsm/client/ba/bin/dsmcert.kdb"
+    if not os.path.isfile(root_cert_file):
+        root_cert_needed = True
+    else:
+        trust_labels = get_trust_labels(root_cert_file)
+        if "TSM server SafeDC self-signed key" not in trust_labels:
+            root_cert_needed = True
+
+    if root_cert_needed:
+        root_ca_file = download_file(
+            "https://raw.githubusercontent.com/safespring/cloud-BaaS/master/pki/SafeDC-Net-Root-CA.pem",  # pylint:disable=line-too-long
+            download_dir,
+        )
+        install_root_cert(root_ca_file)
+
+
+def handle_registration() -> None:
+    """Overall handler registering an installed client with the BaaS service,
+    including setting an encryption password"""
+    password_env_name = "SUNET_BAAS_PASSWORD"
+    baas_password = os.environ.get(password_env_name)
+    if baas_password is None:
+        print(f"missing required environment variable '{password_env_name}'")
+        sys.exit(1)
+    # The file that stores the encrypted passwords.
+    encrypted_passwords_db = "/etc/adsm/TSM.KDB"
+    if not os.path.isfile(encrypted_passwords_db):
+        set_dsmc_password(baas_password)
+
+    # Set encrypt password
+    encryption_password_env_name = "SUNET_BAAS_ENCRYPTION_PASSWORD"
+    baas_encrypt_password = os.environ.get(encryption_password_env_name)
+    if baas_encrypt_password is None:
+        print(f"missing required environment variable '{encryption_password_env_name}'")
+        sys.exit(1)
+
+    # Make sure there are no trailing \r or \n characters in the password. When
+    # the password is created by calling "dsmc" by hand the resulting password
+    # entry in TSM.KDB file has no newlines. We remove \r "just in case" there
+    # might have been a windows editor involved.
+    baas_encrypt_password = baas_encrypt_password.rstrip("\r\n")
+
+    set_encrypt_password(encrypted_passwords_db, baas_encrypt_password)
+
+
+def fix_ldd() -> None:
+    """Make sure the dynamic linker finds IBM's libraries
+    Without this fix Debian machines failed to run the IBM binaries since the linker
+    didn't include the directory where IBM install it's libraries.
+
+    dsmc: error while loading shared libraries: libgsk8ssl_64.so: cannot open shared object file: No such file or directory # pylint:disable=line-too-long
+    """
+
+    python_version = platform.python_version_tuple()
+    if int(python_version[0]) < 3:
+        raise RuntimeError("only python 3 is supported")
+
+    if int(python_version[1]) < 10:
+        # We have our local implementation of platform_freedesktop_os_release() to
+        # be usable on ubuntu 18.04. This can be cleaned up when there are no
+        # ubuntu 18.04 users of the tool.
+        dist_info = freedesktop_os_release()
+    else:
+        dist_info = platform.freedesktop_os_release()
+
+    if dist_info["ID"] != "debian":
+        # This fix only applies to Debian
+        return
+
+    ldd_conf_file = "/etc/ld.so.conf.d/sunet-baas2.conf"
+    try:
+        with open(ldd_conf_file, "x", encoding="utf-8") as file:
+            print(f"Adding {file}")
+            file.write("/usr/lib64\n")
+    except FileExistsError:
+        # Assume that the existing file contains the the requested content already
+        pass
+
+    print("Flushing ldd cache")
+    # Flush the ldd cache
+    subprocess.run("/usr/sbin/ldconfig", check=True)
+
+
+### START: UBUNTU 18.04 backport code
+# Code from
+# https://github.com/python/cpython/blob/3.12/Lib/platform.pyhttps://github.com/python/cpython/blob/3.12/Lib/platform.py
+# Added here to work on ubuntu 18. If no longer used just go back to calling
+# platform.freedesktop_os_release()
+
+### freedesktop.org os-release standard
+# https://www.freedesktop.org/software/systemd/man/os-release.html
+
+# /etc takes precedence over /usr/lib
+_os_release_candidates = ("/etc/os-release", "/usr/lib/os-release")
+_os_release_cache = None  # pylint:disable=invalid-name
+
+
+def _parse_os_release(lines):
+    # SUNET: import re locally so if/when this code is removed we dont forget
+    # to also remove an "re" import.
+    import re  # pylint:disable=import-outside-toplevel
+
+    # These fields are mandatory fields with well-known defaults
+    # in practice all Linux distributions override NAME, ID, and PRETTY_NAME.
+    info = {
+        "NAME": "Linux",
+        "ID": "linux",
+        "PRETTY_NAME": "Linux",
+    }
+
+    # NAME=value with optional quotes (' or "). The regular expression is less
+    # strict than shell lexer, but that's ok.
+    os_release_line = re.compile(
+        "^(?P<name>[a-zA-Z0-9_]+)=(?P<quote>[\"']?)(?P<value>.*)(?P=quote)$"
+    )
+    # unescape five special characters mentioned in the standard
+    os_release_unescape = re.compile(r"\\([\\\$\"\'`])")
+
+    for line in lines:
+        mo = os_release_line.match(line)
+        if mo is not None:
+            info[mo.group("name")] = os_release_unescape.sub(r"\1", mo.group("value"))
+
+    return info
+
+
+def freedesktop_os_release():
+    """Return operation system identification from freedesktop.org os-release"""
+    global _os_release_cache  # pylint:disable=global-statement
+
+    if _os_release_cache is None:
+        errno = None
+        for candidate in _os_release_candidates:
+            try:
+                with open(candidate, encoding="utf-8") as f:
+                    _os_release_cache = _parse_os_release(f)
+                break
+            except OSError as e:
+                errno = e.errno
+        else:
+            raise OSError(
+                errno, f"Unable to read files {', '.join(_os_release_candidates)}"
+            )
+
+    return _os_release_cache.copy()
+
+
+### END: UBUNTU 18.04 backport code
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+  postfix:
+    image: <%= @postfix_image %>:<%= @postfix_tag %>
+    network_mode: host
+    dns:
+      - 89.32.32.32
+    hostname: <%= @hostname %>
+    volumes:
+      - /opt/postfix/config:/config
+      - /etc/dehydrated/certs/:/certs
+      - /dev/log:/dev/log
+    command:
+      - /start.sh
+    ports:
+      - "25:25"
+      - 587:587
+    restart: always
+
