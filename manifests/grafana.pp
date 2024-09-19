@@ -56,15 +56,12 @@ class sunet::grafana(
   }
 
   # nftables
-  sunet::nftables::docker_expose { 'allow_http' :
-    allow_clients => $grafana_webuser_networks,
-    port          => '80',
-    iif           => "${interface_default}",
+  sunet::nftables::allow { 'allow-http':
+    from => $grafana_webuser_networks,
+    port => 80,
   }
-
-  sunet::nftables::docker_expose { 'allow_https' :
-    allow_clients => $grafana_webuser_networks,
-    port          => '443',
-    iif           => "${interface_default}",
+  sunet::nftables::allow { 'allow-https':
+    from => $grafana_webuser_networks,
+    port => 443,
   }
 }
