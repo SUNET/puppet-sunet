@@ -2,6 +2,7 @@
 class sunet::mariadb::backup(
   $tag_mariadb=undef,
   $location=undef
+  Array[String] $dns = [],
 ) {
 
   include sunet::packages::netcat_openbsd
