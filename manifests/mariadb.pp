@@ -6,6 +6,9 @@ define sunet::mariadb(
   Array[String] $dns = [],
 )
 {
+
+  $galera = true
+
   $mariadb_root_password = lookup('mariadb_root_password', undef, undef,'NOT_SET_IN_HIERA')
   $mariadb_user = lookup('mariadb_user', undef, undef,undef)
   $mariadb_user_password = lookup('mariadb_user_password', undef, undef,undef)
