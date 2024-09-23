@@ -35,7 +35,6 @@ spring:
         trust:
           resource: file:/etc/ssl/certs/infra.p12
           password: qwerty123
-<% if scope.call_function('versioncmp',[@imagetag,'1.2.1']) == -1 -%>
 bankid:
 <% if scope.call_function('versioncmp',[@imagetag,'1.2.1']) == -1 -%>
   session:
