@@ -12,9 +12,11 @@ services:
       - /opt/mariadb/init:/docker-entrypoint-initdb.d
       - /opt/mariadb/scripts:/scripts
     network_mode: host
-<%- if @dns -%>
+<%- if !@dns.empty? -%>
     dns:
-      - <%= @dns %>
+<% @dns.each do |resolver| -%>
+      - '<%= resolver %>'
+<% end -%>
 <%- end -%>
     environment:
       - MYSQL_ROOT_PASSWORD=<%= @mariadb_root_password %>
