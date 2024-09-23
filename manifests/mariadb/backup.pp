@@ -32,7 +32,7 @@ class sunet::mariadb::backup(
   $conf_files.each |$conf_file|{
     file { "/opt/mariadb/backup/conf/${conf_file}":
       ensure  => present,
-      content => template("sunet/mariadb/backup/${conf_file}.erb"),
+      content => template("sunet/mariadb/${conf_file}.erb"),
       mode    => '0744',
     }
   }
