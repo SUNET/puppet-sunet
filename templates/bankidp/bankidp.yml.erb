@@ -35,7 +35,7 @@ spring:
         trust:
           resource: file:/etc/ssl/certs/infra.p12
           password: qwerty123
-<% if versioncmp(@imagetag,1.2.1) == -1 -%>
+<% if scope.call_function('versioncmp',[@imagetag,'1.2.1']) == -1 -%>
 bankid:
 <% if scope.call_function('versioncmp',[@imagetag,'1.2.1']) == -1 -%>
   session:
@@ -163,7 +163,7 @@ saml:
           company: "Sunet"
           email-addresses:
           - bankid-idp@sunet.se
-<% if versioncmp(@imagetag,1.2.1) >= 0 -%>
+<% if scope.call_function('versioncmp',[@imagetag,'1.2.1']) >= 0 -%>
     session:
       module: "redis"
     audit:
