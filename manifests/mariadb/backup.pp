@@ -5,6 +5,7 @@ class sunet::mariadb::backup(
 ) {
 
   include sunet::packages::netcat_openbsd
+  ensure_resource('file',"/opt/mariadb/backup/", { ensure => directory, recurse => true } )
   $dirs = [ 'datadir', 'init', 'conf', 'backups' ]
   $dirs.each | $dir | {
     ensure_resource('file',"/opt/mariadb/backup/${dir}", { ensure => directory, recurse => true } )
