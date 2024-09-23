@@ -66,9 +66,9 @@ class sunet::mariadb::backup(
     owner   => 'root',
     group   => 'root',
   }
-  sunet::docker_compose { 'mariadb_backup':
+  sunet::docker_compose { 'mariadb':
     content          => template('sunet/mariadb/docker-compose_mariadb.yml.erb'),
-    service_name     => 'mariadb_backup',
+    service_name     => 'mariadb',
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'Mariadb replica',
