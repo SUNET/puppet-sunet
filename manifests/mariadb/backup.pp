@@ -1,7 +1,6 @@
 # This is a asyncronous replica of the Maria DB Cluster for SUNET
 class sunet::mariadb::backup(
   $tag_mariadb=undef,
-  $location=undef
   Array[String] $dns = [],
 ) {
 
