@@ -15,9 +15,9 @@ class sunet::mariadb::backup(
   $replicate_from = cluster_nodes[0]
 
   # Secrets from local.eyaml
-  $mysql_root_password = safe_hiera('mariadb_root_password')
-  $backup_password = safe_hiera('mariadb_root_password')
-  $mysql_user_password = safe_hiera('mariadb_user_password')
+  $mariadb_root_password = safe_hiera('mariadb_root_password')
+  $mariadb_backup_password = safe_hiera('mariadb_root_password')
+  $mariadb_user_password = safe_hiera('mariadb_user_password')
 
   sunet::system_user {'mysql': username => 'mysql', group => 'mysql' }
 
