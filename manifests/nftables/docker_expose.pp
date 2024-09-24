@@ -53,8 +53,9 @@ define sunet::nftables::docker_expose (
           ;
       }
       sunet::nftables::allow { "expose-allow-${safe_name}":
-        from => 'any',
+        from => $allow_clients,
         port => $port,
+        proto => $proto,
       }
   }
 }

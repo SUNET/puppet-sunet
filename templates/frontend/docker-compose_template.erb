@@ -3,6 +3,9 @@ version: '3'
 services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
+<% if @set_fqdn == true -%>
+    hostname: <%= @facts['fqdn'] %>
+<%- end -%>
     expose:
 <% @exposed_ports.each do |port| -%>
       - "<%= port %>"
