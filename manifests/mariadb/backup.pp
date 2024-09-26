@@ -12,7 +12,7 @@ class sunet::mariadb::backup(
   }
 
   $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,[])
-  $replicate_from = cluster_nodes[0]
+  $replicate_from = $cluster_nodes[0]
 
   # Secrets from local.eyaml
   $mariadb_root_password = safe_hiera('mariadb_root_password')
