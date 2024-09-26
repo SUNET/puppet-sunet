@@ -37,7 +37,7 @@ class sunet::mariadb::backup(
       mode    => '0744',
     }
   }
-  file { '/opt/mariadb/backup/start_replica_from_init.sh':
+  file { '/opt/mariadb/scripts/start_replica_from_init.sh':
     ensure  => present,
     content => template('sunet/mariadb/backup/start_replica_from_init.erb.sh'),
     mode    => '0744',
