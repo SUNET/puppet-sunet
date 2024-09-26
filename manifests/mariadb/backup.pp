@@ -31,7 +31,7 @@ class sunet::mariadb::backup(
   }
   $conf_files = ['credentials.cnf', 'my.cnf']
   $conf_files.each |$conf_file|{
-    file { "/opt/mariadb/backup/conf/${conf_file}":
+    file { "/opt/mariadb/conf/${conf_file}":
       ensure  => present,
       content => template("sunet/mariadb/${conf_file}.erb"),
       mode    => '0744',
