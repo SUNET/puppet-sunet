@@ -65,14 +65,14 @@ define sunet::mariadb(
     content => template('sunet/mariadb/cluster-status.erb.sh'),
     mode    => '0744',
   }
-  file { '/etc/sudoers.d/99-size-test':
+  file { '/etc/sudoers.d/99-cluster-size-test':
     ensure  => file,
     content => "script ALL=(root) NOPASSWD: /usr/local/bin/cluster-size\n",
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
   }
-  file { '/etc/sudoers.d/99-status-test':
+  file { '/etc/sudoers.d/99-cluster-status-test':
     ensure  => file,
     content => "script ALL=(root) NOPASSWD: /usr/local/bin/cluster-status\n",
     mode    => '0440',
