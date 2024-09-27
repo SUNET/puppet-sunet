@@ -9,7 +9,7 @@ class sunet::mariadb::backup(
     mariadb_version => $mariadb_version,
     ports           => [3306],
     dns             => $dns,
-    galera          => False,
+    galera          => false,
   }
 
   $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,[])
