@@ -1,7 +1,7 @@
 #!/bin/bash
 stream_name="mariadb-stream-$(date +%Y-%m-%dT%H.%M.%S).gz"
 dump_name="mariadb-dump-$(date +%Y-%m-%dT%H.%M.%S).sql.gz"
-backup_dir="/opt/mariadb/backups/$(date +%Y/%m/%d)"
+backup_dir="/backups/$(date +%Y/%m/%d)"
 mkdir -p "${backup_dir}"
 
 buopts="--slave-info --safe-slave-backup"
