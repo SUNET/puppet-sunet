@@ -18,7 +18,7 @@ gtid_ignore_duplicates  = ON
 gtid_strict_mode        = ON
 log_bin                 = binlog
 log_slave_updates       = ON
-server_id               = <%= @server_id %>
+server_id               = <%= @facts['networking']['ip'].split(".").map(&:to_i).pack('CCCC').unpack('N')[0] %>
 
 # Innodb
 innodb_autoinc_lock_mode        = 2
