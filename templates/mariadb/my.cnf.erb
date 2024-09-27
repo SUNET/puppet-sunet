@@ -18,6 +18,7 @@ gtid_ignore_duplicates  = ON
 gtid_strict_mode        = ON
 log_bin                 = binlog
 log_slave_updates       = ON
+# Use IP adress as decimal in order to create an unique server id
 server_id               = <%= @facts['networking']['ip'].split(".").map(&:to_i).pack('CCCC').unpack('N')[0] %>
 # Default hostname base relay_log is no good in containers
 relay_log               = 'relay-log'
