@@ -43,7 +43,7 @@ class sunet::mariadb::backup(
     mode    => '0744',
   }
   # XXX trigger needed
-  file { '/opt/mariadb/backup/do_backup.sh':
+  file { '/opt/mariadb/scripts/do_backup.sh':
     ensure  => present,
     content => template('sunet/mariadb/backup/do_backup.erb.sh'),
     mode    => '0744',
