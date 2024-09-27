@@ -25,11 +25,24 @@ class sunet::mariadb::backup(
     content => template('sunet/mariadb/backup/start_replica_from_init.erb.sh'),
     mode    => '0744',
   }
-  # XXX trigger needed
   file { '/opt/mariadb/scripts/do_backup.sh':
     ensure  => present,
     content => template('sunet/mariadb/backup/do_backup.erb.sh'),
     mode    => '0744',
+  }
+
+  file { '/usr/local/bin/backup2baas':
+    ensure  => present,
+    content => template('sunet/mariadb/backup/backup2baas.erb'),
+    mode    => '0744',
+  }
+
+  sunet::scriptherder::cronjob { 'backup2baas':
+    cmd           => '/usr/local/bin/backup2baas',
+    hour          => '6',
+    minute        => '0',
+    ok_criteria   => ['exit_status=0', 'max_age=24h'],
+    warn_criteria => ['exit_status=1'],
   }
 
   file { '/usr/local/bin/check_replication':
