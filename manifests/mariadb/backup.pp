@@ -2,7 +2,7 @@
 class sunet::mariadb::backup(
   String $mariadb_version=latest,
   Array[String] $dns = [],
-  Boolean $nrpe = true;
+  Boolean $nrpe = true,
 ) {
 
   include sunet::packages::netcat_openbsd
