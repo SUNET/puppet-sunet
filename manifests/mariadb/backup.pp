@@ -40,7 +40,7 @@ class sunet::mariadb::backup(
   sunet::scriptherder::cronjob { 'backup2baas':
     cmd           => '/usr/local/bin/backup2baas',
     hour          => '6',
-    minute        => '0',
+    minute        => '10',
     ok_criteria   => ['exit_status=0', 'max_age=24h'],
     warn_criteria => ['exit_status=1'],
   }
