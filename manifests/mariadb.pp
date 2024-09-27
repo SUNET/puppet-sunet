@@ -4,10 +4,9 @@ define sunet::mariadb(
   Integer $bootstrap=0,
   Array[Integer] $ports = [3306, 4444, 4567, 4568],
   Array[String] $dns = [],
+  Boolean $galera = true,
 )
 {
-
-  $galera = true
 
   $mariadb_root_password = lookup('mariadb_root_password', undef, undef,'NOT_SET_IN_HIERA')
   $mariadb_user = lookup('mariadb_user', undef, undef,undef)
