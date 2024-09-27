@@ -67,13 +67,16 @@ class sunet::mariadb::backup(
     owner   => 'root',
     group   => 'root',
   }
-  sunet::sudoer {'nagios_run_replication_command':
-    user_name    => 'nagios',
-    collection   => 'nrpe_replication_check',
-    command_line => '/usr/local/bin/check_replication'
-  }
-  sunet::nagios::nrpe_command {'check_async_replication':
-    command_line => '/usr/bin/sudo /usr/local/bin/check_replication'
+
+  if $nrpe {
+    sunet::sudoer {'nagios_run_replication_command':
+      user_name    => 'nagios',
+      collection   => 'nrpe_replication_check',
+      command_line => '/usr/local/bin/check_replication'
+    }
+    sunet::nagios::nrpe_command {'check_async_replication':
+      command_line => '/usr/bin/sudo /usr/local/bin/check_replication'
+    }
   }
   sunet::docker_compose { 'mariadb':
     content          => template('sunet/mariadb/docker-compose_mariadb.yml.erb'),
