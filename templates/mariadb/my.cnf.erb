@@ -19,6 +19,8 @@ gtid_strict_mode        = ON
 log_bin                 = binlog
 log_slave_updates       = ON
 server_id               = <%= @facts['networking']['ip'].split(".").map(&:to_i).pack('CCCC').unpack('N')[0] %>
+# Default hostname base relay_log is no good in containers
+relay_log               = 'relay-log'
 
 # Innodb
 innodb_autoinc_lock_mode        = 2
