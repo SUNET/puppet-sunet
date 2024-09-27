@@ -17,7 +17,6 @@ define sunet::mariadb(
   $clients = lookup('mariadb_clients', undef, undef,['127.0.0.1'])
   $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,[])
   $mariadb_dir = '/opt/mariadb'
-  $server_id = 1000 + Integer($facts['networking']['hostname'][-1])
 
   # Hack to not clash with docker_compose which tries to create the same directory
   exec {'mariadb_dir_create':
