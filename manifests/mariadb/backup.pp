@@ -5,11 +5,10 @@ class sunet::mariadb::backup(
   Boolean $nrpe = true,
 ) {
 
-  include sunet::packages::netcat_openbsd
-  ensure_resource('file',"/opt/mariadb/backup/", { ensure => directory, recurse => true } )
-  $dirs = [ 'datadir', 'init', 'conf', 'backups' ]
-  $dirs.each | $dir | {
-    ensure_resource('file',"/opt/mariadb/backup/${dir}", { ensure => directory, recurse => true } )
+  sunet::mariadb { 'sunet_mariadb_simple':
+    mariadb_version => $mariadb_version,
+    ports           => [3306],
+    dns             => $dns,
   }
 
   $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,[])
@@ -20,24 +19,6 @@ class sunet::mariadb::backup(
   $mariadb_backup_password = safe_hiera('mariadb_root_password')
   $mariadb_user_password = safe_hiera('mariadb_user_password')
 
-  sunet::system_user {'mysql': username => 'mysql', group => 'mysql' }
-
-  $sql_files = ['02-backup_user.sql']
-  $sql_files.each |$sql_file|{
-    file { "/opt/mariadb/backup/init/${sql_file}":
-      ensure  => present,
-      content => template("sunet/mariadb/${sql_file}.erb"),
-      mode    => '0744',
-    }
-  }
-  $conf_files = ['credentials.cnf', 'my.cnf']
-  $conf_files.each |$conf_file|{
-    file { "/opt/mariadb/conf/${conf_file}":
-      ensure  => present,
-      content => template("sunet/mariadb/${conf_file}.erb"),
-      mode    => '0744',
-    }
-  }
   file { '/opt/mariadb/scripts/start_replica_from_init.sh':
     ensure  => present,
     content => template('sunet/mariadb/backup/start_replica_from_init.erb.sh'),
@@ -77,13 +58,6 @@ class sunet::mariadb::backup(
     sunet::nagios::nrpe_command {'check_async_replication':
       command_line => '/usr/bin/sudo /usr/local/bin/check_replication'
     }
-  }
-  sunet::docker_compose { 'mariadb':
-    content          => template('sunet/mariadb/docker-compose_mariadb.yml.erb'),
-    service_name     => 'mariadb',
-    compose_dir      => '/opt/',
-    compose_filename => 'docker-compose.yml',
-    description      => 'Mariadb replica',
   }
 
 }
