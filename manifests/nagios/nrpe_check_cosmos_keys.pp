@@ -1,5 +1,5 @@
 # Check gpg keys used by cosmos
-class sunet::nagios::nrpe_check_cosmos_keys (
+define sunet::nagios::nrpe_check_cosmos_keys (
 ) {
 
   include sunet::nagios::nrpe_check_gpg_keys_bin
