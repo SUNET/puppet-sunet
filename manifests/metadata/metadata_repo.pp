@@ -28,6 +28,12 @@ class sunet::metadata::metadata_repo(
     } -> package {
       ['make','gnupg2']: ensure => latest
     }
+
+    include sunet::nagios::nrpe_check_gpg_keys_bin
+    sunet::nagios::nrpe_command { 'check_metadata_keys':
+      command_line => "/usr/lib/nagios/plugins/check_gpg_keys ${cache_dir}/keys",
+    }
+
     if $update_by_cron {
       sunet::scriptherder::cronjob { 'verify_and_update':
         cmd           => "${cache_dir}/scripts/do-update.sh",
@@ -36,11 +42,6 @@ class sunet::metadata::metadata_repo(
         warn_criteria => ['exit_status=0', 'max_age=1h'],
       }
 
-      include sunet::nagios::nrpe_check_gpg_keys_bin
-
-      sunet::nagios::nrpe_command { 'check_metadata_keys':
-        command_line => "/usr/lib/nagios/plugins/check_gpg_keys ${cache_dir}/keys",
-      }
     }
   } else {
     vcsrepo { '/opt/metadata':
