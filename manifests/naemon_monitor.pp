@@ -413,6 +413,13 @@ class sunet::naemon_monitor (
     }
   }
 
+  require sunet::nagios::nrpe_check_cosmos_keys
+  nagioscfg::service {'check_cosmos_keys':
+    hostgroup_name => ['sunet::naemon_monitor'],
+    check_command  => 'check_nrpe!check_cosmos_keys',
+    description    => 'GPG keys used by cosmos',
+  }
+
   file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':
     ensure  => file,
     mode    => '0644',
