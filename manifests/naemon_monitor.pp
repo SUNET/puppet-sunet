@@ -417,13 +417,7 @@ class sunet::naemon_monitor (
   nagioscfg::service {'check_cosmos_keys':
     hostgroup_name => ['sunet::naemon_monitor'],
     check_command  => 'check_nrpe!check_cosmos_keys',
-    description    => 'Cosmos GPG keys',
-  }
-
-  nagioscfg::service {'check_metadata_keys':
-    hostgroup_name => ['sunet::metadata::metadata_repo'],
-    check_command  => 'check_nrpe!check_metadata_keys',
-    description    => 'Metadata GPG keys',
+    description    => 'GPG keys used by cosmos',
   }
 
   file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':
