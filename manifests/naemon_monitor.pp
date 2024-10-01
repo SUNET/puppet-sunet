@@ -420,6 +420,12 @@ class sunet::naemon_monitor (
     description    => 'Cosmos GPG keys',
   }
 
+  nagioscfg::service {'check_metadata_keys':
+    hostgroup_name => ['sunet::metadata::metadata_repo'],
+    check_command  => 'check_nrpe!check_metadata_keys',
+    description    => 'Metadata GPG keys',
+  }
+
   file { '/etc/naemon/conf.d/cosmos/naemon-hostgroups.cfg':
     ensure  => file,
     mode    => '0644',
