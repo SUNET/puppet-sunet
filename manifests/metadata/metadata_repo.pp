@@ -38,7 +38,7 @@ class sunet::metadata::metadata_repo(
 
       include sunet::nagios::nrpe_check_gpg_keys_bin
 
-      sunet::nagios::nrpe_command { 'check_cosmos_keys':
+      sunet::nagios::nrpe_command { 'check_metadata_keys':
         command_line => "/usr/lib/nagios/plugins/check_gpg_keys ${cache_dir}/keys",
       }
     }
