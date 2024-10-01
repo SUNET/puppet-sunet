@@ -63,10 +63,10 @@ done
 NUM_EXPIRING=${#EXPIRING[@]}
 NUM_INVALID=${#INVALIDS[@]}
 
-if [ $CRIT -ne 0 ]; then
+if [ "${CRIT}" -ne 0 ]; then
 	PREFIX="CRITICAL"
 	EXIT=2
-elif [ $WARN -ne 0 ]; then
+elif [ "${WARN}" -ne 0 ]; then
 	PREFIX="WARNING"
 	EXIT=1
 elif [ "$NUM_INVALID" -ne 0 ]; then
