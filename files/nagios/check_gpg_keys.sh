@@ -65,13 +65,13 @@ NUM_INVALID=${#INVALIDS[@]}
 
 if [ $CRIT -ne 0 ]; then
 	PREFIX="CRITICAL"
-	EXIT=1
+	EXIT=2
 elif [ $WARN -ne 0 ]; then
 	PREFIX="WARNING"
-	EXIT=2
+	EXIT=1
 elif [ "$NUM_INVALID" -ne 0 ]; then
 	PREFIX="WARNING"
-	EXIT=2
+	EXIT=1
 fi
 
 NON_OK_STRING=()
