@@ -22,6 +22,10 @@ class sunet::scriptherder::init (
         mode   => '0755',
         source => 'puppet:///modules/sunet/scriptherder/scriptherder.py',
       }
+      file { '/etc/bash_completion.d/scriptherder-tab-completion.sh':
+        mode   => '0755',
+        source => 'puppet:///modules/sunet/scriptherder/scriptherder-tab-completion.sh',
+      }
     }
   }
   if $nrpe {
