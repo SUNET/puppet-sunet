@@ -23,9 +23,9 @@ WARN=0
 
 EXPIRING=()
 INVALIDS=()
+INFINITIVES=()
 
 NUM_KEYS=0
-INFINITE_KEYS=0
 
 PREFIX="OK"
 EXIT=0
@@ -47,7 +47,8 @@ for key in "${DIRECTORY}"/*.pub; do
   expirey_date=$(echo "${pub_keys}" | cut -d : -f 7)
 
 	if [ -z "${expirey_date}" ]; then
-    ((INFINITE_KEYS++))
+		INFINITIVES+=("${key}")
+    ((WARN++))
 		continue
 	elif ! echo "${expirey_date}" | grep -qP '^\d{10}$'; then
 		echo "Warning: Can't parse ${key} for validity"
@@ -67,6 +68,7 @@ done
 
 NUM_EXPIRING=${#EXPIRING[@]}
 NUM_INVALID=${#INVALIDS[@]}
+NUM_INFINITIVE=${#INFINITIVES[@]}
 
 if [ "${CRIT}" -ne 0 ]; then
 	PREFIX="CRITICAL"
@@ -88,6 +90,10 @@ if [ "${NUM_INVALID}" -ne 0 ]; then
 	NON_OK_STRING+=("Invalid gpg keys (${NUM_INVALID}): ${INVALIDS[*]}")
 fi
 
+if [ "${NUM_INFINITIVE}" -ne 0 ]; then
+	NON_OK_STRING+=("GPG keys without expiration (${NUM_INVALID}): ${INFINITIVES[*]}")
+fi
+
 NON_OK_OUTPUT=""
 for string in "${NON_OK_STRING[@]}"; do
 	if [ -z "$NON_OK_OUTPUT" ]; then
@@ -97,10 +103,10 @@ for string in "${NON_OK_STRING[@]}"; do
 	fi
 done
 
-OUTPUT_STRING="No gpg keys are about to expire"
+OUTPUT_STRING="No GPG keys are about to expire"
 if [ -n "${NON_OK_OUTPUT}" ]; then
 	OUTPUT_STRING=${NON_OK_OUTPUT}
 fi
 
-echo "${PREFIX}: ${OUTPUT_STRING} | expiring_keys=${NUM_EXPIRING} invalid_keys=${NUM_INVALID} infinite_keys=${INFINITE_KEYS} total_keys=${NUM_KEYS}"
+echo "${PREFIX}: ${OUTPUT_STRING} | expiring_keys=${NUM_EXPIRING} invalid_keys=${NUM_INVALID} infinite_keys=${NUM_INFINITIVE} total_keys=${NUM_KEYS}"
 exit "${EXIT}"
