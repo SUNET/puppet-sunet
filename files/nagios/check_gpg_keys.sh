@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 
-set -o pipefail
+set -uo pipefail
 
-if [ -z "$1" ]; then
-	echo "UNKOWN: A directory is required as \$1"
-	exit 3
+if [ $# -ne 1 ]; then
+  echo "UNKOWN: A directory is required as \$1"
+  exit 3
 fi
 
-DIRECTORY="$1"
+args=("$@")
+DIRECTORY=${args[0]}
 
 if [ ! -d "${DIRECTORY}" ]; then
 	echo "UNKOWN: Unknown directory (${DIRECTORY})"
