@@ -3,8 +3,8 @@
 set -uo pipefail
 
 if [ $# -ne 1 ]; then
-  echo "UNKOWN: A directory is required as \$1"
-  exit 3
+	echo "UNKOWN: A directory is required as \$1"
+	exit 3
 fi
 
 args=("$@")
@@ -34,46 +34,46 @@ TMPDIR=$(mktemp -d)
 export GNUPGHOME="${TMPDIR}"
 
 for key in "${DIRECTORY}"/*.pub; do
-  ((NUM_KEYS++))
+	((NUM_KEYS++))
 
-  if ! pub_keys=$(gpg --fixed-list-mode --with-colons --show-keys "${key}" 2>/dev/null | grep -e '^pub:'); then
+	if ! pub_keys=$(gpg --fixed-list-mode --with-colons --show-keys "${key}" 2>/dev/null | grep -e '^pub:'); then
 		INVALIDS+=("${key}")
 		continue
 	fi
 
-  # Only allow one public key per file
-  if [ "$(echo "${pub_keys}" | wc -l)" -ne 1 ]; then
-    INVALIDS+=("${key}")
-    continue
-  fi
+	# Only allow one public key per file
+	if [ "$(echo "${pub_keys}" | wc -l)" -ne 1 ]; then
+		INVALIDS+=("${key}")
+		continue
+	fi
 
-  expirey_date=$(echo "${pub_keys}" | cut -d : -f 7)
+	expirey_date=$(echo "${pub_keys}" | cut -d : -f 7)
 
 	if [ -z "${expirey_date}" ]; then
 		INFINITIVES+=("${key}")
-    ((WARN++))
+		((WARN++))
 		continue
 	elif ! echo "${expirey_date}" | grep -qP '^\d{10}$'; then
 		echo "Warning: Can't parse ${key} for validity"
-    ((WARN++))
+		((WARN++))
 		INVALIDS+=("${key}")
 		continue
 	fi
 
-  fingerprint=$(gpg --fixed-list-mode --with-colons --show-keys "${key}" 2>/dev/null | grep -A1 -e '^pub:' | grep -e '^fpr'  |cut -d : -f 10)
-  filename=$(basename "${key}")
-  # Only allow files with the long fingerprint as suffix. E.g
-  # jocar-13376BF892B5871181A218E9BE4EC2EEADF2C31B.pub
-  if ! echo "${filename}" | grep -qP "^[^-]*-${fingerprint}.pub$"; then
-    ((WARN++))
+	fingerprint=$(gpg --fixed-list-mode --with-colons --show-keys "${key}" 2>/dev/null | grep -A1 -e '^pub:' | grep -e '^fpr' | cut -d : -f 10)
+	filename=$(basename "${key}")
+	# Only allow files with the long fingerprint as suffix. E.g
+	# jocar-13376BF892B5871181A218E9BE4EC2EEADF2C31B.pub
+	if ! echo "${filename}" | grep -qP "^[^-]*-${fingerprint}.pub$"; then
+		((WARN++))
 		INVALIDS+=("${key}")
-  fi
+	fi
 
 	if [ "${expirey_date}" -lt "${CRITICAL}" ]; then
-    ((CRIT++))
+		((CRIT++))
 		EXPIRING+=("${key}")
 	elif [ "${expirey_date}" -lt "${WARNING}" ]; then
-    ((WARN++))
+		((WARN++))
 		EXPIRING+=("${key}")
 	fi
 done
