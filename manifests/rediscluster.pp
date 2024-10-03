@@ -6,6 +6,8 @@ class sunet::rediscluster(
   Optional[String] $cluster_announce_ip = '',
   Optional[Boolean] $automatic_rectify = false,
   Optional[Boolean] $prevent_reboot = false,
+  Optional[String] $image = 'redis',
+  Optional[String] $tag = '7-bookworm',
 )
 {
 
