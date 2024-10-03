@@ -33,14 +33,18 @@ EXIT=0
 for key in "${DIRECTORY}"/*.pub; do
   ((NUM_KEYS++))
 
-	if ! expirey_date=$(gpg --fixed-list-mode --with-colons --show-keys "${key}" 2>/dev/null | grep -e '^pub:' | cut -d : -f 7); then
+  if ! pub_keys=$(gpg --fixed-list-mode --with-colons --show-keys "${key}" 2>/dev/null | grep -e '^pub:'); then
 		INVALIDS+=("${key}")
 		continue
 	fi
-	if [ "$(echo "${expirey_date}" | wc -l)" -ne 1 ]; then
-		INVALIDS+=("${key}")
-		continue
-	fi
+
+  # Only allow one public key per file
+  if [ "$(echo "${pub_keys}" | wc -l)" -ne 1 ]; then
+    INVALIDS+=("${key}")
+    continue
+  fi
+
+  expirey_date=$(echo "${pub_keys}" | cut -d : -f 7)
 
 	if [ -z "${expirey_date}" ]; then
     ((INFINITE_KEYS++))
