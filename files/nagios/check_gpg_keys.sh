@@ -30,6 +30,9 @@ NUM_KEYS=0
 PREFIX="OK"
 EXIT=0
 
+TMPDIR=$(mktemp -d)
+export GNUPGHOME="${TMPDIR}"
+
 for key in "${DIRECTORY}"/*.pub; do
   ((NUM_KEYS++))
 
@@ -116,6 +119,8 @@ OUTPUT_STRING="No GPG keys are about to expire"
 if [ -n "${NON_OK_OUTPUT}" ]; then
 	OUTPUT_STRING=${NON_OK_OUTPUT}
 fi
+
+rm -rf "${TMPDIR}"
 
 echo "${PREFIX}: ${OUTPUT_STRING} | expiring_keys=${NUM_EXPIRING} invalid_keys=${NUM_INVALID} infinite_keys=${NUM_INFINITIVE} total_keys=${NUM_KEYS}"
 exit "${EXIT}"
