@@ -92,11 +92,11 @@ fi
 
 NON_OK_STRING=()
 if [ "${NUM_EXPIRING}" -ne 0 ]; then
-	NON_OK_STRING+=("Expiring/expired gpg keys (${NUM_EXPIRING}): ${EXPIRING[*]}")
+	NON_OK_STRING+=("Expiring/expired GPG keys (${NUM_EXPIRING}): ${EXPIRING[*]}")
 fi
 
 if [ "${NUM_INVALID}" -ne 0 ]; then
-	NON_OK_STRING+=("Invalid gpg keys (${NUM_INVALID}): ${INVALIDS[*]}")
+	NON_OK_STRING+=("Invalid GPG keys (${NUM_INVALID}): ${INVALIDS[*]}")
 fi
 
 if [ "${NUM_INFINITIVE}" -ne 0 ]; then
