@@ -57,6 +57,15 @@ for key in "${DIRECTORY}"/*.pub; do
 		continue
 	fi
 
+  fingerprint=$(gpg --fixed-list-mode --with-colons --show-keys "${key}" 2>/dev/null | grep -A1 -e '^pub:' | grep -e '^fpr'  |cut -d : -f 10)
+  filename=$(basename "${key}")
+  # Only allow files with the long fingerprint as suffix. E.g
+  # jocar-13376BF892B5871181A218E9BE4EC2EEADF2C31B.pub
+  if ! echo "${filename}" | grep -qP "^[^-]*-${fingerprint}.pub$"; then
+    ((WARN++))
+		INVALIDS+=("${key}")
+  fi
+
 	if [ "${expirey_date}" -lt "${CRITICAL}" ]; then
     ((CRIT++))
 		EXPIRING+=("${key}")
