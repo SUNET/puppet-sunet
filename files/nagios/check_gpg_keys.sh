@@ -103,7 +103,7 @@ if [ "${NUM_INVALID}" -ne 0 ]; then
 fi
 
 if [ "${NUM_INFINITIVE}" -ne 0 ]; then
-	NON_OK_STRING+=("GPG keys without expiration (${NUM_INVALID}): ${INFINITIVES[*]}")
+	NON_OK_STRING+=("GPG keys without expiration (${NUM_INFINITIVE}): ${INFINITIVES[*]}")
 fi
 
 NON_OK_OUTPUT=""
