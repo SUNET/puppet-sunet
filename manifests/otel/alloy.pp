@@ -48,4 +48,12 @@ class sunet::otel::alloy (
     enable  => 'true',
     require => Package['alloy'],
   }
+  sunet::nftables::docker_expose { 'allow_local_opentelemetry_grpc' :
+    allow_clients => '172.16.0.0/12',
+    port          => '4317',
+  }
+  sunet::nftables::docker_expose { 'allow_local_opentelemetry_http' :
+    allow_clients => '172.16.0.0/12',
+    port          => '4318',
+  }
 }
