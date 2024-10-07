@@ -1,6 +1,6 @@
 #!/bin/bash
 
-result="$(docker exec mariadb-db-1 mysql -p<%= @mariadb_root_password %> -BN -e 'show status like "slave_running"')"
+result="$(/usr/local/bin/mariadb-replication-status)"
 if [[ "${result}" == "Slave_running	ON" ]]; then
   echo "OK: Replica running"
   exit 0
