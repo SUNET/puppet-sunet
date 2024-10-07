@@ -11,7 +11,12 @@ services:
       - /opt/mariadb/datadir:/var/lib/mysql
       - /opt/mariadb/init:/docker-entrypoint-initdb.d
       - /opt/mariadb/scripts:/scripts
+<%- if @backup -%>
+      - /opt/mariadb_backup/start_replica_from_init.sh:/start_replica_from_init.sh
+<% end -%>
+<%- if @galera -%>
     network_mode: host
+<% end -%>
 <%- if !@dns.empty? -%>
     dns:
 <% @dns.each do |resolver| -%>
@@ -29,8 +34,10 @@ services:
 <%- if @mariadb_database -%>
       - MYSQL_DATABASE=<%= @mariadb_database %>
 <%- end -%>
+<%- if @galera -%>
       - BOOTSTRAP=<%= @bootstrap %>
       - FORCE_BOOTSTRAP=0
     command:  "--wsrep_cluster_address=gcomm://<%= @cluster_nodes.join(',') %>"
     tty: true
+<%- end -%>
 
