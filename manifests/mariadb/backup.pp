@@ -2,6 +2,7 @@
 class sunet::mariadb::backup(
   String $mariadb_version=latest,
   Array[String] $dns = [],
+  Boolean $backup_to_baas = true,
   Boolean $nrpe = true,
 ) {
 
@@ -31,18 +32,20 @@ class sunet::mariadb::backup(
     mode    => '0744',
   }
 
-  file { '/usr/local/bin/backup2baas':
-    ensure  => present,
-    content => template('sunet/mariadb/backup/backup2baas.erb'),
-    mode    => '0744',
-  }
+  if $backup_to_baas {
+    file { '/usr/local/bin/backup2baas':
+      ensure  => present,
+      content => template('sunet/mariadb/backup/backup2baas.erb'),
+      mode    => '0744',
+    }
 
-  sunet::scriptherder::cronjob { 'backup2baas':
-    cmd           => '/usr/local/bin/backup2baas',
-    hour          => '6',
-    minute        => '10',
-    ok_criteria   => ['exit_status=0', 'max_age=24h'],
-    warn_criteria => ['exit_status=1'],
+    sunet::scriptherder::cronjob { 'backup2baas':
+      cmd           => '/usr/local/bin/backup2baas',
+      hour          => '6',
+      minute        => '10',
+      ok_criteria   => ['exit_status=0', 'max_age=24h'],
+      warn_criteria => ['exit_status=1'],
+    }
   }
 
   file { '/usr/local/bin/check_replication':
