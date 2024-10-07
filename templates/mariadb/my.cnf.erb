@@ -19,6 +19,8 @@ gtid_strict_mode        = ON
 log_bin                 = binlog
 log_slave_updates       = ON
 server_id               = <%= @server_id %>
+# Default hostname base relay_log is no good in containers
+relay_log               = 'relay-log'
 
 # Innodb
 innodb_autoinc_lock_mode        = 2
@@ -34,6 +36,7 @@ innodb_rollback_on_timeout      = 1
 innodb_write_io_threads         = 4    # CPU dependent
 transaction_isolation           = 'READ-COMMITTED'
 
+<% if @galera -%>
 # Galera
 wsrep_cluster_name              = "Sunet_MariaDB_Cluster"
 wsrep_gtid_domain_id            = 1000 # same on all Galera nodes in the same segment
@@ -45,3 +48,4 @@ wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0" # gmcast.seg
 wsrep_slave_threads             = 4    # CPU dependent
 wsrep_sst_method                = mariabackup
 wsrep_sync_wait                 = 1
+<% end -%>
