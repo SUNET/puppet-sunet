@@ -48,19 +48,19 @@ class sunet::mariadb::backup(
     }
   }
 
-  file { '/usr/local/bin/check_replication':
+  file { '/usr/lib/nagios/plugins/check_mariadb-replication':
     ensure  => present,
     content => template('sunet/mariadb/backup/check_replication.erb'),
     mode    => '0744',
   }
-  file { '/usr/local/bin/status-test':
+  file { '/usr/local/bin/mariadb-replication-status':
     ensure  => present,
-    content => template('sunet/mariadb/backup/status-test.erb'),
+    content => template('sunet/mariadb/backup/replication-status.erb'),
     mode    => '0744',
   }
-  file { '/etc/sudoers.d/99-status-test':
+  file { '/etc/sudoers.d/99-mariadb-replication-test':
     ensure  => file,
-    content => "script ALL=(root) NOPASSWD: /usr/local/bin/status-test\n",
+    content => "script ALL=(root) NOPASSWD: /usr/local/bin/mariadb-replication-status",
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
@@ -70,10 +70,10 @@ class sunet::mariadb::backup(
     sunet::sudoer {'nagios_run_replication_command':
       user_name    => 'nagios',
       collection   => 'nrpe_replication_check',
-      command_line => '/usr/local/bin/check_replication'
+      command_line => '/usr/lib/nagios/plugins/check_mariadb-replication'
     }
     sunet::nagios::nrpe_command {'check_async_replication':
-      command_line => '/usr/bin/sudo /usr/local/bin/check_replication'
+      command_line => '/usr/bin/sudo /usr/lib/nagios/plugins/check_mariadb-replication'
     }
   }
 
