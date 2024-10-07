@@ -93,6 +93,8 @@ define sunet::mariadb(
     content => template('sunet/mariadb/credentials.cnf.erb'),
     mode    => '0744',
   }
+
+  $server_id = ipv4_to_int($facts['networking']['ip'])
   file { "${mariadb_dir}/conf/my.cnf":
     ensure  => present,
     content => template('sunet/mariadb/my.cnf.erb'),
