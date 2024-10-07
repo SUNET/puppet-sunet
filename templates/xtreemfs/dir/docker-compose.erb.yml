@@ -1,0 +1,11 @@
+version: '3'
+services:
+  xtreemfsdir:
+    image: <%= @image %>:<%= @tag %>
+    network_mode: host
+    volumes:
+      - "/opt/xtreemfs_dir_server/config:/etc/xos/xtreemfs"
+      - "/opt/xtreemfs_dir_server/data:/xtreemfs_data"
+    ports:
+      - "30638:30638"
+      - "32638:32638"
