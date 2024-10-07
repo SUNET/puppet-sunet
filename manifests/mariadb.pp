@@ -55,26 +55,26 @@ define sunet::mariadb(
     ok_criteria   => ['exit_status=0','max_age=2d'],
     warn_criteria => ['exit_status=1','max_age=3d'],
   }
-  file { '/usr/local/bin/cluster-size':
+  file { '/usr/local/bin/mariadb-galera-size':
     ensure  => present,
     content => template('sunet/mariadb/cluster-size.erb.sh'),
     mode    => '0744',
   }
-  file { '/usr/local/bin/cluster-status':
+  file { '/usr/local/bin/mariadb-galera-status':
     ensure  => present,
     content => template('sunet/mariadb/cluster-status.erb.sh'),
     mode    => '0744',
   }
   file { '/etc/sudoers.d/99-cluster-size-test':
     ensure  => file,
-    content => "script ALL=(root) NOPASSWD: /usr/local/bin/cluster-size\n",
+    content => "script ALL=(root) NOPASSWD: /usr/local/bin/mariadb-galera-size\n",
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
   }
   file { '/etc/sudoers.d/99-cluster-status-test':
     ensure  => file,
-    content => "script ALL=(root) NOPASSWD: /usr/local/bin/cluster-status\n",
+    content => "script ALL=(root) NOPASSWD: /usr/local/bin/mariadb-galera-status\n",
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
