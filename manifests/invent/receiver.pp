@@ -5,7 +5,7 @@ class sunet::invent::receiver (
   String $vhost = 'invent.sunet.se'
 ){
   $admin_password = lookup('invent_admin_password', undef, undef, undef)
-  $endpoints = ['hosts', 'images']
+  $endpoints = ['hosts', 'images', 'network']
   $nginx_dirs = [ 'acme', 'certs','conf','dhparam','html','vhost' ]
   $ni_host_key = lookup ('ni_host_key')
   $ni_host_ip = lookup ('ni_host_ip')
