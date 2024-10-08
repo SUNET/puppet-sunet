@@ -2,12 +2,12 @@ class sunet::exabgp::monitor (
   String  $path       = '/etc/bgp/monitor.d',
   Integer $sleep_time = 2
 ) {
-   file { '/etc/bgp/monitor.d': ensure => directory } ->
-   file { '/etc/bgp/monitor':
-      ensure   => file,
-      mode     => '0755',
-      content  => template("sunet/exabgp/monitor.erb")
-   }
+  file { '/etc/bgp/monitor.d': ensure => directory }
+  -> file { '/etc/bgp/monitor':
+      ensure  => file,
+      mode    => '0755',
+      content => template('sunet/exabgp/monitor.erb')
+  }
 }
 
 define sunet::exabgp::monitor::url(
@@ -17,17 +17,17 @@ define sunet::exabgp::monitor::url(
   Integer          $prio  = 10,
   String           $path  = '/etc/bgp/monitor.d',
 ) {
-   $check_url = $url ? {
+  $check_url = $url ? {
       undef   => $name,
       default => $url
-   }
-   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, })
-   $safe_title = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
-   file {"${path}/${prio}_${safe_title}":
-      ensure   => file,
-      content  => template('sunet/exabgp/monitor/url.erb'),
-      mode     => '0755'
-   }
+  }
+  ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, })
+  $safe_title = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
+  file {"${path}/${prio}_${safe_title}":
+      ensure  => file,
+      content => template('sunet/exabgp/monitor/url.erb'),
+      mode    => '0755'
+  }
 }
 
 define sunet::exabgp::monitor::haproxy(
@@ -44,9 +44,9 @@ define sunet::exabgp::monitor::haproxy(
   $safe_title = regsubst($site, '[^0-9A-Za-z.\-]', '-', 'G')
   file {
     "${path}/${prio}_${safe_title}":
-      ensure   => file,
-      content  => template('sunet/exabgp/monitor/haproxy.erb'),
-      mode     => '0755'
+      ensure  => file,
+      content => template('sunet/exabgp/monitor/haproxy.erb'),
+      mode    => '0755'
       ;
   }
 
@@ -56,18 +56,18 @@ define sunet::exabgp::monitor::haproxy(
   $ipv6str = join($ipv6, ',')
   exec { "exabgp_hook_${site}_UP":
     path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
-    command => "$scriptdir/exabgp-hook-maker --up 'site=${site}; index=${index}; ipv4=$ipv4str; ipv6=$ipv6str' > $hookdir/${site}_UP.sh",
-    unless  => "test -s $hookdir/${site}_UP.sh",
+    command => "${scriptdir}/exabgp-hook-maker --up 'site=${site}; index=${index}; ipv4=${ipv4str}; ipv6=${ipv6str}' > ${hookdir}/${site}_UP.sh",
+    unless  => "test -s ${hookdir}/${site}_UP.sh",
   }
 
   exec { "exabgp_hook_${site}_DOWN":
     path    => ['/usr/sbin', '/usr/bin', '/sbin', '/bin', ],
-    command => "$scriptdir/exabgp-hook-maker --down 'site=${site}; index=${index}; ipv4=$ipv4str; ipv6=$ipv6str' > $hookdir/${site}_DOWN.sh",
-    unless  => "test -s $hookdir/${site}_DOWN.sh",
+    command => "${scriptdir}/exabgp-hook-maker --down 'site=${site}; index=${index}; ipv4=${ipv4str}; ipv6=${ipv6str}' > ${hookdir}/${site}_DOWN.sh",
+    unless  => "test -s ${hookdir}/${site}_DOWN.sh",
   }
 
-  file { ["$hookdir/${site}_UP.sh", "$hookdir/${site}_DOWN.sh"]:
-    mode => '0755',
+  file { ["${hookdir}/${site}_UP.sh", "${hookdir}/${site}_DOWN.sh"]:
+    mode    => '0755',
     require => [Exec["exabgp_hook_${site}_UP"], Exec["exabgp_hook_${site}_DOWN"]],
   }
 }

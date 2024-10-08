@@ -13,9 +13,9 @@ define sunet::lb::register(
       mode    => '0755',
       content => template('sunet/lb/sunetfrontend-register.erb')
       ;
-  } ->
+  }
 
-  cron { "sunetfronted_register_${site}":
+  -> cron { "sunetfronted_register_${site}":
     ensure  => present,
     command => "/usr/local/bin/sunetfrontend-register ${extra_args} ${site} ${port} ${fe_str} > /dev/null 2>&1",
     minute  => '*/3',

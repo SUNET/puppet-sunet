@@ -18,11 +18,11 @@ class sunet::ntp(
 
   package { 'ntp': ensure => 'installed' }
   service { 'ntp':
-    name       => 'ntp',
     ensure     => running,
+    name       => 'ntp',
     enable     => true,
     hasrestart => true,
-    require => Package['ntp'],
+    require    => Package['ntp'],
   }
 
   # Don't use pool.ntp.org servers, but rather DHCP provided NTP servers

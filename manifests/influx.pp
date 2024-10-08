@@ -54,6 +54,6 @@ class sunet::influx(
     allow_clients => $influx_producer_networks,
     port          => '8086',
     proto         => 'tcp',
-    iif           => "${interface_default}",
+    iif           => $interface_default,
   }
 }

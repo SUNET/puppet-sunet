@@ -10,7 +10,7 @@ define sunet::redis::server(
   Enum['yes', 'no'] $cluster_config  = 'no',
   String            $cluster_name    = 'redis-cluster',
   Enum['yes', 'no'] $sentinel_config = 'no',
-  String            $master_ip       = pick($cluster_nodes[0], $::ipaddress_default),
+  String            $master_ip       = pick($cluster_nodes[0], $facts['networking']['interfaces']['default']['ip']),
   Integer           $master_port     = 6379,
   Optional[String]  $docker_image    = 'docker.sunet.se/eduid/redis',
   String            $docker_tag      = 'latest',
@@ -24,9 +24,9 @@ define sunet::redis::server(
 
   # Configure all nodes as slaveof $master_ip, unless this node actually has $master_ip on eth0/bond0
   $slave_node = $master_ip ? {
-    $::ipaddress_eth0    => 'no',
-    $::ipaddress_bond0   => 'no',
-    $::ipaddress_default => 'no',
+    $facts['networking']['interfaces']['eth0']['ip']    => 'no',
+    $facts['networking']['interfaces']['bond0']['ip']   => 'no',
+    $facts['networking']['interfaces']['default']['ip'] => 'no',
     default              => 'yes',
   }
 
@@ -41,9 +41,9 @@ define sunet::redis::server(
   }
 
   sunet::misc::ufw_allow { "${name}_allow_clients":
-    from => [$allow_clients,
-             $cluster_nodes,
-             ],
+    from => [ $allow_clients,
+              $cluster_nodes,
+            ],
     port => $port,
   }
 
@@ -92,9 +92,9 @@ define sunet::redis::server(
       imagetag => $docker_tag,
       net      => 'host',  # Required for Redis clustering/HA
       volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
-                   "${basedir}/data:/data",
-                   '/dev/log:/dev/log',
-                   ],
+                  "${basedir}/data:/data",
+                  '/dev/log:/dev/log',
+                  ],
       env      => flatten($env),
     }
   }

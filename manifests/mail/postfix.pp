@@ -20,7 +20,7 @@ class sunet::mail::postfix(
   $config = lookup($environment)
   $db_hosts = join($config['db_hosts'], ' ')
   $relay_hosts = join($relay_servers, ', ')
-  $incoming_servers = $relaying_servers.map |$server| { 
+  $incoming_servers = $relaying_servers.map |$server| {
     regsubst($server, '[\\[\\]]', '', 'G')
   }
   $nextcloud_db = 'nextcloud'
