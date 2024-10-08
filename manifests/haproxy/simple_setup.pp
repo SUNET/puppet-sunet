@@ -3,17 +3,17 @@ define sunet::haproxy::simple_setup(
   String $content,
   String $cert,
   String $key,
-  String $server_name    = $facts['networking']['fqdn'],
+  String $server_name    = $::fqdn,
   String $port           = '443',
   Array  $allow_clients  = [],
 ) {
   ensure_resource(sunet::misc::system_user, 'haproxy', {group => 'haproxy' })
 
-  ensure_resource(sunet::misc::certbundle, "${facts['networking']['fqdn']}_haproxy", {
+  ensure_resource(sunet::misc::certbundle, "${::fqdn}_haproxy", {
     group     => 'haproxy',
     bundle    => ["cert=${cert}",
                   "key=${key}",
-                  "out=private/${facts['networking']['fqdn']}_haproxy.crt",
+                  "out=private/${::fqdn}_haproxy.crt",
                   ],
     })
 

@@ -32,12 +32,12 @@ class sunet::security::allow_ssh (
         port   => $port,
     })
 
-    if $facts['networking']['interfaces']['default']['ip'] {
+    if $::facts['ipaddress_default'] {
       # Also remove historical allow-any-to-my-IP rules
       ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
           ensure => 'absent',
           from   => 'any',
-          to     => $facts['networking']['interfaces']['default']['ip'],
+          to     => $::facts['ipaddress_default'],
           proto  => 'tcp',
           port   => $port,
       })

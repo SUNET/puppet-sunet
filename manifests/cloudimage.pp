@@ -38,27 +38,27 @@ define sunet::cloudimage (
   Variant[String, Boolean] $apt_mirror  = 'http://se.archive.ubuntu.com/ubuntu',
 )
 {
-  warning ('sunet::cloudimage is deprecated - please migrate to sunet::kvm::host and sunet::kvm::cloudimage')
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 {
+  warning ("sunet::cloudimage is deprecated - please migrate to sunet::kvm::host and sunet::kvm::cloudimage")
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 {
     $kvm_package = 'qemu-system-x86'
-  } elsif $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '16.04') >= 0 {
+  } elsif $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
     $kvm_package = 'qemu-kvm'
   } else {
     $kvm_package = 'kvm'  # old name
   }
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '18.04') >= 0 {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '18.04') >= 0 {
     # Manages CPU affinity for virtual CPUs. Seems to be required on new KVM hosts in eduid,
     # to keep the VMs from crashing.
     $numad_package = 'numad'
   } else {
     $numad_package = []
   }
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '19.10') >= 0 {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '19.10') >= 0 {
     $libvirt_package = 'libvirt-daemon-system'
   } else {
     $libvirt_package = 'libvirt-bin'
   }
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 {
     # virsh command has been broken out of the libvirt-package for Jammy
     $virt_extra = 'libvirt-clients'
   } else {
@@ -85,7 +85,7 @@ define sunet::cloudimage (
   $network_config = "${script_dir}/${name}/${name}_network-config"
 
   if $secure_boot {
-    if str2bool($facts['sunet_kvmhost_can_secureboot']) {
+    if str2bool($::sunet_kvmhost_can_secureboot) {
       $sb_args = '--boot=uefi,loader_secure=yes,loader=/usr/share/OVMF/OVMF_CODE.secboot.fd,nvram_template=/usr/share/OVMF/OVMF_VARS.ms.fd --machine=q35 --features smm=on'
     } else {
       # The ovmf package in Ubuntu 18.04 did not include the boot loader and NVRAM content to

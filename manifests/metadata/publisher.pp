@@ -4,8 +4,8 @@ class sunet::metadata::publisher(
     String  $dir='/var/www/html',
     $src=undef)
 {
-  $_keyname = $keyname ? {
-      undef   => $facts['networking']['fqdn'],
+   $_keyname = $keyname ? { 
+      undef   => $::fqdn,
       default => $keyname
   }
   if ($src) {
