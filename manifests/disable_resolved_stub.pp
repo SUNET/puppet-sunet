@@ -1,7 +1,7 @@
 # Disable/enable resolved stub
 class sunet::disable_resolved_stub(
   Variant[Boolean, Undef] $disable_resolved_stub = undef,
-  String $dns_ip                                 = pick($facts['networking']['interfaces']['default']['ip'], $facts['networking']['interfaces']['default']['ip6']),
+  String $dns_ip                                 = pick($::ipaddress_default, $::ipaddress6_default),
 ) {
   # If unbound is installed on a host, it is likely that the intent is for it to be used.
   # If the host has systemd resolved, the standard setting is for resolv.conf to have 'nameservers 127.0.0.53'

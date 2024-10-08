@@ -14,8 +14,8 @@ class sunet::gitolite(
         shell      => '/bin/bash'
     })
 
-    $hostname = $facts['networking']['fqdn']
-    $shortname = $facts['networking']['hostname']
+    $hostname = $::fqdn
+    $shortname = $::hostname
 
     $home = $username ? {
         'root'    => '/root',

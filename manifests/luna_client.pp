@@ -1,6 +1,6 @@
 define sunet::luna_client($hostname = undef) {
-  $client_hostname = $hostname ? {
-      undef    => $facts['networking']['fqdn'],
+   $client_hostname = $hostname ? {
+      undef    => "${::fqdn}",
       default  => $hostname
   }
   $pin = lookup('luna_partition_password', undef, undef, undef)

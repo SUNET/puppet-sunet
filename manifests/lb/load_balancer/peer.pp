@@ -1,20 +1,20 @@
 define sunet::lb::load_balancer::peer(
   String           $as,
   String           $remote_ip,
-  Optional[String] $local_ip  = '',
-  Optional[String] $router_id = '',
+  Optional[String] $local_ip  = "",
+  Optional[String] $router_id = "",
   Optional[String] $password_hiera_key = undef,
 ) {
   # If $local_ip is not set, default to either $::ipaddress_default or $::ipaddress6_default
   # depending on the address family of $remote_ip
   if ! is_ipaddr($local_ip) {
-    if $facts['networking']['interfaces']['default']['ip6'] and is_ipaddr($remote_ip, 6) {
-      $_local_ip = $facts['networking']['interfaces']['default']['ip6']
+    if $::ipaddress6_default and is_ipaddr($remote_ip, 6) {
+      $_local_ip = $::ipaddress6_default
       $_local_ip_family = 6
       $_local_ip_fact = 'ipaddress6_default'
     # We fall back to ipv4 if we don't have a ipv6 address or if the remote_ip is ipv4
     } else {
-      $_local_ip = $facts['networking']['interfaces']['default']['ip']
+      $_local_ip = $::ipaddress_default
       $_local_ip_family = 4
       $_local_ip_fact = 'ipaddress_default'
     }
