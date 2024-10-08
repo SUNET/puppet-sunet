@@ -24,8 +24,8 @@ class sunet::dehydrated(
   }
 
   $ca = $staging ? {
-     false => 'https://acme-v02.api.letsencrypt.org/directory',
-     true  => 'https://acme-staging.api.letsencrypt.org/directory'
+    false => 'https://acme-v02.api.letsencrypt.org/directory',
+    true  => 'https://acme-staging.api.letsencrypt.org/directory'
   }
   ensure_resource('package','openssl',{ensure=>'latest'})
   if $src_url =~ String[1] {
@@ -36,8 +36,8 @@ class sunet::dehydrated(
   }
 
   exec {'rename-etc-letsencrypt.sh':
-     command => 'mv /etc/letsencrypt.sh /etc/dehydrated',
-     onlyif  => 'test -d /etc/letsencrypt.sh'
+    command => 'mv /etc/letsencrypt.sh /etc/dehydrated',
+    onlyif  => 'test -d /etc/letsencrypt.sh'
   }
 
   file {
@@ -52,8 +52,8 @@ class sunet::dehydrated(
       content => template('sunet/dehydrated/le-ssl-compat.erb')
       ;
     '/etc/dehydrated':
-      ensure  => 'directory',
-      mode    => '0600',
+      ensure => 'directory',
+      mode   => '0600',
       ;
     '/etc/dehydrated/config':
       ensure  => 'file',
@@ -112,11 +112,11 @@ class sunet::dehydrated(
       #                   clients => [frontend1.sunet.se, frontend2.sunet.se]
       #                  }
       if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
-         sunet::rrsync { "/etc/dehydrated/certs/${domain}":
-           ssh_key_type       => $info['ssh_key_type'],
-           ssh_key            => $info['ssh_key'],
-           use_sunet_ssh_keys => true,
-         }
+        sunet::rrsync { "/etc/dehydrated/certs/${domain}":
+          ssh_key_type       => $info['ssh_key_type'],
+          ssh_key            => $info['ssh_key'],
+          use_sunet_ssh_keys => true,
+        }
       }
     }
   }

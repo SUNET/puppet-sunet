@@ -1,6 +1,6 @@
 # Api frontend class and optiona docker image scanner
 class sunet::invent::scanner(
-  Boolean $install_docker_io = true, 
+  Boolean $install_docker_io = true,
   String  $image_path = '/var/cache/invent/images',
   String  $registry = 'docker.sunet.se',
   String  $registry_url = "https://${registry}",

@@ -7,9 +7,9 @@ define sunet::pollinate($device = '/dev/random') {
     }
     package {'pollinate': ensure => absent }
     file { '/etc/default/pollinate':
-      ensure => file,
-      owner  => root,
-      group  => root,
+      ensure  => file,
+      owner   => root,
+      group   => root,
       content => template('sunet/pollen/pollinate.erb')
     }
     cron { 'repollinate': ensure => absent,

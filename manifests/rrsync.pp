@@ -10,8 +10,8 @@ define sunet::rrsync(
   $safe_name = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G')
   $directory = pick($dir, $name)
   $_flags = $ro ? {
-     false   => '',
-     default => '-ro'
+    false   => '',
+    default => '-ro'
   }
   ensure_resource('exec','rrsync_unpack',{
     onlyif  => 'test ! -f /usr/bin/rrsync',

@@ -60,7 +60,7 @@ class sunet::mariadb::backup(
   }
   file { '/etc/sudoers.d/99-mariadb-replication-test':
     ensure  => file,
-    content => "script ALL=(root) NOPASSWD: /usr/local/bin/mariadb-replication-status",
+    content => 'script ALL=(root) NOPASSWD: /usr/local/bin/mariadb-replication-status',
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
