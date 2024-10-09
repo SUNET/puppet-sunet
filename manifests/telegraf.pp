@@ -21,7 +21,7 @@ class sunet::telegraf($repo = 'stable') {
     }
     apt::source {'telegraf':
       location     => 'https://repos.influxdata.com/ubuntu',
-      release   => $::lsbdistcodename,
+      release      => $::lsbdistcodename,
       repos        => $repo,
       key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
       architecture => $architecture

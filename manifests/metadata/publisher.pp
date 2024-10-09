@@ -4,7 +4,7 @@ class sunet::metadata::publisher(
     String  $dir='/var/www/html',
     $src=undef)
 {
-   $_keyname = $keyname ? { 
+   $_keyname = $keyname ? {
       undef   => $::fqdn,
       default => $keyname
   }

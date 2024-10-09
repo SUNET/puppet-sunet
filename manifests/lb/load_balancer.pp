@@ -72,7 +72,7 @@ class sunet::lb::load_balancer(
       bundle => [
         "cert=${infra_cert}",
         "key=${infra_key}",
-        "out=private/infra_haproxy.crt",
+        'out=private/infra_haproxy.crt',
       ],
     })
   }

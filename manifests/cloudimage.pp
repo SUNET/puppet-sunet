@@ -38,7 +38,7 @@ define sunet::cloudimage (
   Variant[String, Boolean] $apt_mirror  = 'http://se.archive.ubuntu.com/ubuntu',
 )
 {
-  warning ("sunet::cloudimage is deprecated - please migrate to sunet::kvm::host and sunet::kvm::cloudimage")
+  warning ('sunet::cloudimage is deprecated - please migrate to sunet::kvm::host and sunet::kvm::cloudimage')
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '22.04') >= 0 {
     $kvm_package = 'qemu-system-x86'
   } elsif $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '16.04') >= 0 {
