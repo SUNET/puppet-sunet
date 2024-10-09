@@ -1,3 +1,4 @@
+# apache2
 class sunet::apache2(
 ) {
   ensure_packages(['apache2'])

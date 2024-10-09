@@ -50,7 +50,7 @@ class sunet::invent::receiver (
       port          => 443,
     }
     sunet::nftables::rule { 'allow_rsync':
-      rule => "add rule inet filter input ip saddr {$ni_host_ip} tcp dport 22 counter accept comment \"allow-rsync-from-ni-host\""
+      rule => "add rule inet filter input ip saddr {${ni_host_ip}} tcp dport 22 counter accept comment \"allow-rsync-from-ni-host\""
     }
   } else {
     sunet::misc::ufw_allow { 'receiver_ports':

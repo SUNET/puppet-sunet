@@ -1,3 +1,4 @@
+# gitolite
 class sunet::gitolite(
     $username                         = 'git',
     $group                            = 'git',
@@ -14,8 +15,8 @@ class sunet::gitolite(
         shell      => '/bin/bash'
     })
 
-    $hostname = $::fqdn
-    $shortname = $::hostname
+    $hostname = $facts['networking']['fqdn']
+    $shortname = $facts['networking']['hostname']
 
     $home = $username ? {
         'root'    => '/root',
@@ -32,22 +33,22 @@ class sunet::gitolite(
         ensure => directory,
         owner  => $username,
         group  => $group
-    } ->
+    }
 
-    if $save_private_admin_key_on_server {
+    -> if $save_private_admin_key_on_server {
         case $_ssh_key {
             undef: {
-                sunet::snippets::ssh_keygen { "$home/admin": }
+                sunet::snippets::ssh_keygen { "${home}/admin": }
             }
             default: {
-                file { "$home/admin":
+                file { "${home}/admin":
                     ensure  => file,
                     mode    => '0600',
                     owner   => 'root',
                     group   => 'root',
                     content => inline_template('<%= @_ssh_key %>'),
                 }
-                sunet::snippets::ssh_pubkey_from_privkey { "$home/admin": }
+                sunet::snippets::ssh_pubkey_from_privkey { "${home}/admin": }
             }
         }
     } elsif $save_private_admin_key_on_server == false {
@@ -60,15 +61,15 @@ class sunet::gitolite(
         }
     }
 
-    package {'gitolite3': ensure => latest } ->
-    file { "${home}/.gitolite.rc":
+    package {'gitolite3': ensure => latest }
+    -> file { "${home}/.gitolite.rc":
         ensure  => file,
         owner   => $username,
         group   => $group,
-        content => template("sunet/gitolite/gitolite-rc.erb"),
-    } ->
+        content => template('sunet/gitolite/gitolite-rc.erb'),
+    }
 
-    exec {'gitolite-setup':
+    -> exec {'gitolite-setup':
         command     => "gitolite setup -pk ${home}/admin.pub",
         user        => $username,
         environment => ["HOME=${home}"]
@@ -77,14 +78,14 @@ class sunet::gitolite(
     if $enable_git_daemon {
         package { 'git-daemon-sysvinit':
             ensure => latest
-        } ->
-        file { '/etc/default/git-daemon':
+        }
+        -> file { '/etc/default/git-daemon':
             ensure  => file,
             owner   => 'root',
             group   => 'root',
             content => template('sunet/gitolite/git-daemon.erb'),
-        } ->
-        sunet::snippets::add_user_to_group { 'git_daemon_repository_access':
+        }
+        -> sunet::snippets::add_user_to_group { 'git_daemon_repository_access':
             username => 'gitdaemon',
             group    => $group,
         }
@@ -100,8 +101,8 @@ class sunet::gitolite(
         exec { 'gitolite_apparmor_dir':
             command => 'mkdir -p /etc/apparmor-cosmos',
             unless  => 'test -d /etc/apparmor-cosmos',
-        } ->
-        file { '/etc/apparmor-cosmos/usr.share.gitolite3.gitolite-shell':
+        }
+        -> file { '/etc/apparmor-cosmos/usr.share.gitolite3.gitolite-shell':
             ensure  => 'file',
             owner   => 'root',
             group   => 'root',

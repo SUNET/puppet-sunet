@@ -1,3 +1,4 @@
+# sunet::bird::peer
 define sunet::bird::peer(
   String            $remote_as,
   String            $remote_ip,
