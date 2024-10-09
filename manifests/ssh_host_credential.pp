@@ -57,7 +57,7 @@ define sunet::ssh_host_credential(
       }
   } elsif ($manage_key) {
       exec { "${title}-ssh-keygen":
-        command => "ssh-keygen -N '' -C '${username}@${::fqdn}' -f '${ssh_home}/${id}' -t ed25519",
+        command => "ssh-keygen -N '' -C '${username}@${facts['networking']['fqdn']}' -f '${ssh_home}/${id}' -t ed25519",
         user    => $username,
         onlyif  => "test ! -f ${ssh_home}/${id}"
       }

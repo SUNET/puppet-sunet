@@ -77,7 +77,7 @@ class sunet::frontend::load_balancer(
       docker_imagetag       => pick($config['load_balancer']['telegraf_imagetag'], 'stable'),
       docker_volumes        => pick($config['load_balancer']['telegraf_volumes'], []),
       forward_url           => $config['load_balancer']['telegraf_forward_url'],
-      statsd_listen_address => pick($::ipaddress_docker0, 'no-address-provided'),
+      statsd_listen_address => pick($facts['networking']['interfaces']['docker0']['ip'], 'no-address-provided'),
     }
 
     sunet::misc::ufw_allow { 'always-https-allow-http':

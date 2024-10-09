@@ -10,11 +10,11 @@ define sunet::frontend::load_balancer::peer(
   # depending on the address family of $remote_ip
   if ! is_ipaddr($local_ip) {
     if is_ipaddr($remote_ip, 4) {
-      $_local_ip = $::ipaddress_default
+      $_local_ip = $facts['networking']['interfaces']['default']['ip']
       $_local_ip_family = 4
       $_local_ip_fact = 'ipaddress_default'
     } elsif is_ipaddr($remote_ip, 6) {
-      $_local_ip = $::ipaddress6_default
+      $_local_ip = $facts['networking']['interfaces']['default']['ip6']
       $_local_ip_family = 6
       $_local_ip_fact = 'ipaddress6_default'
     }
