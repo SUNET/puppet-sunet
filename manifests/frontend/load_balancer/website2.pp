@@ -53,9 +53,9 @@ define sunet::frontend::load_balancer::website2(
   # Add IP and hostname of the host running the container - used to reach the
   # acme-c proxy in eduid
   $config3 = merge($config2, {
-    'frontend_ip4' => $::ipaddress_default,
-    'frontend_ip6' => $::ipaddress6_default,
-    'frontend_fqdn' => $::fqdn,
+    'frontend_ip4' => $facts['networking']['ip'],
+    'frontend_ip6' => $facts['networking']['ip6'],
+    'frontend_fqdn' => $facts['networking']['fqdn'],
   })
 
   $local_config = lookup('sunet_frontend_local', undef, undef, {})
@@ -107,7 +107,7 @@ define sunet::frontend::load_balancer::website2(
   $multinode_port         = pick_default($config['multinode_port'], false)
   $set_fqdn               = pick($config['set_fqdn'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
-  $statsd_host            = pick($::ipaddress_docker0, $::ipaddress)
+  $statsd_host            = pick($facts['networking']['interfaces']['docker0']['ip'], $facts['networking']['ip'])
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
@@ -165,7 +165,7 @@ define sunet::frontend::load_balancer::website2(
     command => "/usr/sbin/ufw route allow out on br-${instance}",
   }
 
-  if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
+  if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $facts['networking']['fqdn'] {
     sunet::dehydrated::client_define { $name :
       domain        => $name,
       server        => $config['letsencrypt_server'],
