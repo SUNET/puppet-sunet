@@ -47,15 +47,15 @@ class sunet::glb(
       env              => ["ZONE=${zone}"],
       extra_parameters => ['--security-opt seccomp=unconfined'],
    }
-   ufw::allow { "allow-dns-udp":
-      ip   => "${::ipaddress_default}",
-      port => '53',
-      proto => "udp",
+   ufw::allow { 'allow-dns-udp':
+      ip    => $::ipaddress_default,
+      port  => '53',
+      proto => 'udp',
    }
-   ufw::allow { "allow-dns-tcp":
-      ip   => "${::ipaddress_default}",
-      port => '53',
-      proto => "tcp",
+   ufw::allow { 'allow-dns-tcp':
+      ip    => $::ipaddress_default,
+      port  => '53',
+      proto => 'tcp',
    }
    sunet::nagios::nrpe_check_process { 'geodns': }
 }
