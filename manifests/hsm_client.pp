@@ -1,3 +1,4 @@
+# hsm_client
 class sunet::hsm_client($luna_version='6.2') {
   $pkcs11pin = lookup('pkcs11pin', undef, undef, '')
   sunet::snippets::reinstall::keep {['/etc/luna','/etc/Chrystoki.conf.d']: }

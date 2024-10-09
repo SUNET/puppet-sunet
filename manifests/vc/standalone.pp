@@ -1,3 +1,4 @@
+# Standalone VC
 class sunet::vc::standalone(
   String  $vc_version='latest',
   String  $mongodb_version='4.0.10',

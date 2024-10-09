@@ -1,3 +1,4 @@
+# pkcs11_ca
 class sunet::pkcs11_ca(
   String $ca_url,
   String $ca_dns_name,

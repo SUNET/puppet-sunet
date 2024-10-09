@@ -1,3 +1,4 @@
+# pyffd
 define sunet::pyffd(
   $version = 'latest',
   $image = 'docker.sunet.se/pyff',

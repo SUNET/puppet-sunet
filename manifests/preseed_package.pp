@@ -1,3 +1,4 @@
+# preseed_package
 define sunet::preseed_package ($ensure, $options = {}) {
   file { "/tmp/${name}.preseed":
     content => template("sunet/preseed/${name}"),

@@ -1,3 +1,4 @@
+# peer
 define sunet::frontend::load_balancer::peer(
   String           $as,
   String           $remote_ip,

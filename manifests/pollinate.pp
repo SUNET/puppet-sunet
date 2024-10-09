@@ -1,3 +1,4 @@
+# pollinate
 define sunet::pollinate($device = '/dev/random') {
   if ($facts['os']['name'] == 'Ubuntu') {
     if ($facts['os']['release']['full'] == '12.04') {

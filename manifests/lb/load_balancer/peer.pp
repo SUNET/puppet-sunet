@@ -1,3 +1,4 @@
+# This is a helper class to create a peer entry in the load balancer
 define sunet::lb::load_balancer::peer(
   String           $as,
   String           $remote_ip,

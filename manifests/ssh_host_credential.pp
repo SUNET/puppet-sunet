@@ -1,3 +1,4 @@
+# sunet::ssh_host_credential
 define sunet::ssh_host_credential(
       $hostname    = 'localhost',
       $hostalias   = undef,

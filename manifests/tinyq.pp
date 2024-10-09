@@ -1,3 +1,4 @@
+# tinyq
 class sunet::tinyq() {
   apt::ppa { 'ppa:sunet/tinyq': }
   -> package { 'tinyq': ensure => latest }

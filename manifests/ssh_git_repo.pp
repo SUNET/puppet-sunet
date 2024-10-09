@@ -1,3 +1,4 @@
+# git repo
 define sunet::ssh_git_repo(
       $hostname    = 'github.com',
       $username    = 'github',

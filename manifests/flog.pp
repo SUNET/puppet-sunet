@@ -1,3 +1,4 @@
+# flog
 class sunet::flog {
 
   $postgres_password = safe_hiera('flog_postgres_password')

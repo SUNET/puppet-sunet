@@ -1,3 +1,4 @@
+# norduni
 class sunet::norduni {
 
     $postgres_master_password = safe_hiera('postgres_master_password')

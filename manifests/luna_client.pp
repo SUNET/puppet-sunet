@@ -1,5 +1,6 @@
+# luna_client
 define sunet::luna_client($hostname = undef) {
-   $client_hostname = $hostname ? {
+  $client_hostname = $hostname ? {
       undef    => $::fqdn,
       default  => $hostname
   }

@@ -1,3 +1,4 @@
+# check_etcd_cluster_health
 define sunet::nagios::nrpe_check_etcd_cluster_health ($etcd_container = undef) {
   $check_container = $etcd_container ? {
       undef        => $title,

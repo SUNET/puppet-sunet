@@ -1,3 +1,4 @@
+# gitolite
 class sunet::gitolite(
     $username                         = 'git',
     $group                            = 'git',

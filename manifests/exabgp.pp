@@ -1,3 +1,4 @@
+# exabgp
 define sunet::exabgp(
   Array   $extra_arguments = [],
   String  $config          = '/etc/bgp/exabgp.conf',

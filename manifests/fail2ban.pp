@@ -1,3 +1,4 @@
+# Fail2ban module
 class sunet::fail2ban {
 
   package {'fail2ban':

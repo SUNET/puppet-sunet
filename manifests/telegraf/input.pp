@@ -1,9 +1,12 @@
+# input top class
 class sunet::telegraf::input { }
 
+# input bind
 class sunet::telegraf::input::bind {
   sunet::telegraf::plugin {'bind': }
 }
 
+# input docker
 class sunet::telegraf::input::docker {
   sunet::snippets::add_user_to_group {'add_telegraf_to_docker_group':
     username => 'telegraf',
@@ -12,6 +15,7 @@ class sunet::telegraf::input::docker {
   -> sunet::telegraf::plugin {'docker': }
 }
 
+# input ipmi
 class sunet::telegraf::input::ipmi {
   package {'ipmitool': ensure => latest }
   -> sunet::sudoer {'telegraf_run_ipmitool_sdr':
@@ -29,6 +33,7 @@ class sunet::telegraf::input::ipmi {
   sunet::telegraf::plugin {'ipmi': config => {ipmitool_path => '/usr/bin/ipmitool_telegraf', timeout => '300s'}}
 }
 
+# input varnish
 class sunet::telegraf::input::varnish(
   $use_sudo=false,
   $binary='/usr/bin/varnishstat',

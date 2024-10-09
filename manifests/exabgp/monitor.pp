@@ -1,3 +1,4 @@
+# exabgp::monitor
 class sunet::exabgp::monitor (
   String  $path       = '/etc/bgp/monitor.d',
   Integer $sleep_time = 2
@@ -10,6 +11,7 @@ class sunet::exabgp::monitor (
   }
 }
 
+# exabgp::monitor::url
 define sunet::exabgp::monitor::url(
   String           $url,
   String           $route,
@@ -30,6 +32,7 @@ define sunet::exabgp::monitor::url(
   }
 }
 
+# Monitor a HAProxy instance
 define sunet::exabgp::monitor::haproxy(
   Integer $index,
   Array   $ipv4,

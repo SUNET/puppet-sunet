@@ -1,3 +1,4 @@
+# sunet::metadata::signer
 class sunet::metadata::signer($dest_host=undef,$dest_dir='',$version='1.1.4') {
   package { ['xsltproc','libxml2-utils','attr']: ensure => latest }
   -> sunet::pyff {$name:

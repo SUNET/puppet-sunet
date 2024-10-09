@@ -1,5 +1,6 @@
 include stdlib
 
+# cloudimage
 define sunet::cloudimage (
   String                   $image_url   = 'https://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-amd64-disk1.img',
   Boolean                  $dhcp        = true,

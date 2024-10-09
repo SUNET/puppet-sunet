@@ -1,3 +1,4 @@
+# auditd
 class sunet::auditd {
   package { 'auditd': ensure => latest }
   service { 'auditd': ensure => running }

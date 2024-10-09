@@ -1,3 +1,4 @@
+# nagios
 class sunet::nagios(
   $nrpe_service    = 'nagios-nrpe-server',
   $command_timeout = 60,

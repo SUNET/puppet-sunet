@@ -1,3 +1,4 @@
+# rsyslog
 class sunet::rsyslog(
   $daily_rotation = true,
   $syslog_servers = lookup(syslog_servers, undef, undef, []),

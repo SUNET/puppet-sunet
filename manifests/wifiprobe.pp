@@ -1,3 +1,4 @@
+# wifiprobe
 class sunet::wifiprobe {
 
   sunet::docker_run {'alwayshttps':

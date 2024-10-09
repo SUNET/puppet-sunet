@@ -1,3 +1,4 @@
+# haproxy
 define sunet::redis::haproxy(
   $username        = 'redis',
   $group           = 'redis',
