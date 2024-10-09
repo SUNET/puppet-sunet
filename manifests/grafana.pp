@@ -6,9 +6,9 @@
 # @param grafana_version           The version of the grafana container to run
 # @param grafana_webuser_networks  A list of networks allowed to grafana web on port 80/443
 class sunet::grafana(
+  Array[String] $grafana_webuser_networks,
   String        $servicename='',
   String        $grafana_version='latest',
-  Array[String] $grafana_webuser_networks,
 ) {
 
   sunet::system_user {'grafana': username => 'grafana', group => 'grafana' }
@@ -59,12 +59,12 @@ class sunet::grafana(
   sunet::nftables::docker_expose { 'allow_http' :
     allow_clients => $grafana_webuser_networks,
     port          => '80',
-    iif           => $interface_default,
+    iif           => $facts['interface_default'],
   }
 
   sunet::nftables::docker_expose { 'allow_https' :
     allow_clients => $grafana_webuser_networks,
     port          => '443',
-    iif           => $interface_default,
+    iif           => $facts['interface_default'],
   }
 }

@@ -42,6 +42,15 @@ define sunet::ucrandom(
           content => template('sunet/ucrandom/ucrandom.unit.erb')
         }
       }
+      default: {
+        file {'/lib/systemd/system/ucrandom.service':
+          ensure  => $ensure_file,
+          owner   => root,
+          group   => root,
+          mode    => '0600',
+          content => template('sunet/ucrandom/ucrandom.unit.erb')
+        }
+      }
   }
   $_provider = $facts['init_type'] ? {
       'upstart'      => 'upstart',
