@@ -23,9 +23,17 @@ define sunet::collabora::docs(
       'dictionaries=sv_SE de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru'
     ]
   $collabora_extra_params = [
-      'extra_params=--o:welcome.enable=false --o:num_prespawn_children=10 ' +
-      '--o:ssl.cert_file_path=/certs/collabora.crt --o:ssl.key_file_path=/certs/collabora.key ' +
-      '--o:ssl.ca_file_path=/certs/ca-certificates.crt --o:net.frame_ancestors=https://*'
+      join(
+        [
+          'extra_params=--o:welcome.enable=false',
+          '--o:num_prespawn_children=10',
+          '--o:ssl.cert_file_path=/certs/collabora.crt',
+          '--o:ssl.key_file_path=/certs/collabora.key',
+          '--o:ssl.ca_file_path=/certs/ca-certificates.crt',
+          '--o:net.frame_ancestors=https://*'
+        ]
+        , ' '
+      )
     ]
   $collabora_env = flatten([$collabora_conf,$collabora_extra_params])
   sunet::misc::ufw_allow { 'web_ports':
