@@ -4,13 +4,13 @@ define sunet::auth_server(
     Hash $config,
     String $cert_file,
     String $key_file,
-    String $server_name      = $::fqdn,
+    String $server_name      = $facts['networking']['fqdn'],
     String $port             = '443',
     String $username         = 'sunet',
     String $group            = 'sunet',
     String $base_dir         = '/opt/sunet',
     Boolean $saml_sp         = false,
-    String $pysaml2_base_url = "https://${::fqdn}/saml2/sp",
+    String $pysaml2_base_url = "https://${facts['networking']['fqdn']}/saml2/sp",
     Array $allow_clients     = [$facts['cosmos']['frontend_server_addrs']],
 ) {
 

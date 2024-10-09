@@ -6,7 +6,7 @@ class sunet::metadata::publisher(
     $src=undef)
 {
   $_keyname = $keyname ? {
-      undef   => $::fqdn,
+      undef   => $facts['networking']['fqdn'],
       default => $keyname
   }
   if ($src) {
