@@ -1,3 +1,4 @@
+# This is the main class of the sunet::gitlab module.
 class sunet::gitlab {
 
     # Application specific password for Crowd.

@@ -1,3 +1,4 @@
+# telegraf::plugin
 define sunet::telegraf::plugin($plugin=undef,$config=undef) {
   if (defined(Service['telegraf'])) {
       $_plugin = $plugin ? {

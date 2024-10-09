@@ -1,3 +1,4 @@
+# pages
 class sunet::pages($host='127.0.0.1',$port='5000',$version='latest') {
   $config = lookup('sunet_pages_sites', undef, undef, undef)
   file { ['/var/www','/var/cache/sunetpages']: ensure => 'directory' }

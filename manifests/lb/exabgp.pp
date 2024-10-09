@@ -1,5 +1,6 @@
 include stdlib
 
+# exabgp
 define sunet::lb::exabgp(
   Array   $extra_arguments = [],
   String  $config          = '/etc/bgp/exabgp.conf',

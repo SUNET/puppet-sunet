@@ -1,3 +1,4 @@
+# ftics
 class sunet::fticks($ensure=present,$url=undef,$args='',$pipe='/dev/fticks') {
   $_ensure_file = $ensure ? {
       'present'   => 'file',

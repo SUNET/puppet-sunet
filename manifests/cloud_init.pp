@@ -1,3 +1,4 @@
+# Reconfigure cloud init
 class sunet::cloud_init {
   exec { 'update-cloud-init':
       command     => 'dpkg-reconfigure -f noninteractive cloud-init',
@@ -5,6 +6,7 @@ class sunet::cloud_init {
   }
 }
 
+# Define a cloud-init config file
 define sunet::cloud_init::config ($prio = '99', $config = {}) {
   ensure_resource ('class','sunet::cloud_init', { })
   file { "/etc/cloud/cloud.cfg.d/${prio}_${title}.cfg":
@@ -15,6 +17,7 @@ define sunet::cloud_init::config ($prio = '99', $config = {}) {
   }
 }
 
+# Define a cloud-init config file for the IaaS
 class sunet::cloud_init::iaas_defaults {
   sunet::cloud_init::config { 'disable_datasources':
       config => { datasource_list => [ 'None' ] }

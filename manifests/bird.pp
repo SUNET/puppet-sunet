@@ -1,3 +1,4 @@
+# bird
 class sunet::bird(
   String $bird       = 'bird',
   String $bird6      = 'bird6',

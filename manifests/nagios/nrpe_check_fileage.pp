@@ -1,4 +1,4 @@
-
+# check_fileage
 define sunet::nagios::nrpe_check_fileage (
   $filename     = undef,
   $warning_age  = undef,

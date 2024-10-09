@@ -1,3 +1,4 @@
+# rrsync
 define sunet::rrsync(
   String $ssh_key,
   String $ssh_key_type,

@@ -1,6 +1,7 @@
-
+# output top class
 class sunet::telegraf::output {}
 
+# influxdb_v2 output plugin
 class sunet::telegraf::output::influxdb_v2 ($url = undef, $organization, $bucket) {
   $_url = $url ? {
       undef   => $title,

@@ -1,3 +1,4 @@
+# sunet::metadata
 define sunet::metadata($url=undef,
                       $cert=undef,
                       $filename=undef)
@@ -22,6 +23,7 @@ define sunet::metadata($url=undef,
     }
 }
 
+# SWAMID metadata class
 define sunet::metadata::swamid {
   ensure_resource('file','/var/run/md-signer2.crt', {
       content  => file('sunet/md-signer2.crt')
@@ -33,6 +35,7 @@ define sunet::metadata::swamid {
   }
 }
 
+# SWAMID metadata class for testing
 define sunet::metadata::swamid_testing {
   ensure_resource('file','/var/run/md-signer2.crt', {
       content  => file('sunet/md-signer2.crt')
@@ -44,6 +47,7 @@ define sunet::metadata::swamid_testing {
   }
 }
 
+# SWAMID metadata class for idp
 define sunet::metadata::swamid_idp {
   ensure_resource('file','/var/run/md-signer2.crt', {
       content  => file('sunet/md-signer2.crt')
@@ -55,6 +59,7 @@ define sunet::metadata::swamid_idp {
   }
 }
 
+# SWAMID metadata class for idp-transitive
 define sunet::metadata::swamid_idp_transitive {
   ensure_resource('file','/var/run/md-signer2.crt', {
       content  => file('sunet/md-signer2.crt')

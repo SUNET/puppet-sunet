@@ -1,3 +1,4 @@
+# telegraf
 class sunet::telegraf($repo = 'stable') {
   $token = safe_hiera('influxdb_v2_token');
   if ($token == 'NOT_SET_IN_HIERA') {
@@ -32,8 +33,8 @@ class sunet::telegraf($repo = 'stable') {
         require     => [Apt::Key['telegraf']],
         subscribe   => [Apt::Key['telegraf']],
         refreshonly => true,
-     }
-     $_provider = $::init_type ? {
+    }
+    $_provider = $::init_type ? {
         'upstart'      => 'upstart',
         'systemd-sysv' => 'systemd',
         default        => 'debian'

@@ -1,3 +1,4 @@
+# auth_server
 define sunet::auth_server(
     String $service_name,
     Hash $config,

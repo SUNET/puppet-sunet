@@ -1,3 +1,4 @@
+# github repo
 define sunet::private_github_repo(
       $username    = 'github',
       $group       = 'github',

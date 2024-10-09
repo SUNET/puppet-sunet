@@ -1,3 +1,4 @@
+# cgit
 class sunet::cgit(
     String $fqdn,
     String $public_hostname,

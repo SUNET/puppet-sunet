@@ -1,3 +1,4 @@
+# simple_entropy
 class sunet::simple_entropy {
   package {'haveged': ensure => latest }
   -> service {'haveged': ensure => running }

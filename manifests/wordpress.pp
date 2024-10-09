@@ -1,5 +1,4 @@
 # a basic wp setup using docker
-
 define sunet::wordpress (
   $db_host           = undef,
   $sp_hostname       = undef,

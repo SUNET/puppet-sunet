@@ -1,3 +1,4 @@
+# sunet::dovecot
 class sunet::dovecot
 {
   package {['dovecot-imapd', 'dovecot-lmtpd', 'dovecot-sieve']: }

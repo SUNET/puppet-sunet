@@ -1,3 +1,4 @@
+# install ipvsadm and keepalived
 class sunet::vrrphttp() {
   package { ['ipvsadm','keepalived']: ensure => latest }
   -> file { '/usr/local/bin': ensure => directory }

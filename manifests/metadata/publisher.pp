@@ -1,10 +1,11 @@
+# metadata::publisher
 class sunet::metadata::publisher(
     Array   $allow_clients=['any'],
     $keyname=undef,
     String  $dir='/var/www/html',
     $src=undef)
 {
-   $_keyname = $keyname ? {
+  $_keyname = $keyname ? {
       undef   => $::fqdn,
       default => $keyname
   }
