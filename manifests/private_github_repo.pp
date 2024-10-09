@@ -42,7 +42,7 @@ define sunet::private_github_repo(
   }
   if ($manage_key) {
       exec { "${title}-ssh-keygen":
-        command => "ssh-keygen -N '' -C '${username}@${::fqdn}' -f '${ssh_home}/${id}' -t ecdsa",
+        command => "ssh-keygen -N '' -C '${username}@${facts['networking']['fqdn']}' -f '${ssh_home}/${id}' -t ecdsa",
         user    => $username,
         onlyif  => "test ! -f ${ssh_home}/${id}"
       }

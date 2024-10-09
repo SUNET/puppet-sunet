@@ -33,7 +33,7 @@ class sunet::microk8s::node(
   # Loop through peers and do things that require their ip:s
   $final_peers.each | String $peer| {
     $peer_ip = dns_lookup($peer)
-    unless $peer == 'unknown' or $facts['ipaddress'] in $peer_ip {
+    unless $peer == 'unknown' or $facts['networking']['ip'] in $peer_ip {
       $peer_ip.each | String $ip | {
         file_line { "hosts_${peer}_${ip}":
           path => '/etc/hosts',

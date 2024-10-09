@@ -15,14 +15,14 @@ class sunet::telegraf($repo = 'stable') {
       id     => '05CE15085FC09D18E99EFB22684A14CF2582E0C5',
       source => '/etc/cosmos/apt/keys/influxdb-05CE15085FC09D18E99EFB22684A14CF2582E0C5.pub'
     }
-    if $::operatingsystem == 'Ubuntu' and $::operatingsystemrelease == '14.04' {
+    if $facts['os']['name'] == 'Ubuntu' and $facts['os']['release']['full'] == '14.04' {
       $architecture = 'amd64'
     } else {
       $architecture = undef
     }
     apt::source {'telegraf':
       location     => 'https://repos.influxdata.com/ubuntu',
-      release      => $::lsbdistcodename,
+      release      => $facts['os']['distro']['codename'],
       repos        => $repo,
       key          => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
       architecture => $architecture
