@@ -37,7 +37,7 @@ define sunet::auth_server(
         content => inline_template("<%= @config['app_config'].to_yaml %>"),
         group   => $group,
         force   => true,
-        notify  => [Sunet::Docker_compose[$service_name-docker-compose]],
+        notify  => [Sunet::Docker_compose["${service_name}-docker-compose"]],
     }
 
     $keystore = safe_hiera("${service_name}_jwks")
@@ -45,7 +45,7 @@ define sunet::auth_server(
         content => inline_template('<%= @keystore.to_json %>'),
         group   => $group,
         force   => true,
-        notify  => [Sunet::Docker_compose[$service_name-docker-compose]],
+        notify  => [Sunet::Docker_compose["${service_name}-docker-compose"]],
     }
 
     if $saml_sp {
@@ -53,12 +53,12 @@ define sunet::auth_server(
             content => template('sunet/auth_server/saml2_settings.py.erb'),
             group   => $group,
             force   => true,
-            notify  => [Sunet::Docker_compose[$service_name-docker-compose]],
+            notify  => [Sunet::Docker_compose["${service_name}-docker-compose"]],
         }
         sunet::misc::create_key_file { "${base_dir}/${service_name}/etc/saml.key":
             hiera_key => "${service_name}_saml_key",
             group     => $group,
-            notify    => [Sunet::Docker_compose[$service_name-docker-compose]],
+            notify    => [Sunet::Docker_compose["${service_name}-docker-compose"]],
         }
     }
 
@@ -73,7 +73,7 @@ define sunet::auth_server(
         description  => 'sunet auth server application',
         compose_dir  => '/opt/sunet/compose',
         subscribe    => [
-            Sunet::Haproxy::Simple_setup[$service_name-haproxy],
+            Sunet::Haproxy::Simple_setup["${service_name}-haproxy"],
             Sunet::Misc::Create_cfgfile["${base_dir}/${service_name}/etc/config.yaml"],
             Sunet::Misc::Create_cfgfile["${base_dir}/${service_name}/etc/keystore.jwks"],
         ],
