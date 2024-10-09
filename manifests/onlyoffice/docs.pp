@@ -10,7 +10,7 @@ define sunet::onlyoffice::docs(
   String           $docker_image = 'onlyoffice/documentserver',
   String           $docker_tag   = 'latest',
   Array[String]    $dns          = [],
-  String           $hostname     = $facts['networking']['fqdn'],
+  String           $hostname     = $::fqdn,
   Enum['yes','no'] $letsencrypt  = 'no',
   Integer          $port         = 8080,
   Integer          $tls_port     = 8443,

@@ -7,13 +7,13 @@ class sunet::unbound(
   package { 'unbound': ensure => 'installed' }
 
   # Help Puppet understand to use systemd for Ubuntu 16.04 hosts
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '15.04') >= 0 {
+  if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '15.04') >= 0 {
     Service {
       provider => 'systemd',
     }
   }
 
-  if $use_apparmor and versioncmp($facts['os']['release']['full'], '20.04') < 0 {
+  if $use_apparmor and versioncmp($::operatingsystemrelease, '20.04') < 0 {
     include apparmor
 
     file {
@@ -54,9 +54,9 @@ class sunet::unbound(
     }
   }
 
-  if $facts['os']['name'] == 'Ubuntu'
-      and versioncmp($facts['os']['release']['full'], '15.04') >= 0
-      and versioncmp($facts['os']['release']['full'], '22.04') < 0 and
+  if $::operatingsystem == 'Ubuntu'
+      and versioncmp($::operatingsystemrelease, '15.04') >= 0
+      and versioncmp($::operatingsystemrelease, '22.04') < 0 and
       $::facts['sunet_nftables_enabled'] != 'yes' {
     include sunet::systemd_reload
 
@@ -79,9 +79,9 @@ class sunet::unbound(
     }
   }
 
-  if $facts['os']['name'] == 'Ubuntu' {
+  if $::facts['operatingsystem'] == 'Ubuntu' {
     ensure_resource('class', 'sunet::disable_resolved_stub', { disable_resolved_stub => $disable_resolved_stub, })
-  } elsif $facts['os']['name'] == 'Debian' {
+  } elsif $::facts['operatingsystem'] == 'Debian' {
     file_line { 'base':
       path => '/etc/resolvconf/resolv.conf.d/base',
       line => "nameserver ${::facts['ipaddress_default']}",

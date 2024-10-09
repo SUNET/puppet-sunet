@@ -15,7 +15,7 @@ class sunet::scriptherder::init (
   Enum['present', 'absent'] $ensure = 'present',
 ) {
   if $install {
-    if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '18.04') < 0 {
+    if $::facts['operatingsystem'] == 'Ubuntu' and versioncmp($::facts['operatingsystemrelease'], '18.04') < 0 {
       notice('Not installing Scriptherder on Ubuntu < 18.04 (because of too old Python version)')
     } else {
       file { '/usr/local/bin/scriptherder':

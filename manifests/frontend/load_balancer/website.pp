@@ -65,10 +65,10 @@ define sunet::frontend::load_balancer::website(
 
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     # OLD setup
-    $_docker_ip = $facts['networking']['interfaces']['docker0']['ip']
+    $_docker_ip = $::facts['ipaddress_docker0']
     # On old setups, containers can't reach IPv6 only ACME-C backend directly, but have to go through
     # a proxy process (always-https) running on the frontend host itself.
-    $_letsencrypt_override_address = $facts['networking']['interfaces']['default']['ip']
+    $_letsencrypt_override_address = $::facts['ipaddress_default']
   } else {
     # NEW setup with Docker in namespace
     $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
@@ -78,9 +78,9 @@ define sunet::frontend::load_balancer::website(
   # Add IP and hostname of the host running the container - used to reach the
   # acme-c proxy in eduid
   $config3a = merge($config2, {
-    'frontend_ip4' => $facts['networking']['interfaces']['default']['ip'],
-    'frontend_ip6' => $facts['networking']['interfaces']['default']['ip6'],
-    'frontend_fqdn' => $facts['networking']['fqdn'],
+    'frontend_ip4' => $::ipaddress_default,
+    'frontend_ip6' => $::ipaddress6_default,
+    'frontend_fqdn' => $::fqdn,
   })
 
   if $_letsencrypt_override_address {
@@ -143,7 +143,7 @@ define sunet::frontend::load_balancer::website(
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
   $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
-  $statsd_host            = pick($_docker_ip, $facts['networking']['ip'])
+  $statsd_host            = pick($_docker_ip, $::ipaddress)
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
@@ -228,7 +228,7 @@ define sunet::frontend::load_balancer::website(
     })
   }
 
-  if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $facts['networking']['fqdn'] {
+  if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
     sunet::dehydrated::client_define { $name :
       domain        => $name,
       server        => $config['letsencrypt_server'],
