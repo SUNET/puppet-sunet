@@ -34,7 +34,7 @@ class sunet::telegraf($repo = 'stable') {
         subscribe   => [Apt::Key['telegraf']],
         refreshonly => true,
     }
-    $_provider = $::init_type ? {
+    $_provider = $facts['init_type'] ? {
         'upstart'      => 'upstart',
         'systemd-sysv' => 'systemd',
         default        => 'debian'
