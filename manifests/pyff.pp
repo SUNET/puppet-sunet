@@ -56,7 +56,13 @@ define sunet::pyff(
       imagetag         => $version,
       volumes          => flatten([$volumes,["${dir}:${dir}"]]),
       ports            => $pyff_ports,
-      env              => ["DATADIR=${dir}","EXTRA_ARGS=${pyffd_args}","PIPELINE=${pipeline}","LOGLEVEL=${pyffd_loglevel}","PYFF_LANGS=${langs}"],
+      env              => [
+                            "DATADIR=${dir}",
+                            "EXTRA_ARGS=${pyffd_args}",
+                            "PIPELINE=${pipeline}",
+                            "LOGLEVEL=${pyffd_loglevel}",
+                            "PYFF_LANGS=${langs}"
+                          ],
       extra_parameters => $docker_run_extra_parameters
   }
   file {'/usr/local/bin/mirror-mdq.sh':
