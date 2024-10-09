@@ -6,11 +6,11 @@ class sunet::bird(
   String $username   = 'bird',
   Integer $uid       = 501,
   Integer $gid       = 501,
-  String $router_id  = $::ipaddress_default,
+  String $router_id  = $facts['networking']['interfaces']['default']['ip'],
   String $check_args = '',
 ) {
   $my_router_id = $router_id ? {
-    undef   => $::ipaddress_eth0,
+    undef   => $facts['networking']['interfaces']['eth0']['ip'],
     default => $router_id
   }
   group {$username:

@@ -8,16 +8,16 @@ define sunet::etcd_node(
   $proxy_readonly  = false,
   $browser         = false,
   $docker_net      = 'docker',
-  $etcd_s2s_ip     = $::ipaddress_eth1,
+  $etcd_s2s_ip     = $facts['networking']['interfaces']['eth1']['ip'],
   $etcd_s2s_proto  = 'http',    # XXX default ought to be https
   $etcd_c2s_ip     = '0.0.0.0',
   $etcd_c2s_proto  = 'http',    # XXX default ought to be https
   $etcd_listen_ip  = '0.0.0.0',
   $etcd_image      = 'quay.io/coreos/etcd',
   $etcd_extra      = [],        # extra arguments to etcd
-  $tls_key_file    = "/etc/ssl/private/${::fqdn}_infra.key",
+  $tls_key_file    = "/etc/ssl/private/${facts['networking']['fqdn']}_infra.key",
   $tls_ca_file     = '/etc/ssl/certs/infra.crt',
-  $tls_cert_file   = "/etc/ssl/certs/${::fqdn}_infra.crt",
+  $tls_cert_file   = "/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
   $expose_ports    = true,
   $expose_port_pre = '',
   $allow_clients   = ['any'],
@@ -60,7 +60,7 @@ define sunet::etcd_node(
       default => ["--discovery ${disco_url}"]
   }
   $common_args = [$disco_args,
-                  "--name ${::hostname}",
+                  "--name ${facts['networking']['hostname']}",
                   '--data-dir /data',
                   "--key-file ${tls_key_file}",
                   "--ca-file ${tls_ca_file}",
@@ -96,7 +96,7 @@ define sunet::etcd_node(
   $ports = $expose_ports ? {
     true => ["${expose_port_pre}:2380:2380",
               "${expose_port_pre}:2379:2379",
-              "${::ipaddress_docker0}:4001:2379",
+              "${facts['networking']['interfaces']['docker0']['ip']}:4001:2379",
               ],
     false => []
   }
@@ -123,7 +123,7 @@ define sunet::etcd_node(
     }
     sunet::misc::ufw_allow { 'allow-etcd-client-on-docker0':
       from => '172.16.0.0/12',
-      to   => $::ipaddress_docker0,
+      to   => $facts['networking']['interfaces']['docker0']['ip'],
       port => '4001',
     }
     sunet::misc::ufw_allow { 'allow-etcd-peer':
