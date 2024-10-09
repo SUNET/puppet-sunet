@@ -16,8 +16,6 @@ on:
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ "main", "testing" ]
-  schedule:
-    - cron: '25 13 * * 3'
 
 permissions:
   contents: read
@@ -34,8 +32,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          path: sunet
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@55283cc23133118229fd3f97f9336ee23a179fcf # v1.146.0
@@ -47,7 +43,7 @@ jobs:
         run: gem install puppet-lint
 
       - name: Run puppet-lint
-        run: puppet-lint . --sarif > puppet-lint-results.sarif
+        run: puppet-lint --relative . --sarif > puppet-lint-results.sarif
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
