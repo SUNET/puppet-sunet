@@ -12,8 +12,8 @@ class sunet::security::unattended_upgrades (
     path    => ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin',],
   }
   if $use_template {
-    if $facts['os']['name'] == 'Ubuntu' {
-      case $facts['os']['release']['full'] {
+    if $::facts['operatingsystem'] == 'Ubuntu' {
+      case $::facts['operatingsystemrelease'] {
         '14.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
           content => template('sunet/security/50unattended-upgrades.ubuntu_14.04.erb') }
         }
@@ -27,7 +27,7 @@ class sunet::security::unattended_upgrades (
           content => template('sunet/security/50unattended-upgrades.ubuntu_default.erb') }
         }
       }
-    } elsif $facts['os']['name'] == 'Debian' {
+    } elsif $::facts['operatingsystem'] == 'Debian' {
       file { '/etc/apt/apt.conf.d/50unattended-upgrades' :
         content => template('sunet/security/50unattended-upgrades.debian_default.erb'),
       }

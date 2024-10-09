@@ -19,9 +19,9 @@ class sunet::keydbcluster(
   }
   # Allow the user to use the explicit string ipaddress or ipaddress6 to use the corresponding facts
   if $__cluster_announce_ip == 'ipaddress' {
-    $_cluster_announce_ip = $facts['networking']['ip']
+    $_cluster_announce_ip = $facts['ipaddress']
   } elsif $__cluster_announce_ip == 'ipaddress6' {
-    $_cluster_announce_ip = $facts['networking']['ip6']
+    $_cluster_announce_ip = $facts['ipaddress6']
   } else {
     $_cluster_announce_ip = $__cluster_announce_ip
   }
