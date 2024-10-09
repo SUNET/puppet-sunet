@@ -16,7 +16,8 @@ class sunet::metadata::publisher(
         content => template('sunet/pyff/mirror-mdq.sh')
       }
       -> sunet::scriptherder::cronjob { "${name}-sync":
-        cmd           => "env RSYNC_ARGS='--chown=www-data:www-data --chmod=D0755,F0664 --xattrs' /usr/local/bin/mirror-mdq.sh ${src} ${dir}",
+        cmd           => "env RSYNC_ARGS='--chown=www-data:www-data --chmod=D0755,F0664 " +
+                          "--xattrs' /usr/local/bin/mirror-mdq.sh ${src} ${dir}",
         minute        => '*/5',
         ok_criteria   => ['exit_status=0'],
         warn_criteria => ['max_age=30m']
