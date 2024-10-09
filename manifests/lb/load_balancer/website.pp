@@ -17,23 +17,23 @@ define sunet::lb::load_balancer::website(
 
   # Figure out what certificate to pass to the haproxy container
   if ! has_key($config, 'tls_certificate_bundle') {
-    if has_key($::tls_certificates, 'snakeoil') {
-      $snakeoil = $::tls_certificates['snakeoil']['bundle']
+    if has_key($facts['tls_certificates'], 'snakeoil') {
+      $snakeoil = $facts['tls_certificates']['snakeoil']['bundle']
     }
-    if has_key($::tls_certificates, $site_name) {
+    if has_key($facts['tls_certificates'], $site_name) {
       # Site name found in tls_certificates - good start
       $_tls_certificate_bundle = pick(
-        $::tls_certificates[$site_name]['haproxy'],
-        $::tls_certificates[$site_name]['certkey'],
-        $::tls_certificates[$site_name]['infra_certkey'],
-        $::tls_certificates[$site_name]['bundle'],
-        $::tls_certificates[$site_name]['dehydrated_bundle'],
+        $facts['tls_certificates'][$site_name]['haproxy'],
+        $facts['tls_certificates'][$site_name]['certkey'],
+        $facts['tls_certificates'][$site_name]['infra_certkey'],
+        $facts['tls_certificates'][$site_name]['bundle'],
+        $facts['tls_certificates'][$site_name]['dehydrated_bundle'],
         'NOMATCH',
       )
       if $_tls_certificate_bundle != 'NOMATCH' {
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
-        $_site_certs = $::tls_certificates[$site_name]
+        $_site_certs = $facts['tls_certificates'][$site_name]
         notice(join([
           "None of the certificates for site ${site_name} matched my list ",
           "(haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): ${_site_certs}"

@@ -40,11 +40,11 @@ class sunet::etcd::node(
 
   # Use infra-cert per default if cert/key/ca file not supplied
   $cert_file = $tls_cert_file ? {
-    undef => $::tls_certificates[$::fqdn]['infra_cert'],
+    undef => $facts['tls_certificates'][$::fqdn]['infra_cert'],
     default => $tls_cert_file,
   }
   $key_file = $tls_key_file ? {
-    undef => $::tls_certificates[$::fqdn]['infra_key'],
+    undef => $facts['tls_certificates'][$::fqdn]['infra_key'],
     default => $tls_key_file,
   }
   $trusted_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
