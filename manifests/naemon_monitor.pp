@@ -116,13 +116,12 @@ class sunet::naemon_monitor (
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
+
+  # This section can be removed when the class is run on all machines
   file { '/opt/naemon_monitor/stop-monitor.sh':
-    ensure  => file,
-    content => template('sunet/naemon_monitor/stop-monitor.sh.erb'),
-    mode    => '0644',
-    group   => 'root',
-    owner   => 'root',
+    ensure  => absent,
   }
+  #
 
   file { '/etc/logrotate.d/naemon_monitor':
     ensure  => file,
