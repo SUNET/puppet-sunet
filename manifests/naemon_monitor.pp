@@ -96,6 +96,11 @@ class sunet::naemon_monitor (
   $influx_env = ['INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux']
   $nagflux_env = ["INFLUXDB_ADMIN_PASSWORD=${influx_password}"]
 
+  exec { "${name}_daemon_reload":
+    command     => '/usr/bin/systemctl daemon-reload',
+    refreshonly => true,
+  }
+
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/':
     ensure  => directory,
     recurse => true,
@@ -105,6 +110,7 @@ class sunet::naemon_monitor (
     ensure  => file,
     content => template('sunet/naemon_monitor/service-override.conf.erb'),
     require => File['/etc/systemd/system/sunet-naemon_monitor.service.d/'],
+    notify  => Exec["${name}_daemon_reload"],
   }
 
   sunet::docker_compose { 'naemon_monitor':
