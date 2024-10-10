@@ -4,10 +4,10 @@ class sunet::otel::alloy (
   String $otel_receiver    = undef,
 ) {
   file { '/etc/apt/keyrings' :
-    ensure  => 'directory',
-    notify  => Service['alloy'],
-    mode    => '0644',
-    group   => 'root'
+    ensure => 'directory',
+    notify => Service['alloy'],
+    mode   => '0644',
+    group  => 'root'
   }
   file { '/etc/apt/keyrings/grafana.gpg' :
     ensure  => 'file',
