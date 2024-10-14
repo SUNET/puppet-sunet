@@ -32,6 +32,9 @@ class sunet::mastodon::web(
 
 
   # Must set in hiera eyaml
+  $active_record_encryption_primary_key = safe_hiera('active_record_encryption_primary_key')
+  $active_record_encryption_key_derivation_salt = safe_hiera('active_record_encryption_key_derivation_salt')
+  $active_record_encryption_deterministic_key = safe_hiera('active_record_encryption_deterministic_key')
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
   $db_pass=safe_hiera('db_pass')
