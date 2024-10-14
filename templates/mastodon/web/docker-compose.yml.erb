@@ -48,7 +48,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: tootsuite/mastodon:<%= @mastodon_version %>
+    image: <%= @mastodon_image %>:<%= @mastodon_version %>
     container_name: web
     restart: always
     env_file:
@@ -74,7 +74,7 @@ services:
 
   streaming:
     container_name: streaming
-    image: tootsuite/mastodon:<%= @mastodon_version %>
+    image: <%= @streaming_image %>:<%= @streaming_version %>
     restart: always
     env_file: mastodon.env
     command: node ./streaming
@@ -94,7 +94,7 @@ services:
 
   sidekiq:
     container_name: sidekiq
-    image: tootsuite/mastodon:<%= @mastodon_version %>
+    image: <%= @mastodon_image %>:<%= @mastodon_version %>
     restart: always
     env_file: mastodon.env
     command: bundle exec sidekiq

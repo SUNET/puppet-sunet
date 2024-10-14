@@ -5,6 +5,7 @@ class sunet::mastodon::web(
   String $db_port                  = '5432',
   String $db_user                  = 'postgres',
   String $interface                = 'ens3',
+  String $mastodon_image           = 'ghcr.io/mastodon/mastodon',
   String $mastodon_version         = 'latest',
   String $redis_host               = 'redis',
   String $redis_port               = '6379',
@@ -19,6 +20,8 @@ class sunet::mastodon::web(
   String $smtp_openssl_verify_mode = 'none',
   String $smtp_port                = '587',
   String $smtp_server              = 'smtp.sunet.se',
+  String $streaming_image          = 'ghcr.io/mastodon/mastodon-streaming',
+  String $streaming_version        = 'latest',
   String $vhost                    = 'social.sunet.se',
 ) {
 
