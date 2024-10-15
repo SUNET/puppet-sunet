@@ -3,16 +3,9 @@
 version: "3.7"
 
 services:
-  always-https:
-    image: docker.sunet.se/always-https
-    dns:
-      - 89.32.32.32
-    ports:
-      - '80:80'
-    environment:
-      - 'ACME_URL=http://acme-c.sunet.se/'
   dovecot:
     image: <%= @dovecot_image %>:<%= @dovecot_tag %>
+    network_mode: host
     dns:
       - 89.32.32.32
     hostname: <%= @hostname %>

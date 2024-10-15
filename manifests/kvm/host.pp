@@ -1,3 +1,4 @@
+# kvm::host
 class sunet::kvm::host(
   Variant[String, Boolean] $nat_bridge_interface = false,
   Hash                     $vms                   = {},

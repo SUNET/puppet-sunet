@@ -1,6 +1,6 @@
 # SUNET frontend BGP Route Reflector config
 class sunet::lb::route_reflector(
-  String $router_id = $::ipaddress_default,
+  String $router_id = $facts['networking']['ip'],
 ) {
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
