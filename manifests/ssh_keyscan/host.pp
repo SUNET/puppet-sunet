@@ -9,7 +9,9 @@ define sunet::ssh_keyscan::host (
     undef   => dns_lookup($title),
     default => [$address]
   }
-  validate_array($the_address)
+  unless ($the_address =~ Array) {
+    fail("Variable $the_address is not an array")
+  }
   $the_aliases = concat(any2array($aliases),[$title],[$the_address])
   concat::fragment {"${title}_sunet_keyscan":
     target  => $hostsfile,
