@@ -1,3 +1,4 @@
+# Allow DHCPv6 which is used in Safespring
 class sunet::iaas::server(
 ) {
   if $::facts['sunet_nftables_enabled'] == 'yes' {

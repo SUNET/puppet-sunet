@@ -1,15 +1,17 @@
+# exabgp::monitor
 class sunet::lb::exabgp::monitor (
   String  $path       = '/etc/bgp/monitor.d',
   Integer $sleep_time = 2
 ) {
-   file { '/etc/bgp/monitor.d': ensure => directory }
-   -> file { '/etc/bgp/monitor':
+  file { '/etc/bgp/monitor.d': ensure => directory }
+  -> file { '/etc/bgp/monitor':
       ensure  => file,
       mode    => '0755',
       content => template('sunet/lb/exabgp/monitor.erb')
-   }
+  }
 }
 
+# exabgp::monitor::url
 define sunet::lb::exabgp::monitor::url(
   String           $url,
   String           $route,
@@ -17,20 +19,21 @@ define sunet::lb::exabgp::monitor::url(
   Integer          $prio  = 10,
   String           $path  = '/etc/bgp/monitor.d',
 ) {
-   require stdlib
-   $check_url = $url ? {
+  require stdlib
+  $check_url = $url ? {
       undef   => $name,
       default => $url
-   }
-   ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, })
-   $safe_title = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
-   file {"${path}/${prio}_${safe_title}":
+  }
+  ensure_resource('class','Sunet::Exabgp::Monitor', { path => $path, })
+  $safe_title = regsubst($name, '[^0-9A-Za-z.\-]', '-', 'G')
+  file {"${path}/${prio}_${safe_title}":
       ensure  => file,
       content => template('sunet/lb/exabgp/monitor/url.erb'),
       mode    => '0755'
-   }
+  }
 }
 
+# Define a monitor for a haproxy site
 define sunet::lb::exabgp::monitor::haproxy(
   Integer $index,
   Array   $ipv4,

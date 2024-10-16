@@ -1,3 +1,4 @@
+# peer
 define sunet::frontend::load_balancer::peer(
   String           $as,
   String           $remote_ip,
@@ -9,11 +10,11 @@ define sunet::frontend::load_balancer::peer(
   # depending on the address family of $remote_ip
   if ! is_ipaddr($local_ip) {
     if is_ipaddr($remote_ip, 4) {
-      $_local_ip = $::ipaddress_default
+      $_local_ip = $facts['networking']['ip']
       $_local_ip_family = 4
       $_local_ip_fact = 'ipaddress_default'
     } elsif is_ipaddr($remote_ip, 6) {
-      $_local_ip = $::ipaddress6_default
+      $_local_ip = $facts['networking']['ip6']
       $_local_ip_family = 6
       $_local_ip_fact = 'ipaddress6_default'
     }
@@ -21,7 +22,7 @@ define sunet::frontend::load_balancer::peer(
     # which leads to the ipaddress6_default fact being undef. Go through some trouble to
     # give a clear error message in that case.
     if ($_local_ip == undef) {
-      fail("Could not figure out local IPv${_local_ip_family} address using the fact \$::${_local_ip_fact}, got: '$_local_ip'")
+      fail("Could not figure out local IPv${_local_ip_family} address using the fact \$::${_local_ip_fact}, got: '${_local_ip}'")
     }
   } else {
     $_local_ip = $local_ip

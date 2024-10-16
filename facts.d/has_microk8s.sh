@@ -1,6 +1,10 @@
 #!/bin/sh
-
-if [ -f /snap/bin/microk8s ]; then
+if [ -e /var/snap/microk8s/current/var/lock/clustered.lock ]; then
+  echo 'microk8s_role=worker'
+  echo 'microk8s=yes'
+  echo 'microk8s_peers=unknown'
+elif [ -f /snap/bin/microk8s ]; then
+  echo 'microk8s_role=controller'
   echo 'microk8s=yes'
   modules=$(/snap/bin/microk8s status --format short)
   for module in dns ha-cluster openebs traefik; do
@@ -32,4 +36,5 @@ else
   echo 'microk8s_peers=unknown'
   echo 'microk8s_rbac=no'
   echo 'microk8s_traefik=no'
+  echo 'microk8s_role=none'
 fi

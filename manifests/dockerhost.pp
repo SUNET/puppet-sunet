@@ -8,7 +8,7 @@ class sunet::dockerhost(
   Boolean $run_docker_cleanup                 = true,
   Variant[String, Boolean] $docker_network    = lookup('dockerhost_docker_network', Variant[String, Boolean], undef, '172.18.0.0/22'),
   String $docker_network_v6                   = lookup('dockerhost_docker_network_v6', String, undef, 'fd0c:d0c::/64'),  # default bridge
-  Variant[String, Array[String]] $docker_dns  = $facts['ipaddress_default'],
+  Variant[String, Array[String]] $docker_dns  = $facts['networking']['ip'],
   Boolean $ufw_allow_docker_dns               = true,
   Boolean $manage_dockerhost_unbound          = false,
   String $compose_image                       = 'docker.sunet.se/library/docker-compose',
