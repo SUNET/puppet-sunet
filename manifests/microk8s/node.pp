@@ -1,7 +1,7 @@
 # microk8s cluster node
 class sunet::microk8s::node(
   String  $channel                = '1.28/stable',
-  Boolean $traefik                = true,
+  Boolean $traefik                = false,
   Integer $failure_domain         = 42,
   Integer $web_nodeport           = 30080,
   Integer $websecure_nodeport     = 30443,
@@ -124,6 +124,9 @@ class sunet::microk8s::node(
     command => "snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
   }
+  -> file { '/etc/docker':
+    ensure  => directory,
+  }
   -> file { '/etc/docker/daemon.json':
     ensure  => file,
     content => template('sunet/microk8s/daemon.json.erb'),
@@ -133,33 +136,6 @@ class sunet::microk8s::node(
     ensure  => file,
     content => "failure-domain=${failure_domain}\n",
     mode    => '0660',
-  }
-  unless any2bool($facts['microk8s_rbac']) {
-    exec { 'enable_plugin_rbac':
-      command  => '/snap/bin/microk8s enable rbac',
-      provider => 'shell',
-    }
-  }
-  unless any2bool($facts['microk8s_dns']) {
-    exec { 'enable_plugin_dns':
-      command  => '/snap/bin/microk8s enable dns:89.32.32.32',
-      provider => 'shell',
-    }
-  }
-  unless any2bool($facts['microk8s_community']) {
-    exec { 'enable_community_repo':
-      command  => '/snap/bin/microk8s enable community',
-      provider => 'shell',
-    }
-    $line1 ="/snap/bin/microk8s enable traefik --set ports.websecure.nodePort=${websecure_nodeport}"
-    $line2 = "--set  ports.web.nodePort=${web_nodeport} --set deployment.kind=DaemonSet"
-    $traefik_command = "${line1} ${line2}"
-    unless any2bool($facts['microk8s_traefik']) and $traefik {
-      exec { 'enable_plugin_traefik':
-        command  => $traefik_command,
-        provider => 'shell',
-      }
-    }
   }
   exec { 'alias_kubectl':
     command  => '/usr/bin/snap alias microk8s.kubectl kubectl',
