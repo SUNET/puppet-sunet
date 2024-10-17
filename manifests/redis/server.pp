@@ -1,5 +1,6 @@
 # Set up and run Redis
 define sunet::redis::server(
+  Boolean           $hostmode        = false,
   Integer           $port            = 6379,
   String            $bind            = '0.0.0.0',
   Enum['yes', 'no'] $daemonize       = 'no',
@@ -87,15 +88,32 @@ define sunet::redis::server(
   }
 
   if $docker_image =~ String[1] {
-    sunet::docker_run { $name:
-      image    => $docker_image,
-      imagetag => $docker_tag,
-      net      => 'host',  # Required for Redis clustering/HA
-      volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
-                   "${basedir}/data:/data",
-                   '/dev/log:/dev/log',
-                   ],
-      env      => flatten($env),
+    $docker_class = $::facts['dockerhost2'] ? {
+        yes => 'sunet::dockerhost2',
+        default => 'sunet::dockerhost',
+    }
+  $volumes  =  ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
+                 "${basedir}/data:/data",
+                 '/dev/log:/dev/log',
+                 '/etc/passwd:/etc/passwd:ro',
+                 '/etc/group:/etc/group:ro',
+                 ]
+  if ($facts['dockerhost2'] == 'yes') {
+      sunet::docker_compose { $name:
+        content          => template('sunet/redis/docker-compose.yml.erb'),
+        service_name     => $name,
+        compose_dir      => '/opt/',
+        compose_filename => 'docker-compose.yml',
+        description      => 'Redis',
+      }
+  } else {
+      sunet::docker_run { $name:
+        image    => $docker_image,
+        imagetag => $docker_tag,
+        net      => 'host',  # Required for Redis clustering/HA
+        env      => flatten($env),
+        volumes  => $volumes,
+      }
     }
   }
 }

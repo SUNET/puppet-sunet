@@ -1,0 +1,27 @@
+services:
+  <%= @name %>:
+<% unless @volumes.empty? -%>
+    volumes:
+<% @volumes.each do |volume| -%>
+      - <%= volume %>
+<% end -%>
+<% end -%>
+
+<% unless @env.empty? -%>
+    environment:
+<% @env.each do |single_env| -%>
+      - <%= single_env %>
+<% end -%>
+<% end -%>
+
+<% if @hostmode == true %>
+    network_mode: host
+<% end -%>
+
+    image: <%= @docker_image %>:<%= @docker_tag %>
+    pull_policy: always
+
+networks:
+  docker:
+    name: docker
+    external: true
