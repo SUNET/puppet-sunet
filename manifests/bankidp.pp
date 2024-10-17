@@ -153,19 +153,17 @@ class sunet::bankidp(
   }
   if $redis_node {
     class { 'sunet::rediscluster':
-      numnodes          => 2,
-      hostmode          => true,
-      tls               => true,
-      automatic_rectify => true,
-      prevent_reboot    => true
+      numnodes => 1,
+      hostmode => true,
+      tls      => true
     }
 
     file { "/etc/ssl/certs/${fqdn}_infra.crt":
       mode   => '0644',
     }
 
-    file { '/etc/ssl/private':
-      mode   => '0711',
+    file { "/etc/ssl/private":
+      mode   => '711',
     }
 
     package { ['redis-tools']:
