@@ -6,11 +6,12 @@ class sunet::security::allow_ssh (
   Integer       $port,
   Array[String] $mgmt_addresses = [],
   Boolean       $allow_from_anywhere = false,
+  Boolean       $nftables_init = true,
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
     include ufw
-  } else {
+  } elsif $nftables_init {
     notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
     ensure_resource ('class','sunet::nftables::init', {})
   }
@@ -31,12 +32,12 @@ class sunet::security::allow_ssh (
         port   => $port,
     })
 
-    if $::facts['ipaddress_default'] {
+    if $facts['networking']['ip'] {
       # Also remove historical allow-any-to-my-IP rules
       ensure_resource('sunet::misc::ufw_allow', 'remove_ufw_allow_all_ssh_to_my_ip', {
           ensure => 'absent',
           from   => 'any',
-          to     => $::facts['ipaddress_default'],
+          to     => $facts['networking']['ip'],
           proto  => 'tcp',
           port   => $port,
       })

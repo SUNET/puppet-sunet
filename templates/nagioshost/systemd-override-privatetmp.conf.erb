@@ -1,0 +1,4 @@
+# Some NRPE checks will get fishy results when using a PrivateTmp.
+# E.g check_apt: https://askubuntu.com/questions/1415415/check-apt-issue-with-nagios
+[Service]
+PrivateTmp=false

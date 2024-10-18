@@ -17,6 +17,7 @@ class sunet::server (
   Boolean $fail2ban = true,
   Boolean $encrypted_swap = true,
   Boolean $ethernet_bonding = true,
+  Boolean $nftables_init = true,
   Boolean $sshd_config = true,
   Boolean $ntpd_config = true,
   Boolean $scriptherder = true,
@@ -52,6 +53,7 @@ class sunet::server (
     class { 'sunet::security::allow_ssh':
       allow_from_anywhere => $ssh_allow_from_anywhere,
       mgmt_addresses      => flatten($mgmt_addresses),
+      nftables_init       => $nftables_init,
       port                => pick($ssh_port, 22),
     }
   }
@@ -108,7 +110,7 @@ class sunet::server (
     }
   }
 
-  if $facts['dmi']['product']['name'] == 'OpenStack Compute' {
+  if $facts['dmi']['product']['name'] =~ /OpenStack\s(Compute|Nova)/ {
     class { 'sunet::iaas::server': }
   }
 }

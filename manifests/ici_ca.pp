@@ -9,8 +9,23 @@ define sunet::ici_ca(
   $public_repo_url = undef,
   $public_repo_dir = undef,
 ) {
-  apt::ppa { 'ppa:leifj/ici': }
-  package { 'ici': ensure => latest }
+  # Package is not built for anything newer than trusty
+  if ($facts['os']['name'] == 'Ubuntu' and $facts['os']['release']['major'] == '22.04') {
+    package { 'opensc': ensure => latest }
+    package { 'libengine-pkcs11-openssl': ensure => latest }
+    # Needed because: "/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so: undefined"
+    # https://stackoverflow.com/questions/76758096/where-is-engine-pkcs11-so
+    exec { '/usr/bin/mkdir -p /usr/lib/engines':
+      unless  => '/usr/bin/test -d /usr/lib/engine'
+    }
+    file { '/usr/lib/engines/engine_pkcs11.so': ensure => link, target => '/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so' }
+
+    apt::ppa { 'ppa:sunet/ppa': }
+    package { 'ici': ensure => latest }
+  } else {
+    apt::ppa { 'ppa:leifj/ici': }
+    package { 'ici': ensure => latest }
+  }
   exec { "${name}_setup_ca":
     command => "/usr/bin/ici ${name} init",
     creates => "/var/lib/ici/${name}"
@@ -21,7 +36,7 @@ define sunet::ici_ca(
   }
   if $public_repo_dir and $public_repo_url {
     cron { 'ici_publish':
-      command => "test -f /var/lib/ici/${name}/ca.crt && /usr/bin/ici ${name} gencrl && /usr/bin/ici ${name} publish ${public_repo_dir}",
+      command => "test -f /var/lib/ici/${name}/ca.crt && /usr/bin/ici ${name} gencrl && /usr/bin/ici ${name} publish html ${public_repo_dir}",
       user    => 'root',
       minute  => '*/5'
     }
@@ -42,10 +57,13 @@ define sunet::ici_ca::autosign(
 }
 
 # fetch certificate from ici-ca automatically and run a scriptherder job to see if it is valid
-define sunet::ici_ca::rp()
-{
-  $host = $::fqdn
+define sunet::ici_ca::rp(
+  Boolean $monitor_infra_cert = true,
+) {
+
+  $host = $facts['networking']['fqdn']
   $ca = $name
+
   file { '/usr/bin/dl_ici_cert':
     content => template('sunet/ici_ca/dl_ici_cert.erb'),
     mode    => '0755'
@@ -63,11 +81,13 @@ define sunet::ici_ca::rp()
     content => template('sunet/ici_ca/check_infra_cert_expire.erb'),
     mode    => '0755'
   }
-  sunet::scriptherder::cronjob { 'check_infra_cert':
-      cmd           => "/usr/bin/check_infra_cert_expire /etc/ssl/certs/${host}_infra.crt",
-      minute        => '30',
-      hour          => '8',
-      ok_criteria   => ['exit_status=0', 'max_age=26h'],
-      warn_criteria => ['exit_status=2', 'max_age=2d'],
+
+  if ($monitor_infra_cert) {
+    sunet::scriptherder::cronjob { 'check_infra_cert':
+        cmd         => "/usr/bin/check_infra_cert_expire /etc/ssl/certs/${host}_infra.crt",
+        minute      => '30',
+        hour        => '8',
+        ok_criteria => ['exit_status=0', 'max_age=25h'],
     }
+  }
 }

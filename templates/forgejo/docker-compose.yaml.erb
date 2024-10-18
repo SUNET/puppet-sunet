@@ -1,6 +1,13 @@
 version: "3.7"
 
 services:
+  alwayshttps:
+    image: docker.sunet.se/always-https
+    ports:
+      - 80:80
+    environment:
+      - "ACME_URL=http://acme-c.sunet.se"
+
   forgejo:
     container_name: forgejo
     restart: always
