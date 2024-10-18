@@ -1,2 +1,4 @@
 [Service]
-ExecReload=/usr/bin/docker exec <%= @naemon_container %> bash -c 'pkill -o naemon --signal HUP'
+# livestatus.so can't handle HUP with a TCP listner
+# https://github.com/naemon/naemon-livestatus/issues/117
+ExecReload=/usr/bin/docker restart <%= @naemon_container %>
