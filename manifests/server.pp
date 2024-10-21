@@ -45,7 +45,7 @@ class sunet::server (
   }
 
   $distro = $facts['os']['distro']['id']
-  $release = $facts['os']['distro']['release']['full']
+  $release = $facts['os']['distro']['release']['major']
 
   if $ntpd_config {
     # If changing this if-statement you might need to update it in sunet::ntp

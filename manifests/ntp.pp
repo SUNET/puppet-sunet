@@ -7,7 +7,7 @@ class sunet::ntp(
 
   # Get facts for distro/release
   $distro = $facts['os']['distro']['id']
-  $release = $facts['os']['distro']['release']['full']
+  $release = $facts['os']['distro']['release']['major']
 
   # Only do anything on older Ubuntu and Debian. For later versions
   # sunet::server will use sunet::chrony instead. This if-statement is needed
