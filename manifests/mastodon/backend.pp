@@ -56,7 +56,7 @@ class sunet::mastodon::backend(
     ensure_resource('class','sunet::baas2', {
       nodename    => $baas2_nodename,
       backup_dirs => [
-        '/opt/backup/',
+        '/opt/backups/',
       ]
     })
   }
