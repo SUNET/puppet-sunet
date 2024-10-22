@@ -59,6 +59,16 @@ class sunet::mastodon::backend(
         '/opt/backups/',
       ]
     })
+
+    # Clean up old backup job
+    cron { 'run_backups':
+      ensure  => 'absent'
+      command => '/opt/scripts/backup.sh',
+      user    => 'root',
+      minute  => '31',
+      hour    => '*',
+    }
+
   }
 
 }
