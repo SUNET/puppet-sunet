@@ -44,16 +44,11 @@ class sunet::server (
     }
   }
 
-  $distro = $facts['os']['distro']['id']
-  $release = $facts['os']['distro']['release']['major']
-
   if $ntpd_config {
-    # If changing this if-statement you might need to update it in sunet::ntp
-    # as well
-    if ($distro == 'Ubuntu' and versioncmp($release, '22.04') <= 0) or ($distro == 'Debian' and versioncmp($release, '11') <= 0) {
-      include sunet::ntp
-    } else {
+    if $::facts['sunet_chrony_enabled'] == 'yes' {
       include sunet::chrony
+    } else {
+      include sunet::ntp
     }
   }
 

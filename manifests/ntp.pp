@@ -12,9 +12,8 @@ class sunet::ntp(
   # Only do anything on older Ubuntu and Debian. For later versions
   # sunet::server will use sunet::chrony instead. This if-statement is needed
   # because not every ops-repo uses sunet::server to select what ntp class to
-  # use. If changing this if-statement you might need to update it in
-  # sunet::server as well.
-  if ($distro == 'Ubuntu' and versioncmp($release, '22.04') <= 0) or ($distro == 'Debian' and versioncmp($release, '11') <= 0) {
+  # use.
+  if $::facts['sunet_chrony_enabled'] != 'yes' {
     # Help Puppet understand to use systemd for Ubuntu 16.04 hosts
     if $distro == 'Ubuntu' and versioncmp($release, '15.04') >= 0 {
       Service {
