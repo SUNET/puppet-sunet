@@ -6,9 +6,9 @@
 # @param tcpserveraddress          The version of the influx container to run
 # @param influx_producer_networks  A list of networks allowed to access influx port 8086
 class sunet::influx(
+  Array[String] $influx_producer_networks,
   String        $servicename='',
   String        $influxdb_version='latest',
-  Array[String] $influx_producer_networks,
 ) {
 
   sunet::docker_run { 'influxdb2':
@@ -54,6 +54,6 @@ class sunet::influx(
     allow_clients => $influx_producer_networks,
     port          => '8086',
     proto         => 'tcp',
-    iif           => "${interface_default}",
+    iif           => $facts['interface_default'],
   }
 }

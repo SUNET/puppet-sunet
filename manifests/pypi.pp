@@ -3,7 +3,6 @@ class sunet::pypi (
     $user   = 'pypi',
     $home   = '/opt/pypi',
     $servicename = 'pypi.sunet.se',
-    $interface = 'ens3',
 ) {
     user {'pypi_user':
       name       => $user,
@@ -111,30 +110,14 @@ class sunet::pypi (
         unless  => '/usr/bin/test -s /opt/pypi/nginx/dhparam.pem',
     }
 
-    if $::facts['sunet_nftables_enabled'] == 'yes' {
-      sunet::nftables::docker_expose { 'allow_https' :
-        iif           => $interface,
-        allow_clients => 'any',
-        port          => 443,
-      }
-    } else {
-      sunet::misc::ufw_allow { 'allow-https':
-        from => 'any',
-        port => '443'
-      }
+    # nftables
+    sunet::nftables::allow { 'allow-http':
+      from => any,
+      port => 80,
     }
-
-    if $::facts['sunet_nftables_enabled'] == 'yes' {
-      sunet::nftables::docker_expose { 'allow_http' :
-        iif           => $interface,
-        allow_clients => 'any',
-        port          => 80,
-      }
-    } else {
-      sunet::misc::ufw_allow { 'allow-http':
-        from => 'any',
-        port => '80'
-      }
+    sunet::nftables::allow { 'allow-https':
+      from => any,
+      port => 443,
     }
 
     # Use plain cron as to not bog down other scriptherder checks with many many logs

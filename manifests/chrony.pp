@@ -22,6 +22,28 @@ class sunet::chrony(
   Array[String] $ntsservercerts = [],
   Array[String] $ntsserverkeys = [],
 ) {
+
+  ### BEGIN sunet::ntp cleanup
+  # Cleanup potential remains from previous usage of sunet::ntp
+  package { 'ntp': ensure => 'purged' }
+  package { 'ntpsec': ensure => 'purged' }
+
+  # Some files that are left behind even after purge because they are created
+  # manually by sunet::ntp on Ubuntu.
+  if $facts['os']['distro']['id'] == 'Ubuntu' {
+    include sunet::systemd_reload
+
+    file { '/etc/systemd/system/multi-user.target.wants/ntp.service':
+      ensure => 'absent',
+      notify => [Class['sunet::systemd_reload']]
+    }
+    file { '/etc/systemd/system/ntp.service':
+      ensure => 'absent',
+      notify => [Class['sunet::systemd_reload']]
+    }
+  }
+  ### END sunet::ntp cleanup
+
   package { 'chrony': ensure => 'installed' }
 
   service { 'chrony':

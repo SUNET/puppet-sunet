@@ -6,6 +6,8 @@ class sunet::rediscluster(
   Optional[String] $cluster_announce_ip = '',
   Optional[Boolean] $automatic_rectify = false,
   Optional[Boolean] $prevent_reboot = false,
+  Optional[String] $image = 'redis',
+  Optional[String] $tag = '7-bookworm',
 )
 {
 
@@ -17,9 +19,9 @@ class sunet::rediscluster(
   }
   # Allow the user to use the explicit string ipaddress or ipaddress6 to use the corresponding facts
   if $__cluster_announce_ip == 'ipaddress' {
-    $_cluster_announce_ip = $facts['ipaddress']
+    $_cluster_announce_ip = $facts['networking']['ip']
   } elsif $__cluster_announce_ip == 'ipaddress6' {
-    $_cluster_announce_ip = $facts['ipaddress6']
+    $_cluster_announce_ip = $facts['networking']['ip6']
   } else {
     $_cluster_announce_ip = $__cluster_announce_ip
   }
