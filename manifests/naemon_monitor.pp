@@ -16,6 +16,7 @@ class sunet::naemon_monitor (
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
   String $grafana_tag = '11.1.4',
+  String $grafana_default_role = 'Viewer',
   String $loki_tag = '3.1.1',
   String $mimir_tag = '2.13.0',
   String $tempo_tag = '2.6.0',
