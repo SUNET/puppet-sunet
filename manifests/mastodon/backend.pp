@@ -1,9 +1,9 @@
 # mastodon web server
 class sunet::mastodon::backend(
-  String $db_name                  = 'postgres',
-  String $db_user                  = 'postgres',
-  String $interface                = 'ens3',
-  String $baas2_nodename           = undef,
+  String $db_name                        = 'postgres',
+  String $db_user                        = 'postgres',
+  String $interface                      = 'ens3',
+  Variant[String, Undef] $baas2_nodename = undef,
 ) {
   # Must set in hiera eyaml
   $db_pass=safe_hiera('db_pass')
