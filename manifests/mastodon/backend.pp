@@ -85,7 +85,7 @@ class sunet::mastodon::backend(
     }
 
     sunet::scriptherder::cronjob { 'backup2baas':
-      cmd           => '/opt/mastodon_backend/scripts/backup.sh'
+      cmd           => '/opt/mastodon_backend/scripts/backup.sh',
       minute        => '31',
       ok_criteria   => ['exit_status=0', 'max_age=2h'],
       warn_criteria => ['exit_status=1', 'max_age=5h'],
