@@ -19,6 +19,9 @@ docker exec postgres pg_dumpall --clean --if-exists --no-password \
 
 cp /opt/mastodon_backend/redis/dump.rdb "${backupdir}/redis/redis-${backuptime}.rdb"
 
+# Send away the dumped files
+/usr/bin/dsmc backup
+
 find "${backupdir}/postgres" -mtime +${localretentiondays} -exec rm {} \;
 find "${backupdir}/redis" -mtime +${localretentiondays} -exec rm {} \;
 
@@ -31,6 +34,3 @@ do
   fi
 
 done < <(find /opt/backups/ -type -f -mtime +1 -name -print0)
-
-# Send away the dumped files
-/usr/bin/dsmc backup
