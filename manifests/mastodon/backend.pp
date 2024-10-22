@@ -1,8 +1,9 @@
 # mastodon web server
 class sunet::mastodon::backend(
-  String $db_name                  = 'postgres',
-  String $db_user                  = 'postgres',
-  String $interface                = 'ens3',
+  String $db_name                        = 'postgres',
+  String $db_user                        = 'postgres',
+  String $interface                      = 'ens3',
+  Variant[String, Undef] $baas2_nodename = undef,
 ) {
   # Must set in hiera eyaml
   $db_pass=safe_hiera('db_pass')
@@ -48,6 +49,46 @@ class sunet::mastodon::backend(
     sunet::misc::ufw_allow { 'backend_ports':
       from => 'any',
       port => ['5432', '6379']
+    }
+  }
+
+  if ($baas2_nodename) {
+    ensure_resource('class','sunet::baas2', {
+      nodename    => $baas2_nodename,
+      backup_dirs => [
+        '/opt/backups/',
+      ]
+    })
+
+    # Clean up old backup job
+    cron { 'run_backups':
+      ensure  => 'absent',
+      command => '/opt/scripts/backup.sh',
+      user    => 'root',
+      minute  => '31',
+      hour    => '*',
+    }
+    file { '/opt/scripts/backup.sh':
+      ensure  => 'absent',
+    }
+    #
+
+    file { '/opt/mastodon_backend/scripts':
+      ensure => directory,
+    }
+    file { '/opt/mastodon_backend/scripts/backup.sh':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0700',
+      content => template('sunet/mastodon/backend/backup.erb.sh'),
+    }
+
+    sunet::scriptherder::cronjob { 'backup2baas':
+      cmd           => '/opt/mastodon_backend/scripts/backup.sh',
+      minute        => '31',
+      ok_criteria   => ['exit_status=0', 'max_age=2h'],
+      warn_criteria => ['exit_status=1', 'max_age=5h'],
     }
   }
 

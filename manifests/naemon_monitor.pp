@@ -16,6 +16,7 @@ class sunet::naemon_monitor (
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
   String $grafana_tag = '11.1.4',
+  String $grafana_default_role = 'Viewer',
   String $loki_tag = '3.1.1',
   String $mimir_tag = '2.13.0',
   String $tempo_tag = '2.6.0',
@@ -30,6 +31,8 @@ class sunet::naemon_monitor (
   Optional[Boolean] $receive_otel = false,
   String $otel_retention = '2232h',
 ) {
+  include sunet::systemd_reload
+
   $naemon_container = $::facts['dockerhost2'] ? {
     'yes' => 'naemon_monitor-naemon-1',
     default => 'naemon_monitor_naemon_1',
@@ -105,6 +108,7 @@ class sunet::naemon_monitor (
     ensure  => file,
     content => template('sunet/naemon_monitor/service-override.conf.erb'),
     require => File['/etc/systemd/system/sunet-naemon_monitor.service.d/'],
+    notify  => Class['sunet::systemd_reload'],
   }
 
   sunet::docker_compose { 'naemon_monitor':
@@ -116,13 +120,12 @@ class sunet::naemon_monitor (
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
+
+  # This section can be removed when the class is run on all machines
   file { '/opt/naemon_monitor/stop-monitor.sh':
-    ensure  => file,
-    content => template('sunet/naemon_monitor/stop-monitor.sh.erb'),
-    mode    => '0644',
-    group   => 'root',
-    owner   => 'root',
+    ensure  => absent,
   }
+  #
 
   file { '/etc/logrotate.d/naemon_monitor':
     ensure  => file,
