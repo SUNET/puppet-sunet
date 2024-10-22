@@ -7,8 +7,9 @@ backuptime=$(date +%Y-%m-%d.%H)
 localretentiondays=15
 
 # Steal credentials of off docker containers env, used in connection string below
+# DOCKER_PG_LLVM_DEPS contains multiple values with tab(?) as delimiter…
 # shellcheck disable=SC1090
-source <(docker exec -u postgres postgres env) 
+source <(docker exec -u postgres postgres env | grep -v DOCKER_PG_LLVM_DEPS)
 
 mkdir -p "${backupdir}"/{postgres,redis}
 
