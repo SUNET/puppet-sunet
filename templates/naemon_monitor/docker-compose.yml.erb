@@ -50,6 +50,7 @@ services:
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
       - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
       - '/opt/naemon_monitor/data:/var/lib/thruk'
+      - '/opt/naemon_monitor/menu_local.conf:/etc/thruk/menu_local.conf'
 <%- @thruk_extra_volumes.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
