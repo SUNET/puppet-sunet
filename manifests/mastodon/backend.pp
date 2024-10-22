@@ -68,6 +68,11 @@ class sunet::mastodon::backend(
       minute  => '31',
       hour    => '*',
     }
+    file { '/opt/scripts/backup.sh':
+      ensure  => 'absent',
+    }
+    #
+
 
   }
 
