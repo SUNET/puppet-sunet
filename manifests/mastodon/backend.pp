@@ -73,6 +73,16 @@ class sunet::mastodon::backend(
     }
     #
 
+    file { '/opt/mastodon_backend/scripts':
+      ensure => directory,
+    }
+    file { '/opt/mastodon_backend/scripts/backup.sh':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0700',
+      content => template('mastodon/backend/backup.erb.sh'),
+    }
 
   }
 
