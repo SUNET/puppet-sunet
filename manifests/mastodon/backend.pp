@@ -81,7 +81,7 @@ class sunet::mastodon::backend(
       owner   => 'root',
       group   => 'root',
       mode    => '0700',
-      content => template('mastodon/backend/backup.erb.sh'),
+      content => template('sunet/mastodon/backend/backup.erb.sh'),
     }
 
   }
