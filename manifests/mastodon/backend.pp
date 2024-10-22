@@ -3,6 +3,7 @@ class sunet::mastodon::backend(
   String $db_name                  = 'postgres',
   String $db_user                  = 'postgres',
   String $interface                = 'ens3',
+  String $baas2_nodename           = '',
 ) {
   # Must set in hiera eyaml
   $db_pass=safe_hiera('db_pass')
@@ -49,6 +50,15 @@ class sunet::mastodon::backend(
       from => 'any',
       port => ['5432', '6379']
     }
+  }
+
+  if ($baas2_nodename) {
+    ensure_resource('class','sunet::baas2', {
+      nodename    => $baas2_nodename,
+      backup_dirs => [
+        '/opt/backup/',
+      ]
+    })
   }
 
 }
