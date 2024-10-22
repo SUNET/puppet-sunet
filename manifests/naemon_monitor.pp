@@ -103,6 +103,10 @@ class sunet::naemon_monitor (
     ensure  => directory,
     recurse => true,
   }
+  file { '/opt/naemon_monitor/menu_local.conf':
+    ensure  => file,
+    content => file('sunet/naemon_monitor/menu_local.conf'),
+  }
 
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf':
     ensure  => file,
