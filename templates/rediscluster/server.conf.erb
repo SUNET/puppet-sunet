@@ -21,7 +21,7 @@ port <%= @redisportnum %>
 <% end %>
 requirepass "<%= @redis_password %>"
 masterauth "<%= @redis_password %>"
-<% if @_cluster_announce_ip != ''%>
-cluster-announce-ip <%= @_cluster_announce_ip %>
+<% if @cluster_announce_ip != ''%>
+cluster-announce-ip <%= @cluster_announce_ip %>
 <% end %>
 

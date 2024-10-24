@@ -7,7 +7,7 @@ services:
 <% joinport = 16379 + i %>
   redis-node-<%= i %>:
     container_name: redis-node-<%= i %>
-    image: <%= @image %>:<%= @tag %>
+    image: redis:7-bullseye
     dns:
       - 89.46.20.75
       - 89.46.21.29
