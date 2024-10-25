@@ -10,7 +10,7 @@ define sunet::ssh_keyscan::host (
     default => [$address]
   }
   if ($the_address !~ Array) {
-    fail("Variable {$the_address} is not an array")
+    fail("Variable ${the_address} is not an array")
   }
   $the_aliases = concat(any2array($aliases),[$title],[$the_address])
   concat::fragment {"${title}_sunet_keyscan":
