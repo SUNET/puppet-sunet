@@ -10,12 +10,6 @@ class sunet::forgejo (
   package { 'duplicity':
     ensure => latest,
   }
-  sunet::docker_run {'alwayshttps':
-    ensure => 'present',
-    image  => 'docker.sunet.se/always-https',
-    ports  => ['80:80'],
-    env    => ['ACME_URL=http://acme-c.sunet.se'],
-  }
   # gitea generate secret INTERNAL_TOKEN
   $internal_token = lookup('internal_token', undef, undef, undef)
   # gitea generate secret JWT_SECRET
@@ -93,6 +87,32 @@ class sunet::forgejo (
     mode    => '0644',
     owner   => 'git',
     group   => 'git',
+  }
+  -> file { '/etc/systemd/system/sunet-forgejo.service.d':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  -> file { '/etc/systemd/system/sunet-forgejo.service.d/01-execstartpost.conf':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0744',
+    content => "[Service]
+ExecStartPost=/bin/bash -c 'until docker inspect forgejo | jq .[0].State.Running | grep true ; do sleep 1 && echo -n . ; done'
+ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -d forgejo mkdir -p /tmp/gitea\n",
+  }
+  -> exec { 'forgejo_daemonreload_execstartpost':
+  subscribe   => File['/etc/systemd/system/sunet-forgejo.service.d/01-execstartpost.conf'],
+  command     => 'systemctl daemon-reload',
+  refreshonly => true,
+  }
+  -> exec { 'forgejo_override_execstartpost':
+  subscribe   => File['/etc/systemd/system/sunet-forgejo.service.d/01-execstartpost.conf'],
+  command     => 'systemctl restart sunet-forgejo.service',
+  refreshonly => true,
+  onlyif      => 'systemctl is-active sunet-forgejo.service',
   }
   -> file{ '/root/.rclone.conf':
     ensure  => file,

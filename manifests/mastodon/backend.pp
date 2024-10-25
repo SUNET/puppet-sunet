@@ -17,11 +17,11 @@ class sunet::mastodon::backend(
     compose_filename => 'docker-compose.yml',
     description      => 'Mastodon backend services',
   }
-  file { "/opt/mastodon_backend/redis":
+  file { '/opt/mastodon_backend/redis':
     ensure => directory,
   }
 
-  file { "/opt/mastodon_backend/postgres":
+  file { '/opt/mastodon_backend/postgres':
     ensure => directory,
     owner  => 'root',
     group  => 'root',

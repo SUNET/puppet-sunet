@@ -1,3 +1,4 @@
+# cgit
 class sunet::cgit(
     String $fqdn,
     String $public_hostname,
@@ -31,10 +32,10 @@ class sunet::cgit(
     # follwing to a cgitrc file in the bare repo:
     # hide=1
 
-    package { $package: ensure => latest } ->
+    package { $package: ensure => latest }
 
-    exec { 'let web user read git repos':
-        command => "adduser $www_user $git_group",
+    -> exec { 'let web user read git repos':
+        command => "adduser ${www_user} ${git_group}",
     }
 
     exec { 'disable status module':
@@ -84,7 +85,7 @@ class sunet::cgit(
     exec { 'enable 010-cgit':
         command => 'a2ensite 010-cgit',
         creates => '/etc/apache2/sites-enabled/010-cgit.conf',
-        onlyif  => "test -s /etc/ssl/certs/$fqdn.crt",
+        onlyif  => "test -s /etc/ssl/certs/${fqdn}.crt",
         notify  => Service['apache2'],
     }
 
@@ -93,8 +94,8 @@ class sunet::cgit(
     exec { 'cgit_apparmor_dir':
         command => 'mkdir -p /etc/apparmor-cosmos',
         unless  => 'test -d /etc/apparmor-cosmos',
-    } ->
-    file { '/etc/apparmor-cosmos/usr.lib.cgit.cgit.cgi':
+    }
+    -> file { '/etc/apparmor-cosmos/usr.lib.cgit.cgit.cgi':
         ensure  => 'file',
         owner   => 'root',
         group   => 'root',

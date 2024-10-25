@@ -1,11 +1,13 @@
 # Mariadb cluster class for SUNET
 define sunet::mariadb(
-  $mariadb_version=latest,
-  $bootstrap=0,
-  $ports = [3306, 4444, 4567, 4568],
-  $dns = undef,
+  String $mariadb_version=latest,
+  Integer $bootstrap=0,
+  Array[Integer] $ports = [3306, 4444, 4567, 4568],
+  Array[String] $dns = [],
+  Boolean $galera = true,
 )
 {
+
   $mariadb_root_password = lookup('mariadb_root_password', undef, undef,'NOT_SET_IN_HIERA')
   $mariadb_user = lookup('mariadb_user', undef, undef,undef)
   $mariadb_user_password = lookup('mariadb_user_password', undef, undef,undef)
@@ -14,7 +16,6 @@ define sunet::mariadb(
   $clients = lookup('mariadb_clients', undef, undef,['127.0.0.1'])
   $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,[])
   $mariadb_dir = '/opt/mariadb'
-  $server_id = 1000 + Integer($facts['networking']['hostname'][-1])
 
   # Hack to not clash with docker_compose which tries to create the same directory
   exec {'mariadb_dir_create':
@@ -54,26 +55,26 @@ define sunet::mariadb(
     ok_criteria   => ['exit_status=0','max_age=2d'],
     warn_criteria => ['exit_status=1','max_age=3d'],
   }
-  file { '/usr/local/bin/cluster-size':
+  file { '/usr/local/bin/mariadb-galera-size':
     ensure  => present,
     content => template('sunet/mariadb/cluster-size.erb.sh'),
     mode    => '0744',
   }
-  file { '/usr/local/bin/cluster-status':
+  file { '/usr/local/bin/mariadb-galera-status':
     ensure  => present,
     content => template('sunet/mariadb/cluster-status.erb.sh'),
     mode    => '0744',
   }
-  file { '/etc/sudoers.d/99-size-test':
+  file { '/etc/sudoers.d/99-cluster-size-test':
     ensure  => file,
-    content => "script ALL=(root) NOPASSWD: /usr/local/bin/cluster-size\n",
+    content => "script ALL=(root) NOPASSWD: /usr/local/bin/mariadb-galera-size\n",
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
   }
-  file { '/etc/sudoers.d/99-status-test':
+  file { '/etc/sudoers.d/99-cluster-status-test':
     ensure  => file,
-    content => "script ALL=(root) NOPASSWD: /usr/local/bin/cluster-status\n",
+    content => "script ALL=(root) NOPASSWD: /usr/local/bin/mariadb-galera-status\n",
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
@@ -92,6 +93,8 @@ define sunet::mariadb(
     content => template('sunet/mariadb/credentials.cnf.erb'),
     mode    => '0744',
   }
+
+  $server_id = ipv4_to_int($facts['networking']['ip'])
   file { "${mariadb_dir}/conf/my.cnf":
     ensure  => present,
     content => template('sunet/mariadb/my.cnf.erb'),

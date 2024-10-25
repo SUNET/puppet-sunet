@@ -1,3 +1,4 @@
+# git repo
 define sunet::ssh_git_repo(
       $hostname    = 'github.com',
       $username    = 'github',
@@ -9,19 +10,19 @@ define sunet::ssh_git_repo(
       $revision    = 'master',
       $ensure      = 'present'
 ) {
-   sunet::ssh_host_credential { "${title}-ssh-cred":
+  sunet::ssh_host_credential { "${title}-ssh-cred":
       hostname    => $hostname,
       username    => $username,
       group       => $group,
       id          => $id,
       manage_user => $manage_user,
       manage_key  => $manage_key,
-   } ->
-   vcsrepo { "${name}":
-      ensure    => $ensure,
-      provider  => git,
-      source    => $url,
-      user      => $username,
-      revision  => $revision
-   }
+  }
+  -> vcsrepo { $name:
+      ensure   => $ensure,
+      provider => git,
+      source   => $url,
+      user     => $username,
+      revision => $revision
+  }
 }
