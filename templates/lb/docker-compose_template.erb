@@ -124,7 +124,7 @@ services:
 <% end -%>
 <% end -%>
     environment:
-      - 'HOSTFQDN=<%= @fqdn %>'
+      - 'HOSTFQDN=<%= @netowrking.fqdn %>'
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
       - 'STATUSFN=/dev/shm/haproxy-status'  # need to be writable by user fe-monitor, and match the healthcheck
