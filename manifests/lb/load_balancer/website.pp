@@ -17,10 +17,10 @@ define sunet::lb::load_balancer::website(
 
   # Figure out what certificate to pass to the haproxy container
   if ! 'tls_certificate_bundle' in $config {
-    if 'snakeoil' in $::tls_certificates {
-      $snakeoil = $::tls_certificates['snakeoil']['bundle']
+    if 'snakeoil' in $facts['tls_certificates'] {
+      $snakeoil = $facts['tls_certificates']['snakeoil']['bundle']
     }
-    if $site_name in $::tls_certificates {
+    if $site_name in $facts['tls_certificates'] {
       # Site name found in tls_certificates - good start
       $_tls_certificate_bundle = pick(
         $facts['tls_certificates'][$site_name]['haproxy'],
