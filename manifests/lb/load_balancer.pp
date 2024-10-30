@@ -63,12 +63,12 @@ class sunet::lb::load_balancer(
                 ],
     group  => 'ssl-cert',
   }
-  if $::facts['os']['fqdn'] in $::tls_certificates and 'infra_cert' in $::tls_certificates[$::facts['os']['fqdn']] {
-    $infra_cert = $::tls_certificates[$::facts['os']['fqdn']]['infra_cert']
-    $infra_key = $::tls_certificates[$::facts['os']['fqdn']]['infra_key']
+  if $facts['networking']['fqdn'] in $::tls_certificates and 'infra_cert' in $::tls_certificates[$facts['networking']['fqdn']] {
+    $infra_cert = $::tls_certificates[$facts['networking']['fqdn']]['infra_cert']
+    $infra_key = $::tls_certificates[$facts['networking']['fqdn']]['infra_key']
 
     # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
-    ensure_resource(sunet::misc::certbundle, "${::fqdn}_haproxy", {
+    ensure_resource(sunet::misc::certbundle, "$facts['networking']['fqdn']_haproxy", {
       bundle => [
         "cert=${infra_cert}",
         "key=${infra_key}",

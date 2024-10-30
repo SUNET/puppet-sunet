@@ -81,7 +81,7 @@ define sunet::lb::load_balancer::website(
   $config3a = merge($config2, {
     'frontend_ip4' => $::ipaddress_default,
     'frontend_ip6' => $::ipaddress6_default,
-    'frontend_fqdn' => $::facts['os']['fqdn'],
+    'frontend_fqdn' => $::facts['networking']['fqdn'],
   })
 
   if $_letsencrypt_override_address {
