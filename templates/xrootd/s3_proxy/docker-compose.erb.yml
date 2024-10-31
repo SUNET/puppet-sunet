@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  xrootd-s3-http:
+    image: <%= @container_image %>:<%= @container_tag %>
+    dns:
+      - 89.32.32.32
+    hostname: <%= @hostname %>
+    volumes:
+      - /opt/xrootd-s3-http/config:/etc/xrootd
+      - /dev/log:/dev/log
+    command: ["xrootd", "-c", "/etc/xrootd/xrootd-s3-http.cfg"]
+    ports:
+      - "<%= @port %>:<%= @port %>"
+    restart: always
+
