@@ -16,7 +16,9 @@ define sunet::lb::load_balancer::website(
   $haproxy_template_dir = lookup('haproxy_template_dir', undef, undef, $instance)
 
   # Figure out what certificate to pass to the haproxy container
-  if ! 'tls_certificate_bundle' in $config {
+  if 'tls_certificate_bundle' in $config {
+    $tls_certificate_bundle = $config['tls_certificate_bundle']
+  } else {
     if 'snakeoil' in $facts['tls_certificates'] {
       $snakeoil = $facts['tls_certificates']['snakeoil']['bundle']
     }
@@ -49,8 +51,6 @@ define sunet::lb::load_balancer::website(
     if $snakeoil and $tls_certificate_bundle == $snakeoil {
       notice("Using snakeoil certificate for instance ${instance} (site ${site_name})")
     }
-  } else {
-    $tls_certificate_bundle = $config['tls_certificate_bundle']
   }
 
   if $tls_certificate_bundle {
