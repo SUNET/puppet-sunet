@@ -45,12 +45,12 @@ done
 
 if [ "${bootstrap}" == 0 ]; then
   rsync -av --delete "${targetdir}/" $syncdir
-  rm -rf "${targetdir}"
+  rm -vrf "${targetdir}"
 fi
 
 for cert in "${certs_to_deploy[@]}"; do
-  echo "Running deploy hook(s) for ${cert}."
     for hook in $hookdir/*; do
+      echo "Running deploy hook ${hook} for ${cert}."
       RENEWED_LINEAGE="$syncdir/live/${cert}" "${hook}"
     done
 done
