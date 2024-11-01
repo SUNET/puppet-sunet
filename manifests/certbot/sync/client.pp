@@ -6,6 +6,12 @@ class sunet::certbot::sync::client(
   exec { '/usr/bin/mkdir -p /opt/certbot/libexec':
     unless  => '/usr/bin/test -d /opt/certbot/libexec'
   }
+  exec { '/usr/bin/mkdir -p /opt/certbot/letsencrypt':
+    unless  => '/usr/bin/test -d /opt/certbot/letsencrypt'
+  }
+  exec { '/usr/bin/mkdir -p /opt/certbot/renewal-hooks/deploy':
+    unless  => '/usr/bin/test -d /opt/certbot/renewal-hooks/deploy'
+  }
   file { '/opt/certbot/libexec/certbot-sync-from-server.sh':
     ensure  => file,
     mode    => '0700',

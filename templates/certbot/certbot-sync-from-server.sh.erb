@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 
-set -e
+set -eu
+
+basedir="/opt/certbot"
+syncdir="$basedir/letsencrypt"
+hookdir="$basedir/renewal-hooks/deploy"
 
 bootstrap=0
-if [ ! -d /etc/letsencrypt/live ]; then
+if [ ! -d $syncdir/live ]; then
   bootstrap=1
 fi
 
 if [ "${bootstrap}" == 1 ]; then
-  targetdir=/etc/letsencrypt/
+  targetdir=$syncdir
 else
   targetdir=$(mktemp -d /tmp/certbot_sync.XXXXX)
 fi
@@ -26,9 +30,9 @@ for file_system_entity in "${targetdir}"/live/*; do
     certs_to_deploy+=("${basename}")
   else
     # Cert exists…
-    if [ -d "/etc/letsencrypt/live/${basename}" ]; then
+    if [ -d "$syncdir/live/${basename}" ]; then
       # … but is it changed?
-      if ! cmp -s "/etc/letsencrypt/live/${basename}/fullchain.pem" "${targetdir}/live/${basename}/fullchain.pem"; then
+      if ! cmp -s "$syncdir/live/${basename}/fullchain.pem" "${targetdir}/live/${basename}/fullchain.pem"; then
         # Yes, changed! - deploy!
         certs_to_deploy+=("${basename}")
       fi
@@ -40,13 +44,13 @@ for file_system_entity in "${targetdir}"/live/*; do
 done
 
 if [ "${bootstrap}" == 0 ]; then
-  rsync -av --delete "${targetdir}/" /etc/letsencrypt/
+  rsync -av --delete "${targetdir}/" $syncdir
   rm -rf "${targetdir}"
 fi
 
 for cert in "${certs_to_deploy[@]}"; do
   echo "Running deploy hook(s) for ${cert}."
-    for hook in /etc/letsencrypt/renewal-hooks/deploy/*; do
-      RENEWED_LINEAGE="/etc/letsencrypt/live/${cert}" "${hook}"
+    for hook in $hookdir/*; do
+      RENEWED_LINEAGE="$syncdir/live/${cert}" "${hook}"
     done
 done
