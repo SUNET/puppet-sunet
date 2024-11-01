@@ -19,9 +19,14 @@
         family {
 <% if @is_v4_peer -%>
                 ipv4 unicast;
+
 <% end -%>
 <% if @is_v6_peer -%>
                 ipv6 unicast;
 <% end -%>
+
+        api {
+                processes [ watch-service ];
+        }
         }
    }
