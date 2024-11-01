@@ -23,10 +23,11 @@
 <% end -%>
 <% if @is_v6_peer -%>
                 ipv6 unicast;
+
 <% end -%>
+        }
 
         api {
                 processes [ watch-service ];
-        }
         }
    }
