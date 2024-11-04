@@ -33,4 +33,4 @@ do
     rm "$file"
   fi
 
-done < <(find /opt/backups/ -type f -mtime +1 -name -print0)
+done < <(find /opt/backups/ -type f -mtime +1 -print0)
