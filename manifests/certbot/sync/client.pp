@@ -5,7 +5,7 @@ class sunet::certbot::sync::client(
 
   require sunet::certbot::sync::client::dirs
 
-  file { '/opt/certbot-sync/config/certbot-sync-from-server.source':
+  file { '/opt/certbot-sync/conf/certbot-sync-from-server.source':
     ensure  => file,
     mode    => '0700',
     content => template('sunet/certbot-sync/certbot-sync-from-server.source.erb'),

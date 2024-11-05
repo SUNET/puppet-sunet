@@ -7,6 +7,12 @@ class sunet::certbot::sync::client::dirs(
     owner  => 'root',
     group  => 'root',
   }
+  file { '/opt/certbot-sync/conf':
+    ensure => directory,
+    mode   => '0700',
+    owner  => 'root',
+    group  => 'root',
+  }
   file { '/opt/certbot-sync/libexec':
     ensure => directory,
     mode   => '0700',
