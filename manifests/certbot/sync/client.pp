@@ -8,13 +8,13 @@ class sunet::certbot::sync::client(
   file { '/opt/certbot-sync/config/certbot-sync-from-server.source':
     ensure  => file,
     mode    => '0700',
-    content => template('sunet/certbot/certbot-sync-from-server.source.erb'),
+    content => template('sunet/certbot-sync/certbot-sync-from-server.source.erb'),
   }
 
   file { '/opt/certbot-sync/libexec/certbot-sync-from-server.sh':
     ensure  => file,
     mode    => '0700',
-    content => file('sunet/certbot/certbot-sync-from-server.sh'),
+    content => file('sunet/certbot-sync/certbot-sync-from-server.sh'),
   }
   sunet::scriptherder::cronjob { 'certbot-sync-from-server':
     cmd           => '/opt/certbot-sync/libexec/certbot-sync-from-server.sh',
