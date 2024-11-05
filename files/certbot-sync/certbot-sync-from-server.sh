@@ -10,7 +10,7 @@ config=${basedir}/conf/certbot-sync-from-server.source
 if [ -f "${config}" ]; then
   . ${config}
 else
-  echo "No config (${config} found!"
+  echo "No config (${config}) found!"
   exit 1
 fi
 
