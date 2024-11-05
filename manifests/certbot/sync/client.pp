@@ -3,7 +3,7 @@ class sunet::certbot::sync::client(
 ){
   $key_path = '/root/.ssh/id_certbot_sync_client'
 
-  include sunet::certbot::sync::client::dirs
+  require sunet::certbot::sync::client::dirs
 
   file { '/opt/certbot-sync/libexec/certbot-sync-from-server.sh':
     ensure  => file,
