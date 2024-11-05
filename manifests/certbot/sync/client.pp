@@ -5,10 +5,16 @@ class sunet::certbot::sync::client(
 
   require sunet::certbot::sync::client::dirs
 
+  file { '/opt/certbot-sync/config/certbot-sync-from-server.source':
+    ensure  => file,
+    mode    => '0700',
+    content => template('sunet/certbot/certbot-sync-from-server.source.erb'),
+  }
+
   file { '/opt/certbot-sync/libexec/certbot-sync-from-server.sh':
     ensure  => file,
     mode    => '0700',
-    content => template('sunet/certbot/certbot-sync-from-server.sh.erb'),
+    content => file('sunet/certbot/certbot-sync-from-server.sh'),
   }
   sunet::scriptherder::cronjob { 'certbot-sync-from-server':
     cmd           => '/opt/certbot-sync/libexec/certbot-sync-from-server.sh',

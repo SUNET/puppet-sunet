@@ -6,6 +6,14 @@ basedir="/opt/certbot-sync"
 syncdir="$basedir/letsencrypt"
 hookdir="$basedir/renewal-hooks/deploy"
 
+config=${basedir}/conf/certbot-sync-from-server.source
+if [ -f "${config}" ]; then
+  . ${config}
+else
+  echo "No config (${config} found!"
+  exit 1
+fi
+
 bootstrap=0
 if [ ! -d $syncdir/live ]; then
   bootstrap=1
@@ -17,10 +25,10 @@ else
   targetdir=$(mktemp -d /tmp/certbot_sync.XXXXX)
 fi
 
-if [ "<%= scope.call_function('safe_hiera', ['certbot_sync_server']) %>" = "$(hostname -f)" ]; then
+if [ "${CERTBOT_SYNC_SERVER}" = "$(hostname -f)" ]; then
   rsync -az -v /etc/letsencrypt/ "${targetdir}"
 else
-  rsync -e "ssh -i $HOME/.ssh/id_certbot_sync_client" -az -v root@<%= scope.call_function('safe_hiera', ['certbot_sync_server'])  %>: "${targetdir}"
+  rsync -e "ssh -i $HOME/.ssh/id_certbot_sync_client" -az -v root@"${CERTBOT_SYNC_SERVER}": "${targetdir}"
 fi
 
 certs_to_deploy=()
