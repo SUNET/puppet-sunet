@@ -31,7 +31,7 @@ class sunet::geteduroam(
       proto =>  'udp'
     }
 
-    file { '/etc/letsencrypt/renewal-hooks/deploy/geteduroam':
+    file { '/opt/certbot-sync/renewal-hooks/deploy/geteduroam':
       ensure  => file,
       mode    => '0700',
       content => file('sunet/geteduroam/certbot-renewal-hook'),
