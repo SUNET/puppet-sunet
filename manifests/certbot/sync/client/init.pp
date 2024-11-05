@@ -3,15 +3,8 @@ class sunet::certbot::sync::client(
 ){
   $key_path = '/root/.ssh/id_certbot_sync_client'
 
-  exec { '/usr/bin/mkdir -p /opt/certbot-sync/libexec':
-    unless  => '/usr/bin/test -d /opt/certbot-sync/libexec'
-  }
-  exec { '/usr/bin/mkdir -p /opt/certbot-sync/letsencrypt':
-    unless  => '/usr/bin/test -d /opt/certbot-sync/letsencrypt'
-  }
-  exec { '/usr/bin/mkdir -p /opt/certbot-sync/renewal-hooks/deploy':
-    unless  => '/usr/bin/test -d /opt/certbot-sync/renewal-hooks/deploy'
-  }
+  include sunet::certbot::sync::client::dirs
+
   file { '/opt/certbot-sync/libexec/certbot-sync-from-server.sh':
     ensure  => file,
     mode    => '0700',

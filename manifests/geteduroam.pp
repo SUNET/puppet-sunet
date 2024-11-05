@@ -31,6 +31,7 @@ class sunet::geteduroam(
       proto =>  'udp'
     }
 
+    include sunet::certbot::sync:client::dirs
     file { '/opt/certbot-sync/renewal-hooks/deploy/geteduroam':
       ensure  => file,
       mode    => '0700',
