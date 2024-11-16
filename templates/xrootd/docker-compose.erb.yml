@@ -21,6 +21,6 @@ services:
     volumes:
       - /opt/xrootd/config:/etc/xrootd:ro
       - /dev/log:/dev/log
-    command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg", "-p", <%= @cms_port %>]
+    command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg", "-p", "<%= @cms_port %>"]
     ports:
       - "<%= @cms_port %>:<%= @cms_port %>"
