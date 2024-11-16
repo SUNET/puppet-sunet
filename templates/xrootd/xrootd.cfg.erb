@@ -24,8 +24,8 @@ cms.allow host <%= host %>
 <% end -%>
 
 # Bucket specific s3 options
-<% if @config['buckets'].is_a? Array and @config['buckets'].size > 0 -%>
-<% @config['buckets'].each do |bucket| -%>
+<% if @xrootd_buckets.is_a? Array and @xrootd_buckets.size > 0 -%>
+<% @xrootd_buckets.each do |bucket| -%>
 # these must be in this order to allow parsing of multiple entries
 s3.begin
 s3.url_style        path
@@ -40,7 +40,7 @@ s3.end
 <% end -%>
 <% else -%>
 # You must configure at least one bucket hiera
-# buckets:
+# xrootd_buckets:
 #   - name: my_bucket # bucket name
 #     url_style: path # path or virtual
 #     path_name: / # this is the path where it will be available on the xrootd side

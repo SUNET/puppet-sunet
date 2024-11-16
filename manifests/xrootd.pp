@@ -2,7 +2,6 @@
 class sunet::xrootd(
   Array  $cms_allow_hosts,
   Array  $managers,
-  String $environment,
   String $cms_port                 = '1213',
   String $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
   String $container_tag            = '0.17.0-1',
@@ -14,7 +13,7 @@ class sunet::xrootd(
 
   $hostname = $facts['networking']['fqdn']
   # Config
-  $config = lookup($environment)
+  $xrootd_buckets = lookup('xrootd_buckets')
 
   # Composefile
   sunet::docker_compose { 'xrootd':
@@ -41,7 +40,7 @@ class sunet::xrootd(
     ensure  => file,
     content => template('sunet/xrootd/xrootd.cfg.erb'),
   }
-  $config['buckets'].each |$bucket| {
+  $xrootd_buckets.each |$bucket| {
     file { "/opt/xrootd/config/${bucket['name']}":
       ensure => directory,
     }
