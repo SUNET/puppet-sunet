@@ -10,6 +10,19 @@ ofs.osslib libXrdS3-5.so
 # Upon last testing, the plugin did not yet work in async mode
 xrootd.async off
 
+# Set the role to either proxy manager or proxy server
+all.role = proxy server
+# Tell everyone the location of each manager.
+<% @managers.each do |manager| -%>
+all.role = proxy manager if <%= manager %> 
+all.manager <%= manager %>
+<% end -%>
+
+# Tell the cmsd which machines are allowed to connects
+<% @cms_allow_hosts.each do |host| -%>
+cms.allow host <%= host %>
+<% end -%>
+
 # Bucket specific s3 options
 <% if @config['buckets'].length > 1 -%>
 <% @config['buckets'].each do |bucket| -%>
