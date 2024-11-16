@@ -24,7 +24,7 @@ cms.allow host <%= host %>
 <% end -%>
 
 # Bucket specific s3 options
-<% if @config['buckets'].length > 1 -%>
+<% if @config['buckets'].is_a? Array and @config['buckets'].size > 0 -%>
 <% @config['buckets'].each do |bucket| -%>
 # these must be in this order to allow parsing of multiple entries
 s3.begin
