@@ -1,6 +1,9 @@
 # kopia
 class sunet::packages::kopia {
-    file {'/etc/cosmos/apt/keys/kopia-7FB99DFD47809F0D5339D7D92273699AFD56A556.pub':
+    file {'/etc/cosmos/apt/keys/':
+        ensure  => directory,
+    }
+    -> file {'/etc/cosmos/apt/keys/kopia-7FB99DFD47809F0D5339D7D92273699AFD56A556.pub':
         ensure  => file,
         mode    => '0644',
         content => template('sunet/packages/kopia-7FB99DFD47809F0D5339D7D92273699AFD56A556.pub.erb'),
