@@ -1,22 +1,22 @@
 # Enable the HTTP protocol on port <%= @port %> (1094 is the default XRootD port)
-xrd.protocol http:<%= @port %> libXrdHttp.so
+xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
 
 # Allow access to path with given prefix.
 all.export  <%= @export %>
 
 # Setting up S3 plugin
-ofs.osslib libXrdS3-5.so
+ofs.osslib libXrdS3.so
 
 # Upon last testing, the plugin did not yet work in async mode
 xrootd.async off
 
-# Set the role to either proxy manager or proxy server
-all.role = proxy server
 # Tell everyone the location of each manager.
+# Set the role to either proxy manager or proxy server
 <% @managers.each do |manager| -%>
-all.role = proxy manager if <%= manager %> 
 all.manager <%= manager %>
+all.role = proxy manager if <%= manager %> 
 <% end -%>
+all.role = proxy server
 
 # Tell the cmsd which machines are allowed to connects
 <% @cms_allow_hosts.each do |host| -%>
