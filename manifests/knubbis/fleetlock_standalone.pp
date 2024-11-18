@@ -23,7 +23,7 @@ class sunet::knubbis::fleetlock_standalone(
   Boolean $letsencrypt_prod=false,
 ) {
 
-    require sunet::nagios::nrpe
+    include sunet::nagios::nrpe
 
     # A domain must be supplied by the user
     if $domain != '' {
@@ -42,6 +42,7 @@ class sunet::knubbis::fleetlock_standalone(
             mode   => '0750',
             owner  => 'nagios',
             group  => 'nagios',
+            require => Package['nagios-nrpe-server'],
         }
 
         file { '/opt/knubbis-fleetlock/cert-bootstrap':
