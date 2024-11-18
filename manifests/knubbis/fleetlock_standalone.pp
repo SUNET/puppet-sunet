@@ -227,7 +227,7 @@ class sunet::knubbis::fleetlock_standalone(
             }
 
             sunet::nagios::nrpe_command {'check_knubbis_fl_stale_locks':
-                command_line => '/usr/lib/nagios/plugins/check_knbbis_fl_stale_locks'
+                command_line => '/usr/lib/nagios/plugins/check_knubbis_fl_stale_locks'
             }
         }
     }
