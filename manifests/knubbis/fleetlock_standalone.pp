@@ -38,10 +38,10 @@ class sunet::knubbis::fleetlock_standalone(
         }
 
         file { '/opt/knubbis-fleetlock/nrpe':
-            ensure => directory,
-            mode   => '0750',
-            owner  => 'nagios',
-            group  => 'nagios',
+            ensure  => directory,
+            mode    => '0750',
+            owner   => 'nagios',
+            group   => 'nagios',
             require => Package['nagios-nrpe-server'],
         }
 
