@@ -23,6 +23,8 @@ class sunet::knubbis::fleetlock_standalone(
   Boolean $letsencrypt_prod=false,
 ) {
 
+    include sunet::nagios::nrpe
+
     # A domain must be supplied by the user
     if $domain != '' {
 
@@ -33,6 +35,14 @@ class sunet::knubbis::fleetlock_standalone(
             mode   => '0755',
             owner  => 'root',
             group  => 'root',
+        }
+
+        file { '/opt/knubbis-fleetlock/nrpe':
+            ensure  => directory,
+            mode    => '0750',
+            owner   => 'nagios',
+            group   => 'nagios',
+            require => Package['nagios-nrpe-server'],
         }
 
         file { '/opt/knubbis-fleetlock/cert-bootstrap':
@@ -197,6 +207,27 @@ class sunet::knubbis::fleetlock_standalone(
                 cmd         => '/usr/local/sbin/knubbis-fleetlock_standalone-backup',
                 minute      => '27',
                 ok_criteria => ['exit_status=0', 'max_age=3h'],
+            }
+
+            file { '/opt/knubbis-fleetlock/nrpe/check_knubbis_fl_stale_locks.ini':
+                ensure  => 'file',
+                mode    => '0640',
+                owner   => 'root',
+                group   => 'nagios',
+                content => template('sunet/knubbis/fleetlock_standalone/check_knubbis_fl_stale_locks.ini.erb'),
+            }
+
+            file { '/usr/lib/nagios/plugins/check_knubbis_fl_stale_locks':
+                ensure  => 'file',
+                mode    => '0555',
+                owner   => 'root',
+                group   => 'nagios',
+                require => Package['nagios-nrpe-server'],
+                content => file('sunet/knubbis/fleetlock_standalone/check_knubbis_fl_stale_locks'),
+            }
+
+            sunet::nagios::nrpe_command {'check_knubbis_fl_stale_locks':
+                command_line => '/usr/lib/nagios/plugins/check_knubbis_fl_stale_locks'
             }
         }
     }
