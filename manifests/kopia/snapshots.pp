@@ -17,7 +17,7 @@ class sunet::kopia::snapshots(
         $config = $job[$environment]
         $primary = [
           {
-            'name' => "${key}-primary",
+            'name' => "${key}-${config['primary_project']}",
             'buckets' => [$config['primary_bucket']],
             'project' => $config['primary_project'],
             'mirror' => $config['mirror_project']
