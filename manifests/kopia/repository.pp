@@ -1,9 +1,9 @@
 # kopia repository
 define sunet::kopia::repository(
-  String $repository_name,
-  String $remote_path,
   String $config_file,
   String $password_name,
+  String $remote_path,
+  String $repository_name,
 ){
   include sunet::packages::kopia
 

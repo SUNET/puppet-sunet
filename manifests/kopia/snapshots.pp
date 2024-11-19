@@ -64,14 +64,14 @@ class sunet::kopia::snapshots(
       $snapshot_dir = "${repo_dir}/mnt"
       $remote_path = "${mirror}:${bucket}"
       exec { "kopia_repository_dir_${repository_name}":
-        command       => "mkdir -p ${repo_dir}",
-        password_name => $password_name,
-        unless        => "test -d ${repo_dir}",
+        command => "mkdir -p ${repo_dir}",
+        unless  => "test -d ${repo_dir}",
       }
       $repo = sunet::kopia::repository { $repository_name:
-        repository_name => $repository_name,
-        remote_path     => $remote_path,
         config_file     => $config_file,
+        password_name   => $password_name,
+        remote_path     => $remote_path,
+        repository_name => $repository_name,
       }
       $policy = sunet::kopia::policy { $repository_name:
         repository_name => $repository_name,
