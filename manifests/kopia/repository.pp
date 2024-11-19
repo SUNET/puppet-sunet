@@ -14,6 +14,7 @@ define sunet::kopia::repository(
     --config-file=${config_file} --remote-path=${remote_path} --log-dir=${repo_dir}",
   }
   exec { "kopia_repository_connect_${repository_name}":
-    command => "kopia repository connect rclone --remote-path=${remote_path} --password=${password}  --config-file=${config_file}",
+    command => "kopia repository connect rclone --remote-path=${remote_path} --password=${password}  --config-file=${config_file} \
+    --cache-directory=${repo_dir} --log-dir=${repo_dir}",
   }
 }
