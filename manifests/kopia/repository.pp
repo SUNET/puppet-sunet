@@ -20,4 +20,7 @@ define sunet::kopia::repository(
       command => "kopia repository connect rclone --remote-path=${remote_path} --password=${password}  --config-file=${config_file}",
     }
   }
+  else {
+    warning("Password for kopia repository ${repository_name} not set in hiera")
+  }
 }

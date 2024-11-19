@@ -71,13 +71,13 @@ class sunet::kopia::snapshots(
         command => "mkdir -p ${repo_dir}",
         unless  => "test -d ${repo_dir}",
       }
-      $repo = sunet::kopia::repository { $repository_name:
+      -> sunet::kopia::repository { $repository_name:
         config_file     => $config_file,
         password_name   => $password_name,
         remote_path     => $remote_path,
         repository_name => $repository_name,
       }
-      $policy = sunet::kopia::policy { $repository_name:
+      -> sunet::kopia::policy { $repository_name:
         config_file     => $config_file,
         remote_path     => $remote_path,
         repository_name => $repository_name,
