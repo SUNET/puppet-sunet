@@ -25,7 +25,7 @@ class sunet::kopia::snapshots(
         ]
         flatten($primary , map($config['assigned']) | $assigned | {
           {
-            'name' => "${key}-${assigned['primary_project']}",
+            'name' => "${key}-${assigned['project']}",
             'buckets' => $assigned['buckets'],
             'project' => $assigned['project'],
             'mirror' => $assigned['mirror_project']
