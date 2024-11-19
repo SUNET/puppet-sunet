@@ -52,7 +52,6 @@ class sunet::kopia::snapshots(
   }
   $even_more_temp_jobs = flatten($temp_jobs)
   $backup_jobs = $even_more_temp_jobs.filter |$entry| { $entry != {}}
-  notice($backup_jobs)
   $backup_jobs.each | $job| {
     $project = $job['project']
     $buckets = $job['buckets']
@@ -63,6 +62,10 @@ class sunet::kopia::snapshots(
       $config_file = "${repo_dir}/kopia.config"
       $snapshot_dir = "${repo_dir}/mnt"
       $remote_path = "${mirror}:${bucket}"
+      exec { "kopia_repository_dir_${repository_name}":
+        command => "mkdir -p ${repo_dir}",
+        unless  => "test -d ${repo_dir}",
+      }
       $policy = sunet::kopia::policy { $repository_name:
         repository_name => $repository_name,
         user_name       => 'root',
