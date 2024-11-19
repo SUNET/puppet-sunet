@@ -68,6 +68,7 @@ class sunet::kopia::snapshots(
       if ($password != 'NOT_SET_IN_HIERA') {
         exec { "kopia_remote_dir_${repository_name}":
           command => "rclone mkdir ${remote_path}",
+          unless  => "rclone lsd ${remote_path}",
         }
         exec { "kopia_repository_dir_${repository_name}":
           command => "mkdir -p ${repo_dir}",
