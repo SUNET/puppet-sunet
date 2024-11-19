@@ -74,9 +74,10 @@ class sunet::kopia::snapshots(
         repository_name => $repository_name,
       }
       $policy = sunet::kopia::policy { $repository_name:
+        config_file     => $config_file,
+        remote_path     => $remote_path,
         repository_name => $repository_name,
         user_name       => 'root',
-        config_file     => $config_file,
       }
       file { "kopia_cron_script_${repository_name}":
         ensure  => file,

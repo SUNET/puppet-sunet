@@ -14,7 +14,7 @@ define sunet::kopia::repository(
   if ($password != 'NOT_SET_IN_HIERA') {
     exec { "kopia_repository_create_${repository_name}":
       command => "kopia repository create rclone --no-check-for-updates --password=${password} \
-      --config-file=${config_file} --remote-path=${remote_path} --log-dir=${repo_dir} --create-only",
+      --config-file=${config_file} --remote-path=${remote_path} --log-dir=${repo_dir}",
       unless  => "kopia repository status --config-file=${config_file}",
     }
   }
