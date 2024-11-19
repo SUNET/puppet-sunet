@@ -62,7 +62,10 @@ class sunet::kopia::snapshots(
       $repo_dir = "${dir}/${repository_name}"
       $config_file = "${repo_dir}/kopia.config"
       $snapshot_dir = "${repo_dir}/mnt"
-      $remote_path = "${mirror}:${bucket}"
+      $remote_path = "${mirror}:${bucket}-kopia"
+      exec { "kopia_remote_dir_${repository_name}":
+        command => "rclone mkdir ${remote_path}",
+      }
       exec { "kopia_repository_dir_${repository_name}":
         command => "mkdir -p ${repo_dir}",
         unless  => "test -d ${repo_dir}",
