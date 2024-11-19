@@ -55,12 +55,11 @@ class sunet::kopia::snapshots(
   $backup_jobs.each | $job| {
     $project = $job['project']
     $buckets = $job['buckets']
-    # Make sure the names line up
     $mirror = regsubst($job['mirror'], '-', '_', 'G')
     $mirror_name = regsubst($mirror, '_', '-','G')
     $buckets.each | $bucket| {
-      $repository_name = "${job['name']}-${mirror_name}-${bucket}"
-      $password_name = "kopia_password_${mirror}"
+      $repository_name = "${job['name']}-${mirror}-${bucket}"
+      $password_name = "kopia_password_${mirror_name}"
       $password = lookup($password_name, undef, undef, 'NOT_SET_IN_HIERA')
       $repo_dir = "${dir}/${repository_name}"
       $config_file = "${repo_dir}/kopia.config"
