@@ -59,7 +59,7 @@ class sunet::kopia::snapshots(
     $mirror_name = regsubst($mirror, '_', '-','G')
     $buckets.each | $bucket| {
       $repository_name = "${job['name']}-${mirror_name}-${bucket}"
-      $password_name = "kopia_password_${mirror_name}"
+      $password_name = "kopia_password_${mirror}"
       $repo_dir = "${dir}/${repository_name}"
       $config_file = "${repo_dir}/kopia.config"
       $snapshot_dir = "${repo_dir}/mnt"
