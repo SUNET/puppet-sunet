@@ -58,12 +58,12 @@ class sunet::kopia::snapshots(
     $mirror = $job['mirror']
     $mirror_name = regsubst($mirror, '_', '-','G')
     $buckets.each | $bucket| {
-      $repository_name = "${job['name']}-${mirror}-${bucket}"
-      $password_name = "kopia_password_${mirror}"
+      $repository_name = "${job['name']}-${mirror_name}-${bucket}"
+      $password_name = "kopia_password_${mirror_name}"
       $repo_dir = "${dir}/${repository_name}"
       $config_file = "${repo_dir}/kopia.config"
       $snapshot_dir = "${repo_dir}/mnt"
-      $remote_path = "${mirror_name}:${bucket}-kopia"
+      $remote_path = "${mirror}:${bucket}-kopia"
       exec { "kopia_remote_dir_${repository_name}":
         command => "rclone mkdir ${remote_path}",
       }
