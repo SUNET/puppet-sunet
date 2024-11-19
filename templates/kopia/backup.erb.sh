@@ -24,8 +24,6 @@ sleep $((16#$(echo "${repository_name}" | md5sum | awk '{print"0x"$1}' | cut -c1
 mkdir -p "${snapshot_dir}/${bucket}"
 rclone mount "${project}:${bucket}" "${snapshot_dir}/${bucket}" --daemon --allow-other --dir-cache-time 24h
 rclone mkdir "${mirror}:${bucket}-kopia"
-kopia repository connect rclone --remote-path="${remote_path}" --config-file="${config_file}"
 kopia snapshot create --config-file="${config_file}" "${snapshot_dir}/${bucket}"
-kopia repository disconnect --config-file="${config_file}"
 rclone umount "${snapshot_dir}/${bucket}"
 rm -rf "${snapshot_dir:?}/${bucket}"
