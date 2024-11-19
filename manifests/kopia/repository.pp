@@ -9,8 +9,8 @@ define sunet::kopia::repository(
   $dir = '/opt/kopia/repositories'
   $repo_dir = "${dir}/${repository_name}"
   exec { "kopia_repository_dir_${repository_name}":
-    cmd    => "mkdir -p ${repo_dir}",
-    unless => "test -d ${repo_dir}",
+    command => "mkdir -p ${repo_dir}",
+    unless  => "test -d ${repo_dir}",
   }
   $password = lookup("kopia_repo_password_${repository_name}", undef, undef, 'NOT_SET_IN_HIERA')
 
