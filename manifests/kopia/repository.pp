@@ -11,7 +11,8 @@ define sunet::kopia::repository(
   $repo_dir = "${dir}/${repository_name}"
   exec { "kopia_repository_create_${repository_name}":
     command => "kopia repository create rclone --no-check-for-updates --password='${password}' \
-    --config-file=${config_file} --remote-path=${remote_path} --log-dir=${repo_dir}",
+    --config-file=${config_file} --remote-path=${remote_path} --log-dir=${repo_dir} \
+    --cache-directory=${repo_dir}",
     unless  => "test -f ${config_file}",
   }
   exec { "kopia_repository_connect_${repository_name}":
