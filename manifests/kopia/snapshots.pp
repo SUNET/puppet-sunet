@@ -66,13 +66,14 @@ class sunet::kopia::snapshots(
         command => "mkdir -p ${repo_dir}",
         unless  => "test -d ${repo_dir}",
       }
-      $policy = sunet::kopia::policy { $repository_name:
-        repository_name => $repository_name,
-        user_name       => 'root',
-      }
       $repo = sunet::kopia::repository { $repository_name:
         repository_name => $repository_name,
         remote_path     => $remote_path,
+        config_file     => $config_file,
+      }
+      $policy = sunet::kopia::policy { $repository_name:
+        repository_name => $repository_name,
+        user_name       => 'root',
         config_file     => $config_file,
       }
       file { "kopia_cron_script_${repository_name}":

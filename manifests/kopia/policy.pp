@@ -2,6 +2,7 @@
 define sunet::kopia::policy(
   String $repository_name,
   String $user_name,
+  String $config_file,
   String $keep_latest = '30',
   String $keep_hourly = 'inherit',
   String $keep_daily = 'inherit',
@@ -17,7 +18,7 @@ define sunet::kopia::policy(
   $command = "kopia policy set --compression ${compression} \
     --keep-latest ${keep_latest} --keep-hourly ${keep_hourly} --keep-daily ${keep_daily} \
     --keep-weekly ${keep_weekly} --keep-monthly ${keep_monthly} --keep-annual ${keep_annual} \
-    --snapshot_interval ${snapshot_interval} \
+    --snapshot-interval ${snapshot_interval} --config-file=${config_file} \
     ${policy_name}"
 
   exec { "kopia_policy_create_${policy_name}":
