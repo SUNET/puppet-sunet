@@ -12,29 +12,31 @@ class sunet::kopia::snapshots(
   $possible_jobs = lookup('kopia_backup_jobs', undef, undef, [])
   if $possible_jobs.empty {
     $project_mapping = lookup('project_mapping', undef, undef, [])
-    $backup_jobs = $project_mapping.map |$key, $job| {
+    $temp_jobs = $project_mapping.map |$key, $job| {
       if member($jobs, $key) {
         $config = $job[$environment]
-        $temp = map($config['assigned']) | $assigned | {
-          {
-            'name' => "${key}-${assigned['primary_project']}",
-            'buckets' => $assigned['buckets'],
-            'project' => $assigned['primary_project'],
-            'mirror' => $assigned['mirror_project']
-          }
-        }
-        flatten($temp, [
+        $primary = [
           {
             'name' => "${key}-primary",
             'buckets' => [$config['primary_bucket']],
             'project' => $config['primary_project'],
             'mirror' => $config['mirror_project']
           }
-        ])
+        ]
+        flatten($primary , map($config['assigned']) | $assigned | {
+          {
+            'name' => "${key}-${assigned['primary_project']}",
+            'buckets' => $assigned['buckets'],
+            'project' => $assigned['primary_project'],
+            'mirror' => $assigned['mirror_project']
+          }
+        })
+      } else {
+        {}
       }
     }
   } else {
-    $backup_jobs = $possible_jobs.map |$key, $job| {
+    $temp_jobs = $possible_jobs.map |$key, $job| {
       if member($jobs, $key) {
         $config = $job[$environment]
         map($config) | $assigned | {
@@ -48,6 +50,9 @@ class sunet::kopia::snapshots(
       }
     }
   }
+  $even_more_temp_jobs = flatten($temp_jobs)
+  $backup_jobs = $even_more_temp_jobs.filter |$entry| { $entry != {}}
+  notice($backup_jobs)
   $backup_jobs.each | $job| {
     $project = $job['project']
     $buckets = $job['buckets']
@@ -63,9 +68,9 @@ class sunet::kopia::snapshots(
         user_name       => 'root',
       }
       $repo = sunet::kopia::repository { $repository_name:
-        repository  => $repository_name,
-        remote_path => $remote_path,
-        config_file => $config_file,
+        repository_name => $repository_name,
+        remote_path     => $remote_path,
+        config_file     => $config_file,
       }
       file { "kopia_cron_script_${repository_name}":
         ensure  => file,
@@ -79,7 +84,7 @@ class sunet::kopia::snapshots(
       # an aditional random amount of time
       # between 0 and 1020 minutes before running
       -> sunet::scriptherder::cronjob { "kopia-snapshot-${repository_name}":
-        command  => "${repo_dir}/backup.sh",
+        cmd      => "${repo_dir}/backup.sh",
         user     => $user,
         minute   => $minute,
         hour     => $hour,

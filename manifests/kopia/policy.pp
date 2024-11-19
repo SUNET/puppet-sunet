@@ -11,7 +11,7 @@ define sunet::kopia::policy(
   String $snapshot_interval = '1h',
   String $compression = 'zstd-fastest',
 ){
-  include sunet::package::kopia
+  include sunet::packages::kopia
   $dir_for_policy = "/opt/kopia/repositories/${repository_name}/mnt"
   $policy_name = "${user_name}@${facts['networking']['fqdn']}:${dir_for_policy}"
   $command = "kopia policy set --compression ${compression} \

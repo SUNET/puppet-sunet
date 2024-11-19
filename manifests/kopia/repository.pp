@@ -4,20 +4,14 @@ define sunet::kopia::repository(
   String $remote_path,
   String $config_file,
 ){
-  include sunet::package::kopia
-  include sunet::package::rclone
+  include sunet::packages::kopia
 
   $dir = '/opt/kopia/repositories'
-  exec { 'kopia_repository_dir':
-    cmd    => "mkdir -p ${dir}",
-    unless => "test -d ${dir}",
-  }
   $repo_dir = "${dir}/${repository_name}"
-  file { $repo_dir:
-    ensure  => 'directory',
+  exec { "kopia_repository_dir_${repository_name}":
+    cmd    => "mkdir -p ${repo_dir}",
+    unless => "test -d ${repo_dir}",
   }
-
-
   $password = lookup("kopia_repo_password_${repository_name}", undef, undef, 'NOT_SET_IN_HIERA')
 
   if ($password != 'NOT_SET_IN_HIERA') {
