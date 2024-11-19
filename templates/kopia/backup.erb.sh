@@ -24,5 +24,5 @@ sleep $((16#$(echo "${repository_name}" | md5sum | awk '{print"0x"$1}' | cut -c1
 mkdir -p "${snapshot_dir}/${bucket}"
 rclone mount "${project}:${bucket}" "${snapshot_dir}/${bucket}" --daemon --allow-other --dir-cache-time 24h
 kopia snapshot create --config-file="${config_file}" "${snapshot_dir}/${bucket}"
-rclone umount "${snapshot_dir}/${bucket}"
+umount "${snapshot_dir}/${bucket}"
 rm -rf "${snapshot_dir:?}/${bucket}"
