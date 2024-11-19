@@ -3,12 +3,13 @@ define sunet::kopia::repository(
   String $repository_name,
   String $remote_path,
   String $config_file,
+  String $password_name,
 ){
   include sunet::packages::kopia
 
   $dir = '/opt/kopia/repositories'
   $repo_dir = "${dir}/${repository_name}"
-  $password = lookup("kopia_repo_password_${repository_name}", undef, undef, 'NOT_SET_IN_HIERA')
+  $password = lookup($password_name, undef, undef, 'NOT_SET_IN_HIERA')
 
   if ($password != 'NOT_SET_IN_HIERA') {
     exec { 'kopia_repository_create':
