@@ -27,7 +27,7 @@ class sunet::kopia::snapshots(
           {
             'name' => "${key}-${assigned['primary_project']}",
             'buckets' => $assigned['buckets'],
-            'project' => $assigned['primary_project'],
+            'project' => $assigned['project'],
             'mirror' => $assigned['mirror_project']
           }
         })
