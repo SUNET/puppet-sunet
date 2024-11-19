@@ -1,5 +1,5 @@
 # Kopia snapshots
-define sunet::kopia::snapshots(
+class sunet::kopia::snapshots(
   Array[String] $jobs,
   String $environment,
   String $user = 'root',
