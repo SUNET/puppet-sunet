@@ -21,6 +21,6 @@ define sunet::kopia::repository(
     }
   }
   else {
-    warning("Password for kopia repository ${repository_name} not set in hiera")
+    warning("Password for kopia repository ${repository_name} with ${password_name} not set in hiera")
   }
 }
