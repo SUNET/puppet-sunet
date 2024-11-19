@@ -60,47 +60,52 @@ class sunet::kopia::snapshots(
     $buckets.each | $bucket| {
       $repository_name = "${job['name']}-${mirror_name}-${bucket}"
       $password_name = "kopia_password_${mirror}"
+      $password = lookup($password_name, undef, undef, 'NOT_SET_IN_HIERA')
       $repo_dir = "${dir}/${repository_name}"
       $config_file = "${repo_dir}/kopia.config"
       $snapshot_dir = "${repo_dir}/mnt"
       $remote_path = "${mirror}:${bucket}-kopia"
-      exec { "kopia_remote_dir_${repository_name}":
-        command => "rclone mkdir ${remote_path}",
-      }
-      exec { "kopia_repository_dir_${repository_name}":
-        command => "mkdir -p ${repo_dir}",
-        unless  => "test -d ${repo_dir}",
-      }
-      -> sunet::kopia::repository { $repository_name:
-        config_file     => $config_file,
-        password_name   => $password_name,
-        remote_path     => $remote_path,
-        repository_name => $repository_name,
-      }
-      -> sunet::kopia::policy { $repository_name:
-        config_file     => $config_file,
-        remote_path     => $remote_path,
-        repository_name => $repository_name,
-        user_name       => 'root',
-      }
-      file { "kopia_cron_script_${repository_name}":
-        ensure  => file,
-        path    => "${repo_dir}/backup.sh",
-        owner   => 'root',
-        group   => 'root',
-        mode    => '0700',
-        content => template('sunet/kopia/backup.erb.sh'),
-      }
-      # Note: each script will sleep
-      # an aditional random amount of time
-      # between 0 and 1020 minutes before running
-      -> sunet::scriptherder::cronjob { "kopia-snapshot-${repository_name}":
-        cmd      => "${repo_dir}/backup.sh",
-        user     => $user,
-        minute   => $minute,
-        hour     => $hour,
-        monthday => $monthday,
-        weekday  => $weekday,
+      if ($password != 'NOT_SET_IN_HIERA') {
+        exec { "kopia_remote_dir_${repository_name}":
+          command => "rclone mkdir ${remote_path}",
+        }
+        exec { "kopia_repository_dir_${repository_name}":
+          command => "mkdir -p ${repo_dir}",
+          unless  => "test -d ${repo_dir}",
+        }
+        -> sunet::kopia::repository { $repository_name:
+          config_file     => $config_file,
+          password        => $password,
+          remote_path     => $remote_path,
+          repository_name => $repository_name,
+        }
+        -> sunet::kopia::policy { $repository_name:
+          config_file     => $config_file,
+          remote_path     => $remote_path,
+          repository_name => $repository_name,
+          user_name       => 'root',
+        }
+        file { "kopia_cron_script_${repository_name}":
+          ensure  => file,
+          path    => "${repo_dir}/backup.sh",
+          owner   => 'root',
+          group   => 'root',
+          mode    => '0700',
+          content => template('sunet/kopia/backup.erb.sh'),
+        }
+        # Note: each script will sleep
+        # an aditional random amount of time
+        # between 0 and 1020 minutes before running
+        -> sunet::scriptherder::cronjob { "kopia-snapshot-${repository_name}":
+          cmd      => "${repo_dir}/backup.sh",
+          user     => $user,
+          minute   => $minute,
+          hour     => $hour,
+          monthday => $monthday,
+          weekday  => $weekday,
+        }
+      } else {
+        warning("Password for kopia repository ${repository_name} with ${password_name} not set in hiera")
       }
     }
   }
