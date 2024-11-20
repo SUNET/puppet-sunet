@@ -1,0 +1,59 @@
+# Enable the HTTP protocol on port <%= @port %> (1094 is the default XRootD port)
+xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
+
+# Allow access to path with given prefix.
+all.export  <%= @export %>
+
+# Setting up S3 plugin
+ofs.osslib libXrdS3.so
+
+# Upon last testing, the plugin did not yet work in async mode
+xrootd.async off
+
+# Tell everyone the location of each manager.
+# Set the role to either proxy manager or proxy server
+<% @managers.each do |manager| -%>
+all.manager <%= manager %>
+all.role = proxy manager if <%= manager %> 
+<% end -%>
+all.role = proxy server
+
+# Tell the cmsd which machines are allowed to connects
+<% @cms_allow_hosts.each do |host| -%>
+cms.allow host <%= host %>
+<% end -%>
+
+# Bucket specific s3 options
+<% if @xrootd_buckets.is_a? Array and @xrootd_buckets.size > 0 -%>
+<% @xrootd_buckets.each do |bucket| -%>
+# these must be in this order to allow parsing of multiple entries
+s3.begin
+s3.url_style        path
+s3.path_name        /<%= bucket['name']%>
+s3.bucket_name      <%= bucket['name']%>
+s3.service_name     <%= bucket['service_name']%>
+s3.region           <%= bucket['region']%>
+s3.access_key_file  /etc/xrootd/<%= bucket['name']%>/access-key
+s3.secret_key_file  /etc/xrootd/<%= bucket['name']%>/secret-key
+s3.service_url      <%= bucket['service_url']%>
+s3.end
+<% end -%>
+<% else -%>
+# You must configure at least one bucket hiera
+# xrootd_buckets:
+#   - name: my_bucket # bucket name
+#     url_style: path # path or virtual
+#     path_name: / # this is the path where it will be available on the xrootd side
+#     service_name: s3.sto4.safedc.net 
+#     region: sto4 # region
+#     access_key: <access_key> # access key
+#     secret_key: <secret_key> # secret key
+#     service_url: https://s3.sto4.safedc.net # service url 
+<% end -%>
+
+# Global s3 options
+s3.url_style path
+# Debugging
+# s3.trace all
+# xrd.trace    all
+# xrootd.trace all dump

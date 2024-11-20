@@ -26,8 +26,8 @@ table ip6 nat {
 #
 add rule ip nat postrouting ip saddr { 172.16.0.0/12 } iifname docker0   counter masquerade comment "SNAT traffic from Docker"
 add rule ip nat postrouting ip saddr { 172.16.0.0/12 } iifname br-*      counter masquerade comment "SNAT traffic from Docker"
-add rule ip6 nat postrouting ip6 saddr { fd0c::/16 }   iifname docker0   counter masquerade comment "SNAT traffic from Docker"
-add rule ip6 nat postrouting ip6 saddr { fd0c::/16 }   iifname br-*      counter masquerade comment "SNAT traffic from Docker"
+add rule ip6 nat postrouting ip6 saddr { fd00::/8 }    iifname docker0   counter masquerade comment "SNAT traffic from Docker"
+add rule ip6 nat postrouting ip6 saddr { fd00::/8 }    iifname br-*      counter masquerade comment "SNAT traffic from Docker"
 
 #
 # Allow forwarding packages from docker
