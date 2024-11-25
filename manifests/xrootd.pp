@@ -8,6 +8,7 @@ class sunet::xrootd(
   String $export                   = '/',
   String $interface                = 'ens3',
   String $xrootd_port              = '1094',
+  String $xrootd_admin_path        = '/var/spool/xrootd',
 )
 {
 

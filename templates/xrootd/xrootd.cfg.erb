@@ -12,16 +12,18 @@ xrootd.async off
 
 # Tell everyone the location of each manager.
 # Set the role to either proxy manager or proxy server
+all.adminpath <%= @xrootd_admin_path %>
 <% @managers.each do |manager| -%>
 all.manager <%= manager %>
-all.role = proxy manager if <%= manager %> 
+all.role manager if <%= manager %> 
 <% end -%>
-all.role = proxy server
+all.role server
 
 # Tell the cmsd which machines are allowed to connects
 <% @cms_allow_hosts.each do |host| -%>
 cms.allow host <%= host %>
 <% end -%>
+cms.dfs limit 0 lookup distrib mdhold 0 redirect verify retries 2
 
 # Bucket specific s3 options
 <% if @xrootd_buckets.is_a? Array and @xrootd_buckets.size > 0 -%>
