@@ -98,9 +98,9 @@ class sunet::metadata::mdq_publisher(
     }
 
     if ($docker_class == 'sunet::dockerhost2') {
-      notice('Please consider changing to a native docker compose without the shim (created by docker_run) by setting "docker_compose: true"')
+      warning('Please consider changing to a native docker compose without the shim (created by docker_run) by setting "docker_compose: true"')
     } else {
-      notice('Please consider changing to docker compose for this service by setting "docker_compose: true"')
+      warning('Please consider changing to docker compose for this service by setting "docker_compose: true"')
     }
     sunet::docker_run { 'swamid-mdq-publisher':
       image               => 'docker.sunet.se/swamid/mdq-publisher',
