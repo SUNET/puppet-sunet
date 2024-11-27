@@ -6,8 +6,8 @@ services:
     hostname: <%= @hostname %>
     extra_hosts:
       <%- @cms_allowed_hosts.each do |extra_host| -%>
-      - "<%= extra_host['name']:<%= extra_host['ipv4'] %>"
-      - "<%= extra_host['name']:<%= extra_host['ipv6'] %>"
+      - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
       <%- end -%>
     volumes:
       - /opt/xrootd/config:/etc/xrootd:ro
@@ -24,8 +24,8 @@ services:
     hostname: <%= @hostname %>
     extra_hosts:
       <%- @cms_allowed_hosts.each do |extra_host| -%>
-      - "<%= extra_host['name']:<%= extra_host['ipv4'] %>"
-      - "<%= extra_host['name']:<%= extra_host['ipv6'] %>"
+      - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
       <%- end -%>
     volumes:
       - /opt/xrootd/config:/etc/xrootd:ro
