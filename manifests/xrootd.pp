@@ -1,6 +1,6 @@
 # Postfix for SUNET
 class sunet::xrootd(
-  Array  $cms_allow_hosts,
+  Hash   $cms_allow_hosts,
   Array  $managers,
   String $cms_port                 = '1213',
   String $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
