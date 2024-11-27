@@ -6,7 +6,7 @@ hostname: <%= node['hostname'] %>
 <% if node['labels'] %>
 labels:
 <% node['labels'].each do |label| %>
-- <%= label %> 
+- <%= label -%> 
 <% end -%>
 <% end -%>
 <% end -%>
