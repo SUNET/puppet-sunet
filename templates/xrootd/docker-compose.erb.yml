@@ -4,6 +4,11 @@ services:
     dns:
       - 89.32.32.32
     hostname: <%= @hostname %>
+    extra_hosts:
+      <%- @cms_allowed_hosts.each do |extra_host| -%>
+      - "<%= extra_host['name']:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name']:<%= extra_host['ipv6'] %>"
+      <%- end -%>
     volumes:
       - /opt/xrootd/config:/etc/xrootd:ro
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
@@ -17,6 +22,11 @@ services:
     dns:
       - 89.32.32.32
     hostname: <%= @hostname %>
+    extra_hosts:
+      <%- @cms_allowed_hosts.each do |extra_host| -%>
+      - "<%= extra_host['name']:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name']:<%= extra_host['ipv6'] %>"
+      <%- end -%>
     volumes:
       - /opt/xrootd/config:/etc/xrootd:ro
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw

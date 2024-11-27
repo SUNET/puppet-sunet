@@ -19,9 +19,8 @@ all.adminpath <%= @xrootd_admin_path %>
 all.pidpath <%= @xrootd_admin_path %>
 <% @managers.each do |manager| -%>
 all.manager <%= manager %>:<%= @xrootd_port %> 
-all.role manager if <%= manager %> 
 <% end -%>
-all.role server
+all.role manager
 
 # Tell the cmsd which machines are allowed to connects
 <% @cms_allow_hosts.each do |host| -%>

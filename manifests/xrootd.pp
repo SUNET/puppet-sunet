@@ -13,6 +13,12 @@ class sunet::xrootd(
 {
 
   $hostname = $facts['networking']['fqdn']
+
+  if ($hostname in $managers ) {
+    $role = 'manager'
+  } else {
+    $role = 'server'
+  }
   # Config
   $xrootd_buckets = lookup('xrootd_buckets')
 
@@ -44,7 +50,7 @@ class sunet::xrootd(
   }
   file { '/opt/xrootd/config/xrootd.cfg':
     ensure  => file,
-    content => template('sunet/xrootd/xrootd.cfg.erb'),
+    content => template("sunet/xrootd/xrootd-${role}.cfg.erb"),
   }
   $xrootd_buckets.each |$bucket| {
     file { "/opt/xrootd/config/${bucket['name']}":
