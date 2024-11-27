@@ -37,6 +37,11 @@ class sunet::xrootd(
   file { '/opt/xrootd/config':
     ensure => directory,
   }
+  file { '/opt/xrootd/admin':
+    ensure => directory,
+    owner  => '100',
+    group  => '101',
+  }
   file { '/opt/xrootd/config/xrootd.cfg':
     ensure  => file,
     content => template('sunet/xrootd/xrootd.cfg.erb'),
