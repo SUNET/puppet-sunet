@@ -25,6 +25,7 @@ class sunet::ceph(
   if $type == 'adm' {
     include sunet::packages::cephadm
     $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
+    $nodes = lookup('nodes', undef, undef, []);
     file {'/root/.ssh/id_rsa_adm':
       ensure => 'present',
       owner  => 'root',
@@ -34,6 +35,13 @@ class sunet::ceph(
     file_line { 'adm_private_key':
       path => '/root/.ssh/id_rsa_adm',
       line => $adm_private_key,
+    }
+    file {'/opt/ceph/ceph-cluster.yaml':
+      ensure  => 'file',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0600',
+      content => template('sunet/ceph/ceph-cluster.erb.yaml'),
     }
   }
   elsif $type == 'osd' {
