@@ -35,6 +35,9 @@ class sunet::ceph(
       path => '/root/.ssh/id_rsa_adm',
       line => $adm_private_key,
     }
+    file {'/opt/ceph':
+      ensure  => 'directory',
+    }
     file {'/opt/ceph/ceph-cluster.yaml':
       ensure  => 'file',
       owner   => 'root',
