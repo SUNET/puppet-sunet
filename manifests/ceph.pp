@@ -1,5 +1,6 @@
 # Ceph for SUNET
 class sunet::ceph(
+  String $adm,
   String $type,
 )
 {
@@ -51,6 +52,10 @@ class sunet::ceph(
   }
   elsif $type == 'mon' {
     include sunet::packages::ceph_mon
+  }
+  sunet::nftables::allow { 'expose-allow-ssh':
+    from => $adm,
+    port => 22,
   }
 
 }
