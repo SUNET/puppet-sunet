@@ -1,6 +1,6 @@
 # Ceph for SUNET
 class sunet::ceph(
-  String $adm,
+  Array  $adm,
   String $type,
 )
 {
