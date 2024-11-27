@@ -35,10 +35,12 @@ class sunet::xrootd(
     port          => $xrootd_port,
     iif           => $interface,
   }
-  sunet::nftables::docker_expose { "cms_port_${cms_port}":
-    allow_clients => $cms_allow_hosts,
-    port          => $cms_port,
-    iif           => $interface,
+  $cms_allow_hosts.each |$host| {
+    sunet::nftables::docker_expose { "cms_port_${cms_port}_${host['name']}":
+      allow_clients => [$host['ipv4'], $host['ipv6']],
+      port          => $cms_port,
+      iif           => $interface,
+    }
   }
   file { '/opt/xrootd/config':
     ensure => directory,
