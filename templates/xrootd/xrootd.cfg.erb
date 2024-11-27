@@ -1,20 +1,24 @@
 # Enable the HTTP protocol on port <%= @port %> (1094 is the default XRootD port)
 xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
-
-# Allow access to path with given prefix.
-all.export  <%= @export %>
-
-# Setting up S3 plugin
-ofs.osslib libXrdS3.so
+if exec cmsd
+  xrd.port <%= @cms_port %>
+fi
+if exec xrootd
+   xrd.port <%= @xrootd_port %>
+fi
 
 # Upon last testing, the plugin did not yet work in async mode
 xrootd.async off
 
+# Allow access to path with given prefix.
+all.export  <%= @export %>
+
 # Tell everyone the location of each manager.
 # Set the role to either proxy manager or proxy server
 all.adminpath <%= @xrootd_admin_path %>
+all.pidpath <%= @xrootd_admin_path %>
 <% @managers.each do |manager| -%>
-all.manager <%= manager %>
+all.manager <%= manager %>:<%= @xrootd_port %> 
 all.role manager if <%= manager %> 
 <% end -%>
 all.role server
@@ -59,3 +63,6 @@ s3.url_style path
 # s3.trace all
 # xrd.trace    all
 # xrootd.trace all dump
+# Setting up S3 plugin
+ofs.osslib libXrdS3.so
+
