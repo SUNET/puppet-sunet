@@ -1,6 +1,8 @@
 # Ceph for SUNET
 class sunet::ceph(
   Array  $adm,
+  Array  $clients,
+  Array  $osd,
   String $type,
 )
 {
@@ -45,17 +47,30 @@ class sunet::ceph(
     }
   }
   elsif $type == 'osd' {
+    $extra_ports = []
     include sunet::packages::ceph_osd
   }
   elsif $type == 'mds' {
+    $extra_ports = []
     include sunet::packages::ceph_mds
   }
   elsif $type == 'mon' {
+    $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
     include sunet::packages::ceph_mon
   }
   sunet::nftables::allow { 'expose-allow-ssh':
     from => $adm,
     port => 22,
   }
-
+  $internal_nodes = $nodes.map |$node| {
+    $node['addr']
+  }
+  $internal_ports = [ { 'from' => $internal_nodes, 'to' => '6800-7300' } ]
+  $ceph_ports = $extra_ports + $internal_ports
+  $ceph_ports.each |$port| {
+    sunet::nftables::allow { "expose-allow-${port['to']}":
+      from => $port['from'],
+      port => $port['to'],
+    }
+  }
 }
