@@ -5,7 +5,7 @@ services:
       - 89.32.32.32
     hostname: <%= @hostname %>
     extra_hosts:
-      <%- @cms_allowed_hosts.each do |extra_host| -%>
+      <%- @cms_allow_hosts.each do |extra_host| -%>
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
       - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
       <%- end -%>
@@ -23,7 +23,7 @@ services:
       - 89.32.32.32
     hostname: <%= @hostname %>
     extra_hosts:
-      <%- @cms_allowed_hosts.each do |extra_host| -%>
+      <%- @cms_allow_hosts.each do |extra_host| -%>
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
       - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
       <%- end -%>
