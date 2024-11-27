@@ -1,14 +1,14 @@
 # Postfix for SUNET
 class sunet::xrootd(
-  Hash   $cms_allow_hosts,
-  Array  $managers,
-  String $cms_port                 = '1213',
-  String $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
-  String $container_tag            = '0.17.0-1',
-  String $export                   = '/',
-  String $interface                = 'ens3',
-  String $xrootd_port              = '1094',
-  String $xrootd_admin_path        = '/var/spool/xrootd',
+  Array[Hash] $cms_allow_hosts,
+  Array       $managers,
+  String      $cms_port                 = '1213',
+  String      $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
+  String      $container_tag            = '0.17.0-1',
+  String      $export                   = '/',
+  String      $interface                = 'ens3',
+  String      $xrootd_port              = '1094',
+  String      $xrootd_admin_path        = '/var/spool/xrootd',
 )
 {
 
