@@ -1,7 +1,6 @@
 # Ceph for SUNET
 class sunet::ceph(
   String $type,
-  Array  $monitors,
 )
 {
   $adm_public_key = lookup('adm_public_key', undef, undef, 'NOT_SET_IN_HIERA');
