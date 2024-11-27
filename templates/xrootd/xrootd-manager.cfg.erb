@@ -24,7 +24,7 @@ all.role manager
 
 # Tell the cmsd which machines are allowed to connects
 <% @cms_allow_hosts.each do |host| -%>
-cms.allow host <%= host %>
+cms.allow host <%= host['name'] %>
 <% end -%>
 cms.dfs limit 0 lookup distrib mdhold 0 redirect verify retries 2
 
