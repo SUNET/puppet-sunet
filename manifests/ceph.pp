@@ -25,14 +25,14 @@ class sunet::ceph(
     include sunet::packages::cephadm
     $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
     $nodes = lookup('nodes', undef, undef, []);
-    file {'/root/.ssh/id_rsa_adm':
+    file {'/root/.ssh/id_ed25519_adm':
       ensure => 'present',
       owner  => 'root',
       group  => 'root',
       mode   => '0600',
     }
     file_line { 'adm_private_key':
-      path => '/root/.ssh/id_rsa_adm',
+      path => '/root/.ssh/id_25519_adm',
       line => $adm_private_key,
     }
     file {'/opt/ceph':
