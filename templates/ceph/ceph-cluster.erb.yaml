@@ -1,11 +1,11 @@
-<%= @nodes.each do |node| %>
+<% @nodes.each do |node| %>
 ---
 service_type: <%= node['service_type'] %>
 addr: <%= node['addr'] %>
 hostname: <%= node['hostname'] %>
 <% if node['labels'] %>
 labels:
-<%= node['labels'].each do |label| %>
+<% node['labels'].each do |label| %>
 - <%= label %> 
 <% end -%>
 <% end -%>
