@@ -26,6 +26,12 @@ services:
       <%- @cms_allow_hosts.each do |extra_host| -%>
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
       - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
+      <%- if @managers.include?(extra_host['name']) -%>
+      - "<%= @manager_domain %>:<%= extra_host['ipv4'] %>"
+      - "<%= @manager_domain %>:<%= extra_host['ipv6'] %>"
+      - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv6'] %>"
+      <%- end -%>
       <%- end -%>
     volumes:
       - /opt/xrootd/config:/etc/xrootd:ro
