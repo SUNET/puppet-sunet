@@ -4,6 +4,7 @@ services:
     dns:
       - 89.32.32.32
     hostname: <%= @hostname.split('.')[0] %>
+    network_mode: host
     extra_hosts:
       <%- @cms_allow_hosts.each do |extra_host| -%>
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
@@ -26,6 +27,7 @@ services:
     dns:
       - 89.32.32.32
     hostname: <%= @hostname.split('.')[0] %>
+    network_mode: host
     extra_hosts:
       <%- @cms_allow_hosts.each do |extra_host| -%>
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
