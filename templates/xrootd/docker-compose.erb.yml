@@ -3,7 +3,7 @@ services:
     image: <%= @container_image %>:<%= @container_tag %>
     dns:
       - 89.32.32.32
-    hostname: <%= @hostname %>
+    hostname: <%= @hostname.split('.')[0] %>
     extra_hosts:
       <%- @cms_allow_hosts.each do |extra_host| -%>
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
@@ -21,7 +21,7 @@ services:
     image: <%= @container_image %>:<%= @container_tag %>
     dns:
       - 89.32.32.32
-    hostname: <%= @hostname %>
+    hostname: <%= @hostname.split('.')[0] %>
     extra_hosts:
       <%- @cms_allow_hosts.each do |extra_host| -%>
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
