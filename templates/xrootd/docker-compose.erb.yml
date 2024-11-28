@@ -9,8 +9,6 @@ services:
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
       - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
       <%- if @managers.include?(extra_host['name']) -%>
-      - "<%= @manager_domain %>:<%= extra_host['ipv4'] %>"
-      - "<%= @manager_domain %>:<%= extra_host['ipv6'] %>"
       - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv4'] %>"
       - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv6'] %>"
       <%- end -%>
@@ -33,8 +31,6 @@ services:
       - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
       - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
       <%- if @managers.include?(extra_host['name']) -%>
-      - "<%= @manager_domain %>:<%= extra_host['ipv4'] %>"
-      - "<%= @manager_domain %>:<%= extra_host['ipv6'] %>"
       - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv4'] %>"
       - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv6'] %>"
       <%- end -%>

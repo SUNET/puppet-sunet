@@ -20,6 +20,7 @@ all.pidpath <%= @xrootd_admin_path %>
 <%- @cms_allow_hosts.each do |extra_host| -%>
 <%- if @managers.include?(extra_host['name']) -%>
 all.manager all <%= extra_host['name'].split('.')[0] %> <%= @xrootd_port %> 
+all.manager all <%= extra_host['name'] %> <%= @xrootd_port %> 
 <%- end -%>
 <%- end -%>
 all.role server
