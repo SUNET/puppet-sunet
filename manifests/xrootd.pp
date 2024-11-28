@@ -2,6 +2,7 @@
 class sunet::xrootd(
   Array[Hash] $cms_allow_hosts,
   Array       $managers,
+  String      $manager_domain,
   String      $cms_port                 = '1213',
   String      $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
   String      $container_tag            = '0.17.0-1',
