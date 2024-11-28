@@ -35,6 +35,9 @@ class sunet::lb::load_balancer(
   ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
                   { owner => 'root', group => 'root', mode => '0755' })
 
+  ensure_resource('sunet::misc::create_dir', [ "${confdir}/ssl"],
+                  { owner => 'root', group => 'haproxy', mode => '0750' })
+
   $websites = $config['load_balancer']['websites']
 
   sunet::lb::load_balancer::configure_websites { 'websites':
@@ -72,8 +75,9 @@ class sunet::lb::load_balancer(
       bundle => [
         "cert=${infra_cert}",
         "key=${infra_key}",
-        "out=private/infra_haproxy.crt",
+        "out=/opt/frontend/config/ssl/infra_haproxy.crt",
       ],
+      group => 'haproxy',
     })
   }
 }
