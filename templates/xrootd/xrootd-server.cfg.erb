@@ -1,10 +1,10 @@
 # Enable the HTTP protocol on port <%= @port %> (1094 is the default XRootD port)
-xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
 if exec cmsd
   xrd.port <%= @cms_port %>
 fi
 if exec xrootd
-   xrd.port <%= @xrootd_port %>
+  xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
+  xrd.port <%= @xrootd_port %>
 fi
 
 # Upon last testing, the plugin did not yet work in async mode
