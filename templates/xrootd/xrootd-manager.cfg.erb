@@ -17,14 +17,12 @@ all.export  <%= @export %>
 # Set the role to either proxy manager or proxy server
 all.adminpath <%= @xrootd_admin_path %>
 all.pidpath <%= @xrootd_admin_path %>
-<% @managers.each do |manager| -%>
-all.manager <%= manager %>:<%= @xrootd_port %> 
-<% end -%>
+all.manager all <%= @manager_domain %>+ <%= @xrootd_port %> 
 all.role manager
 
 # Tell the cmsd which machines are allowed to connects
 <% @cms_allow_hosts.each do |host| -%>
-cms.allow host <%= host %>
+cms.allow host <%= host['name'] %>
 <% end -%>
 cms.dfs limit 0 lookup distrib mdhold 0 redirect verify retries 2
 
