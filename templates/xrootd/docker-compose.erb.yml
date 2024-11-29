@@ -3,7 +3,7 @@ services:
     image: <%= @container_image %>:<%= @container_tag %>
     dns:
       - 89.32.32.32
-    hostname: <%= @hostname.split('.')[0] %>
+    hostname: <%= @hostname %>
     network_mode: host
     extra_hosts:
       <%- @cms_allow_hosts.each do |extra_host| -%>
@@ -26,7 +26,7 @@ services:
     image: <%= @container_image %>:<%= @container_tag %>
     dns:
       - 89.32.32.32
-    hostname: <%= @hostname.split('.')[0] %>
+    hostname: <%= @hostname %>
     network_mode: host
     extra_hosts:
       <%- @cms_allow_hosts.each do |extra_host| -%>
