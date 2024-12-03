@@ -45,6 +45,8 @@ class sunet::xrootd(
   }
   file { '/opt/xrootd/config':
     ensure => directory,
+    owner  => '100',
+    group  => '101',
   }
   file { '/opt/xrootd/admin':
     ensure => directory,
