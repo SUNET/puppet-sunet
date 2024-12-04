@@ -57,6 +57,9 @@ class sunet::ceph(
     $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
     include sunet::packages::cephadm
     include sunet::packages::ceph_mon
+    file {'/opt/ceph':
+      ensure  => 'directory',
+    }
     file {'/opt/ceph/bootstrap.sh':
       ensure  => 'file',
       owner   => 'root',
