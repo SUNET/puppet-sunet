@@ -28,6 +28,15 @@ class sunet::ceph(
   if $type == 'adm' {
     include sunet::packages::cephadm
     $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
+    $adm_keyring = lookup('adm_keyring', undef, undef, 'NOT_SET_IN_HIERA');
+
+    file {'/etc/ceph/ceph.client.admin.keyring':
+      ensure  => 'present',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0600',
+      content => $adm_keyring,
+    }
     file {'/root/.ssh/id_ed25519_adm':
       ensure  => 'present',
       owner   => 'root',
