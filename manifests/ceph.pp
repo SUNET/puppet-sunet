@@ -56,7 +56,15 @@ class sunet::ceph(
   }
   elsif $type == 'mon' {
     $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
+    include sunet::packages::cephadm
     include sunet::packages::ceph_mon
+    file {'/opt/ceph/bootstrap.sh':
+      ensure  => 'file',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0700',
+      content => "#!/bin/bash\ncephadm bootstrap --mon-ip ${facts['networking']['ip']} --allow-overwrite\n"
+    }
   }
   sunet::nftables::allow { 'expose-allow-ssh':
     from => $adm,
