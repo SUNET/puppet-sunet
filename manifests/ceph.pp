@@ -73,7 +73,6 @@ class sunet::ceph(
     from => $adm,
     port => 22,
   }
-  $nodes = lookup('nodes', undef, undef, []);
   $internal_nodes = $nodes.map |$node| {
     $node['addr']
   }
