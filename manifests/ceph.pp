@@ -24,6 +24,7 @@ class sunet::ceph(
     line => $adm_public_key,
   }
   include sunet::packages::ceph_common
+  $nodes = lookup('nodes', undef, undef, []);
   if $type == 'adm' {
     include sunet::packages::cephadm
     $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
