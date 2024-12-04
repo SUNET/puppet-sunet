@@ -27,7 +27,6 @@ class sunet::ceph(
   if $type == 'adm' {
     include sunet::packages::cephadm
     $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
-    $nodes = lookup('nodes', undef, undef, []);
     file {'/root/.ssh/id_ed25519_adm':
       ensure  => 'present',
       owner   => 'root',
@@ -70,6 +69,7 @@ class sunet::ceph(
     from => $adm,
     port => 22,
   }
+  $nodes = lookup('nodes', undef, undef, []);
   $internal_nodes = $nodes.map |$node| {
     $node['addr']
   }
