@@ -36,10 +36,15 @@ class sunet::xrootd(
     port          => $xrootd_port,
     iif           => $interface,
   }
+  if $role == 'server' {
+    $cms_ports = '32768-60999'
+  } else {
+    $cms_ports = $cms_port
+  }
   $cms_allow_hosts.each |$host| {
-    sunet::nftables::docker_expose { "cms_port_${cms_port}_${host['name']}":
+    sunet::nftables::docker_expose { "cms_ports_${host['name']}":
       allow_clients => [$host['ipv4'], $host['ipv6']],
-      port          => $cms_port,
+      port          => $cms_ports,
       iif           => $interface,
     }
   }
