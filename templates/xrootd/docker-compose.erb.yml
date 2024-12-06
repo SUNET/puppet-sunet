@@ -18,7 +18,7 @@ services:
       - /opt/xrootd/config:/etc/xrootd:ro
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
       - /dev/log:/dev/log
-    command: ["xrootd", "-c", "/etc/xrootd/xrootd.cfg"]
+    command: ["xrootd", "-c", "/etc/xrootd/xrootd.cfg", "-d"]
     ports:
       - "<%= @xrootd_port %>:<%= @xrootd_port %>"
     restart: always
@@ -41,6 +41,6 @@ services:
       - /opt/xrootd/config:/etc/xrootd:ro
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
       - /dev/log:/dev/log
-    command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg", "-p", "<%= @cms_port %>"]
+    command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg", "-p", "<%= @cms_port %>", "-d"]
     ports:
       - "<%= @cms_port %>:<%= @cms_port %>"
