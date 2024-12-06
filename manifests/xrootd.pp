@@ -37,7 +37,7 @@ class sunet::xrootd(
     iif           => $interface,
   }
   if $role == 'server' {
-    $cms_ports = '32768–60999'
+    $cms_ports = '32768-60999'
   } else {
     $cms_ports = $cms_port
   }
