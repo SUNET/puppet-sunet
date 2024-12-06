@@ -65,7 +65,7 @@ class sunet::ceph(
     include sunet::packages::ceph_mds
   }
   elsif $type == 'mon' {
-    $extra_ports = [ { 'from' => $clients, 'to' => '3300' },{ 'from' => $internal_nodes, 'to' => '3300' } ]
+    $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
     include sunet::packages::cephadm
     include sunet::packages::ceph_mon
     file {'/opt/ceph':
@@ -86,7 +86,7 @@ class sunet::ceph(
   $internal_nodes = $nodes.map |$node| {
     $node['addr']
   }
-  $internal_ports = [ { 'from' => $internal_nodes, 'to' => '6800-7300' } ]
+  $internal_ports = [ { 'from' => $internal_nodes, 'to' => ['3300', '6800-7300'] } ]
   $ceph_ports = $extra_ports + $internal_ports
   $ceph_ports.each |$port| {
     sunet::nftables::allow { "expose-allow-${port['to']}":
