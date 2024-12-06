@@ -41,6 +41,6 @@ services:
       - /opt/xrootd/config:/etc/xrootd:ro
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
       - /dev/log:/dev/log
-    command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg", "-p", "<%= @cms_port %>", "-d"]
+    command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg", "-p", "<%= @cms_port %>", "-d" "-i"]
     ports:
       - "<%= @cms_port %>:<%= @cms_port %>"
