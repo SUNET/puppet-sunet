@@ -24,7 +24,7 @@ all.role server
 <% @cms_allow_hosts.each do |host| -%>
 cms.allow host <%= host['name'] %>
 <% end -%>
-cms.dfs limit 0 lookup distrib mdhold 0 redirect verify retries 2
+cms.dfs limit 0 lookup central mdhold 0 redirect immed retries 2
 
 # Bucket specific s3 options
 <% if @xrootd_buckets.is_a? Array and @xrootd_buckets.size > 0 -%>
