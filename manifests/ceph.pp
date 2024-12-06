@@ -26,6 +26,7 @@ class sunet::ceph(
   include sunet::packages::ceph_common
   $nodes = lookup('nodes', undef, undef, []);
   if $type == 'adm' {
+    $extra_ports = []
     include sunet::packages::cephadm
     $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
     $adm_keyring = lookup('adm_keyring', undef, undef, 'NOT_SET_IN_HIERA');
