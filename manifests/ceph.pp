@@ -65,7 +65,7 @@ class sunet::ceph(
     include sunet::packages::ceph_mds
   }
   elsif $type == 'mon' {
-    $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
+    $extra_ports = [ { 'from' => $clients, 'to' => '3300' },{ 'from' => $internal_nodes, 'to' => '3300' } ]
     include sunet::packages::cephadm
     include sunet::packages::ceph_mon
     file {'/opt/ceph':
