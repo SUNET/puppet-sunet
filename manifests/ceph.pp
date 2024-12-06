@@ -86,7 +86,7 @@ class sunet::ceph(
   $internal_nodes = $nodes.map |$node| {
     $node['addr']
   }
-  $internal_ports = [ { 'from' => $internal_nodes, 'to' => ['22, '3300', '6800-7300'] } ]
+  $internal_ports = [ { 'from' => $internal_nodes, 'to' => ['22', '3300', '6800-7300'] } ]
   $ceph_ports = $extra_ports + $internal_ports
   $ceph_ports.each |$port| {
     sunet::nftables::allow { "expose-allow-${port['to']}":
