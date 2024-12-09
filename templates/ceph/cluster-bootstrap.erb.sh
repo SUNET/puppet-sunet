@@ -23,6 +23,6 @@ ${ceph} orch apply mon "<%= mon.join(',') %>"
 # <%- end %>
 # <%- osd.each do |osd| %>
 # <%- ['b','c','d','e','f','g','h','i','j','k'].each do |device| %>
-${ceph} orch daemon add osd "<%= osd %>:/dev/<%= device %>"
+${ceph} orch daemon add osd "<%= osd %>:/dev/sd<%= device %>"
 # <%- end %>
 # <%- end %>
