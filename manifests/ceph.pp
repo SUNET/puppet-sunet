@@ -72,7 +72,7 @@ class sunet::ceph(
       owner   => 'root',
       group   => 'root',
       mode    => '0700',
-      content => "#!/bin/bash\ncephadm bootstrap --mon-ip ${facts['networking']['ip']} --allow-overwrite\n"
+      content => template('sunet/ceph/bootstrap.erb.sh'),
     }
   }
   sunet::nftables::allow { 'expose-allow-ssh':
