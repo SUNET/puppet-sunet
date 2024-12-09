@@ -13,14 +13,12 @@ ${ceph} orch host add "<%= node['hostname'] %>"
 # <%- monitors.append(node['hostname']) %>
 # <%- elsif label == 'osd' -%>
 # <%- osd.append(node['hostname']) %>
-# <%- endif %>
+# <%- end %>
 ${ceph} orch host label add "<%= node['hostname'] %>" "<%= label %>"
 # <%- end %>
 # <%- end %>
-# <%- monitors.each do |mon| %>
-${ceph} orch apply mon "<%= mon.length() %>"
-${ceph} orch apply mon "<%= mon.join(',') %>"
-# <%- end %>
+${ceph} orch apply mon "<%= monitors.length() %>"
+${ceph} orch apply mon "<%= monitors.join(',') %>"
 # <%- osd.each do |osd| %>
 # <%- ['b','c','d','e','f','g','h','i','j','k'].each do |device| %>
 ${ceph} orch daemon add osd "<%= osd %>:/dev/sd<%= device %>"
