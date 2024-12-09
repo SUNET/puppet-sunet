@@ -102,6 +102,13 @@ class sunet::ceph(
       mode    => '0700',
       content => template('sunet/ceph/bootstrap.erb.sh'),
     }
+    file {'/etc/alloy/targets.d/ceph-mgr.yaml':
+      ensure  => 'file',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0744',
+      content => template('sunet/ceph/ceph-mgr.yaml'),
+    }
   }
   elsif $type == 'mon' {
     $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
