@@ -2,8 +2,8 @@
 
 ceph="/usr/sbin/cephadm shell ceph"
 
-ssh "<%= @firstmon>" /opt/ceph/bootstrap.sh
-scp "<%- @firstmon>:/etc/ceph/*" /etc/ceph/
+ssh "<%= @firstmon %>" /opt/ceph/bootstrap.sh
+scp "<%= @firstmon %>:/etc/ceph/*" /etc/ceph/
 # <% monitors = [] %>
 # <% osd = [] %>
 # <%- @nodes.each do |node| %>
