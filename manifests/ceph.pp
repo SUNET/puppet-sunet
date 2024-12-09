@@ -112,6 +112,13 @@ class sunet::ceph(
       from => $adm,
       port => 22,
     }
+    file {'/etc/alloy/targets.d/ceph-mgr.yaml':
+      ensure  => 'file',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0744',
+      content => template('sunet/ceph/ceph-mgr.yaml'),
+    }
   }
   $internal_nodes = $nodes.map |$node| {
     $node['addr']
