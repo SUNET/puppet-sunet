@@ -150,6 +150,10 @@ class sunet::bankidp(
       compose_filename => 'docker-compose.yml',
       description      => 'Freja ftw',
     }
+
+    sunet::nagios::nrpe_command {'check_app_cert_expire':
+      command_line => '/usr/bin/sudo /usr/lib/nagios/plugins/check_app_cert_expire'
+    }
   }
   if $redis_node {
     class { 'sunet::rediscluster':
