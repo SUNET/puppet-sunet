@@ -15,7 +15,7 @@ ceph config-key set mgr/cephadm/ssh_identity_pub -i /root/.ssh/id_ed25519_adm.pu
 
 adm_keyring="$(cat /etc/ceph/ceph.client.admin.keyring)"
 echo "Now run:"
-echo -e "\t ./edit-secrets <%= @facts['network']['fqdn'] %>"
+echo -e "\t ./edit-secrets $(hostname -f)"
 echo "and add:"
 echo "adm_private_key: >"
 echo "  DEC::PKCS7[$adm_private_key"
