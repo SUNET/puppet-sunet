@@ -23,8 +23,8 @@ class sunet::ceph(
     path => '/root/.ssh/authorized_keys',
     line => $adm_public_key,
   }
-  include sunet::packages::ceph_common
   $nodes = lookup('nodes', undef, undef, []);
+  include sunet::packages::podman
   if $type == 'adm' {
     $extra_ports = []
     include sunet::packages::cephadm
@@ -58,16 +58,12 @@ class sunet::ceph(
   }
   elsif $type == 'osd' {
     $extra_ports = []
-    include sunet::packages::ceph_osd
   }
   elsif $type == 'mds' {
     $extra_ports = []
-    include sunet::packages::ceph_mds
   }
   elsif $type == 'mon' {
     $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
-    include sunet::packages::cephadm
-    include sunet::packages::ceph_mon
     file {'/opt/ceph':
       ensure  => 'directory',
     }
