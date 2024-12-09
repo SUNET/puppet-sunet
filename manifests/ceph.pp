@@ -24,7 +24,6 @@ class sunet::ceph(
     line => $adm_public_key,
   }
   $nodes = lookup('nodes', undef, undef, []);
-  include sunet::packages::podman
   if $type == 'adm' {
     $extra_ports = []
     include sunet::packages::cephadm
