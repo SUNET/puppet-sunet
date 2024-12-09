@@ -2,8 +2,8 @@
 class sunet::ceph(
   Array  $adm,
   Array  $clients,
-  Array  $osd,
   String $type,
+  String $firstmon,
 )
 {
   $adm_public_key = lookup('adm_public_key', undef, undef, 'NOT_SET_IN_HIERA');
@@ -44,6 +44,13 @@ class sunet::ceph(
       mode    => '0600',
       content => $adm_private_key,
     }
+    file {'/root/.ssh/id_ed25519_adm.pub':
+      ensure  => 'present',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0600',
+      content => $adm_public_key,
+    }
     file {'/opt/ceph':
       ensure  => 'directory',
     }
@@ -54,6 +61,13 @@ class sunet::ceph(
       mode    => '0600',
       content => template('sunet/ceph/ceph-cluster.erb.yaml'),
     }
+    file {'/opt/ceph/cluster-bootstrap.sh':
+      ensure  => 'file',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0700',
+      content => template('sunet/ceph/cluster-bootstrap.erb.sh'),
+    }
   }
   elsif $type == 'osd' {
     $extra_ports = []
@@ -61,7 +75,22 @@ class sunet::ceph(
   elsif $type == 'mds' {
     $extra_ports = []
   }
-  elsif $type == 'mon' {
+  elsif $type == 'firstmon' {
+    include sunet::packages::cephadm
+    file {'/root/.ssh/id_ed25519_adm':
+      ensure  => 'present',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0600',
+      content => $adm_private_key,
+    }
+    file {'/root/.ssh/id_ed25519_adm.pub':
+      ensure  => 'present',
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0600',
+      content => $adm_public_key,
+    }
     $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
     file {'/opt/ceph':
       ensure  => 'directory',
@@ -74,9 +103,15 @@ class sunet::ceph(
       content => template('sunet/ceph/bootstrap.erb.sh'),
     }
   }
-  sunet::nftables::allow { 'expose-allow-ssh':
-    from => $adm,
-    port => 22,
+  elsif $type == 'mon' {
+    $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
+    file {'/opt/ceph':
+      ensure  => 'directory',
+    }
+    sunet::nftables::allow { 'expose-allow-ssh':
+      from => $adm,
+      port => 22,
+    }
   }
   $internal_nodes = $nodes.map |$node| {
     $node['addr']
