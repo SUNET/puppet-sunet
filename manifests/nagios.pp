@@ -92,7 +92,7 @@ class sunet::nagios(
     command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
   }
   sunet::nagios::nrpe_command {'check_uptime':
-    command_line => '/usr/lib/nagios/plugins/check_uptime.py'
+    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${uptimew} -c ${uptimec}"
   }
   sunet::nagios::nrpe_command {'check_reboot':
     command_line => '/usr/lib/nagios/plugins/check_reboot'
