@@ -6,6 +6,8 @@ class sunet::nagios(
   $loadc           = '30,25,20',
   $procsw          = 150,
   $procsc          = 200,
+  $uptimew         = 30,
+  $uptimec         = 50,
 ) {
 
   $nagios_ip_v4 = lookup('nagios_ip_v4', undef, undef, '109.105.111.111')
@@ -90,7 +92,7 @@ class sunet::nagios(
     command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
   }
   sunet::nagios::nrpe_command {'check_uptime':
-    command_line => '/usr/lib/nagios/plugins/check_uptime.py'
+    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${uptimew} -c ${uptimec}"
   }
   sunet::nagios::nrpe_command {'check_reboot':
     command_line => '/usr/lib/nagios/plugins/check_reboot'

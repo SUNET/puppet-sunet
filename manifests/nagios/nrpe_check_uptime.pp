@@ -1,5 +1,7 @@
 # Check uptime
 define sunet::nagios::nrpe_check_uptime (
+  Integer $uptimew         = 30,
+  Integer $uptimec         = 50,
 ) {
   file { '/usr/lib/nagios/plugins/check_uptime.pl' :
       ensure  => 'absent',
@@ -12,6 +14,6 @@ define sunet::nagios::nrpe_check_uptime (
       content => template('sunet/nagioshost/check_uptime.py.erb'),
   }
   sunet::nagios::nrpe_command {'check_uptime':
-    command_line => '/usr/lib/nagios/plugins/check_uptime.py'
+    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${uptimew} -c ${uptimec}"
   }
 }
