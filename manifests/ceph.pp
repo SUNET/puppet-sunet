@@ -77,6 +77,7 @@ class sunet::ceph(
   }
   elsif $type == 'firstmon' {
     include sunet::packages::cephadm
+    $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
     file {'/root/.ssh/id_ed25519_adm':
       ensure  => 'present',
       owner   => 'root',
