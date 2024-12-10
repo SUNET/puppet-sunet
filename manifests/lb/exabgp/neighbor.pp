@@ -1,3 +1,4 @@
+# exabgp::neighbor
 define sunet::lb::exabgp::neighbor(
   String           $peer_address,
   String           $peer_as,

@@ -1,3 +1,4 @@
+# yq
 class sunet::packages::yq {
   if $facts['os']['distro']['id'] == 'Ubuntu' {
     include sunet::packages::python3_pip

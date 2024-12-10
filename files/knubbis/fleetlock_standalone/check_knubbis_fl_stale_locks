@@ -1,0 +1,160 @@
+#!/usr/bin/env python3
+""" NRPE check that no stale locks exists in the system"""
+
+import configparser
+import json
+import shlex
+import subprocess
+import sys
+
+import requests
+from urllib3.util import connection
+
+
+def get_default_if():
+    """return the interface name used for the default route"""
+    cmd_args = shlex.split("ip -j route show")
+    proc = subprocess.run(cmd_args, check=True, capture_output=True, encoding="utf-8")
+
+    route_data = json.loads(proc.stdout)
+
+    dev = None
+
+    for route in route_data:
+        if route["dst"] == "default":
+            dev = route["dev"]
+
+    return dev
+
+
+def get_host_ip():
+    """return the ip address of our default interface"""
+    interface = get_default_if()
+    if interface is None:
+        print("unable to find default if")
+        sys.exit(1)
+
+    cmd_args = shlex.split(f"ip -j address show dev {interface}")
+    proc = subprocess.run(cmd_args, check=True, capture_output=True, encoding="utf-8")
+
+    address_data = json.loads(proc.stdout)
+
+    ip_address = None
+
+    for address in address_data:
+        for addr_info in address["addr_info"]:
+            if addr_info["family"] == "inet" and addr_info["scope"] == "global":
+                ip_address = addr_info["local"]
+
+    return ip_address
+
+
+def patch_create_connection():
+    """override dns resolution so we can control the ip address used for
+    connections to the monitored name"""
+    # From https://stackoverflow.com/questions/22609385/python-requests-library-define-specific-dns
+    _orig_create_connection = connection.create_connection
+
+    def patched_create_connection(address, *args, **kwargs):
+        """Wrap urllib3's create_connection to resolve the name elsewhere"""
+        host, port = address
+        host = get_host_ip()
+
+        return _orig_create_connection((host, port), *args, **kwargs)
+
+    connection.create_connection = patched_create_connection
+
+
+def performance_line(num_stale_lock_groups: int) -> str:
+    """Return nrpe performance string"""
+    return f"num_stale_lock_groups={num_stale_lock_groups}"
+
+
+def main():
+    """Starting point of program"""
+    # Make it so we can control what IP address the name in requests.get()
+    # resolves to while still using the correct DNS name for TLS validation
+    # to work (basically what you can do with --resolve when using curl)
+    patch_create_connection()
+
+    nrpe_ok = 0
+    nrpe_critical = 2
+
+    config_file = "/opt/knubbis-fleetlock/nrpe/check_knubbis_fl_stale_locks.ini"
+
+    num_stale_lock_groups = 0
+
+    config = configparser.ConfigParser()
+    try:
+        with open(config_file, "r", encoding="utf-8") as fileobj:
+            config.read_file(fileobj)
+    except FileNotFoundError as exc:
+        print(f"unable to read config file: {exc}")
+        sys.exit(nrpe_critical)
+
+    config_section = "monitoring"
+    if config_section not in config:
+        print(f"missing '{config_section}' section in config file {config_file}")
+        sys.exit(nrpe_critical)
+
+    required_settings = [
+        "url",
+        "username",
+        "password",
+    ]
+
+    for required_setting in required_settings:
+        if not required_setting in config[config_section]:
+            print(
+                f"CRITICAL: missing setting '{required_setting}' in config file {config_file}"
+            )
+            sys.exit(nrpe_critical)
+
+    resp = requests.get(
+        config[config_section]["url"] + "/stale-locks",
+        auth=(config[config_section]["username"], config[config_section]["password"]),
+        timeout=5,
+    )
+    if resp.status_code != requests.codes.ok:
+        print(f"CRITICAL: unexpected status code: {resp.status_code}")
+        sys.exit(nrpe_critical)
+
+    j = resp.json()
+
+    # Example content:
+    # {
+    #   "stale_locks": true,
+    #   "groups": {
+    #     "group1": [
+    #       "server-1.example.com"
+    #     ],
+    #     "group2": [
+    #       "server-2.example.com"
+    #     ],
+    #     "group3": [
+    #       "server-3.example.com",
+    #       "server-4.example.com"
+    #     ]
+    #   }
+    # }
+
+    if not j["stale_locks"]:
+        print("OK: no stale locks | " + performance_line(num_stale_lock_groups))
+        sys.exit(nrpe_ok)
+
+    lock_summary = ""
+    for index, (lock_group, lock_ids) in enumerate(j["groups"].items()):
+        num_stale_lock_groups += 1
+        if index > 0:
+            lock_summary += ", "
+        lock_summary += f"{lock_group} (" + ",".join(lock_ids) + ")"
+
+    print(
+        f"CRITICAL: stale locks: {lock_summary} | "
+        + performance_line(num_stale_lock_groups)
+    )
+    sys.exit(nrpe_critical)
+
+
+if __name__ == "__main__":
+    main()
