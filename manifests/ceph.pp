@@ -7,8 +7,11 @@ class sunet::ceph(
 )
 {
   $adm_public_key = lookup('adm_public_key', undef, undef, 'NOT_SET_IN_HIERA');
-  package { 'podman':
-    ensure => 'present',
+  $packages = ['lvm2', 'podman']
+  $packages.each |$package| {
+    package { $package:
+      ensure => 'present',
+    }
   }
   file {'/root/.ssh/':
     ensure => 'directory',
