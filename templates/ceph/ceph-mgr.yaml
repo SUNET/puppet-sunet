@@ -1,0 +1,4 @@
+- targets:
+  - 127.0.0.1:9283
+  labels:
+    job: ceph
