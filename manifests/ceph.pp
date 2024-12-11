@@ -25,9 +25,11 @@ class sunet::ceph(
     group  => 'root',
     mode   => '0600',
   }
-  file_line { 'adm_public_key':
-    path => '/root/.ssh/authorized_keys',
-    line => $adm_public_key,
+  if $adm_public_key != 'NOT_SET_IN_HIERA' {
+    file_line { 'adm_public_key':
+      path => '/root/.ssh/authorized_keys',
+      line => $adm_public_key,
+    }
   }
   $nodes = lookup('nodes', undef, undef, []);
   if $type == 'adm' {
@@ -35,27 +37,32 @@ class sunet::ceph(
     include sunet::packages::cephadm
     $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
     $adm_keyring = lookup('adm_keyring', undef, undef, 'NOT_SET_IN_HIERA');
-
-    file {'/etc/ceph/ceph.client.admin.keyring':
-      ensure  => 'present',
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0600',
-      content => $adm_keyring,
+    if $adm_private_key != 'NOT_SET_IN_HIERA' {
+      file {'/etc/ceph/ceph.client.admin.keyring':
+        ensure  => 'present',
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0600',
+        content => $adm_keyring,
+      }
     }
-    file {'/root/.ssh/id_ed25519_adm':
-      ensure  => 'present',
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0600',
-      content => $adm_private_key,
+    if $adm_private_key != 'NOT_SET_IN_HIERA' {
+      file {'/root/.ssh/id_ed25519_adm':
+        ensure  => 'present',
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0600',
+        content => $adm_private_key,
+      }
     }
-    file {'/root/.ssh/id_ed25519_adm.pub':
-      ensure  => 'present',
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0600',
-      content => $adm_public_key,
+    if $adm_public_key != 'NOT_SET_IN_HIERA' {
+      file {'/root/.ssh/id_ed25519_adm.pub':
+        ensure  => 'present',
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0600',
+        content => $adm_public_key,
+      }
     }
     file {'/opt/ceph':
       ensure  => 'directory',
@@ -84,19 +91,23 @@ class sunet::ceph(
   elsif $type == 'firstmon' {
     include sunet::packages::cephadm
     $adm_private_key = lookup('adm_private_key', undef, undef, 'NOT_SET_IN_HIERA');
-    file {'/root/.ssh/id_ed25519_adm':
-      ensure  => 'present',
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0600',
-      content => $adm_private_key,
+    if $adm_private_key != 'NOT_SET_IN_HIERA' {
+      file {'/root/.ssh/id_ed25519_adm':
+        ensure  => 'present',
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0600',
+        content => $adm_private_key,
+      }
     }
-    file {'/root/.ssh/id_ed25519_adm.pub':
-      ensure  => 'present',
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0600',
-      content => $adm_public_key,
+    if $adm_public_key != 'NOT_SET_IN_HIERA' {
+      file {'/root/.ssh/id_ed25519_adm.pub':
+        ensure  => 'present',
+        owner   => 'root',
+        group   => 'root',
+        mode    => '0600',
+        content => $adm_public_key,
+      }
     }
     $extra_ports = [ { 'from' => $clients, 'to' => '3300' } ]
     file {'/opt/ceph':
