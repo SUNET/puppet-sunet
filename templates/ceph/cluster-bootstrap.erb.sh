@@ -10,6 +10,7 @@ ssh -4 -i /root/.ssh/id_ed25519_adm "<%= @firstmon %>" /opt/ceph/bootstrap.sh # 
 scp -4 -i /root/.ssh/id_ed25519_adm "<%= @firstmon %>:/etc/ceph/*" /etc/ceph/ # Copy over config <% monitors = [] %><% osd = [] %><% @nodes.each do |node| %><% hostname = node['hostname'] %>
 ${ceph} orch host add "<%= hostname %>" "<%= node['addr'] %>" # Add <%= node['hostname'] %><% node['labels'].each do |label| %><% if label == 'mon' %><% monitors.append(node['hostname']) %><% elsif label == 'osd' %><% osd.append(node['hostname']) %><% end %>
 ${ceph} orch host label add "<%= hostname %>" "<%= label %>" # <% end %><% end %>
+${ceph} orch apply -i /rootfs/opt/ceph/nordunet-cephcluster.yaml
 
 adm_keyring="$(cat /etc/ceph/ceph.client.admin.keyring)"
 echo "Now run:"
