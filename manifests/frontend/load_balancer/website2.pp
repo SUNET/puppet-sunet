@@ -71,7 +71,6 @@ define sunet::frontend::load_balancer::website2(
     $multi_certs.each |Integer $index, String $cert| {
       file { "${confdir}/${instance}/certs/tls_certificate_bundle.${index}.pem":
           source => $cert,
-          notify => Sunet::Docker_compose["frontend-${instance}"],
       }
     }
     file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
@@ -80,7 +79,6 @@ define sunet::frontend::load_balancer::website2(
   } else {
     file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
         source => $tls_certificate_bundle,
-        notify => Sunet::Docker_compose["frontend-${instance}"],
     }
 
   }
