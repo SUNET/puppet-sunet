@@ -32,7 +32,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
       image    => 'docker.sunet.se/edusign-sp',
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', "/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro"],
+      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
                     "SP_HOSTNAME=${_host}",
                     'BACKEND_HOST=edusign-app.docker',
@@ -40,8 +40,8 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
                     'ACMEPROXY=acme-c.sunet.se',
                     'DISCO_URL=https://service.seamlessaccess.org/ds',
                     "MULTISIGN_BUTTONS=${invites}",
-                    "MDQ_BASE_URL=https://mds.swamid.se/",
-                    "MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt"],
+                    'MDQ_BASE_URL=https://mds.swamid.se/',
+                    'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt'],
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
     }
