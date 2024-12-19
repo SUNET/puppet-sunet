@@ -4,15 +4,15 @@ class sunet::mail::postfix(
   String $alias_domains,
   String $environment,
   String $imap_domain,
-  Optional[Integer] $message_size_limit,
   Array[String] $relaying_servers,
   String $short_domain,
   String $smtp_domain,
-  String $interface              = 'ens3',
-  Array[String] $mydestination   = ['$myhostname', 'localhost.localdomain', 'localhost'],
-  String $postfix_image          = 'docker.sunet.se/mail/postfix',
-  String $postfix_tag            = 'SUNET-1',
-  Array[String] $relay_servers   = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
+  String $interface                     = 'ens3',
+  Optional[Integer] $message_size_limit = undef,
+  Array[String] $mydestination          = ['$myhostname', 'localhost.localdomain', 'localhost'],
+  String $postfix_image                 = 'docker.sunet.se/mail/postfix',
+  String $postfix_tag                   = 'SUNET-1',
+  Array[String] $relay_servers          = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
 )
 {
 
