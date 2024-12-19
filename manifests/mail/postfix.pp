@@ -4,6 +4,7 @@ class sunet::mail::postfix(
   String $alias_domains,
   String $environment,
   String $imap_domain,
+  Optional[Integer] $message_size_limit,
   Array[String] $relaying_servers,
   String $short_domain,
   String $smtp_domain,
