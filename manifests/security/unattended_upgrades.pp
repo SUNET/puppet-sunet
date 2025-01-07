@@ -13,19 +13,8 @@ class sunet::security::unattended_upgrades (
   }
   if $use_template {
     if $facts['os']['name'] == 'Ubuntu' {
-      case $facts['os']['release']['full'] {
-        '14.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-          content => template('sunet/security/50unattended-upgrades.ubuntu_14.04.erb') }
-        }
-        '16.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-          content => template('sunet/security/50unattended-upgrades.ubuntu_16.04.erb') }
-        }
-        '18.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-          content => template('sunet/security/50unattended-upgrades.ubuntu_18.04.erb') }
-        }
-        default:  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-          content => template('sunet/security/50unattended-upgrades.ubuntu_default.erb') }
-        }
+      file { '/etc/apt/apt.conf.d/50unattended-upgrades':
+        content => template('sunet/security/50unattended-upgrades.ubuntu_default.erb') }
       }
     } elsif $facts['os']['name'] == 'Debian' {
       file { '/etc/apt/apt.conf.d/50unattended-upgrades' :
