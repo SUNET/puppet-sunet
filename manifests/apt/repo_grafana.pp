@@ -1,6 +1,6 @@
 # Expose the grafana apt repo.
 # E.g used for alloy and grafana
-define sunet::apt::repo_alloy (
+define sunet::apt::repo_grafana (
 ) {
   file { '/etc/apt/keyrings' :
     ensure => 'directory',
