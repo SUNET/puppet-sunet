@@ -2,7 +2,6 @@
 # E.g used for alloy and grafana
 define sunet::apt::repo_alloy (
 ) {
-  }
   file { '/etc/apt/keyrings' :
     ensure => 'directory',
     mode   => '0644',
