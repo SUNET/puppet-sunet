@@ -33,7 +33,7 @@ class sunet::security::unattended_upgrades (
 
     if $facts['os']['name'] == 'Ubuntu' {
       file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-        content => template('sunet/security/50unattended-upgrades.ubuntu_default.erb') }
+        content => template('sunet/security/50unattended-upgrades.ubuntu_default.erb')
       }
 
       concat::fragment { 'origin_ubuntu':
