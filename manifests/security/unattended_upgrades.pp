@@ -27,7 +27,7 @@ class sunet::security::unattended_upgrades (
     }
     concat::fragment { 'origins_footer':
       target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
-      content => template('sunet/security/51unattended-upgrades-origins-header.erb'),
+      content => template('sunet/security/51unattended-upgrades-origins-footer.erb'),
       order   => '9001'
     }
 
