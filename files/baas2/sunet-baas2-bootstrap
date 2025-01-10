@@ -431,6 +431,9 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
 
     with open(tmp_password_file, "w", encoding="utf-8") as fileobj:
         fileobj.write(password)
+        # The file is expected to be NULL terminated, otherwise dsmc can have
+        # problems reading it
+        fileobj.write("\0")
 
     proc_args = shlex.split(
         f"gsk8capicmd_64 -secretkey -add -db {db_path} -label {label} -stashed -file {tmp_password_file}"  # pylint:disable=line-too-long
