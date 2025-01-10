@@ -19,7 +19,7 @@ define sunet::apt::repo_grafana (
     group   => 'root',
     content => 'deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main',
   }
-  if ($sunet::security::unattended_upgrades::use_template) {
+  if ($facts['unattended_upgrades_use_template']) {
     concat::fragment { 'origin_grafana':
       target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
       content => '"site=apt.grafana.com,a=stable";' # lint:ignore:single_quote_string_with_variables
