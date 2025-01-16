@@ -7,7 +7,7 @@ if exec xrootd
   xrd.port <%= @xrootd_port %>
 fi
 xrootd.seclib libXrdSec.so
-sec.protocol libXrdSecpwd.so pwd -a:1
+sec.protocol pwd -a:1
 
 # Upon last testing, the plugin did not yet work in async mode
 xrootd.async off
