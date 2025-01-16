@@ -8,6 +8,7 @@ class sunet::redictcluster(
   Optional[Boolean] $prevent_reboot = false,
   Optional[String] $image = 'registry.redict.io/redict',
   Optional[String] $tag = '7-bookworm',
+  Optional[String] $maxmemory_policy = 'noeviction',
 
 )
 {

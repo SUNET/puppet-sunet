@@ -19,6 +19,7 @@ tls-ca-cert-file /etc/ssl/certs/infra.crt
 <% else %>
 port <%= @redictportnum %>
 <% end %>
+maxmemory-policy <%= @maxmemory_policy %>
 requirepass "<%= @redict_password %>"
 masterauth "<%= @redict_password %>"
 <% if @_cluster_announce_ip != ''%>
