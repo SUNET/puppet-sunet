@@ -92,5 +92,13 @@ class sunet::mastodon::backend(
       warn_criteria => ['exit_status=1', 'max_age=5h'],
     }
   }
+  sunet::scriptherder::cronjob { 'vacuum_postgres':
+    cmd           => '/usr/bin/docker exec -u postgres postgres psql --command "VACUUM FULL;"',
+    minute        => '3',
+    hour          => '3',
+    monthday      => '3',
+    ok_criteria   => ['exit_status=0', 'max_age=32d'],
+    warn_criteria => ['exit_status=1', 'max_age=64d'],
+  }
 
 }
