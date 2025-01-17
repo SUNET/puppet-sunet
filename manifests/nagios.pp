@@ -91,8 +91,10 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_total_procs_lax':
     command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
   }
+  $_uptimew = lookup('check_uptime_warning', undef, undef, '$uptimew')
+  $_uptimec = lookup('check_uptime_critical', undef, undef, '$uptimec')
   sunet::nagios::nrpe_command {'check_uptime':
-    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${uptimew} -c ${uptimec}"
+    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${_uptimew} -c ${_uptimec}"
   }
   sunet::nagios::nrpe_command {'check_reboot':
     command_line => '/usr/lib/nagios/plugins/check_reboot'
