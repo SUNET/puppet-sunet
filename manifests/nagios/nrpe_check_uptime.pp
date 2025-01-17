@@ -5,8 +5,8 @@ define sunet::nagios::nrpe_check_uptime (
 ) {
 
 
-  $_uptimew = lookup('check_uptime_warning', undef, undef, 7)
-  $_uptimec = lookup('check_uptime_critical', undef, undef, 10)
+  $_uptimew = lookup('check_uptime_warning', undef, undef, $uptimew)
+  $_uptimec = lookup('check_uptime_critical', undef, undef, $uptimec)
   file { '/usr/lib/nagios/plugins/check_uptime.pl' :
       ensure  => 'absent',
   }
