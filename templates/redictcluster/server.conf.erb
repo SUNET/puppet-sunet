@@ -20,8 +20,8 @@ tls-ca-cert-file /etc/ssl/certs/infra.crt
 port <%= @redictportnum %>
 <% end %>
 <% if @maxmemory %>
-maxmemory: "<%= @maxmemory %>"
-maxmemory_policy: <%= @maxmemory_policy %>
+maxmemory <%= @maxmemory %>
+maxmemory-policy <%= @maxmemory_policy %>
 <% end %>
 requirepass "<%= @redict_password %>"
 masterauth "<%= @redict_password %>"
