@@ -18,6 +18,6 @@ define sunet::nagios::nrpe_check_uptime (
       content => template('sunet/nagioshost/check_uptime.py.erb'),
   }
   sunet::nagios::nrpe_command {'check_uptime':
-    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${_uptimew} -c 5000"
+    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${_uptimew} -c 500"
   }
 }
