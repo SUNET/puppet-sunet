@@ -1,8 +1,20 @@
 # Check uptime
 define sunet::nagios::nrpe_check_uptime (
-  Integer $uptimew         = 30,
-  Integer $uptimec         = 50,
+  Integer $uptimew = 30,
+  Integer $uptimec = 50,
 ) {
+
+  $_uptimew = lookup('check_uptime_warning'),
+  $uptimew = $_uptimew ? {
+    undef => $uptimew,
+    default => $_uptimew,
+  }
+  $_uptimec = lookup('check_uptime_critical'),
+  $uptimec = $_uptimec ? {
+    undef => $uptimec,
+    default => $_uptimec,
+  }
+
   file { '/usr/lib/nagios/plugins/check_uptime.pl' :
       ensure  => 'absent',
   }
