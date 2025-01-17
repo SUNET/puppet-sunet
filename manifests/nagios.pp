@@ -91,8 +91,9 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_total_procs_lax':
     command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
   }
-  sunet::nagios::nrpe_command {'check_uptime':
-    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${uptimew} -c ${uptimec}"
+  sunet::nagios::nrpe_check_uptime { 'check_uptime':
+    uptimew =>  $uptimew,
+    uptimec =>  $uptimec,
   }
   sunet::nagios::nrpe_command {'check_reboot':
     command_line => '/usr/lib/nagios/plugins/check_reboot'
@@ -102,16 +103,6 @@ class sunet::nagios(
   }
   sunet::nagios::nrpe_command {'check_mailq':
     command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
-  }
-  file { '/usr/lib/nagios/plugins/check_uptime.pl' :
-      ensure  => 'absent',
-  }
-  file { '/usr/lib/nagios/plugins/check_uptime.py' :
-      ensure  => 'file',
-      mode    => '0751',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
-      content => template('sunet/nagioshost/check_uptime.py.erb'),
   }
   file { '/usr/lib/nagios/plugins/check_reboot' :
       ensure  => 'file',
