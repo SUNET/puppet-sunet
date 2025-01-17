@@ -91,7 +91,7 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_total_procs_lax':
     command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
   }
-  sunet::nagios::nrpe_check_uptime {
+  sunet::nagios::nrpe_check_uptime { 'check_uptime':
     uptimew =>  $uptimew,
     uptimec =>  $uptimec,
   }
