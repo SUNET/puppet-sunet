@@ -152,7 +152,7 @@ class sunet::microk8s::node(
       set_microk8s_secret($namespace, $name, $secret)
     }
   }
-  if drain_reboot_cron == true {
+  if $drain_reboot_cron == true {
       file { '/usr/local/bin/drainreboot':
           content => file('sunet/microk8s/drainreboot'),
           mode    => '0755',
