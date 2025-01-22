@@ -161,7 +161,7 @@ class sunet::microk8s::node(
           ensure  => present,
           cmd     => "/usr/local/bin/drainreboot",
           user    => 'root',
-          minute  => '0',
+          minute  => '*/15',
       }
     }
 }
