@@ -158,10 +158,10 @@ class sunet::microk8s::node(
           mode    => '0755',
       }
       sunet::scriptherder::cronjob { 'drain_and_reboot':
-          ensure  => present,
-          cmd     => "/usr/local/bin/drainreboot",
-          user    => 'root',
-          minute  => '*/15',
+          ensure => present,
+          cmd    => '/usr/local/bin/drainreboot',
+          user   => 'root',
+          minute => '*/15',
       }
     }
 }
