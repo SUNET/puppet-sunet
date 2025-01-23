@@ -5,6 +5,7 @@ define sunet::scriptherder::cronjob(
   Optional[String]          $job_name      = undef,
   Enum['present', 'absent'] $ensure        = 'present',
   String                    $user          = 'root',
+  Optional[Array[String]]   $environment   = undef,
   Optional[String]          $hour          = undef,
   Optional[String]          $minute        = undef,
   Optional[String]          $monthday      = undef,
@@ -44,14 +45,15 @@ define sunet::scriptherder::cronjob(
   }
 
   cron { $safe_name:
-    ensure   => $ensure,
-    command  => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${safe_name} -- ${cmd}",
-    user     => $user,
-    hour     => $_hour,
-    minute   => $_minute,
-    monthday => $monthday,
-    weekday  => $weekday,
-    special  => $_special,
+    ensure      => $ensure,
+    command     => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${safe_name} -- ${cmd}",
+    environment => $environment,
+    user        => $user,
+    hour        => $_hour,
+    minute      => $_minute,
+    monthday    => $monthday,
+    weekday     => $weekday,
+    special     => $_special,
   }
 
   if $ensure == 'absent' and $purge_results {
