@@ -20,6 +20,18 @@ Package: *
 Pin: release o=Ubuntu
 Pin-Priority: -10' >"${pref_file}"
 
+	if [ -f "/etc/apt/apt.conf.d/51unattended-upgrades-origins" ]; then
+
+		grep ";" /etc/apt/apt.conf.d/51unattended-upgrades-origins | grep -vE 'origin=(Debian|Ubuntu)(ESM(Apps)?)?' | sed 's/;//' | sed 's/"//g' | while IFS= read -r line; do
+			{
+				echo "" # Newline for new section
+				echo "Package: *"
+				echo "Pin: release ${line}"
+				echo "Pin-Priority: -10"
+			} >>"${pref_file}"
+		done
+
+	fi
 	output=$(apt-get -s -o Dir::Etc::Preferences="${pref_file}" upgrade | grep -P '^\d+\supgraded,\s\d+\snewly installed,\s\d+ to remove and \d+ not upgraded.$')
 	rm "${pref_file}"
 	packages_to_upgrade=$(echo "${output}" | sed -E 's/^([0-9]+)\s.+/\1/g')
