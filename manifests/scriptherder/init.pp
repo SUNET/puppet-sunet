@@ -69,9 +69,13 @@ class sunet::scriptherder::init (
     }
   }
 
-  # Remove scriptherder data older than 7 days.
+  file { '/usr/local/bin/cleanup_scriptherder':
+    mode   => '0755',
+    source => 'puppet:///modules/sunet/scriptherder/cleanup_scriptherder',
+  }
+  # Remove scriptherder data older than X days.
   cron { 'scriptherder_cleanup':
-    command => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${keep_days} -print0 | xargs -0 rm -f)",
+    command => "test -d ${scriptherder_dir} && /usr/local/bin/cleanup_scriptherder",
     user    => 'root',
     special => 'daily',
   }

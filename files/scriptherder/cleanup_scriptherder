@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+
+import re
+import os
+
+with os.popen("/usr/bin/crontab -l") as pipe:
+    for line in pipe:
+
+        if re.match("#", line):
+            # Skip comments
+            continue
+
+        regex = "/usr/local/bin/scriptherder"
+        if not re.search(regex, line):
+            # Skip everything not monitored by scriptherder
+            continue
+
+        tokens = line.split()
+        # Default to weekly
+        interval = "weekly"
+        if re.match("@", tokens[0]):
+            word = tokens[0]
+            if word == "@reboot":
+                # reboot once every half year?
+                interval = "halfyear"
+            elif word == "@yearly" or word == "@annually":
+                interval = "yearly"
+            elif word == "@monthly":
+                interval = "monthly"
+            elif word == "@weekly":
+                interval = "weekly"
+            elif word == "@daily" or word == "@midnight" or word == "@hourly":
+                interval = "daily"
+        else:
+            if tokens[2] == tokens[3] == tokens[4] == "*":
+                interval = "daily"
+            elif tokens[3] != "*":
+                interval = "yearly"
+            elif tokens[2] != "*":
+                interval = "monthly"
+            elif tokens[4] != "*":
+                interval = "weekly"
+
+        min_logs_to_save = 7
+        if interval == "yearly":
+            days_to_save = min_logs_to_save * 365
+        elif interval == "halfyear":
+            days_to_save = min_logs_to_save * 180
+        elif interval == "monthly":
+            days_to_save = min_logs_to_save * 31
+        elif interval == "weekly":
+            days_to_save = min_logs_to_save * 7
+        else:
+            # "daily":
+            days_to_save = min_logs_to_save * 1
+
+        position = 0
+        for arg in tokens:
+            position += 1
+            if arg == "--name":
+                break
+
+        # Match output from scriptherder
+        job_name = tokens[position].replace("-", "_")
+
+        if job_name and days_to_save:
+            os.system(
+                f"find /var/cache/scriptherder -type f -mtime +{days_to_save} -name {job_name}__* -print0 | xargs -0 rm -f"
+            )
