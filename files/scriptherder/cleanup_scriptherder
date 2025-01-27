@@ -18,7 +18,7 @@ with os.popen("/usr/bin/crontab -l") as pipe:
         tokens = line.split()
         # Default to weekly
         interval = "weekly"
-        if re.match("@", tokens[0]):
+        if tokens[0][0] == "@":
             word = tokens[0]
             if word == "@reboot":
                 # reboot once every half year?
