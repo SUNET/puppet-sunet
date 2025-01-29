@@ -65,7 +65,7 @@ class sunet::rsyslog(
           from  => $udp_client,
           ip    => 'any',
           proto => 'udp',
-          port  => $udp_port
+          port  => port  => "${udp_port}"
         }
     }
 
