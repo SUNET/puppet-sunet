@@ -38,6 +38,15 @@ def get_container_ip(container_name):
 
     return str(container_ip)
 
+
+def get_unmanaged_images(client, config):
+    all_images = set(client.list_images())
+    exact_images = set(config["exact_images"].keys())
+    group_images = set(registry.keep_images_like(all_images, config["group_images"]))
+    unmanaged_images = all_images - group_images - exact_images
+    return list(unmanaged_images)
+
+
 def clean(config):
 
     if config['registry_url']:
@@ -68,6 +77,26 @@ def clean(config):
             "--tags-like", group_config["regex_of_tags_to_delete"] or '.',
             "--num", str(group_config["number_of_latest_builds_to_save"])]
             + dry_run_arg))
+
+    client = registry.Registry.create(registry_url, None, False)
+    unmanaged_images = get_unmanaged_images(client, config)
+    for image in unmanaged_images:
+        print(f"Starting cleanup of image: {image}")
+        registry.main_loop(
+            registry.parse_args(
+                [
+                    "--delete",
+                    "--order-by-date",
+                    "--host",
+                    registry_url,
+                    "--image",
+                    image,
+                    "--keep-by-hours",
+                    f"{24 * 7}",
+                ]
+                + dry_run_arg
+            )
+        )
 
 def parse_config(config_file):
     with open(config_file, 'r') as conf_file:
