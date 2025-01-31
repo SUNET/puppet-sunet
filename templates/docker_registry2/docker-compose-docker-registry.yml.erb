@@ -1,0 +1,48 @@
+version: '3.2'
+
+services:
+  registry:
+    image: registry:<%= @registry_tag %>
+    container_name: registry
+<% unless @resolvers.empty? -%>
+    dns: []
+<% @resolvers.each do |resolver| -%>
+      - <%= resolver %>
+<% end -%>
+<% end -%>
+    environment:
+      - REGISTRY_STORAGE_DELETE_ENABLED=true
+      # for https://github.com/andrey-pohilko/registry-cli/blob/85bdf89027bdd22ed162d40117d8f5f28fea23f5/registry.py#L267
+      - REGISTRY_CATALOG_MAXENTRIES=10000
+    volumes:
+      - /var/lib/registry:/var/lib/registry:rw
+    ports:
+      - "5000:5000"
+    networks:
+      - registry_net
+
+  registry_auth:
+    build: docker/docker-registry-auth
+    container_name: registry-auth
+    ports:
+      - "443:443"
+    volumes:
+      - "/etc/dehydrated/certs/<%= @registry_public_hostname %>.key:/etc/ssl/private/<%= @registry_public_hostname %>.key:ro"
+      - "/etc/dehydrated/certs/<%= @registry_public_hostname %>.crt:/etc/ssl/certs/<%= @registry_public_hostname %>.crt:ro"
+      - "/etc/dehydrated/certs/<%= @registry_public_hostname %>-chain.crt:/etc/ssl/certs/<%= @registry_public_hostname %>-chain.crt:ro"
+      - "/opt/docker-registry/infra-ca.crt:/etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt:ro"
+    environment:
+      - SERVER_NAME=<%= @registry_public_hostname %>
+    networks:
+      - registry_net
+
+  always_https:
+    image: docker.sunet.se/always-https
+    ports:
+      - "80:80"
+    environment:
+      - ACME_URL=http://acme-c.sunet.se
+
+networks:
+  registry_net:
+    driver: bridge
