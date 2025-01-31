@@ -36,6 +36,10 @@ class sunet::redictcluster(
       mode   => '0644',
     }
 
+    file { "/etc/ssl/private/${fqdn}_infra.key":
+      mode   => '0644',
+    }
+
     file { '/etc/ssl/private':
       mode   => '0711',
     }
