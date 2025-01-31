@@ -60,6 +60,12 @@ with os.popen("/usr/bin/crontab -l") as pipe:
             if arg == "--name":
                 break
 
+        # Make sure --name isn't the last argument
+        if position > len(tokens):
+            job_name = tokens[position].replace("-", "_")
+        else:
+            continue
+
         # Match output from scriptherder
         job_name = tokens[position].replace("-", "_")
 
