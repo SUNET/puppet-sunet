@@ -13,6 +13,7 @@ class sunet::redictcluster(
 )
 {
 
+  $fqdn = $facts['networking']['fqdn']
   # Allow the user to either specify the variable in cosmos-rules or in hiera
   if $cluster_announce_ip == '' {
     $__cluster_announce_ip = lookup('cluster_announce_ip', undef, undef, '')
