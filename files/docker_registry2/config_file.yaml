@@ -1,6 +1,7 @@
 # Specify a registry_url if the location of the registry is known,
 # otherwise specify a container name and port.
-registry_url: http://registry:5000
+registry_url:
+dry_run: true
 registry_data_dir: /var/lib/registry/docker/registry/v2
 registry_container_name: registry
 registry_container_port: 5000

@@ -45,6 +45,7 @@ def clean(config):
     else:
         registry_url = "http://{}:{}".format(get_container_ip(config['registry_container_name']),
                                              config['registry_container_port'])
+    dry_run_arg = ["--dry-run"] if config.get("dry_run") else []
 
     for image_to_clean in config['exact_images']:
         print("Starting cleanup of image: {}".format(image_to_clean))
@@ -54,7 +55,8 @@ def clean(config):
             "--image", image_to_clean,
             "--keep-tags-like", image_config["regex_of_tags_to_save"],
             "--tags-like", image_config["regex_of_tags_to_delete"] or '.',
-            "--num", str(image_config["number_of_latest_builds_to_save"])]))
+            "--num", str(image_config["number_of_latest_builds_to_save"])]
+            + dry_run_arg))
 
     for group in config['group_images']:
         print("Starting cleanup of group: {}".format(group))
@@ -64,7 +66,8 @@ def clean(config):
             "--images-like", group,
             "--keep-tags-like", group_config["regex_of_tags_to_save"],
             "--tags-like", group_config["regex_of_tags_to_delete"] or '.',
-            "--num", str(group_config["number_of_latest_builds_to_save"])]))
+            "--num", str(group_config["number_of_latest_builds_to_save"])]
+            + dry_run_arg))
 
 def parse_config(config_file):
     with open(config_file, 'r') as conf_file:
