@@ -31,6 +31,16 @@ class sunet::redictcluster(
 
   $redict_password = safe_hiera('redict_password')
 
+  if $tls {
+    file { "/etc/ssl/certs/${fqdn}_infra.crt":
+      mode   => '0644',
+    }
+
+    file { '/etc/ssl/private':
+      mode   => '0711',
+    }
+  }
+
   sunet::docker_compose { 'redictcluster_compose':
     content          => template('sunet/redictcluster/docker-compose.yml.erb'),
     service_name     => 'redict',
