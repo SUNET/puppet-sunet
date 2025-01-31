@@ -1,0 +1,19 @@
+# Specify a registry_url if the location of the registry is known,
+# otherwise specify a container name and port.
+registry_url: http://registry:5000
+registry_data_dir: /var/lib/registry/docker/registry/v2
+registry_container_name: registry
+registry_container_port: 5000
+delete_docker_registry_image_path: /usr/local/bin/clean-registry/delete_docker_registry_image.py
+
+exact_images:
+    example:
+        regex_of_tags_to_save: 'latest$'
+        regex_of_tags_to_delete:
+        number_of_latest_builds_to_save: 5
+
+group_images:
+    '^example$':
+        regex_of_tags_to_save: 'latest$'
+        regex_of_tags_to_delete:
+        number_of_latest_builds_to_save: 5
