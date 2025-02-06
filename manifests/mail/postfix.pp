@@ -7,11 +7,12 @@ class sunet::mail::postfix(
   Array[String] $relaying_servers,
   String $short_domain,
   String $smtp_domain,
-  String $interface              = 'ens3',
-  Array[String] $mydestination   = ['$myhostname', 'localhost.localdomain', 'localhost'],
-  String $postfix_image          = 'docker.sunet.se/mail/postfix',
-  String $postfix_tag            = 'SUNET-1',
-  Array[String] $relay_servers   = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
+  String $interface                     = 'ens3',
+  Optional[Integer] $message_size_limit = undef,
+  Array[String] $mydestination          = ['$myhostname', 'localhost.localdomain', 'localhost'],
+  String $postfix_image                 = 'docker.sunet.se/mail/postfix',
+  String $postfix_tag                   = 'SUNET-1',
+  Array[String] $relay_servers          = ['mf-tst-ng-1.sunet.se:587', 'mf-tst-ng-2.sunet.se:587'],
 )
 {
 
@@ -20,6 +21,9 @@ class sunet::mail::postfix(
   $config = lookup($environment)
   $db_hosts = join($config['db_hosts'], ' ')
   $relay_hosts = join($relay_servers, ', ')
+  $incoming_servers = $relaying_servers.map |$server| {
+    regsubst($server, '[\\[\\]]', '', 'G')
+  }
   $nextcloud_db = 'nextcloud'
   $nextcloud_db_user ='nextcloud'
   $nextcloud_mysql_password = lookup('nextcloud_mysql_password')
@@ -46,7 +50,7 @@ class sunet::mail::postfix(
   $restricted_ports = [25]
   $restricted_ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
-      allow_clients => $relay_hosts,
+      allow_clients => $incoming_servers,
       port          => $port,
       iif           => $interface,
     }

@@ -1,3 +1,4 @@
+# exabpg::neighbor
 define sunet::exabgp::neighbor(
   String           $peer_address,
   String           $peer_as,
@@ -17,7 +18,7 @@ define sunet::exabgp::neighbor(
   concat::fragment { "exabgp_neighbor_${peer_address}":
     target  => $config,
     order   => '100',
-    content => template("sunet/exabgp/exabgp.conf_neighbor.erb"),
+    content => template('sunet/exabgp/exabgp.conf_neighbor.erb'),
     #notify  => Service['exabgp'],
   }
 }
