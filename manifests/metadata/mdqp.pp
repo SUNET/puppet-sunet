@@ -8,11 +8,16 @@ class sunet::metadata::mdqp(
       include sunet::packages::jq
       include sunet::packages::xmlstarlet
 
+      $docker_class = $::facts['dockerhost2'] ? {
+        yes => 'sunet::dockerhost2',
+        default => 'sunet::dockerhost',
+      }
+
       $image_tag = "docker.sunet.se/mdqp:${imagetag}"
       docker::image { $image_tag :  # make it possible to use the same docker image more than once on a node
         ensure  => 'present',
         image   => $image_tag,
-        require => Class['sunet::dockerhost'],
+        require => Class[$docker_class],
       }
 
       file { '/opt/mdqp':
