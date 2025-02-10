@@ -19,7 +19,7 @@ else
   second_status=${?}
   if [[ ${second_status} -eq 0 ]]; then
     echo "Cleaning up old backups: $(date)"
-    find "${backup_dir}" -mtime +30 -delete
+    find "${backup_dir}" -mtime +10 -delete
   else
     echo "Backup to remote failed: $(date)"
   fi
