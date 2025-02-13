@@ -83,6 +83,7 @@ class sunet::docker_registry2 (
     "${clean_registry_conf_dir}/config_file.yaml":
       mode    => '0644',
       content => file('sunet/docker_registry2/config_file.yaml'),
+      replace => false,
     ;
   }
 
