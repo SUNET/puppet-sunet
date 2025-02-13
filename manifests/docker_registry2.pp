@@ -1,11 +1,13 @@
 # host docker registry with compose
 class sunet::docker_registry2 (
-  String  $registry_public_hostname   = 'docker.example.com',
-  String  $interface                  = 'ens3',
-  Array $resolvers                    = [],
-  String  $registry_tag               = '2',
-  String  $registry_cleanup_basedir   = '/usr/local/bin/clean-registry',
-  String  $clean_registry_conf_dir    = '/usr/local/etc/clean-registry',
+  String $registry_public_hostname   = 'docker.example.com',
+  String $interface                  = 'ens3',
+  Array $resolvers                   = [],
+  String $registry_tag               = '2',
+  String $registry_cleanup_basedir   = '/usr/local/bin/clean-registry',
+  String $clean_registry_conf_dir    = '/usr/local/etc/clean-registry',
+  String $registry_s3backup_hostname = 's3.sunet.se',
+  String $registry_s3backup_bucket   = 'docker-registry-backup',
 ) {
 
   sunet::nftables::docker_expose { 'https':
@@ -94,5 +96,34 @@ class sunet::docker_registry2 (
     minute        => '3',
     ok_criteria   => ['exit_status=0'],
     warn_criteria => ['max_age=9d']
+  }
+
+  if lookup('registry_s3backup_config', undef, undef, undef) != undef {
+    $s3cmd = [
+      's3cmd',
+      '--config=/opt/docker-registry/s3backup_config',
+      "--host=${registry_s3backup_hostname}",
+      "--host-bucket=%(bucket).${registry_s3backup_hostname}",
+    ]
+
+    package { 's3cmd':
+      ensure => installed
+    }
+    -> sunet::snippets::secret_file { '/opt/docker-registry/s3backup_config':
+      hiera_key => 'registry_s3backup_config',
+    }
+    -> exec { "${registry_s3backup_hostname}_${registry_s3backup_bucket}":
+      command => $s3cmd + ['mb', "s3://${registry_s3backup_bucket}"],
+    }
+
+    sunet::scriptherder::cronjob { 'registry_s3backup':
+      cmd           => shellquote($s3cmd,
+        'sync', '/var/lib/registry/docker/registry/v2', "s3://${registry_s3backup_bucket}",
+      ).regsubst('\%', '\\%'), # crontab replaces % signs with newlines
+      hour          => '2',
+      minute        => '3',
+      ok_criteria   => ['exit_status=0'],
+      warn_criteria => ['max_age=2d'],
+    }
   }
 }
