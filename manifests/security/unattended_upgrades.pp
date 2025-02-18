@@ -12,25 +12,72 @@ class sunet::security::unattended_upgrades (
     path    => ['/usr/local/sbin', '/usr/local/bin', '/usr/sbin', '/usr/bin', '/sbin', '/bin',],
   }
   if $use_template {
-    if $::facts['operatingsystem'] == 'Ubuntu' {
-      case $::facts['operatingsystemrelease'] {
-        '14.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-          content => template('sunet/security/50unattended-upgrades.ubuntu_14.04.erb') }
-        }
-        '16.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-          content => template('sunet/security/50unattended-upgrades.ubuntu_16.04.erb') }
-        }
-        '18.04':  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-          content => template('sunet/security/50unattended-upgrades.ubuntu_18.04.erb') }
-        }
-        default:  { file { '/etc/apt/apt.conf.d/50unattended-upgrades':
-          content => template('sunet/security/50unattended-upgrades.ubuntu_default.erb') }
-        }
+
+    concat { '/etc/apt/apt.conf.d/51unattended-upgrades-origins':
+      owner          => 'root',
+      ensure_newline => true,
+      group          => 'root',
+      mode           => '0644'
+    }
+
+    concat::fragment { 'origins_header':
+      target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+      content => template('sunet/security/51unattended-upgrades-origins-header.erb'),
+      order   => '01'
+    }
+    concat::fragment { 'origins_footer':
+      target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+      content => template('sunet/security/51unattended-upgrades-origins-footer.erb'),
+      order   => '9001'
+    }
+
+    if $facts['os']['name'] == 'Ubuntu' {
+      file { '/etc/apt/apt.conf.d/50unattended-upgrades':
+        content => template('sunet/security/50unattended-upgrades.ubuntu_default.erb')
       }
-    } elsif $::facts['operatingsystem'] == 'Debian' {
+
+      concat::fragment { 'origin_ubuntu':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=Ubuntu,codename=${distro_codename}";' # lint:ignore:single_quote_string_with_variables
+      }
+      concat::fragment { 'origin_ubuntu_security':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=Ubuntu,codename=${distro_codename}-security";' # lint:ignore:single_quote_string_with_variables
+      }
+      concat::fragment { 'origin_ubuntu_esm_apps':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=UbuntuESMApps,codename=${distro_codename}-apps-security";' # lint:ignore:single_quote_string_with_variables: lint:ignore:140chars
+      }
+      concat::fragment { 'origin_ubuntu_esm':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=UbuntuESM,codename=${distro_codename}-infra-security";' # lint:ignore:single_quote_string_with_variables
+      }
+      concat::fragment { 'origin_ubuntu_updates':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=Ubuntu,codename=${distro_codename}-updates";' # lint:ignore:single_quote_string_with_variables
+      }
+    } elsif $facts['os']['name'] == 'Debian' {
       file { '/etc/apt/apt.conf.d/50unattended-upgrades' :
         content => template('sunet/security/50unattended-upgrades.debian_default.erb'),
       }
+
+      concat::fragment { 'origin_debian_updates':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=Debian,codename=${distro_codename}-updates";' # lint:ignore:single_quote_string_with_variables
+      }
+      concat::fragment { 'origin_debian':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=Debian,codename=${distro_codename},label=Debian";' # lint:ignore:single_quote_string_with_variables
+      }
+      concat::fragment { 'origin_debian_security':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=Debian,codename=${distro_codename},label=Debian-Security";' # lint:ignore:single_quote_string_with_variables lint:ignore:140chars
+      }
+      concat::fragment { 'origin_debian_security_security':
+        target  => '/etc/apt/apt.conf.d/51unattended-upgrades-origins',
+        content => '"origin=Debian,codename=${distro_codename}-security,label=Debian-Security";' # lint:ignore:single_quote_string_with_variables lint:ignore:140chars
+      }
+
     } else {
       warning('Unsupported OS for class sunet::security::unattended_upgrades')
     }

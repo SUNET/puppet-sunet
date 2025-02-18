@@ -1,3 +1,4 @@
+# pkcs11_ca
 class sunet::pkcs11_ca(
   String $ca_url,
   String $ca_dns_name,
@@ -12,8 +13,8 @@ class sunet::pkcs11_ca(
   String $postgres_password              = lookup('postgres_password', String, undef, ''), # Example 'DBUserPassword' Taken from eyaml, here for clarity
   String $postgres_port                  = '5432',
   String $postgres_timeout               = '5',
-  String $postgres_image		 = 'postgres',
-  String $postgres_version		 = '15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c',
+  String $postgres_image     = 'postgres',
+  String $postgres_version     = '15.2-bullseye@sha256:f1f635486b8673d041e2b180a029b712a37ac42ca5479ea13029b53988ed164c',
 ) {
   include stdlib
 
@@ -23,9 +24,9 @@ class sunet::pkcs11_ca(
 
   # clone down the pkcs11 code
   exec { 'pkcs11_ca_clone':
-    command     => '/usr/bin/git clone https://github.com/SUNET/pkcs11_ca.git',
-    cwd         => '/opt',
-    unless => '/usr/bin/ls pkcs11_ca 2> /dev/null',
+    command => '/usr/bin/git clone https://github.com/SUNET/pkcs11_ca.git',
+    cwd     => '/opt',
+    unless  => '/usr/bin/ls pkcs11_ca 2> /dev/null',
   }
 
   # Update the detup variables
@@ -36,9 +37,9 @@ class sunet::pkcs11_ca(
 
   # Setup the pkcs11_ca system
   exec { 'pkcs11_ca_deploy':
-    command     => '/usr/bin/bash ./deploy.sh',
-    cwd         => '/opt/pkcs11_ca',
-    unless => '/usr/bin/ls data/db_data 2> /dev/null',
+    command => '/usr/bin/bash ./deploy.sh',
+    cwd     => '/opt/pkcs11_ca',
+    unless  => '/usr/bin/ls data/db_data 2> /dev/null',
   }
 
   sunet::docker_compose { 'pkcs11_ca_compose':
