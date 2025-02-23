@@ -6,8 +6,11 @@ if exec xrootd
   xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
   xrd.port <%= @xrootd_port %>
 fi
-xrootd.seclib libXrdSec-5.so
-sec.protocol libXrdSecpwd-5.so pwd -a:1
+
+# Config TLS
+xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
+xrd.tlsca certdir /etc/grid-security/certificates refresh 8h
+xrootd.tls capable all -data
 
 # Upon last testing, the plugin did not yet work in async mode
 xrootd.async off
