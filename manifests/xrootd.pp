@@ -5,7 +5,7 @@ class sunet::xrootd(
   String      $manager_domain,
   String      $cms_port                 = '1213',
   String      $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
-  String      $container_tag            = '0.17.0-1',
+  String      $container_tag            = '0.2.1-1',
   String      $export                   = '/',
   String      $interface                = 'ens3',
   String      $xrootd_port              = '1094',
@@ -22,6 +22,7 @@ class sunet::xrootd(
   }
   # Config
   $xrootd_buckets = lookup('xrootd_buckets')
+  $tls_key = lookup('tls_key')
 
   # Composefile
   sunet::docker_compose { 'xrootd':
@@ -54,9 +55,34 @@ class sunet::xrootd(
     owner  => '100',
     group  => '101',
   }
+  file { '/opt/grid-security/xrd':
+    ensure => directory,
+    owner  => '100',
+    group  => '101',
+  }
+  file { '/opt/grid-security/certificates':
+    ensure => directory,
+    owner  => '100',
+    group  => '101',
+  }
   file { '/opt/xrootd/config/xrootd.cfg':
     ensure  => file,
     content => template("sunet/xrootd/xrootd-${role}.cfg.erb"),
+  }
+  file { '/opt/xrootd/grid-security/certificates/ca.pem':
+    ensure  => file,
+    content => file("sunet/xrootd/ca.crt"),
+  }
+  file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
+    ensure  => file,
+    content => file("sunet/xrootd/wildcard.drive.test.sunet.se.crt"),
+  }
+  file { '/opt/xrootd/grid-security/xrd/xrdkey.pem':
+    ensure  => file,
+    content => $tls_key,
+    owner   => '100',
+    group   => '101',
+    mode    => "0400",
   }
   $xrootd_buckets.each |$bucket| {
     file { "/opt/xrootd/config/${bucket['name']}":

@@ -16,6 +16,7 @@ services:
       <%- end -%>
     volumes:
       - /opt/xrootd/config:/etc/xrootd:ro
+      - /opt/xrootd/grid-security:/etc/grid-security:ro
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
       - /dev/log:/dev/log
     command: ["xrootd", "-c", "/etc/xrootd/xrootd.cfg"]
@@ -37,6 +38,7 @@ services:
       <%- end -%>
     volumes:
       - /opt/xrootd/config:/etc/xrootd:ro
+      - /opt/xrootd/grid-security:/etc/grid-security:ro
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
       - /dev/log:/dev/log
     command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg"]
