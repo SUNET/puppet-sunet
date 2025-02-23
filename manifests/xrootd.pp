@@ -55,12 +55,12 @@ class sunet::xrootd(
     owner  => '100',
     group  => '101',
   }
-  file { '/opt/grid-security/xrd':
+  file { '/opt/xrootd/grid-security/xrd':
     ensure => directory,
     owner  => '100',
     group  => '101',
   }
-  file { '/opt/grid-security/certificates':
+  file { '/opt/xrootd/grid-security/certificates':
     ensure => directory,
     owner  => '100',
     group  => '101',
