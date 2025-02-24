@@ -1,6 +1,7 @@
 # host docker registry with compose
 class sunet::docker_registry2 (
   String $registry_public_hostname   = 'docker.example.com',
+  String $registry_internal_hostname = 'docker.internal.example.com',
   String $interface                  = 'ens3',
   Array $resolvers                   = [],
   String $registry_tag               = '2',

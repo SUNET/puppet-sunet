@@ -27,9 +27,9 @@ services:
     ports:
       - "443:443"
     volumes:
-      - "/etc/dehydrated/certs/<%= @registry_public_hostname %>.key:/etc/ssl/private/<%= @registry_public_hostname %>.key:ro"
-      - "/etc/dehydrated/certs/<%= @registry_public_hostname %>.crt:/etc/ssl/certs/<%= @registry_public_hostname %>.crt:ro"
-      - "/etc/dehydrated/certs/<%= @registry_public_hostname %>-chain.crt:/etc/ssl/certs/<%= @registry_public_hostname %>-chain.crt:ro"
+      - "/etc/dehydrated/certs/<%= @registry_internal_hostname %>.key:/etc/ssl/private/<%= @registry_public_hostname %>.key:ro"
+      - "/etc/dehydrated/certs/<%= @registry_internal_hostname %>.crt:/etc/ssl/certs/<%= @registry_public_hostname %>.crt:ro"
+      - "/etc/dehydrated/certs/<%= @registry_internal_hostname %>-chain.crt:/etc/ssl/certs/<%= @registry_public_hostname %>-chain.crt:ro"
       - "/opt/docker-registry/infra-ca.crt:/etc/ssl/certs/<%= @registry_public_hostname %>-client-ca.crt:ro"
     environment:
       - SERVER_NAME=<%= @registry_public_hostname %>
