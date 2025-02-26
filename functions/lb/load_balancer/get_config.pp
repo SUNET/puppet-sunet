@@ -4,7 +4,7 @@ function sunet::lb::load_balancer::get_config(
   String $name,
   $default = undef
 ) {
-  has_key($config['load_balancer'], $name) ? {
+  $name in $config['load_balancer'] ? {
     true  => $config['load_balancer'][$name],
     false => $default,
   }
