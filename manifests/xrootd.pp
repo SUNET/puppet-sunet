@@ -69,7 +69,7 @@ class sunet::xrootd(
     ensure  => file,
     content => template("sunet/xrootd/xrootd-${role}.cfg.erb"),
   }
-  file { '/opt/xrootd/Authfile':
+  file { '/opt/xrootd/config/Authfile':
     ensure  => file,
     content => file('sunet/xrootd/Authfile'),
   }
@@ -80,6 +80,10 @@ class sunet::xrootd(
   file { '/opt/xrootd/grid-security/certificates/ca.pem':
     ensure  => file,
     content => file('sunet/xrootd/ca.crt'),
+  }
+  file { '/opt/xrootd/grid-security/certificates/2b1f9a7d.0':
+    ensure  => link,
+    target  => 'ca.pem'
   }
   file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
     ensure  => file,
