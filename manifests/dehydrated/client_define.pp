@@ -14,7 +14,7 @@ define sunet::dehydrated::client_define(
     'root'  => '/root',
     default => "/home/${user}"
   }
-  ensure_resource('file', "${home}/.ssh" {
+  ensure_resource('file', "${home}/.ssh", {
       ensure    => directory,
       mode      => '0700',
       owner     => $user,
