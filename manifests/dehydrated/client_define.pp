@@ -14,7 +14,12 @@ define sunet::dehydrated::client_define(
     'root'  => '/root',
     default => "/home/${user}"
   }
-  ensure_resource('file', "${home}/.ssh", { ensure => 'directory' })
+  ensure_resource('file', "${home}/.ssh", {
+      ensure    => directory,
+      mode      => '0700',
+      owner     => $user,
+      group     => $user,
+  });
   ensure_resource('file', '/etc/dehydrated', { ensure => directory })
   ensure_resource('file', '/etc/dehydrated/certs', { ensure => directory })
   ensure_resource('file', '/usr/bin/le-ssl-compat.sh', {
