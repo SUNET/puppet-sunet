@@ -69,13 +69,21 @@ class sunet::xrootd(
     ensure  => file,
     content => template("sunet/xrootd/xrootd-${role}.cfg.erb"),
   }
+  file { '/opt/xrootd/Authfile':
+    ensure  => file,
+    content => file('sunet/xrootd/Authfile'),
+  }
+  file { '/opt/xrootd/grid-security/grid-mapfile':
+    ensure  => file,
+    content => file('sunet/xrootd/grid-mapfile'),
+  }
   file { '/opt/xrootd/grid-security/certificates/ca.pem':
     ensure  => file,
-    content => file("sunet/xrootd/ca.crt"),
+    content => file('sunet/xrootd/ca.crt'),
   }
   file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
     ensure  => file,
-    content => file("sunet/xrootd/wildcard.drive.test.sunet.se.crt"),
+    content => file('sunet/xrootd/wildcard.drive.test.sunet.se.crt'),
   }
   file { '/opt/xrootd/grid-security/xrd/xrdkey.pem':
     ensure  => file,
