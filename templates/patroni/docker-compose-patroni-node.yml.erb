@@ -1,0 +1,16 @@
+---
+services:
+  patroni:
+    network_mode: host
+    image: patroni:<%= @patroni_imagetag %>
+    environment:
+      - PROXY_SERVICE_DOMAIN_PREFIX=https://<%= @service_name %>/eidas-ps
+      - SPRING_PROFILES_ACTIVE=<%= @country %>
+      - CERTNAME=<%= @server_fqdn %>_infra
+      - <%= @spring_config_param %>=<%= @proxy_directory %>/<%= @country %>/cfg/
+      - PROXY_SERVICE_COOKIEENCRYPTPW=<%= @proxy_service_cookie_encrypt_pw %>
+    volumes:
+      - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
+      - '/opt/patroni/data:/home/postgres/data:rw'
+    entrypoint: /usr/bin/python3
+    command: /patroni.py patroni.yml

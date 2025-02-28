@@ -1,0 +1,50 @@
+scope: <%= @patroni_cluster_name %>
+name: <%= @myself %>
+
+restapi:
+  listen: "*:<%= @patroni_rest_api_port %>"
+  connect_address: "<%= @myself %>:<%= @patroni_rest_api_port %>"
+etcd3:
+  hosts:
+<% @etcd_nodes | node | -%>
+    - "<%= node %>:2379"
+<% end -%>
+
+bootstrap:
+  # This section will be written into Etcd:/<namespace>/<scope>/config after initializing new cluster
+  # and all other cluster members will use it as a `global configuration`.
+  # WARNING! If you want to change any of the parameters that were set up
+  # via `bootstrap.dcs` section, please use `patronictl edit-config`!
+  dcs:
+    postgresql:
+      use_pg_rewind: true
+      pg_hba:
+      - host replication replicator 127.0.0.1/32 md5
+<% @postgres_nodes.each do | node | -%>
+      - host replication replicator <%= node %> md5
+<% end -%>
+      - host all all 0.0.0.0/0 md5
+
+  # some desired options for 'initdb'
+  initdb:  # Note: It needs to be a list (some options need values, others are switches)
+  - encoding: UTF8
+  - data-checksums
+
+postgresql:
+  listen: "*:<%= @postgres_port %>"
+  connect_address: "<%= @myself %>:<%= @postgres_port %>"
+
+  data_dir: data/
+  pgpass: /tmp/pgpass0
+  authentication:
+    replication:
+      username: replicator
+      password: <%= @replicator_password %>
+    superuser:
+      username: postgres
+      password: <%= @superuser_password %>
+    rewind:  # Has no effect on postgres 10 and lower
+      username: rewind_user
+      password: <%= @rewind_password %>
+  parameters:
+    unix_socket_directories: '..'  # parent directory of data_dir
