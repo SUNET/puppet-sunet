@@ -3,7 +3,7 @@ services:
   patroni:
     network_mode: host
     image: patroni:<%= @patroni_imagetag %>
-    user: 5432:5432
+    user: postgres
     volumes:
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
       - '/opt/patroni/data:/home/postgres/data:rw'
