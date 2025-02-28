@@ -1,6 +1,6 @@
 # Setup a a patroni node
 class sunet::patroni::node(
-  String $patroni_cluster_name = 'batman'
+  String $patroni_cluster_name = 'batman',
   Integer $patroni_rest_api_port = 8008,
   Integer $postgres_port = 5432,
   String $patroni_imagetag = 'latest'
