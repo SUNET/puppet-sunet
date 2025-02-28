@@ -23,7 +23,7 @@ class sunet::patroni::node(
   user {'postgres':
     ensure => 'present'
   }
-  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner => 'postgres', group => 'postgres', mode => '0750'})
+  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner => 'postgres', group => 'root', mode => '0750'})
   file { '/opt/patroni/config/patroni.yml':
     content => template('sunet/patroni/patroni.yml.erb'),
     mode    => '0755',
