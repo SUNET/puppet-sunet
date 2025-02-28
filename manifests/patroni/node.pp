@@ -19,7 +19,7 @@ class sunet::patroni::node(
     port => [$postgres_port, $patroni_rest_api_port],
   }
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
-  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner => 5432, group => 5432, mode => '0750'})
+  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner => '5432', group => '5432', mode => '0750'})
   file { '/opt/patroni/config/patroni.yml':
     content => template('sunet/patroni/patroni.yml.erb'),
     mode    => '0755',
