@@ -6,8 +6,8 @@ restapi:
   connect_address: "<%= @myself %>:<%= @patroni_rest_api_port %>"
 etcd3:
   hosts:
-<% @etcd_nodes | node | -%>
-    - "<%= node %>:2379"
+<% @etcd_nodes.each do | node | -%>
+    - <%= node %>:2379
 <% end -%>
 
 bootstrap:
