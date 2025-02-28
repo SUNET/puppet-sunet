@@ -20,10 +20,10 @@ class sunet::patroni::node(
   }
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
 
-  user {'postgres':
+  user {'patroni-postgres':
     ensure => 'present'
   }
-  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner => 'postgres', group => 'root', mode => '0750'})
+  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner => 'patroni-postgres', group => 'root', mode => '0750'})
   file { '/opt/patroni/config/patroni.yml':
     content => template('sunet/patroni/patroni.yml.erb'),
     mode    => '0755',
