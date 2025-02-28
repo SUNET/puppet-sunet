@@ -16,7 +16,7 @@ class sunet::patroni::node(
 
   sunet::nftables::allow { 'allow-lbs':
     from => $loadbalancer_ips,
-    port => [$postgres_port, $rest_api_port],
+    port => [$postgres_port, $patroni_rest_api_port],
   }
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner => 'root', group => 'root', mode => '0750'})
