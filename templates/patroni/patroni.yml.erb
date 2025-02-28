@@ -34,7 +34,7 @@ postgresql:
   listen: "*:<%= @postgres_port %>"
   connect_address: "<%= @myself %>:<%= @postgres_port %>"
 
-  data_dir: data/
+  data_dir: data/patroni-postgres
   pgpass: /tmp/pgpass0
   authentication:
     replication:
