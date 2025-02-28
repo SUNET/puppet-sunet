@@ -19,10 +19,8 @@ bootstrap:
     postgresql:
       use_pg_rewind: true
       pg_hba:
-      - host replication replicator 127.0.0.1/32 md5
-<% @postgres_nodes.each do | node | -%>
-      - host replication replicator <%= node %> md5
-<% end -%>
+      - host replication replicator 0.0.0.0/0 md5
+      - host replication replicator ::/0 md5
       - host all all 0.0.0.0/0 md5
       - host all all ::/0 md5
 
