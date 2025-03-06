@@ -30,6 +30,7 @@ class sunet::mail::roundcube(
     }
   }
   # config
+  $entity_id = "https://mail.${domain}"
   $mariadb_password = lookup('mariadb_password', undef, undef, undef)
   $master_password = lookup('master_password', undef, undef, undef)
   $mariadb_user = 'roundcube'
@@ -52,6 +53,10 @@ class sunet::mail::roundcube(
   file { '/opt/roundcube/config/config.inc.php':
     ensure  => file,
     content =>  template('sunet/mail/roundcube/config.inc.erb.php')
+  }
+  file { '/opt/roundcube/shibboleth2.xml':
+    ensure  => file,
+    content =>  template('sunet/mail/roundcube/shibboleth2.erb.xml')
   }
   exec { 'shib-plugin-install':
     command => "wget ${shib_plugin_url} -O /tmp/shib.tgz && \

@@ -19,4 +19,5 @@ services:
       - '/opt/roundcube/config:/var/roundcube/config'
       - '/opt/roundcube/plugins:/var/www/html/plugins'
       - '/opt/roundcube/certs/:/etc/shibboleth/certs/'
+      - '/opt/roundcube/shibboleth2.xml:/etc/shibboleth/shibboleth2.xml'
     restart: unless-stopped

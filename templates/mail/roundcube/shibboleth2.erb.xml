@@ -1,0 +1,58 @@
+<SPConfig xmlns="urn:mace:shibboleth:3.0:native:sp:config"
+    xmlns:conf="urn:mace:shibboleth:3.0:native:sp:config"
+    xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion"
+    xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol"
+    xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
+    clockSkew="180">
+<ApplicationDefaults entityID="<%= @entity_id %>"
+                         REMOTE_USER="subject-id eppn persistent-id targeted-id"
+                         metadataAttributePrefix="Meta-">
+
+        <Sessions lifetime="28800" timeout="36000" relayState="ss:mem"
+                   redirectLimit="exact"
+                  checkAddress="false" handlerSSL="true" cookieProps="http">
+            <Logout>SAML2 Local</Logout>
+
+    <SessionInitiator type="Chaining" Location="/Login" id="swamid-ds-default" relayState="cookie">
+       <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html"/>
+       <SessionInitiator type="Shib1" defaultACSIndex="5"/>
+       <SessionInitiator type="SAMLDS" URL="https://service.seamlessaccess.org/ds/"/>
+    </SessionInitiator>
+
+            <md:AssertionConsumerService Location="/SAML2/POST" index="1"
+                Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+                conf:ignoreNoPassive="true"/>
+
+            <Handler type="MetadataGenerator" Location="/Metadata" signing="false"/>
+            <Handler type="Status" Location="/Status" acl="127.0.0.1 ::1"/>
+            <Handler type="Session" Location="/Session" showAttributeValues="false"/>
+            <Handler type="DiscoveryFeed" Location="/DiscoFeed"/>
+
+            <md:ArtifactResolutionService Location="/Artifact/SOAP" index="1"
+                Binding="urn:oasis:names:tc:SAML:2.0:bindings:SOAP"/>
+
+        </Sessions>
+
+        <Errors supportContact="webmaster@example.org"
+            helpLocation="/about.html"
+            styleSheet="/shibboleth-sp/main.css"/>
+
+        <MetadataProvider type="MDQ" id="mdq.swamid.se" ignoreTransport="true" cacheDirectory="mdq.swamid.se"
+		    baseUrl="https://mds.swamid.se/">
+            <MetadataFilter type="Signature" certificate="md-signer2.crt"/>
+            <MetadataFilter type="RequireValidUntil" maxValidityInterval="2419200"/>
+        </MetadataProvider>
+
+       <AttributeExtractor type="XML" validate="true" reloadChanges="false" path="attribute-map.xml"/>
+
+        <AttributeResolver type="Query" subjectMatch="true"/>
+
+        <AttributeFilter type="XML" validate="true" path="attribute-policy.xml"/>
+
+        <CredentialResolver type="File" key="certs/sp-key.pem" certificate="certs/sp-cert.pem"/>
+    </ApplicationDefaults>
+    <SecurityPolicyProvider type="XML" validate="true" path="security-policy.xml"/>
+
+    <ProtocolProvider type="XML" validate="true" reloadChanges="false" path="protocols.xml"/>
+
+</SPConfig>
