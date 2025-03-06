@@ -18,6 +18,5 @@ services:
     volumes:
       - '/opt/roundcube/config:/var/roundcube/config'
       - '/opt/roundcube/plugins:/var/www/html/plugins'
-      - '/opt/roundcube/certs/sp-cert.key:/etc/shibboleth/certs/sp-cert.key'
-      - '/opt/roundcube/certs/sp-cert.pem:/etc/shibboleth/certs/sp-cert.pem'
+      - '/opt/roundcube/certs/:/etc/shibboleth/certs/'
     restart: unless-stopped
