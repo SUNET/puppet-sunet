@@ -3,6 +3,7 @@ services:
   roundcube:
     image: <%= @roundcube_image%>:<%= @roundcube_tag %>
     container_name: roundcube
+    hostname: mail.<%= @domain%>
     ports:
       - "80:80"
       - "443:443"
