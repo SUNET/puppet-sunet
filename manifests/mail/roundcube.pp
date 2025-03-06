@@ -30,7 +30,7 @@ class sunet::mail::roundcube(
     }
   }
   # config
-  $entity_id = "https://mail.${domain}"
+  $entity_id = "https://mail.${domain}/Shibboleth.sso/Metadata"
   $mariadb_password = lookup('mariadb_password', undef, undef, undef)
   $master_password = lookup('master_password', undef, undef, undef)
   $mariadb_user = 'roundcube'

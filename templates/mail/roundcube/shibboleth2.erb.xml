@@ -12,12 +12,11 @@
                    redirectLimit="exact"
                   checkAddress="false" handlerSSL="true" cookieProps="http">
             <Logout>SAML2 Local</Logout>
+            <SessionInitiator type="Chaining" Location="/Login" id="mail.<% @domain %>"
+                  relayState="cookie" entityID="https://connect.eduid.se/sunet">
+                <SessionInitiator type="SAML2" template="bindingTemplate.html"/>
+            </SessionInitiator>
 
-    <SessionInitiator type="Chaining" Location="/Login" id="swamid-ds-default" relayState="cookie">
-       <SessionInitiator type="SAML2" defaultACSIndex="1" acsByIndex="false" template="bindingTemplate.html"/>
-       <SessionInitiator type="Shib1" defaultACSIndex="5"/>
-       <SessionInitiator type="SAMLDS" URL="https://service.seamlessaccess.org/ds/"/>
-    </SessionInitiator>
 
             <md:AssertionConsumerService Location="/SAML2/POST" index="1"
                 Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
@@ -33,7 +32,7 @@
 
         </Sessions>
 
-        <Errors supportContact="webmaster@example.org"
+        <Errors supportContact="drive@sunet.se"
             helpLocation="/about.html"
             styleSheet="/shibboleth-sp/main.css"/>
 
