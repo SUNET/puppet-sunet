@@ -58,6 +58,10 @@ class sunet::mail::roundcube(
     ensure  => file,
     content =>  template('sunet/mail/roundcube/shibboleth2.erb.xml')
   }
+  file { '/opt/roundcube/shib.conf':
+    ensure  => file,
+    content =>  template('sunet/mail/roundcube/shib.erb.conf')
+  }
   exec { 'shib-plugin-install':
     command => "wget ${shib_plugin_url} -O /tmp/shib.tgz && \
     tar -xzf /tmp/shib.tgz -C /tmp && mv /tmp/shib_auth-master \

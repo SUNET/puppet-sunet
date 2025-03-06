@@ -21,4 +21,5 @@ services:
       - '/opt/roundcube/plugins:/var/www/html/plugins'
       - '/opt/roundcube/certs/:/etc/shibboleth/certs/'
       - '/opt/roundcube/shibboleth2.xml:/etc/shibboleth/shibboleth2.xml'
+      - '/opt/roundcube/shib.conf:/etc/apache2/sites-enabled/shib.conf'
     restart: unless-stopped
