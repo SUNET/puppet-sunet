@@ -5,7 +5,7 @@
     xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata"
     clockSkew="180">
 <ApplicationDefaults entityID="<%= @entity_id %>"
-                         REMOTE_USER="subject-id eppn persistent-id targeted-id"
+                         REMOTE_USER="mail"
                          metadataAttributePrefix="Meta-">
 
         <Sessions lifetime="28800" timeout="36000" relayState="ss:mem"
