@@ -1,4 +1,5 @@
 <?php
+$config['max_message_size']  = '40M';
 $config['imap_auth_type'] = 'PLAIN';
 $config['imap_host'] = 'tls://<%= @imap_host %>:143';
 $config['smtp_host'] = 'tls://<%= @smtp_host %>:587';

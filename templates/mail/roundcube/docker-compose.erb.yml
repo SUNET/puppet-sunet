@@ -9,13 +9,6 @@ services:
       - "443:443"
     dns:
       - 89.32.32.32
-    environment:
-      - ROUNDCUBEMAIL_DB_TYPE=mysql
-      - ROUNDCUBEMAIL_DB_HOST=<%= @mariadb_host %>
-      - ROUNDCUBEMAIL_DB_PASSWORD=<%= @mariadb_password %>
-      - ROUNDCUBEMAIL_DEFAULT_HOST=<%= @imap_host %>
-      - ROUNDCUBEMAIL_SMTP_SERVER=<%= @smtp_host %>
-      - ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE=40M
     volumes:
       - '/opt/roundcube/config:/var/roundcube/config'
       - '/opt/roundcube/plugins:/var/www/html/plugins'
