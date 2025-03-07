@@ -8,7 +8,7 @@ $config['plugins'] = ['carddav', 'managesieve', 'custom_links', 'shib_auth'];
 $config['dovecot_master_username'] = 'sunet';
 $config['dovecot_master_password'] = '<%= @master_password %>';
 $config['dovecot_master_user_separator'] = '*';
-$config['user_env'] = 'REMOTE_USER';
+$config['user_env'] = 'HTTP_SUBJECT_ID';
 $config['product_name'] = 'Sunet Webmail';
 $config['address_book_type'] = 'webdav';
 $config['custom_links_taskbar'] = array(
