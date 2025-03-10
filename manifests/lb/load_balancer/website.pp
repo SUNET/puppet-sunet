@@ -218,6 +218,12 @@ define sunet::lb::load_balancer::website(
 
     # Variables used in template
     #
+    $saddr = sunet::format_nft_set('saddr', pick($config['allow_ips'], 'any'))
+    if $config['allow_ips'] {
+      $saddr_v4 = sunet::format_nft_set('saddr', filter($config['allow_ips']) | $this | { is_ipaddr($this, 4) })
+      $saddr_v6 = sunet::format_nft_set('saddr', filter($config['allow_ips']) | $this | { is_ipaddr($this, 6) })
+    }
+
     $tcp_dport = sunet::format_nft_set('dport', pick($config['allow_ports'], []))
     $frontend_ips_v4 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 4) })
     $frontend_ips_v6 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 6) })
