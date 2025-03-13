@@ -33,9 +33,6 @@ class sunet::forgejo (
   # GPG key
   $platform_sunet_se_gpg_key = lookup('platform_sunet_se_gpg_key', undef, undef, undef)
 
-  # White list for email domains for account creation
-  $email_domain_whitelist = lookup('email_domain_whitelist', undef, undef, undef)
-
   # Nginx stuff
   file{ '/opt/nginx':
     ensure => directory,
