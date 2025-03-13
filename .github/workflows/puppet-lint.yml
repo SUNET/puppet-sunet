@@ -43,7 +43,7 @@ jobs:
         run: gem install puppet-lint
 
       - name: Run puppet-lint
-        run: puppet-lint --relative . --sarif > puppet-lint-results.sarif
+        run: puppet-lint --ignore-paths './templates/naemon_monitor/*.yaml' --relative . --sarif > puppet-lint-results.sarif
         continue-on-error: true
 
       - name: Upload analysis results to GitHub
