@@ -431,6 +431,9 @@ def add_kdb_entry(db_path: str, label: str, password: str) -> None:
 
     with open(tmp_password_file, "w", encoding="utf-8") as fileobj:
         fileobj.write(password)
+        # The file is expected to be NULL terminated, otherwise dsmc can have
+        # problems reading it
+        fileobj.write("\0")
 
     proc_args = shlex.split(
         f"gsk8capicmd_64 -secretkey -add -db {db_path} -label {label} -stashed -file {tmp_password_file}"  # pylint:disable=line-too-long
@@ -523,9 +526,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="version of client to install")
-    parser.add_argument(
-        "--install", help="install backup client", action="store_true"
-    )
+    parser.add_argument("--install", help="install backup client", action="store_true")
     parser.add_argument(
         "--register", help="register client with backup server", action="store_true"
     )
@@ -667,7 +668,7 @@ def fix_ldd() -> None:
 
 ### START: UBUNTU 18.04 backport code
 # Code from
-# https://github.com/python/cpython/blob/3.12/Lib/platform.pyhttps://github.com/python/cpython/blob/3.12/Lib/platform.py
+# https://github.com/python/cpython/blob/3.12/Lib/platform.py
 # Added here to work on ubuntu 18. If no longer used just go back to calling
 # platform.freedesktop_os_release()
 

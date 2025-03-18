@@ -4,6 +4,7 @@
 #
 class sunet::naemon_monitor (
   String $domain,
+  Boolean $enable_nocsection = false,
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
@@ -105,7 +106,7 @@ class sunet::naemon_monitor (
   }
   file { '/opt/naemon_monitor/menu_local.conf':
     ensure  => file,
-    content => file('sunet/naemon_monitor/menu_local.conf'),
+    content => template('sunet/naemon_monitor/menu_local.conf.erb'),
   }
 
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf':
