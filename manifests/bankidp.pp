@@ -50,6 +50,15 @@ class sunet::bankidp(
         command => "openssl pkcs12 -export -in '${credsdir}/${name}.pem' -inkey '${credsdir}/${name}.key' -name '${name}-bankid' -out '${credsdir}/${name}.p12' -passin pass:'${password}' -passout pass:'${pass}'",
         onlyif  => "test ! -f ${credsdir}/${name}.p12"
       }
+
+      sunet::sudoer {"nrpe_cert_expire_${name}":
+        user_name    => 'nagios',
+        collection   => "nrpe_cert_expire_${name}",
+        command_line => "/usr/lib/nagios/plugins/check_app_cert_expire ${credsdir}/${name}.p12"
+      }
+      sunet::nagios::nrpe_command {"check_cert_expire_${name}":
+         command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_app_cert_expire ${credsdir}/${name}.p12"
+      }
     }
 
     if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
