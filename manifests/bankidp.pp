@@ -54,10 +54,10 @@ class sunet::bankidp(
       sunet::sudoer {"nrpe_cert_expire_${name}":
         user_name    => 'nagios',
         collection   => "nrpe_cert_expire_${name}",
-        command_line => "/usr/lib/nagios/plugins/check_app_cert_expire ${credsdir}/${name}.p12"
+        command_line => "/usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
       }
       sunet::nagios::nrpe_command {"check_cert_expire_${name}":
-         command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_app_cert_expire ${credsdir}/${name}.p12"
+         command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
       }
     }
 
