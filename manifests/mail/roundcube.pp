@@ -8,7 +8,7 @@ class sunet::mail::roundcube(
   String $mariadb_host            = lookup('mariadb_host', undef, undef, undef),
   String $roundcube_image         = 'docker.sunet.se/mail/roundcube',
   String $roundcube_tag           = '1.6.9-apache-1',
-  String $shib_plugin_url         = 'https://gitlab.mpi-klsb.mpg.de/pcernko/shib_auth/-/archive/master/shib_auth-master.tar.gz',
+  String $shib_plugin_url         = 'https://platform.sunet.se/Drive/shib_auth/archive/v0.0.1.tar.gz',
   String $smtp_host               = "mail.${domain}",
 )
 {
@@ -64,7 +64,7 @@ class sunet::mail::roundcube(
   }
   exec { 'shib-plugin-install':
     command => "wget ${shib_plugin_url} -O /tmp/shib.tgz && \
-    tar -xzf /tmp/shib.tgz -C /tmp && mv /tmp/shib_auth-master \
+    tar -xzf /tmp/shib.tgz -C /tmp && mv /tmp/shib_auth \
     ${plugin_dir}/shib_auth && rm /tmp/shib.tgz",
     unless  => 'test -d /opt/roundcube/plugins/shib_auth',
   }
