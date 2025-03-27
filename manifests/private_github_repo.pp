@@ -19,12 +19,12 @@ define sunet::private_github_repo(
       'root'    => '/root/.ssh',
       default   => "/home/${username}/.ssh"
   }
-  file { $ssh_home:
+  ensure_resource('file', $ssh_home, {
       ensure => directory,
       mode   => '0700',
       owner  => $username,
       group  => $group
-  }
+  })
   -> file { "${ssh_home}/config":
       ensure  => 'file',
       content => "Host github.com\n    IdentityFile ~/.ssh/${id}\n",
