@@ -166,12 +166,6 @@ class sunet::naemon_monitor (
     group  => 'root',
     owner  => 'root',
   }
-  file { '/opt/naemon_monitor/grafana-provisioning/dashboards':
-    ensure => directory,
-    mode   => '0644',
-    group  => 'root',
-    owner  => 'root',
-  }
   file { '/opt/naemon_monitor/grafana-provisioning/datasources/influxdb.yaml':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana-provisioning/datasources/influxdb.yaml'),
@@ -217,16 +211,9 @@ class sunet::naemon_monitor (
       group   => 'root',
       owner   => 'root',
     }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/default.yaml':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/default.yaml'),
-      mode    => '0644',
-      group   => 'root',
-      owner   => 'root',
-    }
     file { '/opt/naemon_monitor/grafana-provisioning/dashboards':
       ensure  => directory,
-      source  => template('sunet/naemon_monitor/grafana-provisioning/dashboards'),
+      source  => 'puppet:///modules/sunet/naemon_monitor/grafana-provisioning/dashboards',
       recurse => true,
       mode    => '0644',
       group   => 'root',
