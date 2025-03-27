@@ -16,12 +16,12 @@ class sunet::naemon_monitor (
   String $influxdb_tag = '1.8',
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
-  String $grafana_tag = '11.1.4',
+  String $grafana_tag = '11.6.0',
   String $grafana_default_role = 'Viewer',
-  String $loki_tag = '3.1.1',
-  String $mimir_tag = '2.13.0',
-  String $tempo_tag = '2.6.0',
-  String $alloy_tag = 'v1.3.0',
+  String $loki_tag = '3.4.2',
+  String $mimir_tag = '2.15.1',
+  String $tempo_tag = '2.7.2',
+  String $alloy_tag = 'v1.7.5',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
@@ -166,12 +166,6 @@ class sunet::naemon_monitor (
     group  => 'root',
     owner  => 'root',
   }
-  file { '/opt/naemon_monitor/grafana-provisioning/dashboards':
-    ensure => directory,
-    mode   => '0644',
-    group  => 'root',
-    owner  => 'root',
-  }
   file { '/opt/naemon_monitor/grafana-provisioning/datasources/influxdb.yaml':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana-provisioning/datasources/influxdb.yaml'),
@@ -189,6 +183,12 @@ class sunet::naemon_monitor (
     # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone editors
     # and admins can be manually assigned via gui. 
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
+    $thruk_admins.each |$user| {
+      exec { "set-admin for ${user}":
+        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db \"update user set is_admin=1 where login='${user}'\"",
+        onlyif  => 'test -f /opt/naemon_monitor/grafana/grafana.db'
+      }
+    }
     file { '/opt/naemon_monitor/groups.txt':
       ensure  => file,
       content => inline_template('editors:<%= @allowed_users_string-%>'),
@@ -217,23 +217,10 @@ class sunet::naemon_monitor (
       group   => 'root',
       owner   => 'root',
     }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/default.yaml':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/default.yaml'),
-      mode    => '0644',
-      group   => 'root',
-      owner   => 'root',
-    }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/overview.json':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/overview.json'),
-      mode    => '0644',
-      group   => 'root',
-      owner   => 'root',
-    }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/node-export-full.json':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/node-export-full.json'),
+    file { '/opt/naemon_monitor/grafana-provisioning/dashboards':
+      ensure  => directory,
+      source  => 'puppet:///modules/sunet/naemon_monitor/grafana-provisioning/dashboards',
+      recurse => true,
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
