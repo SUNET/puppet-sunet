@@ -183,6 +183,11 @@ class sunet::naemon_monitor (
     # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone editors
     # and admins can be manually assigned via gui. 
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
+    $thruk_admins.each |$user| {
+      exec { 'set-admin':
+        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db update user set is_admin=0 where login='${user}'",
+        onlyif  => 'test -f /opt/naemon_monitor/grafana/grafana.db'
+    }
     file { '/opt/naemon_monitor/groups.txt':
       ensure  => file,
       content => inline_template('editors:<%= @allowed_users_string-%>'),
