@@ -224,16 +224,10 @@ class sunet::naemon_monitor (
       group   => 'root',
       owner   => 'root',
     }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/overview.json':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/overview.json'),
-      mode    => '0644',
-      group   => 'root',
-      owner   => 'root',
-    }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/node-export-full.json':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/node-export-full.json'),
+    file { '/opt/naemon_monitor/grafana-provisioning/dashboards':
+      ensure  => directory,
+      source  => template('sunet/naemon_monitor/grafana-provisioning/dashboards'),
+      recurse => true,
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
