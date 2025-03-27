@@ -24,12 +24,12 @@ class sunet::pypi (
       recurse => false,
     }
 
-    -> file { "${home}/.ssh":
+    -> ensure_resource('file', "${home}/.ssh", {
       ensure  => directory,
+      mode    => '0700',
       owner   => $user,
       group   => $user,
-      recurse => true,
-    }
+    })
     -> file { "${home}/pypiserver":
       ensure  => directory,
       owner   => $user,
