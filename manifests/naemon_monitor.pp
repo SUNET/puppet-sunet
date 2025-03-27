@@ -185,7 +185,7 @@ class sunet::naemon_monitor (
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
     $thruk_admins.each |$user| {
       exec { "set-admin for ${user}":
-        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db update user set is_admin=0 where login='${user}'",
+        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db \"update user set is_admin=1 where login='${user}'\"",
         onlyif  => 'test -f /opt/naemon_monitor/grafana/grafana.db'
       }
     }
