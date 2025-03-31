@@ -21,7 +21,8 @@ class sunet::mail::dovecot(
 
   $replication_password = lookup('replication_password')
   $master_password = lookup('master_password')
-  sunet::snippets::ssh_keygen {'id_dovecot_ed25519'}
+  sunet::snippets::ssh_keygen {'id_dovecot_ed25519':
+  }
   $partner_pub_key = lookup('partner_pub_key', undef)
   if $partner_pub_key {
     file_line { 'partner_pub_key':
