@@ -1,6 +1,8 @@
 # Dovecot for SUNET mail
 class sunet::mail::dovecot(
   String $replication_partner,
+  String $replication_partner_ipv4,
+  String $replication_partner_ipv6,
   Array[String] $allow_nets,
   String $domain,
   String $imap_domain,
@@ -45,6 +47,13 @@ class sunet::mail::dovecot(
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
       port          => $port,
+      iif           => $interface,
+    }
+  }
+  [$replication_partner_ipv4, $replication_partner_ipv6].each|$ip| {
+    sunet::nftables::docker_expose { "mail_port_ssh_${ip}":
+      allow_clients => $ip,
+      port          => 22,
       iif           => $interface,
     }
   }
