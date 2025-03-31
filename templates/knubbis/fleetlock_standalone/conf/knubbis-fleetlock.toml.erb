@@ -35,6 +35,10 @@ subdomain = "<%= @knubbis_fleetlock_secrets["conf"]["acmedns"][@domain]["subdoma
 full_domain = "<%= @knubbis_fleetlock_secrets["conf"]["acmedns"][@domain]["full_domain"] %>"
 server_url = "https://acme-d.sunet.se"
 
+[pprof]
+read_timeout = "10s"
+write_timeout = "31s"
+
 [prometheus]
 listen = "127.0.0.1:2222"
 read_timeout = "10s"
