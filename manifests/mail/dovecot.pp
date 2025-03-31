@@ -21,7 +21,14 @@ class sunet::mail::dovecot(
 
   $replication_password = lookup('replication_password')
   $master_password = lookup('master_password')
-
+  sunet::snippets::ssh_keygen {'id_dovecot_ed25519'}
+  $partner_pub_key = lookup('partner_pub_key', undef)
+  if $partner_pub_key {
+    file_line { 'partner_pub_key':
+      path => '/root/.ssh/authorized_keys',
+      line => $partner_pub_key,
+    }
+  }
 
   $db_hosts = join($config['db_hosts'], ' host=')
   ## FIXME: This is NOT what Nextcloud calls 'salt', but instead what they call 'secret'.
