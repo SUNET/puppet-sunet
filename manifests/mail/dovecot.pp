@@ -23,7 +23,7 @@ class sunet::mail::dovecot(
   $master_password = lookup('master_password')
   sunet::snippets::ssh_keygen {'id_dovecot_ed25519':
   }
-  $partner_pub_key = lookup('partner_pub_key', undef)
+  $partner_pub_key = lookup('partner_pub_key')
   if $partner_pub_key {
     file_line { 'partner_pub_key':
       path => '/root/.ssh/authorized_keys',
