@@ -109,7 +109,9 @@ class sunet::pypi (
         command => '/usr/bin/openssl dhparam -out /opt/pypi/nginx/dhparam.pem 2048',
         unless  => '/usr/bin/test -s /opt/pypi/nginx/dhparam.pem',
     }
-
+    # init nftables since we run sunet::server (sshd_config: false) that normaly does that
+    notice('Init nftables')
+    ensure_resource ('class','sunet::nftables::init', {})
     # nftables
     sunet::nftables::allow { 'allow-http':
       from => any,
