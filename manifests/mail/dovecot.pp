@@ -7,6 +7,7 @@ class sunet::mail::dovecot(
   String $domain,
   String $imap_domain,
   String $environment,
+  Optional[String] $partner_pub_key = undef,
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
   String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
@@ -23,7 +24,6 @@ class sunet::mail::dovecot(
   $master_password = lookup('master_password')
   sunet::snippets::ssh_keygen {'id_dovecot_ed25519':
   }
-  $partner_pub_key = lookup('partner_pub_key', undef, undef, undef)
   if $partner_pub_key {
     file_line { 'partner_pub_key':
       path => '/root/.ssh/authorized_keys',
