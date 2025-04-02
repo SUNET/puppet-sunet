@@ -37,3 +37,6 @@ array(
     "fontawesomeIcon" => "fa fa-briefcase"
 ),
 );
+$config['managesieve_host'] = 'tls://%h';
+$config['managesieve_auth_type'] = 'LOGIN';
+$config['managesieve_auth_pw'] = '<%= @master_password %>';
