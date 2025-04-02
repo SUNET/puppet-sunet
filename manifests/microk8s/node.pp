@@ -6,6 +6,7 @@ class sunet::microk8s::node(
   Integer $web_nodeport           = 30080,
   Integer $websecure_nodeport     = 30443,
   Optional[Array[String]] $peers  = [],
+  Boolean $drain_reboot_cron      = false,
 ) {
   include sunet::packages::snapd
 
@@ -33,11 +34,12 @@ class sunet::microk8s::node(
   # Loop through peers and do things that require their ip:s
   $final_peers.each | String $peer| {
     $peer_ip = dns_lookup($peer)
+    $short_peer = split($peer, '[.]')[0]
     unless $peer == 'unknown' or $facts['networking']['ip'] in $peer_ip {
       $peer_ip.each | String $ip | {
         file_line { "hosts_${peer}_${ip}":
           path => '/etc/hosts',
-          line => "${ip} ${peer}",
+          line => "${ip} ${peer} ${short_peer}",
         }
       }
     }
@@ -151,4 +153,16 @@ class sunet::microk8s::node(
       set_microk8s_secret($namespace, $name, $secret)
     }
   }
+  if $drain_reboot_cron == true {
+      file { '/usr/local/bin/drainreboot':
+          content => file('sunet/microk8s/drainreboot'),
+          mode    => '0755',
+      }
+      sunet::scriptherder::cronjob { 'drain_and_reboot':
+          ensure => present,
+          cmd    => '/usr/local/bin/drainreboot',
+          user   => 'root',
+          minute => '*/15',
+      }
+    }
 }
