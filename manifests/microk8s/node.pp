@@ -123,7 +123,7 @@ class sunet::microk8s::node(
     }
   }
   exec { 'install_microk8s':
-    command => "snap install microk8s --classic --channel=${channel}",
+    command => "snap install core && snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
   }
   -> file { '/etc/docker':
