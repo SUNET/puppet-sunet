@@ -3,6 +3,7 @@ class sunet::mail::roundcube(
   String $domain,
   String $carddav_plugin_url      = 'https://github.com/mstilkerich/rcmcarddav/releases/download/v5.1.0/carddav-v5.1.0.tar.gz',
   String $custom_links_plugin_url = 'https://gitlab.com/MatthiasLohr/roundcube-custom-links/-/archive/main/roundcube-custom-links-main.tar.gz',
+  String $kolab_plugins_url       = 'https://platform.sunet.se/Drive/roundcubemail-plugins-kolab/archive/roundcubemail-plugins-kolab-3.6.0.tar.gz'
   String $imap_host               = "mail.${domain}",
   String $interface               = 'ens3',
   String $mariadb_host            = lookup('mariadb_host', undef, undef, undef),
@@ -79,5 +80,23 @@ class sunet::mail::roundcube(
     tar -xzf /tmp/custom_links.tgz -C /tmp && mv /tmp/roundcube-custom-links-main \
     ${plugin_dir}/custom_links && rm /tmp/custom_links.tgz",
     unless  => 'test -d /opt/roundcube/plugins/custom_links',
+  }
+  exec {'calendar-plugin-install':
+    command => "wget ${kolab_plugins_url} -O /tmp/kolab_plugins.tgz && \
+    tar --strip-components 2 -xzf /tmp/kolab_plugins.tgz -C /tmp roundcubemail-plugins-kolab/plugins/calendar && mv /tmp/calendar \
+    ${plugin_dir}/calendar rm /tmp/kolab_plugins.tgz",
+    unless  => 'test -d /opt/roundcube/plugins/calendar',
+  }
+  exec {'libkolab-plugin-install':
+    command => "wget ${kolab_plugins_url} -O /tmp/kolab_plugins.tgz && \
+    tar --strip-components 2 -xzf /tmp/kolab_plugins.tgz -C /tmp roundcubemail-plugins-kolab/plugins/libkolab && mv /tmp/libkolab \
+    ${plugin_dir}/libkolab rm /tmp/kolab_plugins.tgz",
+    unless  => 'test -d /opt/roundcube/plugins/libkolab',
+  }
+  exec {'libcalendaring-plugin-install':
+    command => "wget ${kolab_plugins_url} -O /tmp/kolab_plugins.tgz && \
+    tar --strip-components 2 -xzf /tmp/kolab_plugins.tgz -C /tmp roundcubemail-plugins-kolab/plugins/libcalendaring && mv /tmp/libcalendaring \
+    ${plugin_dir}/libcalendaring rm /tmp/kolab_plugins.tgz",
+    unless  => 'test -d /opt/roundcube/plugins/libcalendaring',
   }
 }
