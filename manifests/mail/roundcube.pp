@@ -3,7 +3,7 @@ class sunet::mail::roundcube(
   String $domain,
   String $carddav_plugin_url      = 'https://github.com/mstilkerich/rcmcarddav/releases/download/v5.1.0/carddav-v5.1.0.tar.gz',
   String $custom_links_plugin_url = 'https://gitlab.com/MatthiasLohr/roundcube-custom-links/-/archive/main/roundcube-custom-links-main.tar.gz',
-  String $kolab_plugins_url       = 'https://platform.sunet.se/Drive/roundcubemail-plugins-kolab/archive/roundcubemail-plugins-kolab-3.6.0.tar.gz'
+  String $kolab_plugins_url       = 'https://platform.sunet.se/Drive/roundcubemail-plugins-kolab/archive/roundcubemail-plugins-kolab-3.6.0.tar.gz',
   String $imap_host               = "mail.${domain}",
   String $interface               = 'ens3',
   String $mariadb_host            = lookup('mariadb_host', undef, undef, undef),
