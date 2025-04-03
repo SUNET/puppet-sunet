@@ -15,7 +15,7 @@
 # @param domain                     The domain where the fleetlock server will supply its services
 # @param letsencrypt_prod           Should the server request real letsencrypt certificates
 class sunet::knubbis::fleetlock_standalone(
-  String  $knubbis_fleetlock_version='v0.0.23',
+  String  $knubbis_fleetlock_version='v0.0.24',
   String  $etcd_version='v3.5.8',
   String  $cfssl_helper_version='v0.0.1',
   String  $etcdctl_helper_version='v0.0.1',
