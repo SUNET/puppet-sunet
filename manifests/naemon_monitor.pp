@@ -133,7 +133,6 @@ class sunet::naemon_monitor (
   file { '/opt/naemon_monitor/stop-monitor.sh':
     ensure  => absent,
   }
-  #
 
   file { '/etc/logrotate.d/naemon_monitor':
     ensure  => file,
@@ -184,7 +183,7 @@ class sunet::naemon_monitor (
   }
   if $receive_otel {
     # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone editors
-    # and admins can be manually assigned via gui. 
+    # and admins can be manually assigned via gui.
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
     $thruk_admins.each |$user| {
       exec { "set-admin for ${user}":
