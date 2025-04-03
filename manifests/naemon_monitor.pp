@@ -4,6 +4,7 @@
 #
 class sunet::naemon_monitor (
   String $domain,
+  Enum['acme-c','acme-d'] $acme_protocol = 'acme-c'
   Boolean $enable_nocsection = false,
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
@@ -83,7 +84,9 @@ class sunet::naemon_monitor (
     }
   }
 
-  class { 'sunet::dehydrated::client': domain => $domain, ssl_links => true }
+  if $acme_protocol == 'acme-c' {
+    class { 'sunet::dehydrated::client': domain => $domain, ssl_links => true }
+  }
 
   if lookup('shib_key', undef, undef, undef) != undef {
     sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }

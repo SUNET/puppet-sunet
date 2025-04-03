@@ -48,7 +48,12 @@ services:
     ports:
       - '443:443'
     volumes:
+<% if @acme_protocol == 'acme-c' -%>
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
+<% end -%>
+<% if @acme_protocol == 'acme-d' -%>
+      - "/etc/letsencrypt/live/<%= @domain %>:/etc/dehydrated:ro"
+<% end -%>
       - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
       - '/opt/naemon_monitor/data:/var/lib/thruk'
       - '/opt/naemon_monitor/menu_local.conf:/etc/thruk/menu_local.conf'
@@ -129,5 +134,10 @@ services:
       - "4317-4318:4317-4318"
     volumes:
       - "/opt/naemon_monitor/alloy-server.alloy:/etc/alloy/config.alloy:ro"
+<% if @acme_protocol == 'acme-c' -%>
       - "/etc/dehydrated/certs/<%= @domain %>:/etc/dehydrated:ro"
+<% end -%>
+<% if @acme_protocol == 'acme-d' -%>
+      - "/etc/letsencrypt/live/<%= @domain %>:/etc/dehydrated:ro"
+<% end -%>
 <% end -%>
