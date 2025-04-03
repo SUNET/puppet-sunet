@@ -84,19 +84,19 @@ class sunet::mail::roundcube(
   exec {'calendar-plugin-install':
     command => "wget ${kolab_plugins_url} -O /tmp/kolab_plugins.tgz && \
     tar --strip-components 2 -xzf /tmp/kolab_plugins.tgz -C /tmp roundcubemail-plugins-kolab/plugins/calendar && mv /tmp/calendar \
-    ${plugin_dir}/calendar rm /tmp/kolab_plugins.tgz",
+    ${plugin_dir}/calendar; rm /tmp/kolab_plugins.tgz",
     unless  => 'test -d /opt/roundcube/plugins/calendar',
   }
   exec {'libkolab-plugin-install':
     command => "wget ${kolab_plugins_url} -O /tmp/kolab_plugins.tgz && \
     tar --strip-components 2 -xzf /tmp/kolab_plugins.tgz -C /tmp roundcubemail-plugins-kolab/plugins/libkolab && mv /tmp/libkolab \
-    ${plugin_dir}/libkolab rm /tmp/kolab_plugins.tgz",
+    ${plugin_dir}/libkolab; rm /tmp/kolab_plugins.tgz",
     unless  => 'test -d /opt/roundcube/plugins/libkolab',
   }
   exec {'libcalendaring-plugin-install':
     command => "wget ${kolab_plugins_url} -O /tmp/kolab_plugins.tgz && \
     tar --strip-components 2 -xzf /tmp/kolab_plugins.tgz -C /tmp roundcubemail-plugins-kolab/plugins/libcalendaring && mv /tmp/libcalendaring \
-    ${plugin_dir}/libcalendaring rm /tmp/kolab_plugins.tgz",
+    ${plugin_dir}/libcalendaring; rm /tmp/kolab_plugins.tgz",
     unless  => 'test -d /opt/roundcube/plugins/libcalendaring',
   }
 }
