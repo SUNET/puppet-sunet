@@ -5,7 +5,7 @@ services:
     container_name: radicale
     volumes:
       - /etc/dehydrated/certs:/radicale/certs:ro
-      - /opt/radicale/conf:/radicale/conf
+      - /opt/radicale/config:/radicale/conf
     environment:
       - TZ=Europe/Stockholm
     restart: unless-stopped
