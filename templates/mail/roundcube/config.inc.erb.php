@@ -32,5 +32,6 @@ array(
 $config['managesieve_host'] = 'tls://<%= @imap_host %>:4190';
 $config['managesieve_auth_type'] = 'LOGIN';
 $config['managesieve_auth_pw'] = '<%= @master_password %>';
-$config['calendar_nextcloud_url'] = 'https://sunet.drive.test.sunet.se/apps/calendar';
 $config['markasjunk_toolbar'] = true;
+$config['calendar_driver'] = "caldav";
+$config['calendar_caldav_server'] = "https://calendar.<%= @domain %>:5232";
