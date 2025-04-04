@@ -1,5 +1,11 @@
 
 services:
+  always-https:
+    image: docker.sunet.se/always-https
+    ports:
+      - '80:80'
+    environment:
+      - 'ACME_URL=http://acme-c.sunet.se/'
   radicale:
     image: <%= @radicale_image%>:<%= @radicale_tag %> 
     container_name: radicale
