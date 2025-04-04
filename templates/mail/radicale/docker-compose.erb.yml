@@ -1,20 +1,8 @@
-
-services:
-  always-https:
-    container_name: always-https
-    image: docker.sunet.se/always-https
-    ports:
-      - '80:80'
-    environment:
-      - 'ACME_URL=http://acme-c.sunet.se/'
   radicale:
     image: <%= @radicale_image%>:<%= @radicale_tag %> 
     container_name: radicale
     volumes:
       - /etc/dehydrated/certs:/radicale/certs:ro
-      - /opt/radicale/config:/radicale/conf
+      - /opt/radicale/conf:/radicale/conf
     environment:
       - TZ=Europe/Stockholm
-    restart: unless-stopped
-    ports:
-      - "5232:5232"
