@@ -1,3 +1,5 @@
+
+services:
   radicale:
     image: <%= @radicale_image%>:<%= @radicale_tag %> 
     container_name: radicale
@@ -6,3 +8,4 @@
       - /opt/radicale/conf:/radicale/conf
     environment:
       - TZ=Europe/Stockholm
+    restart: unless-stopped
