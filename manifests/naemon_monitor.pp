@@ -4,7 +4,7 @@
 #
 class sunet::naemon_monitor (
   String $domain,
-  Enum['acme-c','acme-d'] $acme_protocol = 'acme-c'
+  Enum['acme-c','acme-d'] $acme_protocol = 'acme-c',
   Boolean $enable_nocsection = false,
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
