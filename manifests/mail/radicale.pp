@@ -19,7 +19,7 @@ class sunet::mail::radicale(
     compose_filename => 'docker-compose.yml',
     description      => 'Radicale',
   }
-  $open_ports = [$port]
+  $open_ports = [$port, 80]
   $open_ports.each|$port| {
     sunet::nftables::docker_expose { "radicale_port_${port}":
       allow_clients => 'any',
