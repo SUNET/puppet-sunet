@@ -14,6 +14,7 @@ class sunet::naemon_monitor (
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
   Array $thruk_users = [],
+  Array[String] $thruk_allow_clients = ['any']
   String $influxdb_tag = '1.8',
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
@@ -43,12 +44,12 @@ class sunet::naemon_monitor (
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'allow_http' :
       iif           => $interface,
-      allow_clients => 'any',
+      allow_clients => $thruk_allow_clients,
       port          => 80,
     }
     sunet::nftables::docker_expose { 'allow_https' :
       iif           => $interface,
-      allow_clients => 'any',
+      allow_clients => $thruk_allow_clients,
       port          => 443,
     }
     if $receive_otel {
