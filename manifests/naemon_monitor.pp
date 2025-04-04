@@ -14,7 +14,7 @@ class sunet::naemon_monitor (
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
   Array $thruk_users = [],
-  Array[String] $thruk_allow_clients = ['any']
+  Array[String] $thruk_allow_clients = ['any'],
   String $influxdb_tag = '1.8',
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
