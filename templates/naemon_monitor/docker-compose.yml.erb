@@ -55,6 +55,7 @@ services:
 <% end -%>
 <% if @acme_protocol == 'acme-d' -%>
       - "/etc/letsencrypt/live/<%= @domain %>:/etc/dehydrated:ro"
+      - "/etc/letsencrypt/archive/<%= @domain %>/:/archive/<%= @domain %>:ro"
 <% end -%>
       - '/opt/naemon_monitor/shib-certs:/etc/shibboleth/certs'
       - '/opt/naemon_monitor/data:/var/lib/thruk'
