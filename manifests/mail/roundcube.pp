@@ -9,7 +9,7 @@ class sunet::mail::roundcube(
   String $mariadb_host            = lookup('mariadb_host', undef, undef, undef),
   String $roundcube_image         = 'docker.sunet.se/mail/roundcube',
   String $roundcube_tag           = '1.6.9-apache-1',
-  String $shib_plugin_url         = 'https://platform.sunet.se/Drive/shib_auth/archive/v0.0.2.tar.gz',
+  String $shib_plugin_url         = 'https://platform.sunet.se/Drive/shib_auth/archive/v0.0.3.tar.gz',
   String $smtp_host               = "mail.${domain}",
 )
 {
