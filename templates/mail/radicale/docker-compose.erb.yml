@@ -9,3 +9,5 @@ services:
     environment:
       - TZ=Europe/Stockholm
     restart: unless-stopped
+    ports:
+      - "5232:5232"
