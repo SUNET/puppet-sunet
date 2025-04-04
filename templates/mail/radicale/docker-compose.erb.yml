@@ -1,6 +1,7 @@
 
 services:
   always-https:
+    container_name: always-https
     image: docker.sunet.se/always-https
     ports:
       - '80:80'
