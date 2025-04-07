@@ -6,6 +6,8 @@ class sunet::nagios(
   $command_timeout = 60,
   $procsw          = 150,
   $procsc          = 200,
+  $loadw           = '15,10,5',
+  $loadc           = '30,25,20',
 ) {
 
   $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
@@ -50,7 +52,7 @@ class sunet::nagios(
     command_line => '/usr/lib/nagios/plugins/check_users -w 5 -c 10'
   }
   sunet::nagios::nrpe_command {'check_load':
-    command_line => '/usr/lib/nagios/plugins/check_load -w 15,10,5 -c 30,25,20'
+    command_line => "/usr/lib/nagios/plugins/check_load -w ${loadw} -c ${loadc}"
   }
   if $::fqdn == 'docker.sunet.se' {
     sunet::nagios::nrpe_command {'check_root':
