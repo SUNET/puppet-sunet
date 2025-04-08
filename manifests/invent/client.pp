@@ -2,6 +2,7 @@
 class sunet::invent::client(
   String  $invent_dir            = '/opt/invent',
   String  $export_endpoint       = '',
+  String  $facts_path             = '/etc/facter/facts.d',
   Integer $invent_retention_days = 30,
   String  $repo_path             = '/var/cache/invent/repo',
   String  $repo_url              = 'https://github.com/SUNET/invent.git',
@@ -27,6 +28,14 @@ class sunet::invent::client(
     ensure  => 'file',
     mode    => '0644',
     content => template('sunet/invent/invent-client.erb'),
+  }
+  exec {'create_facts_path':
+    command => "mkdir -p ${facts_path}",
+    unless  =>  "test -d ${facts_path}",
+  }
+  exec {'link_facts_ssh':
+    command => "ln -s ${repo_path}/client/ssh.py ${facts_path}/ssh.py",
+    unless  =>  "test -f ${facts_path}/ssh.py",
   }
   sunet::scriptherder::cronjob { 'inventory':
     cmd      => "${repo_path}/client/invent.sh",
