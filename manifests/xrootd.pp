@@ -5,7 +5,7 @@ class sunet::xrootd(
   String      $manager_domain,
   String      $cms_port                 = '1213',
   String      $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
-  String      $container_tag            = '0.17.0-1',
+  String      $container_tag            = '0.2.1-1',
   String      $export                   = '/',
   String      $interface                = 'ens3',
   String      $xrootd_port              = '1094',
@@ -14,6 +14,7 @@ class sunet::xrootd(
 {
 
   $hostname = $facts['networking']['fqdn']
+  $cahash = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/ca.crt -noout -hash').chomp
 
   if ($hostname in $managers ) {
     $role = 'manager'
@@ -22,6 +23,7 @@ class sunet::xrootd(
   }
   # Config
   $xrootd_buckets = lookup('xrootd_buckets')
+  $tls_key = lookup('tls_key')
 
   # Composefile
   sunet::docker_compose { 'xrootd':
@@ -54,9 +56,46 @@ class sunet::xrootd(
     owner  => '100',
     group  => '101',
   }
+  file { '/opt/xrootd/grid-security/xrd':
+    ensure => directory,
+    owner  => '100',
+    group  => '101',
+  }
+  file { '/opt/xrootd/grid-security/certificates':
+    ensure => directory,
+    owner  => '100',
+    group  => '101',
+  }
   file { '/opt/xrootd/config/xrootd.cfg':
     ensure  => file,
     content => template("sunet/xrootd/xrootd-${role}.cfg.erb"),
+  }
+  file { '/opt/xrootd/config/Authfile':
+    ensure  => file,
+    content => file('sunet/xrootd/Authfile'),
+  }
+  file { '/opt/xrootd/grid-security/grid-mapfile':
+    ensure  => file,
+    content => file('sunet/xrootd/grid-mapfile'),
+  }
+  file { '/opt/xrootd/grid-security/certificates/ca.pem':
+    ensure  => file,
+    content => file('sunet/xrootd/ca.crt'),
+  }
+  file { "/opt/xrootd/grid-security/certificates/${cahash}.0":
+    ensure  => link,
+    target  => 'ca.pem'
+  }
+  file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
+    ensure  => file,
+    content => file('sunet/xrootd/wildcard.drive.test.sunet.se.crt'),
+  }
+  file { '/opt/xrootd/grid-security/xrd/xrdkey.pem':
+    ensure  => file,
+    content => $tls_key,
+    owner   => '100',
+    group   => '101',
+    mode    => "0400",
   }
   $xrootd_buckets.each |$bucket| {
     file { "/opt/xrootd/config/${bucket['name']}":

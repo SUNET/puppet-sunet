@@ -46,6 +46,8 @@ ruler:
 
 limits_config:
   retention_period: <%= @otel_retention %>
+  reject_old_samples: false
+  allow_structured_metadata: true
   retention_stream:
   - selector: '{namespace="debug"}'
     priority: 1
