@@ -103,12 +103,12 @@ class sunet::etcd::node(
     ports    => $ports,
     net      => $docker_net,
   }
-  sunet::misc::ufw_allow { 'allow-etcd-peer':
+  sunet::nftables::allow { 'allow-etcd-peer':
     from => $allow_peers,
-    port => '2380',
+    port => 2380,
   }
-  sunet::misc::ufw_allow { 'allow-etcd-client':
+  sunet::nftables::allow { 'allow-etcd-client':
     from => $allow_clients,
-    port => '2379',
+    port => 2379,
   }
 }
