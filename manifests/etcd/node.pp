@@ -96,7 +96,7 @@ class sunet::etcd::node(
   }
 
   sunet::docker_compose { 'etcd':
-    content          => template('sunet/metadata/docker-compose-etcd-node.yml.erb'),
+    content          => template('sunet/etcd/docker-compose-etcd-node.yml.erb'),
     service_name     => 'etcd',
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
