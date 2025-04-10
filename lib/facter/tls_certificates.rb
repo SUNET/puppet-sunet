@@ -26,6 +26,7 @@ Facter.add('tls_certificates') do
   # res[hostname][rest_of_path]
   filenames = Dir.glob(['/etc/ssl/*_*.pem',
                         '/etc/ssl/*_*.crt',
+                        '/etc/ssl/certs/*_*.crt',
                         '/etc/ssl/private/*_*.pem',
                         '/etc/ssl/private/*_*.crt',
                         '/etc/ssl/private/*_*.key'
