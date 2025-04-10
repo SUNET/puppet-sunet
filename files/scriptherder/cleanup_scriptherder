@@ -53,6 +53,13 @@ def decide_days_to_save(interval):
     return days_to_save
 
 
+def remove_files(job_name, days_to_save):
+    command = "find /var/cache/scriptherder -type f "
+    command += f"-mtime +{days_to_save} -name {job_name}__* "
+    command += "-delete"
+    os.system(command)
+
+
 with os.popen("/usr/bin/crontab -l") as pipe:
     for line in pipe:
 
@@ -84,7 +91,7 @@ with os.popen("/usr/bin/crontab -l") as pipe:
         job_name = tokens[position].replace("-", "_")
 
         if job_name and days_to_save:
-            command = "find /var/cache/scriptherder -type f "
-            command += f"-mtime +{days_to_save} -name {job_name}__* "
-            command += "-delete"
-            os.system(command)
+            remove_files(job_name=job_name, days_to_save=days_to_save)
+
+# cosmos is not run by the crontab
+remove_files(job_name="cosmos", days_to_save=decide_days_to_save("hourly"))
