@@ -80,7 +80,7 @@ class sunet::etcd::node(
     content => template('sunet/etcd/etcd.conf.yml.erb'),
     group   => 'root',
     force   => true,
-    notify  => [Sunet::Docker_run[$service_name]],
+    notify  => Service['sunet-etcd'],
   }
 
   $ports = $expose_ports ? {
@@ -90,19 +90,14 @@ class sunet::etcd::node(
     false => []
   }
 
-  sunet::docker_run { $service_name:
-    image    => $docker_image,
-    imagetag => $docker_tag,
-    volumes  => ["${base_dir}/${service_name}/data:/data",
-                "${base_dir}/${service_name}/etcd.conf.yml:${base_dir}/${service_name}/etcd.conf.yml:ro",
-                "${cert_file}:${cert_file}:ro",
-                "${key_file}:${key_file}:ro",
-                "${trusted_ca_file}:${trusted_ca_file}:ro",
-                ],
-    command  => "/usr/local/bin/etcd --config-file ${base_dir}/${service_name}/etcd.conf.yml",
-    ports    => $ports,
-    net      => $docker_net,
+  sunet::docker_compose { 'etcd':
+    content          => template('sunet/metadata/docker-compose-etcd-node.yml.erb'),
+    service_name     => 'etcd',
+    compose_dir      => '/opt/',
+    compose_filename => 'docker-compose.yml',
+    description      => 'etcd',
   }
+
   sunet::nftables::allow { 'allow-etcd-peer':
     from => $allow_peers,
     port => 2380,
