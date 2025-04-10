@@ -12,5 +12,6 @@ services:
     <%- @ports.each do |port| -%>
       - "<%= port %>"
 <%- end -%>
+    entrypoint: /usr/local/bin/etcd
     command:
       - "--config-file=<%= @base_dir %>/<%= @service_name%>/etcd.conf.yml"
