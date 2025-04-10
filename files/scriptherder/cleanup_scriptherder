@@ -21,9 +21,7 @@ def decide_interval(tokens):
         elif word == "@daily" or word == "@midnight" or word == "@hourly":
             interval = "daily"
     else:
-        if tokens[1].startswith('*') and (
-            tokens[2] == tokens[3] == tokens[4] == "*"
-        ):
+        if tokens[1].startswith("*") and (tokens[2] == tokens[3] == tokens[4] == "*"):
             interval = "hourly"
         elif tokens[2] == tokens[3] == tokens[4] == "*":
             interval = "daily"
@@ -89,6 +87,4 @@ with os.popen("/usr/bin/crontab -l") as pipe:
             command = "find /var/cache/scriptherder -type f "
             command += f"-mtime +{days_to_save} -name {job_name}__* "
             command += "-delete"
-            os.system(
-                command
-            )
+            os.system(command)
