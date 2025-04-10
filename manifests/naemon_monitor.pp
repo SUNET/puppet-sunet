@@ -88,6 +88,15 @@ class sunet::naemon_monitor (
   if $acme_protocol == 'acme-c' {
     class { 'sunet::dehydrated::client': domain => $domain, ssl_links => true }
   }
+  # Add automatic reload of apache on cert renewal for acme-d
+  if $acme_protocol == 'acme-d' {
+    file { '/etc/letsencrypt/renewal-hooks/deploy/certbot-acmed-renew-deploy-hook':
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      content => file('sunet/naemon_monitor/certbot-acmed-renew-deploy-hook')
+    }
+  }
 
   if lookup('shib_key', undef, undef, undef) != undef {
     sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
