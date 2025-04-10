@@ -61,6 +61,10 @@ Facter.add('tls_certificates') do
           # turn 'infra' into 'infra_cert'
           rest = rest + '_cert'
       end
+    elsif parts.count == 1 and fn.end_with? '.crt'
+        # Handle known bundle created by cronjob script dl_ici_cert
+        # turn 'infra' into 'infra_bundle'
+        rest = rest + '_cert'
     end
     res[hostpart] ||= {}
     if ! res[hostpart][rest].nil?
