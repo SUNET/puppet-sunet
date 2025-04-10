@@ -88,7 +88,7 @@ with os.popen("/usr/bin/crontab -l") as pipe:
             continue
 
         # Match output from scriptherder
-        job_name = tokens[position].replace("-", "_")
+        job_name = tokens[position].replace("-", "_").replace(".","_")
 
         if job_name and days_to_save:
             remove_files(job_name=job_name, days_to_save=days_to_save)
