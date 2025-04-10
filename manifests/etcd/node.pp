@@ -1,6 +1,6 @@
 # etcd version 3 node
 class sunet::etcd::node(
-  String           $docker_tag                 = 'latest',
+  String           $docker_tag,
   String           $service_name               = 'etcd',
   Optional[String] $disco_url                  = undef,
   Array[String]    $cluster_nodes              = [$facts['networking']['fqdn']],
