@@ -1,31 +1,36 @@
 # etcd version 3 node
 class sunet::etcd::node(
-  String           $docker_tag         = 'latest',
-  String           $service_name       = 'etcd',
-  Optional[String] $disco_url          = undef,
-  Array[String]    $cluster_nodes      = [$facts['networking']['fqdn']],
-  Optional[String] $discovery_srv      = undef,  # DNS SRV record for cluster node discovery
-  Enum['on', 'readonly', 'off'] $proxy = 'off',
-  String           $s2s_ip_or_host     = $facts['networking']['fqdn'],
-  String           $c2s_ip_or_host     = $facts['networking']['fqdn'],
-  Enum['https', 'http'] $c2s_proto     = 'https',
-  String           $etcd_listen_ip     = '0.0.0.0',
-  String           $docker_image       = 'gcr.io/etcd-development/etcd',
-  String           $docker_net         = 'docker',
-  Array[String]    $etcd_extra         = [],        # extra arguments to etcd
-  Optional[String] $tls_key_file       = undef,
-  Optional[String] $tls_ca_file        = undef,
-  Optional[String] $tls_cert_file      = undef,
-  Boolean          $expose_ports       = true,
-  String           $expose_port_pre    = '',   # string prepended to ports (e.g. "127.0.0.1:")
-  Array[String]    $allow_clients      = ['any'],
-  Array[String]    $allow_peers        = [],
-  Boolean          $client_cert_auth   = true,  # Enable TLS client certificate authentication - turn CN into username
-  String           $base_dir           = '/opt',
-  Boolean          $enable_v2          = false,
+  String           $docker_tag                 = 'latest',
+  String           $service_name               = 'etcd',
+  Optional[String] $disco_url                  = undef,
+  Array[String]    $cluster_nodes              = [$facts['networking']['fqdn']],
+  Optional[String] $discovery_srv              = undef,  # DNS SRV record for cluster node discovery
+  Enum['on', 'readonly', 'off'] $proxy         = 'off',
+  String           $s2s_ip_or_host             = $facts['networking']['fqdn'],
+  String           $c2s_ip_or_host             = $facts['networking']['fqdn'],
+  Enum['https', 'http'] $c2s_proto             = 'https',
+  String           $etcd_listen_ip             = '0.0.0.0',
+  String           $docker_image               = 'gcr.io/etcd-development/etcd',
+  String           $docker_net                 = 'docker',
+  Array[String]    $etcd_extra                 = [],        # extra arguments to etcd
+  Optional[String] $tls_key_file               = undef,
+  Optional[String] $tls_ca_file                = undef,
+  Optional[String] $tls_cert_file              = undef,
+  Boolean          $expose_ports               = true,
+  String           $expose_port_pre            = '',   # string prepended to ports (e.g. "127.0.0.1:")
+  Array[String]    $allow_clients              = ['any'],
+  Array[String]    $allow_peers                = [],
+  Boolean          $client_cert_auth           = true,  # Enable TLS client certificate authentication - turn CN into username
+  String           $base_dir                   = '/opt',
+  Boolean          $enable_v2                  = false,
+  Boolean          $infra_cert_from_this_class = true,
 )
 {
   include stdlib
+
+  if $infra_cert_from_this_class {
+    sunet::ici_ca::rp { 'infra': }
+  }
 
   # Add brackets to bare IPv6 IP.
   $s2s_ip = is_ipaddr($s2s_ip_or_host, 6) ? {
