@@ -13,4 +13,4 @@ services:
       - "<%= port %>"
 <%- end -%>
     command:
-      - "--config-file <%= @base_dir %>/<%= @service_name%>/etcd.conf.yml"
+      - "--config-file=<%= @base_dir %>/<%= @service_name%>/etcd.conf.yml"
