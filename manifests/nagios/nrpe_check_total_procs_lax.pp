@@ -3,14 +3,8 @@ define sunet::nagios::nrpe_check_total_procs_lax (
   Integer $critical = 200,
   Integer $warning = 150,
 ) {
-  if $facts =~ Hash and 'cosmos' in $facts and ('frontend_server' in $facts['cosmos']['host_roles']) {
-    # There are more processes than normal on frontend hosts
-    $_procw = $warning + 350
-    $_procc = $critical + 350
-  } else {
-    $_procw = $warning
-    $_procc = $critical
-  }
+    $_procw = lookup('check_total_procs_warning', undef, undef, $warning)
+    $_procc = lookup('check_total_procs_critical', undef, undef, $critical)
   sunet::nagios::nrpe_command {'check_total_procs_lax':
     command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
   }
