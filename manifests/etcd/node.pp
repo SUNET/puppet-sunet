@@ -22,7 +22,6 @@ class sunet::etcd::node(
   Array[String]    $allow_peers                = [],
   Boolean          $client_cert_auth           = true,  # Enable TLS client certificate authentication - turn CN into username
   String           $base_dir                   = '/opt',
-  Boolean          $enable_v2                  = false,
   Boolean          $infra_cert_from_this_class = true,
 )
 {
