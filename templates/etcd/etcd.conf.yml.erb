@@ -108,8 +108,6 @@ proxy-write-timeout: 5000
 proxy-read-timeout: 0
 
 client-transport-security:
-  # DEPRECATED: Path to the client server TLS CA file.
-  ca-file:
 
   # Path to the client server TLS cert file.
   cert-file: <%= @cert_file %>
@@ -127,8 +125,6 @@ client-transport-security:
   auto-tls: false
 
 peer-transport-security:
-  # DEPRECATED: Path to the peer server TLS CA file.
-  ca-file:
 
   # Path to the peer server TLS cert file.
   cert-file: <%= @cert_file %>
