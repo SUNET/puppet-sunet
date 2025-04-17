@@ -21,7 +21,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
     mode    => '0644',
     content => template('nunoc/edusign/logrotate-edusign.erb')
   }
-  sunet::metadata::swamid_idp_transitive { '/etc/metadata/swamid-idp-transitive.xml': }
+  sunet::metadata::trust::swamid
 
   $edusign_idp_entityid = hiera('edusign_idp_entityid', '')
   $edusign_metadata_file = hiera('edusign_metadata_file', '')
@@ -32,7 +32,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
       image    => 'docker.sunet.se/edusign-sp',
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
+      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
                     "SP_HOSTNAME=${_host}",
                     'BACKEND_HOST=edusign-app.docker',
