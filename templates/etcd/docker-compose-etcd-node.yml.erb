@@ -9,10 +9,14 @@ services:
       - <%= @key_file %>:<%= @key_file %>:ro
       - <%= @trusted_ca_file %>:<%= @trusted_ca_file %>:ro
 
+<% if @hostmode == true %>
+    network_mode: host
+<% else %>
     ports:
     <%- @ports.each do |port| -%>
       - "<%= port %>"
-<%- end -%>
+    <%- end -%>
+<% end %>
     entrypoint: /usr/local/bin/etcd
     command:
       - "--config-file=<%= @base_dir %>/<%= @service_name%>/etcd.conf.yml"

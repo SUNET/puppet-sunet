@@ -23,6 +23,7 @@ class sunet::etcd::node(
   Boolean          $client_cert_auth           = true,  # Enable TLS client certificate authentication - turn CN into username
   String           $base_dir                   = '/opt',
   Boolean          $infra_cert_from_this_class = true,
+  Boolean          $hostmode                   = true,
 )
 {
   include stdlib
