@@ -21,7 +21,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
     mode    => '0644',
     content => template('nunoc/edusign/logrotate-edusign.erb')
   }
-  sunet::metadata::trust::swamid
+  sunet::metadata::trust::swamid {'required_title':}
 
   $edusign_idp_entityid = hiera('edusign_idp_entityid', '')
   $edusign_metadata_file = hiera('edusign_metadata_file', '')
