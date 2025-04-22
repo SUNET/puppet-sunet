@@ -151,6 +151,16 @@ class sunet::bankidp(
       compose_filename => 'docker-compose.yml',
       description      => 'Freja ftw',
     }
+
+    sunet::sudoer {'nrpe_app_cert_expire':
+      user_name    => 'nagios',
+      collection   => 'nrpe_app_cert_expire',
+      command_line => "/usr/lib/nagios/plugins/check_app_cert_expire /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
+    }
+
+    sunet::nagios::nrpe_command {'check_app_cert_expire':
+      command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_app_cert_expire /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
+    }
   }
   if $redis_node {
     class { 'sunet::rediscluster':
