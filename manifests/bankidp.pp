@@ -5,6 +5,7 @@ class sunet::bankidp(
   Array $ports_extras = [],
   Array $resolvers = [],
   Array $volumes_extras = [],
+  Array[String] $register_lbs = lookup('register_lbs', Array[String], undef, ['tug-lb-1.sunet.se', 'sthb-lb-1.sunet.se']),
   Boolean $swamid = true,
   Boolean $swedenconnect = false,
   Boolean $app_node = false,
@@ -50,15 +51,6 @@ class sunet::bankidp(
         command => "openssl pkcs12 -export -in '${credsdir}/${name}.pem' -inkey '${credsdir}/${name}.key' -name '${name}-bankid' -out '${credsdir}/${name}.p12' -passin pass:'${password}' -passout pass:'${pass}'",
         onlyif  => "test ! -f ${credsdir}/${name}.p12"
       }
-
-      sunet::sudoer {"nrpe_cert_expire_${name}":
-        user_name    => 'nagios',
-        collection   => "nrpe_cert_expire_${name}",
-        command_line => "/usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
-      }
-      sunet::nagios::nrpe_command {"check_cert_expire_${name}":
-         command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
-      }
     }
 
     if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
@@ -93,7 +85,7 @@ class sunet::bankidp(
     class { 'sunet::frontend::register_sites':
       sites => {
         $service_name => {
-          frontends => ['se-fre-lb-1.sunet.se', 'se-tug-lb-1.sunet.se'],
+          frontends => $register_lbs,
           port      => '443',
         }
       }
@@ -159,30 +151,22 @@ class sunet::bankidp(
       compose_filename => 'docker-compose.yml',
       description      => 'Freja ftw',
     }
-
-    sunet::sudoer {'nrpe_app_cert_expire':
-      user_name    => 'nagios',
-      collection   => 'nrpe_app_cert_expire',
-      command_line => "/usr/lib/nagios/plugins/check_app_cert_expire /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
-    }
-
-    sunet::nagios::nrpe_command {'check_app_cert_expire':
-      command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_app_cert_expire /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
-    }
   }
   if $redis_node {
     class { 'sunet::rediscluster':
-      numnodes => 1,
-      hostmode => true,
-      tls      => true
+      numnodes          => 2,
+      hostmode          => true,
+      tls               => true,
+      automatic_rectify => true,
+      prevent_reboot    => true
     }
 
     file { "/etc/ssl/certs/${fqdn}_infra.crt":
       mode   => '0644',
     }
 
-    file { "/etc/ssl/private":
-      mode   => '711',
+    file { '/etc/ssl/private':
+      mode   => '0711',
     }
 
     package { ['redis-tools']:
