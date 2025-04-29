@@ -8,7 +8,7 @@
                          REMOTE_USER="mail"
                          metadataAttributePrefix="Meta-">
 
-        <Sessions lifetime="28800" timeout="36000" relayState="ss:mem"
+        <Sessions lifetime="86400" timeout="3600" relayState="ss:mem"
                    redirectLimit="exact"
                   checkAddress="false" handlerSSL="true" cookieProps="http">
             <Logout>SAML2 Local</Logout>
