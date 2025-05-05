@@ -36,6 +36,7 @@ services:
       - VIRTUAL_HOST=<%= @domain %>
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=3000
+      - ENABLE_PPROF=true
     entrypoint: gitea -c /opt/forgejo/config/app.ini
   nginx:
     image: docker.io/nginxproxy/nginx-proxy:latest
