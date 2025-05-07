@@ -9,12 +9,12 @@ args="$common_args                 \
   --cert <%= @cert_file %>"
 
 
-exec docker run --rm -it \
-     -v <%= @cert_file %>:<%= @cert_file %>:ro \
-     -v <%= @key_file %>:<%= @key_file %>:ro \
-     -v <%= @trusted_ca_file %>:<%= @trusted_ca_file %>:ro \
-     $params \
-     --entrypoint /usr/local/bin/etcdctl \
-     <%= @docker_image %>:<%= @docker_tag %> \
-     $args \
-     $*
+exec docker run --rm -it                                \
+  -v <%= @cert_file %>:<%= @cert_file %>:ro             \
+  -v <%= @key_file %>:<%= @key_file %>:ro               \
+  -v <%= @trusted_ca_file %>:<%= @trusted_ca_file %>:ro \
+  $params                                               \
+  --entrypoint /usr/local/bin/etcdctl                   \
+  <%= @docker_image %>:<%= @docker_tag %>               \
+  $args                                                 \
+  $*
