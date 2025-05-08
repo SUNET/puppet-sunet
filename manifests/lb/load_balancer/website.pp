@@ -231,7 +231,7 @@ define sunet::lb::load_balancer::website(
     $external_interface = pick($config['external_interface'], $::facts['interface_default'], $interface)
 
     if $config['stats_port'] {
-      $stats_dport = sunet::format_nft_set('dport', pick($config['stats_port'], []))
+      $stats_dport = sunet::format_nft_set('dport', pick($config['stats_port'], ''))
     }
 
     if $config['stats_allow_ips'] {
