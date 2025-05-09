@@ -230,13 +230,13 @@ define sunet::lb::load_balancer::website(
     $frontend_ips_v6 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 6) })
     $external_interface = pick($config['external_interface'], $::facts['interface_default'], $interface)
 
-    if $config['stats_port'] {
-      $stats_dport = sunet::format_nft_set('dport', pick($config['stats_port'], ''))
-    }
+    if $stats_port != '' {
+      $stats_dport = sunet::format_nft_set('dport', $stats_port)
 
-    if $config['stats_allow_ips'] {
-      $stats_allow_v4 = sunet::format_nft_set('saddr', filter($config['stats_allow_ips']) | $this | { is_ipaddr($this, 4) })
-      $stats_allow_v6 = sunet::format_nft_set('saddr', filter($config['stats_allow_ips']) | $this | { is_ipaddr($this, 6) })
+      if $config['stats_allow_ips'] {
+        $stats_allow_v4 = sunet::format_nft_set('saddr', filter($config['stats_allow_ips']) | $this | { is_ipaddr($this, 4) })
+        $stats_allow_v6 = sunet::format_nft_set('saddr', filter($config['stats_allow_ips']) | $this | { is_ipaddr($this, 6) })
+      }
     }
 
     #
