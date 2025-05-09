@@ -21,9 +21,7 @@ def decide_interval(tokens):
         elif word == "@daily" or word == "@midnight" or word == "@hourly":
             interval = "daily"
     else:
-        if tokens[1].startswith('*') and (
-            tokens[2] == tokens[3] == tokens[4] == "*"
-        ):
+        if tokens[1].startswith("*") and (tokens[2] == tokens[3] == tokens[4] == "*"):
             interval = "hourly"
         elif tokens[2] == tokens[3] == tokens[4] == "*":
             interval = "daily"
@@ -55,6 +53,13 @@ def decide_days_to_save(interval):
     return days_to_save
 
 
+def remove_files(job_name, days_to_save):
+    command = "find /var/cache/scriptherder -type f "
+    command += f"-mtime +{days_to_save} -name {job_name}__* "
+    command += "-delete"
+    os.system(command)
+
+
 with os.popen("/usr/bin/crontab -l") as pipe:
     for line in pipe:
 
@@ -83,12 +88,10 @@ with os.popen("/usr/bin/crontab -l") as pipe:
             continue
 
         # Match output from scriptherder
-        job_name = tokens[position].replace("-", "_")
+        job_name = tokens[position].replace("-", "_").replace(".","_")
 
         if job_name and days_to_save:
-            command = "find /var/cache/scriptherder -type f "
-            command += f"-mtime +{days_to_save} -name {job_name}__* "
-            command += "-delete"
-            os.system(
-                command
-            )
+            remove_files(job_name=job_name, days_to_save=days_to_save)
+
+# cosmos is not run by the crontab
+remove_files(job_name="cosmos", days_to_save=decide_days_to_save("hourly"))
