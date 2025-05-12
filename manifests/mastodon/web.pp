@@ -107,6 +107,17 @@ class sunet::mastodon::web(
     mode    => '0750',
     content => template('sunet/mastodon/web/tootctl.erb.sh'),
   }
+
+  file { '/usr/lib/nagios/plugins/check_mastodon_version':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0750',
+    content => file('sunet/mastodon/check_mastodon_version.py'),
+  }
+  sunet::nagios::nrpe_command { 'check_mastodon_version':
+    command_line => '/usr/lib/nagios/plugins/check_mastodon_version',
+  }
   $tl_dirs = ['mastodon', 'nginx']
   $tl_dirs.each | $dir| {
     file { "/opt/mastodon_web/${dir}":
