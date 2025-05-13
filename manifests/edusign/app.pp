@@ -78,7 +78,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
   $debug = hiera('edusign_app_debug','false')
   $sign_requester_id = hiera('edusign_sign_requester_id', "https://${_host}/shibboleth")
   $scope_whitelist = hiera('edusign_whitelist')
-
+  $edusign_app_polling = hiera('edusign_app_polling', 'inviter')
   $edusign_app_extra_variables = hiera('edusign_app_extra_variables', [])
 
   $env_app = [ "SP_HOSTNAME=${_host}",
@@ -107,7 +107,8 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
               "MULTISIGN_BUTTONS=${invites}",
               "SESSION_COOKIE_NAME=${profile}",
               'LOCAL_STORAGE_BASE_DIR=/etc/edusign/data',
-              'SQLITE_MD_DB_PATH=/etc/edusign/data/edusign.db'
+              'SQLITE_MD_DB_PATH=/etc/edusign/data/edusign.db',
+              "POLLING=${edusign_app_polling}"
   ]
 
   $env_app_final = $env_app + $edusign_app_extra_variables
