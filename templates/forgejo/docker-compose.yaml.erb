@@ -9,6 +9,7 @@ services:
       - "ACME_URL=http://acme-c.sunet.se"
 
   forgejo:
+    init: true
     container_name: forgejo
     restart: always
     user: "<%= @uid %>:<%= @gid %>"
