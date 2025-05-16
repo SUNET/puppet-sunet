@@ -7,6 +7,7 @@ services:
       - 80:80
     environment:
       - "ACME_URL=http://acme-c.sunet.se"
+    pull_policy: daily
 
   forgejo:
     init: true
@@ -38,8 +39,9 @@ services:
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=3000
     entrypoint: gitea -c /opt/forgejo/config/app.ini
+    pull_policy: daily
   nginx:
-    image: docker.io/nginxproxy/nginx-proxy:latest
+    image: docker.io/nginxproxy/nginx-proxy:1.7
     container_name: nginx
     networks:
       - internal_network
@@ -59,6 +61,7 @@ services:
     environment:
       - ENABLE_IPV6=true
     restart: unless-stopped
+    pull_policy: daily
 networks:
   external_network:
   internal_network:
