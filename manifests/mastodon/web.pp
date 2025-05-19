@@ -112,7 +112,7 @@ class sunet::mastodon::web(
     ensure  => file,
     owner   => 'root',
     group   => 'root',
-    mode    => '0750',
+    mode    => '0755',
     content => file('sunet/mastodon/check_mastodon_version.py'),
   }
   sunet::nagios::nrpe_command { 'check_mastodon_version':
