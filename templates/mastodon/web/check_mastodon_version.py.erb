@@ -8,6 +8,7 @@ import requests
 import yaml
 
 API_URL = "https://api.github.com/repos/mastodon/mastodon/releases"
+MASTO_URL="https://<%= @vhost %>"
 LOCK_FILE = "/tmp/check-mastodon-release.lock"
 COMPOSE_FILE = "/opt/mastodon_web/docker-compose.yml"
 # 12 hours
@@ -39,11 +40,11 @@ else:
     with open(LOCK_FILE, "w") as file:
         file.write(latest_version)
 
-with open(COMPOSE_FILE) as fd:
-    data = yaml.safe_load(fd)
-    running_version = data["services"]["web"]["image"].split(":")[1]
+resp = requests.get(url=f"{MASTO_URL}/api/v2/instance")
+data = resp.json()
+running_version = data.get("version")
 
-if latest_version == running_version:
+if latest_version == f"v{running_version}":
     status = "OK"
     NOT = " "
     exit_value = 0

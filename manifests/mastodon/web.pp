@@ -113,7 +113,7 @@ class sunet::mastodon::web(
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
-    content => file('sunet/mastodon/check_mastodon_version.py'),
+    content => template('sunet/mastodon/web/check_mastodon_version.py.erb'),
   }
   sunet::nagios::nrpe_command { 'check_mastodon_version':
     command_line => '/usr/lib/nagios/plugins/check_mastodon_version',
