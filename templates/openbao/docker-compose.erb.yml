@@ -1,0 +1,28 @@
+services:
+  always-https:
+    image: docker.sunet.se/always-https
+    container_name: always-https
+    ports:
+      - '80:80'
+    environment:
+      - 'ACME_URL=http://acme-c.sunet.se/'
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+       - '443:443'
+    volumes:
+      - '/etc/dehydrated:/etc/dehydrated'
+      - '/opt/openbao/nginx:/etc/nginx'
+    restart: unless-stopped
+  openbao:
+    image: <%= @openbao_image %>:<%= @openbao_tag %>
+    container_name: openbao
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    dns:
+      - 89.32.32.32
+    volumes:
+      - '/opt/openbao/config:/etc/openbao'
+    restart: unless-stopped
