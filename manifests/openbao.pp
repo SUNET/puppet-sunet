@@ -21,7 +21,7 @@ class sunet::openbao(
       iif           => $interface,
     }
   }
-  -> file { '/opt/openbao/docker-compose.yml':
+  file { '/opt/openbao/docker-compose.yml':
     ensure  => file,
     content => template('sunet/openbao/docker-compose.erb.yml'),
     owner   => 'root',
