@@ -27,8 +27,8 @@ add rule inet filter forward oifname to_<%= @instance -%> tcp <%= @tcp_dport -%>
 <% end %>
 <% end %>
 
-# Allow haproxy stats ports from <%= @interface %> to frontend instance docker containers
 <% if @stats_dport.is_a? String -%>
+# Allow haproxy stats ports from <%= @interface %> to frontend instance docker containers
 
 <% if @stats_allow_v4.is_a? String -%>
 add rule inet filter forward oifname to_<%= @instance -%> tcp <%= @stats_dport -%> ip <%= @stats_allow_v4 -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
