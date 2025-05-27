@@ -487,4 +487,20 @@ class sunet::naemon_monitor (
       exclude_hosts       => $exclude_hosts,
     }
   }
+  else {
+    class { 'nagioscfg':
+      additional_entities => $additional_entities,
+      config              => 'naemon_monitor',
+      default_host_group  => $default_host_group,
+      manage_package      => false,
+      manage_service      => false,
+      cfgdir              => '/etc/naemon/conf.d/nagioscfg',
+      host_template       => 'naemon-host',
+      hostgroups           => [],
+      service             => 'sunet-naemon_monitor',
+      single_ip           => true,
+      require             => File['/etc/naemon/conf.d/nagioscfg/'],
+      exclude_hosts       => $exclude_hosts,
+    }
+  }
 }
