@@ -8,6 +8,8 @@ class sunet::nagios(
   $procsc          = 200,
   $loadw           = '15,10,5',
   $loadc           = '30,25,20',
+  $zprocw          = 5,
+  $zprocc          = 10,
 ) {
 
   $nagios_ip_v4 = hiera('nagios_ip_v4', '109.105.111.111')
@@ -76,7 +78,7 @@ class sunet::nagios(
     }
   }
   sunet::nagios::nrpe_command {'check_zombie_procs':
-    command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
+    command_line => "/usr/lib/nagios/plugins/check_procs -w ${zprocw} -c ${zprocc} -s Z"
   }
   if $::operatingsystem == 'Ubuntu' and versioncmp($::operatingsystemrelease, '12.04') <= 0 {
     sunet::nagios::nrpe_command {'check_total_procs_lax':
