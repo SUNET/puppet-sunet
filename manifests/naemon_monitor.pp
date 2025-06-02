@@ -496,7 +496,7 @@ class sunet::naemon_monitor (
       manage_service      => false,
       cfgdir              => '/etc/naemon/conf.d/nagioscfg',
       host_template       => 'naemon-host',
-      hostgroups           => [],
+      hostgroups          => [],
       service             => 'sunet-naemon_monitor',
       single_ip           => true,
       require             => File['/etc/naemon/conf.d/nagioscfg/'],
