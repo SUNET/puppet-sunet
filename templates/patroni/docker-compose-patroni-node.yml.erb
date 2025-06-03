@@ -4,7 +4,7 @@ services:
     network_mode: host
     image: patroni:<%= @patroni_imagetag %>
     # Random number that we hope will not interfer with others…
-    user: 41227
+    user: '41227'
     volumes:
       - '/etc/passwd:/etc/passwd:ro'
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
