@@ -21,7 +21,7 @@ class sunet::patroni::node(
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
 
   user {'patroni-postgres':
-    ensure => 'present'
+    ensure => 'present',
     # Random number that we hope will not interfer with others…
     uid    =>  41227,
   }
