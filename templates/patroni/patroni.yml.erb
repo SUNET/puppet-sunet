@@ -5,6 +5,7 @@ restapi:
   listen: "*:<%= @patroni_rest_api_port %>"
   connect_address: "<%= @myself %>:<%= @patroni_rest_api_port %>"
 etcd3:
+  protocol: https
   hosts:
 <% @etcd_nodes.each do | node | -%>
     - <%= node %>:2379
