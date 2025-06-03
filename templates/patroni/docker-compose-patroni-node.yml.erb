@@ -3,8 +3,10 @@ services:
   patroni:
     network_mode: host
     image: patroni:<%= @patroni_imagetag %>
-    user: patroni-postgres
+    # Random number that we hope will not interfer with others…
+    user: 41227
     volumes:
+      - '/etc/passwd:/etc/passwd:ro'
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
       - '/opt/patroni/data:/home/postgres/data:rw'
     entrypoint: /usr/bin/python3
