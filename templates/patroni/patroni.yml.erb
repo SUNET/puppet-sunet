@@ -6,6 +6,8 @@ restapi:
   connect_address: "<%= @myself %>:<%= @patroni_rest_api_port %>"
 etcd3:
   protocol: https
+  cacert: /etc/ssl/certs/infra.crt
+  cert: /etc/ssl/<%= @myself %>_infra.pem
   hosts:
 <% @etcd_nodes.each do | node | -%>
     - <%= node %>:2379
