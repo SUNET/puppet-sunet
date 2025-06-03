@@ -20,6 +20,14 @@ class sunet::patroni::node(
   }
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
 
+  file { "/etc/ssl/private/${myself}_infra.crt":
+    mode   => '0644',
+  }
+
+  file { '/etc/ssl/private':
+    mode   => '0711',
+  }
+
   user {'patroni-postgres':
     ensure => 'present',
     # Random number that we hope will not interfer with others…
