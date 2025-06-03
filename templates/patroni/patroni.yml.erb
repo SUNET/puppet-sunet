@@ -7,7 +7,7 @@ restapi:
 etcd3:
   protocol: https
   cacert: /etc/ssl/certs/infra.crt
-  cert: /etc/ssl/<%= @myself %>_infra.pem
+  cert: /etc/ssl/private/<%= @myself %>_infra.pem
   hosts:
 <% @etcd_nodes.each do | node | -%>
     - <%= node %>:2379
