@@ -3,26 +3,9 @@
 class sunet::otel::alloy (
   String $otel_receiver    = undef,
 ) {
-  file { '/etc/apt/keyrings' :
-    ensure => 'directory',
-    notify => Service['alloy'],
-    mode   => '0644',
-    group  => 'root'
-  }
-  file { '/etc/apt/keyrings/grafana.gpg' :
-    ensure  => 'file',
-    notify  => Service['alloy'],
-    mode    => '0644',
-    group   => 'root',
-    content => file( 'sunet/otel/grafana.gpg' ),
-  }
-  file { '/etc/apt/sources.list.d/grafana.list' :
-    ensure  => 'file',
-    notify  => Service['alloy'],
-    mode    => '0644',
-    group   => 'root',
-    content => 'deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main',
-  }
+
+  ensure_resource('sunet::apt::repo_grafana', 'sunet-otel-alloy-grafana-repo')
+
   exec { 'alloy_update':
     command => 'apt update',
     unless  => 'dpkg -l alloy',
@@ -41,6 +24,13 @@ class sunet::otel::alloy (
     notify => Service['alloy'],
     mode   => '0644',
     group  => 'root',
+  }
+  file { '/etc/alloy/targets.d/example.yaml' :
+    ensure  => 'file',
+    notify  => Service['alloy'],
+    mode    => '0644',
+    group   => 'root',
+    content => template( 'sunet/otel/example.yaml' ),
   }
   file { '/etc/alloy/config.alloy' :
     ensure  => 'file',

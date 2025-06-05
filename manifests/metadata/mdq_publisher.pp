@@ -19,6 +19,7 @@ class sunet::metadata::mdq_publisher(
     notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
     ensure_resource ('class','sunet::nftables::init', {})
   }
+  $hostname = $facts['networking']['fqdn']
 
   $signers = lookup('signers')
   $signers.each |$signer_name, $signer| {
@@ -78,7 +79,6 @@ class sunet::metadata::mdq_publisher(
         "PUBLISHER_KEY=${publisher_key}",
   ]
 
-
   if $docker_compose {
     service { 'docker-swamid-mdq-publisher':
       ensure => 'stopped',
@@ -93,10 +93,20 @@ class sunet::metadata::mdq_publisher(
     }
   }
   else {
+    $docker_class = $::facts['dockerhost2'] ? {
+      yes => 'sunet::dockerhost2',
+      default => 'sunet::dockerhost',
+    }
+
+    if ($docker_class == 'sunet::dockerhost2') {
+      warning('Please consider changing to a native docker compose without the shim (created by docker_run) by setting "docker_compose: true"')
+    } else {
+      warning('Please consider changing to docker compose for this service by setting "docker_compose: true"')
+    }
     sunet::docker_run { 'swamid-mdq-publisher':
       image               => 'docker.sunet.se/swamid/mdq-publisher',
       imagetag            => $imagetag,
-      hostname            => $facts['networking']['fqdn'],
+      hostname            => $hostname,
       volumes             => [
         '/etc/ssl:/etc/ssl',
         '/var/www/html:/var/www/html',
