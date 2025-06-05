@@ -8,7 +8,7 @@ class sunet::patroni::node(
 
   $myself = $facts['networking']['fqdn'] # Use with connect_addr
   $infra_cert = "/etc/ssl/private/${myself}_infra.pem"
-  $postgres_cert = "/opt/postgres/data/certs/${myself}.pem"
+  $postgres_cert = "/opt/postgres/certs/${myself}.pem"
   $etcd_nodes = lookup('etcd_nodes', undef, undef, [])
   $postgres_nodes = lookup('postgres_nodes', undef, undef, [])
   $replicator_password = lookup('postgres_replicator_password', undef, undef, 'NOT_SET_IN_HIERA')
