@@ -36,7 +36,13 @@ else:
         print("WARNING: api.github.com did not responed with valid JSON")
         sys.exit(1)
 
-    latest_version = data[0]["name"]
+    for release in data:
+        if release["prerelease"]:
+            continue
+
+        latest_version = release["name"]
+        break
+
     with open(LOCK_FILE, "w") as file:
         file.write(latest_version)
 
