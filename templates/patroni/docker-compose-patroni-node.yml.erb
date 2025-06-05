@@ -11,5 +11,6 @@ services:
       - '/etc/passwd:/etc/passwd:ro'
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
       - '/opt/patroni/data:/home/postgres/data:rw'
+      - '/opt/patroni/certs:/opt/patroni/certs:ro'
     entrypoint: /usr/bin/python3
     command: /patroni.py patroni.yml

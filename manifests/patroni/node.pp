@@ -7,6 +7,8 @@ class sunet::patroni::node(
 ) {
 
   $myself = $facts['networking']['fqdn'] # Use with connect_addr
+  $infra_cert = "/etc/ssl/private/${myself}_infra.pem"
+  $postgres_cert = "/opt/postgres/data/certs/${myself}.pem"
   $etcd_nodes = lookup('etcd_nodes', undef, undef, [])
   $postgres_nodes = lookup('postgres_nodes', undef, undef, [])
   $replicator_password = lookup('postgres_replicator_password', undef, undef, 'NOT_SET_IN_HIERA')
@@ -20,20 +22,24 @@ class sunet::patroni::node(
   }
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
 
-  file { "/etc/ssl/private/${myself}_infra.crt":
-    mode   => '0644',
-  }
-
-  file { '/etc/ssl/private':
-    mode   => '0711',
-  }
-
   user {'patroni-postgres':
     ensure => 'present',
     # Random number that we hope will not interfer with others…
     uid    =>  41227,
   }
-  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner => 'patroni-postgres', group => 'root', mode => '0750'})
+  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner   => 'patroni-postgres', group => 'root', mode => '0750'})
+  ensure_resource('sunet::misc::create_dir', '/opt/patroni/certs/', { owner  => 'patroni-postgres', group => 'root', mode => '0750'})
+
+  # The patroni image is hardcorded to use a user which we cant override or set correct permissions for.
+  if (find_file($infra_cert)) {
+    file { $postgres_cert:
+        ensure => 'file',
+        source => $infra_cert,
+        owner  => 'patroni-postgres',
+        group  => 'patroni-postgres',
+    }
+  }
+
   file { '/opt/patroni/config/patroni.yml':
     content => template('sunet/patroni/patroni.yml.erb'),
     mode    => '0755',
