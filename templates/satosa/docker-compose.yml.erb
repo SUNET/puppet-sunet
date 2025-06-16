@@ -10,7 +10,7 @@ services:
       - 'ACME_URL=http://acme-c.sunet.se/'
 <% end -%>
   satosa:
-    image: docker.sunet.se/satosa:<%= @satosa_tag %>
+    image: <%= @image %>:<%= @satosa_tag %>
     volumes:
       - '/etc/satosa:/etc/satosa'
       - '/etc/dehydrated:/etc/dehydrated'
