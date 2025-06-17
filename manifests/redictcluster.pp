@@ -80,6 +80,11 @@ class sunet::redictcluster(
     mode    => '0755',
     content => template('sunet/redictcluster/bootstrap-redict.sh.erb'),
   }
+  file {'/usr/local/bin/redict-connect':
+    ensure  => present,
+    mode    => '0755',
+    content => file('sunet/redictcluster/redict-connect'),
+  }
   if $automatic_rectify {
     sunet::scriptherder::cronjob { 'redict-rectify':
       cmd           => '/opt/redict/redict-rectify.sh',
