@@ -9,9 +9,6 @@ data-dir: /data
 # Path to the dedicated wal directory.
 wal-dir:
 
-# Number of committed transactions to trigger a snapshot to disk.
-snapshot-count: 10000
-
 # Time (in milliseconds) of a heartbeat interval.
 heartbeat-interval: 100
 
@@ -29,9 +26,6 @@ listen-peer-urls: <%= @listen_peer_urls.join(',') %>
 # List of comma separated URLs to listen on for client traffic.
 # e.g: http://localhost:2379
 listen-client-urls: <%= @listen_client_urls.join(',') %>
-
-# Maximum number of snapshot files to retain (0 is unlimited).
-max-snapshots: 5
 
 # Maximum number of wal files to retain (0 is unlimited).
 max-wals: 5
