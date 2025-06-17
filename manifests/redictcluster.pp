@@ -23,7 +23,9 @@ class sunet::redictcluster(
   $redict_password = safe_hiera('redict_password')
 
   # redict-tools is no available in older os-releases, but redis-tools is compatible with redict
-  if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') > 0) or ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['major'], '12') > 0) {
+  if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') > 0)
+    or ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['major'], '12') > 0)
+  {
     include sunet::packages::redict_tools
   }
   else {
