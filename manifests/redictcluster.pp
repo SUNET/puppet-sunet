@@ -9,7 +9,7 @@ class sunet::redictcluster(
   Optional[Boolean] $tls = false,
   Optional[String]  $cluster_announce_ip = '',
   Array[String]     $cluster_nodes = [$facts['networking']['fqdn']],
-  Array[Integer]    $cluser_ports = [6379,6380,6381],
+  Array[Integer]    $cluster_ports = [6379,6380,6381],
   Optional[Boolean] $automatic_rectify = false,
   Optional[Boolean] $prevent_reboot = false,
   Optional[String]  $image = 'registry.redict.io/redict',
