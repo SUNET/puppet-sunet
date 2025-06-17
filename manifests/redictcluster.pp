@@ -5,8 +5,8 @@
 # @param cluster_ports        Default ports to use in the cluster, override if needed.
 class sunet::redictcluster(
   Integer           $numnodes = 3,
-  Boolean           $hostmode = true,
-  Optional[Boolean] $tls = true,
+  Boolean           $hostmode = false,
+  Optional[Boolean] $tls = false,
   Optional[String]  $cluster_announce_ip = '',
   Array[String]     $cluster_nodes = [$facts['networking']['fqdn']],
   Array[Integer]    $cluster_ports = [6379,6380,6381],
