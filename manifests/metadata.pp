@@ -35,18 +35,6 @@ define sunet::metadata::swamid {
   }
 }
 
-# SWAMID metadata class for testing
-define sunet::metadata::swamid_testing {
-  ensure_resource('file','/var/run/md-signer2.crt', {
-      content  => file('sunet/md-signer2.crt')
-  })
-  sunet::metadata { 'swamid':
-      url      => 'http://mds.swamid.se/md/swamid-testing-1.0.xml',
-      cert     => '/var/run/md-signer2.crt',
-      filename => $name
-  }
-}
-
 # SWAMID metadata class for idp
 define sunet::metadata::swamid_idp {
   ensure_resource('file','/var/run/md-signer2.crt', {

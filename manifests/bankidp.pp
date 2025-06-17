@@ -5,6 +5,7 @@ class sunet::bankidp(
   Array $ports_extras = [],
   Array $resolvers = [],
   Array $volumes_extras = [],
+  Array[String] $register_lbs = lookup('register_lbs', Array[String], undef, ['tug-lb-1.sunet.se', 'sthb-lb-1.sunet.se']),
   Boolean $swamid = true,
   Boolean $swedenconnect = false,
   Boolean $app_node = false,
@@ -84,7 +85,7 @@ class sunet::bankidp(
     class { 'sunet::frontend::register_sites':
       sites => {
         $service_name => {
-          frontends => ['se-fre-lb-1.sunet.se', 'se-tug-lb-1.sunet.se'],
+          frontends => $register_lbs,
           port      => '443',
         }
       }

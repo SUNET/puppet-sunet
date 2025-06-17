@@ -19,6 +19,7 @@ class sunet::metadata::mdq_publisher(
     notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
     ensure_resource ('class','sunet::nftables::init', {})
   }
+  $hostname = $facts['networking']['fqdn']
 
   $signers = lookup('signers')
   $signers.each |$signer_name, $signer| {
@@ -105,7 +106,7 @@ class sunet::metadata::mdq_publisher(
     sunet::docker_run { 'swamid-mdq-publisher':
       image               => 'docker.sunet.se/swamid/mdq-publisher',
       imagetag            => $imagetag,
-      hostname            => $facts['networking']['fqdn'],
+      hostname            => $hostname,
       volumes             => [
         '/etc/ssl:/etc/ssl',
         '/var/www/html:/var/www/html',
