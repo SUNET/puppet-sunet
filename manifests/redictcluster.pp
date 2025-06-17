@@ -14,6 +14,15 @@ class sunet::redictcluster(
 {
 
   $fqdn = $facts['networking']['fqdn']
+
+  # redict-tools is no available in older os-releases, but redis-tools is compatible with redict
+  if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') > 0) or ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['major'], '12') > 0) {
+    include sunet::packages::redict_tools
+  }
+  else {
+    include sunet::packages::redis_tools
+  }
+
   # Allow the user to either specify the variable in cosmos-rules or in hiera
   if $cluster_announce_ip == '' {
     $__cluster_announce_ip = lookup('cluster_announce_ip', undef, undef, '')
