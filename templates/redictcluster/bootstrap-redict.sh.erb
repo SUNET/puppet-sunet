@@ -12,4 +12,4 @@ for host in <%= @cluster_nodes.join(' ') %>; do
   done
 done
 
-redis-cli --no-auth-warning -a <%= @redict_password %> --cluster create ${hosts} --cluster-replicas <%= @numnodes - 1 %> --tls --cert /etc/ssl/certs/${my_host}_infra.crt --key /etc/ssl/private/${my_host}_infra.key --cacert /etc/ssl/certs/infra.crt
+redis-cli --no-auth-warning -a <%= @redict_password %> --cluster create ${hosts} --cluster-replicas <%= @numnodes - 1 %>

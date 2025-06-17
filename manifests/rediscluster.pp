@@ -2,7 +2,7 @@
 class sunet::rediscluster(
   Integer $numnodes = 3,
   Boolean $hostmode = false,
-  Optional[Boolean] $tls = true,
+  Optional[Boolean] $tls = false,
   Optional[String] $cluster_announce_ip = '',
   Optional[Boolean] $automatic_rectify = false,
   Optional[Boolean] $prevent_reboot = false,
