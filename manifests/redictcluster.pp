@@ -70,19 +70,19 @@ class sunet::redictcluster(
     ensure  => present,
     content => template('sunet/redictcluster/55-vm-overcommit.conf.erb'),
   }
-  file {'/opt/redict-rectify.sh':
+  file {'/opt/redict/redict-rectify.sh':
     ensure  => present,
     mode    => '0755',
     content => template('sunet/redictcluster/redict-rectify.sh.erb'),
   }
-  file {'/opt/bootstrap-redict.sh':
+  file {'/opt/redict/bootstrap-redict.sh':
     ensure  => present,
     mode    => '0755',
     content => template('sunet/redictcluster/bootstrap-redict.sh.erb'),
   }
   if $automatic_rectify {
     sunet::scriptherder::cronjob { 'redict-rectify':
-      cmd           => '/opt/redict-rectify.sh',
+      cmd           => '/opt/redict/redict-rectify.sh',
       hour          => '*',
       minute        => '*/10',
       ok_criteria   => ['exit_status=0','max_age=2d'],
