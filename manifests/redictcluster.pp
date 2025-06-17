@@ -49,15 +49,15 @@ class sunet::redictcluster(
 
   if $tls {
     file { "/etc/ssl/certs/${fqdn}_infra.crt":
-      mode   => '0644',
+      mode => '0644',
     }
 
     file { "/etc/ssl/private/${fqdn}_infra.key":
-      mode   => '0644',
+      mode => '0644',
     }
 
     file { '/etc/ssl/private':
-      mode   => '0711',
+      mode => '0711',
     }
   }
 
