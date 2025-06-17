@@ -1,7 +1,7 @@
 # A cluster class
 class sunet::redictcluster(
   Integer $numnodes = 3,
-  Boolean $hostmode = false,
+  Boolean $hostmode = true,
   Optional[Boolean] $tls = false,
   Optional[String] $cluster_announce_ip = '',
   Optional[Boolean] $automatic_rectify = false,
