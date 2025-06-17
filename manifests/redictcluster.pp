@@ -1,19 +1,26 @@
-# A cluster class
+#
+# A redict cluster class
+
+# @param cluster_nodes        A list of all redict cluster member FQDN's. Used when bootstrapping the cluster.
+# @param cluster_ports        Default ports to use in the cluster, override if needed.
 class sunet::redictcluster(
-  Integer $numnodes = 3,
-  Boolean $hostmode = true,
+  Integer           $numnodes = 3,
+  Boolean           $hostmode = true,
   Optional[Boolean] $tls = false,
-  Optional[String] $cluster_announce_ip = '',
+  Optional[String]  $cluster_announce_ip = '',
+  Array[String]     $cluster_nodes = [$facts['networking']['fqdn']],
+  Array[Integer]    $cluser_ports = [6379,6380,6381]
   Optional[Boolean] $automatic_rectify = false,
   Optional[Boolean] $prevent_reboot = false,
-  Optional[String] $image = 'registry.redict.io/redict',
-  Optional[String] $tag = '7-bookworm',
-  Optional[String] $maxmemory = undef,
-  String $maxmemory_policy = 'noeviction',
+  Optional[String]  $image = 'registry.redict.io/redict',
+  Optional[String]  $tag = '7-bookworm',
+  Optional[String]  $maxmemory = undef,
+  String            $maxmemory_policy = 'noeviction',
 )
 {
 
   $fqdn = $facts['networking']['fqdn']
+  $redict_password = safe_hiera('redict_password')
 
   # redict-tools is no available in older os-releases, but redis-tools is compatible with redict
   if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') > 0) or ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['major'], '12') > 0) {
@@ -37,8 +44,6 @@ class sunet::redictcluster(
   } else {
     $_cluster_announce_ip = $__cluster_announce_ip
   }
-
-  $redict_password = safe_hiera('redict_password')
 
   if $tls {
     file { "/etc/ssl/certs/${fqdn}_infra.crt":
@@ -69,6 +74,11 @@ class sunet::redictcluster(
     ensure  => present,
     mode    => '0755',
     content => template('sunet/redictcluster/redict-rectify.sh.erb'),
+  }
+  file {'/opt/bootstrap-redict.sh':
+    ensure  => present,
+    mode    => '0755',
+    content => template('sunet/redictcluster/bootstrap-redict.sh.erb'),
   }
   if $automatic_rectify {
     sunet::scriptherder::cronjob { 'redict-rectify':
