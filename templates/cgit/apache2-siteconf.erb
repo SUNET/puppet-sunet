@@ -46,7 +46,7 @@
         Protocols h2 http/1.1
 
 <% if @disallow_robots %>
-        Alias /robots.txt "/var/www/html/robots.txt
+        Alias /robots.txt "/var/www/html/robots.txt"
 <% end -%>
         Alias /cgit-css "/usr/share/cgit/"
         ScriptAlias / "/usr/lib/cgit/cgit.cgi/"
