@@ -3,6 +3,7 @@ class sunet::metadata::mdqp(
   String  $imagetag      = 'latest',
   Integer $runs_per_hour = 4,
   String  $mdq_service   = 'https://mds.swamid.se',
+  Boolean $mdq = true,
 ) {
 
       include sunet::packages::jq
@@ -14,16 +15,19 @@ class sunet::metadata::mdqp(
       }
 
       $image_tag = "docker.sunet.se/mdqp:${imagetag}"
-      if ($::facts['dockerhost2'] == 'yes') {
-        exec {'Fetch image':
-          command => "/usr/bin/docker pull ${image_tag}",
-          require => Class['sunet::dockerhost2'],
-        }
-      } else {
-        docker::image { $image_tag :  # make it possible to use the same docker image more than once on a node
-          ensure  => 'present',
-          image   => $image_tag,
-          require => Class['sunet::dockerhost'],
+
+      if $mdq {
+        if ($::facts['dockerhost2'] == 'yes') {
+          exec {'Fetch image':
+            command => "/usr/bin/docker pull ${image_tag}",
+            require => Class['sunet::dockerhost2'],
+          }
+        } else {
+          docker::image { $image_tag :  # make it possible to use the same docker image more than once on a node
+            ensure  => 'present',
+            image   => $image_tag,
+            require => Class['sunet::dockerhost'],
+          }
         }
       }
 
