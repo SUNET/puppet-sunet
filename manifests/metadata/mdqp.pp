@@ -1,8 +1,8 @@
 # Wrapper to setup a MDQ "Proxy"
 class sunet::metadata::mdqp(
-  String $imagetag='latest',
-  Integer $runs_per_hour=4,
-  String $mdq_service='https://mds.swamid.se',
+  String  $imagetag      = 'latest',
+  Integer $runs_per_hour = 4,
+  String  $mdq_service   = 'https://mds.swamid.se',
 ) {
 
       include sunet::packages::jq
