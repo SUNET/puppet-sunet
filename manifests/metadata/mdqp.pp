@@ -8,8 +8,12 @@ class sunet::metadata::mdqp(
       include sunet::packages::jq
       include sunet::packages::xmlstarlet
 
-      $image_tag = "docker.sunet.se/mdqp:${imagetag}"
+      $docker_class = $::facts['dockerhost2'] ? {
+        yes => 'sunet::dockerhost2',
+        default => 'sunet::dockerhost',
+      }
 
+      $image_tag = "docker.sunet.se/mdqp:${imagetag}"
       if ($::facts['dockerhost2'] == 'yes') {
         exec {'Fetch image':
           command => "/usr/bin/docker pull ${image_tag}",

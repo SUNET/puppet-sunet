@@ -13,12 +13,12 @@ class sunet::ceph(
       ensure => 'present',
     }
   }
-  file {'/root/.ssh/':
+  ensure_resource('file', '/root/.ssh/', {
     ensure => 'directory',
     owner  => 'root',
     group  => 'root',
     mode   => '0700',
-  }
+  });
   file {'/root/.ssh/authorized_keys':
     ensure => 'present',
     owner  => 'root',
