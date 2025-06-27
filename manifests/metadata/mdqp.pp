@@ -8,6 +8,7 @@ class sunet::metadata::mdqp(
 
       include sunet::packages::jq
       include sunet::packages::xmlstarlet
+      include sunet::packages::xmllint
 
       $docker_class = $::facts['dockerhost2'] ? {
         yes => 'sunet::dockerhost2',
