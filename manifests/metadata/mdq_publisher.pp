@@ -11,7 +11,7 @@ class sunet::metadata::mdq_publisher(
   Optional[String] $extra_entities='',
   Optional[String] $xml_dir='md',
   Optional[String] $imagetag='latest',
-  Array[String] $allowed_https_clients = lookup('mdq_allowed_https_clients', undef, undef, ['any']);,
+  Array[String] $allowed_https_clients = lookup('mdq_allowed_https_clients', undef, undef, ['any']),
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
