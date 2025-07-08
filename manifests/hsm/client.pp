@@ -39,7 +39,7 @@ class sunet::hsm::client (
       ensure  => 'file',
       mode    => '0750',
       owner   => 'root',
-      content => file("sunet/hsm/servers/${hsm}Cert.pem"")
+      content => file("sunet/hsm/servers/${hsm}Cert.pem")
     }
   }
 
