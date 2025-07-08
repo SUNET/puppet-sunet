@@ -60,5 +60,12 @@ class sunet::hsm::client (
       from => $allow_remote_ped_from,
       port => 1503,
     }
+
+    file_line { 'enable-GatewayPorts':
+      path   => '/etc/ssh/sshd_config',
+      line   => 'GatewayPorts yes',
+      match  => '^#?GatewayPorts',
+      notify => Service['ssh'],
+    }
   }
 }
