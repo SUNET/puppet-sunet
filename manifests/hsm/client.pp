@@ -1,8 +1,9 @@
 # The HSM client
 class sunet::hsm::client (
-  String $tarball          = '610-000397-015_SW_Linux_Luna_Client_V10.9.0_RevB.tar',
-  String $baseurl      = 'https://sunet.drive.sunet.se/s/4z96YiBA2c3oFo3/download',
-  String $shasum       = '8f5644e0aced01ac5718db41321d0fb6c21c5f9c80dbeda815b39cb735139e2f',
+  String $tarball     = '610-000397-015_SW_Linux_Luna_Client_V10.9.0_RevB.tar',
+  String $baseurl     = 'https://sunet.drive.sunet.se/s/4z96YiBA2c3oFo3/download',
+  String $shasum      = '8f5644e0aced01ac5718db41321d0fb6c21c5f9c80dbeda815b39cb735139e2f',
+  Array  $hsm_servers = ['tug-hsm-lab2.sunet.se'],
 ) {
 
   include sunet::packages::alien
@@ -30,6 +31,16 @@ class sunet::hsm::client (
     ensure   => 'present',
     filename => '/root/.bashrc',
     line     => 'export PATH=$PATH:/usr/safenet/lunaclient/bin',
+  }
+
+  $hsm_servers.each  | $hsm | {
+
+    file { "/usr/safenet/lunaclient/cert/server/${hsm}Cert.pem":
+      ensure  => 'file',
+      mode    => '0750',
+      owner   => 'root',
+      content => file("sunet/hsm/servers/${hsm}Cert.pem"")
+    }
   }
 
 }
