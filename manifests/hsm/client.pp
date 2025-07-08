@@ -43,4 +43,10 @@ class sunet::hsm::client (
     }
   }
 
+  file { '/opt/hsmclient/libexec/configure-luna':
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    content => file('sunet/hsm/configure-luna')
+  }
 }
