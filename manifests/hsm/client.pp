@@ -22,7 +22,7 @@ class sunet::hsm::client (
   }
 
   exec { '/opt/hsmclient/libexec/download-patch-and-install':
-    command => "/opt/hsmclient/libexec/download ${tarball} ${baseurl} ${shasum}",
+    command => "/opt/hsmclient/libexec/download-patch-and-install ${tarball} ${baseurl} ${shasum}",
     creates => '/usr/safenet/lunaclient/bin/lunacm',
   }
 
