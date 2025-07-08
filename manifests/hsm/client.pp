@@ -49,7 +49,8 @@ class sunet::hsm::client (
     owner   => 'root',
     content => file('sunet/hsm/configure-luna')
   }
+
   exec { '/opt/hsmclient/libexec/configure-luna':
-    onlyif =>  ['test $(grep  sunet.se /etc/Chrystoki.conf |wc -l) == 0']
+    onlyif =>  'test `grep  sunet.se /etc/Chrystoki.conf |wc -l` == 0',
   }
 }
