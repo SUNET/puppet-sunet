@@ -26,4 +26,10 @@ class sunet::hsm::client (
     creates => '/usr/safenet/lunaclient/bin/lunacm',
   }
 
+  sunet::snippets::file_line { 'path-to-luna':
+    ensure   => 'present',
+    filename => '/root/.bashrc',
+    line     => 'export PATH=$PATH:/usr/safenet/lunaclient/bin',
+  }
+
 }
