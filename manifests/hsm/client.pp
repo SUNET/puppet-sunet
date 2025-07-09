@@ -89,6 +89,12 @@ class sunet::hsm::client (
       collection   => 'hsm',
       command_line => '/usr/lib/nagios/plugins/check_hsm',
     }
+
+    $hsm_servers.each  | $hsm | {
+      $dc =  split($hsm,'-')[0]
+      sunet::nagios::nrpe_command { "check_hsm_${dc}":
+        command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_hsm ${dc}",
+      }
   }
 
 }
