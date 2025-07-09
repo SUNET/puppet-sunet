@@ -95,6 +95,7 @@ class sunet::hsm::client (
       sunet::nagios::nrpe_command { "check_hsm_${dc}":
         command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_hsm ${dc}",
       }
+    }
   }
 
 }
