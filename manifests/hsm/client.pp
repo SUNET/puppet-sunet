@@ -84,6 +84,11 @@ class sunet::hsm::client (
       owner   => 'root',
       content => file('sunet/hsm/check-hsm.sh')
     }
+    sunet::sudoer { 'nagios_hsm':
+      user_name    => 'nagios',
+      collection   => 'hsm',
+      command_line => '/usr/lib/nagios/plugins/check_hsm',
+    }
   }
 
 }
