@@ -90,6 +90,13 @@ class sunet::hsm::client (
       command_line => '/usr/lib/nagios/plugins/check_hsm',
     }
 
+    file { '/usr/safenet/lunaclient/cert/safenet-root.pem':
+      ensure  => 'file',
+      mode    => '0644',
+      owner   => 'root',
+      content => file('sunet/hsm/safenet-root.pem')
+    }
+
     $hsm_servers.each  | $hsm | {
       $dc =  split($hsm,'-')[0]
       sunet::nagios::nrpe_command { "check_hsm_${dc}":

@@ -8,7 +8,7 @@ SERIAL_LLA=1429933786537
 SERIAL_DCOA=1621911929454
 SERIAL_DCOB=1620838580408
 
-ROOT_CERT=/usr/safenet/lunaclient/cert/server/CAFile.pem
+ROOT_CERT=/usr/safenet/lunaclient/cert/safenet-root.pem
 CHALLANGE=1234567890
 PASSFILE=/root/hsm-partition-pin
 
