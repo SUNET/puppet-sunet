@@ -57,7 +57,7 @@ class sunet::hsm::client (
   }
 
   if ($allow_remote_ped_from) {
-    sunet::nftables::allow{ "ped":
+    sunet::nftables::allow{ 'ped':
       from => $allow_remote_ped_from,
       port => 1503,
     }
