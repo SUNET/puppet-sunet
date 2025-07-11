@@ -37,8 +37,8 @@ class sunet::baas2(
   Array[String] $backup_dirs = [],
   Array[String] $exclude_list = [],
   Boolean       $install_tbmr=false,
-  String        $tbmr_version='9.5.2.3206-1',
-  String        $tbmr_url='https://s3.sto1.safedc.net/94f5b4f4aa674782b6bc4181943e67f1:tbmr/wab0snk8lrh6l8cjzgnaozm8siw7g7/tbmr_9.5.2.3206-1_amd64.deb',
+  String        $tbmr_version='9.6.3.3418-1',
+  String        $tbmr_url="https://s3.sto1.safedc.net/94f5b4f4aa674782b6bc4181943e67f1:tbmr/wab0snk8lrh6l8cjzgnaozm8siw7g7/tbmr_${tbmr_version}_amd64.deb",
 ) {
 
   # MUST be set properly in hiera to continue
@@ -143,13 +143,13 @@ class sunet::baas2(
       }
 
       # Make sure the requested TBMR version is installed
-      exec { "sunet-baas2-tbmr-bootstrap --install":
+      exec { 'sunet-baas2-tbmr-bootstrap --install':
         command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --install --version=${tbmr_version} --tbmr_url=${tbmr_url}",
       }
 
       # Activate the TBMR license
-      exec { "sunet-baas2-tbmr-bootstrap --activate":
-        command => "/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate",
+      exec { 'sunet-baas2-tbmr-bootstrap --activate':
+        command     => '/usr/local/sbin/sunet-baas2-tbmr-bootstrap --activate',
         environment => [
             "TBMR_LIC=${tbmr_lic}",
             "TBMR_CID=${tbmr_cid}",

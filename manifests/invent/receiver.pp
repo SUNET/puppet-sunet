@@ -5,7 +5,7 @@ class sunet::invent::receiver (
   String $vhost = 'invent.sunet.se'
 ){
   $admin_password = lookup('invent_admin_password', undef, undef, undef)
-  $endpoints = ['hosts', 'images']
+  $endpoints = ['hosts', 'images', 'network']
   $nginx_dirs = [ 'acme', 'certs','conf','dhparam','html','vhost' ]
   $ni_host_key = lookup ('ni_host_key')
   $ni_host_ip = lookup ('ni_host_ip')
@@ -50,7 +50,7 @@ class sunet::invent::receiver (
       port          => 443,
     }
     sunet::nftables::rule { 'allow_rsync':
-      rule => "add rule inet filter input ip saddr {$ni_host_ip} tcp dport 22 counter accept comment \"allow-rsync-from-ni-host\""
+      rule => "add rule inet filter input ip saddr {${ni_host_ip}} tcp dport 22 counter accept comment \"allow-rsync-from-ni-host\""
     }
   } else {
     sunet::misc::ufw_allow { 'receiver_ports':

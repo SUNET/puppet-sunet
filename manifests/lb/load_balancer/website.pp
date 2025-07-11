@@ -16,24 +16,26 @@ define sunet::lb::load_balancer::website(
   $haproxy_template_dir = lookup('haproxy_template_dir', undef, undef, $instance)
 
   # Figure out what certificate to pass to the haproxy container
-  if ! has_key($config, 'tls_certificate_bundle') {
-    if has_key($::tls_certificates, 'snakeoil') {
-      $snakeoil = $::tls_certificates['snakeoil']['bundle']
+  if 'tls_certificate_bundle' in $config {
+    $tls_certificate_bundle = $config['tls_certificate_bundle']
+  } else {
+    if 'snakeoil' in $facts['tls_certificates'] {
+      $snakeoil = $facts['tls_certificates']['snakeoil']['bundle']
     }
-    if has_key($::tls_certificates, $site_name) {
+    if $site_name in $facts['tls_certificates'] {
       # Site name found in tls_certificates - good start
       $_tls_certificate_bundle = pick(
-        $::tls_certificates[$site_name]['haproxy'],
-        $::tls_certificates[$site_name]['certkey'],
-        $::tls_certificates[$site_name]['infra_certkey'],
-        $::tls_certificates[$site_name]['bundle'],
-        $::tls_certificates[$site_name]['dehydrated_bundle'],
+        $facts['tls_certificates'][$site_name]['haproxy'],
+        $facts['tls_certificates'][$site_name]['certkey'],
+        $facts['tls_certificates'][$site_name]['infra_certkey'],
+        $facts['tls_certificates'][$site_name]['bundle'],
+        $facts['tls_certificates'][$site_name]['dehydrated_bundle'],
         'NOMATCH',
       )
       if $_tls_certificate_bundle != 'NOMATCH' {
         $tls_certificate_bundle = $_tls_certificate_bundle
       } else {
-        $_site_certs = $::tls_certificates[$site_name]
+        $_site_certs = $facts['tls_certificates'][$site_name]
         notice(join([
           "None of the certificates for site ${site_name} matched my list ",
           "(haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): ${_site_certs}"
@@ -49,8 +51,6 @@ define sunet::lb::load_balancer::website(
     if $snakeoil and $tls_certificate_bundle == $snakeoil {
       notice("Using snakeoil certificate for instance ${instance} (site ${site_name})")
     }
-  } else {
-    $tls_certificate_bundle = $config['tls_certificate_bundle']
   }
 
   if $tls_certificate_bundle {
@@ -66,10 +66,10 @@ define sunet::lb::load_balancer::website(
 
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     # OLD setup
-    $_docker_ip = $::facts['ipaddress_docker0']
+    $_docker_ip = $facts['networking']['interfaces']['docker0']['ip']
     # On old setups, containers can't reach IPv6 only ACME-C backend directly, but have to go through
     # a proxy process (always-https) running on the frontend host itself.
-    $_letsencrypt_override_address = $::facts['ipaddress_default']
+    $_letsencrypt_override_address = $facts['networking']['ip']
   } else {
     # NEW setup with Docker in namespace
     $_docker_ip = '172.16.0.2'  # TODO: Parameterise this somehow
@@ -79,9 +79,9 @@ define sunet::lb::load_balancer::website(
   # Add IP and hostname of the host running the container - used to reach the
   # acme-c proxy in eduid
   $config3a = merge($config2, {
-    'frontend_ip4' => $::ipaddress_default,
-    'frontend_ip6' => $::ipaddress6_default,
-    'frontend_fqdn' => $::fqdn,
+    'frontend_ip4' => $facts['networking']['ip'],
+    'frontend_ip6' => $facts['networking']['ip6'],
+    'frontend_fqdn' => $facts['networking']['fqdn'],
   })
 
   if $_letsencrypt_override_address {
@@ -135,6 +135,7 @@ define sunet::lb::load_balancer::website(
 
   # Parameters used in frontend/docker-compose_template.erb
   $allow_ports            = pick_default($config['allow_ports'], [])
+  $stats_port             = pick_default($config['stats_port'], '')
   $dns                    = pick_default($config['dns'], [])
   $exposed_ports          = pick_default($config['exposed_ports'], [80, 443])
   $frontendtools_image    = pick($config['frontendtools_image'], 'docker.sunet.se/frontend/frontend-tools')
@@ -145,7 +146,7 @@ define sunet::lb::load_balancer::website(
   $haproxy_volumes        = pick($config['haproxy_volumes'], false)
   $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
-  $statsd_host            = pick($_docker_ip, $::ipaddress)
+  $statsd_host            = pick($_docker_ip, $facts['networking']['ip'])
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
@@ -188,11 +189,11 @@ define sunet::lb::load_balancer::website(
 
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     # OLD way
-    if has_key($config, 'allow_ports') {
+    if 'allow_ports' in $config {
       each($config['frontends']) | $k, $v | {
         # k should be a frontend FQDN and $v a hash with ips in it:
         #   $v = {ips => [192.0.2.1]}}
-        if is_hash($v) and has_key($v, 'ips') {
+        if $v =~ Hash and 'ips' in $v {
           sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
             from => 'any',
             to   => $v['ips'],
@@ -218,20 +219,37 @@ define sunet::lb::load_balancer::website(
 
     # Variables used in template
     #
+    $saddr = sunet::format_nft_set('saddr', pick($config['allow_ips'], 'any'))
+    if $config['allow_ips'] {
+      $saddr_v4 = sunet::format_nft_set('saddr', filter($config['allow_ips']) | $this | { is_ipaddr($this, 4) })
+      $saddr_v6 = sunet::format_nft_set('saddr', filter($config['allow_ips']) | $this | { is_ipaddr($this, 6) })
+    }
+
     $tcp_dport = sunet::format_nft_set('dport', pick($config['allow_ports'], []))
     $frontend_ips_v4 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 4) })
     $frontend_ips_v6 = sunet::format_nft_set('', filter($frontend_ips) | $this | { is_ipaddr($this, 6) })
     $external_interface = pick($config['external_interface'], $::facts['interface_default'], $interface)
+
+    if $stats_port != '' {
+      $stats_dport = sunet::format_nft_set('dport', $stats_port)
+
+      if $config['stats_allow_ips'] {
+        $stats_allow_v4 = sunet::format_nft_set('saddr', filter($config['stats_allow_ips']) | $this | { is_ipaddr($this, 4) })
+        $stats_allow_v6 = sunet::format_nft_set('saddr', filter($config['stats_allow_ips']) | $this | { is_ipaddr($this, 6) })
+      }
+    }
+
     #
     ensure_resource('file', "/etc/nftables/conf.d/700-frontend-${instance}.nft", {
       ensure  => 'file',
       mode    => '0400',
       content => template('sunet/lb/700-frontend-instance_nftables.nft.erb'),
+      validate_cmd => 'nft -c -f %',
       notify  => Service['nftables'],
     })
   }
 
-  if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $::fqdn {
+  if 'letsencrypt_server' in $config and $config['letsencrypt_server'] != $::facts['os']['fqdn'] {
     sunet::dehydrated::client_define { $name :
       domain        => $name,
       server        => $config['letsencrypt_server'],
@@ -245,7 +263,7 @@ define sunet::lb::load_balancer::website(
   each($config['backends']) | $k, $v | {
     # k should be a backend name (like 'default') and v a hash with it's backends:
     #   $v = {host.example.org => {ips => [192.0.2.1]}}
-    if is_hash($v) {
+    if $v =~ Hash {
       each($v) | $name, $params | {
         sunet::lb::api::instance { "api_${instance}_${k}_${name}":
           site_name   => $site_name,

@@ -1,3 +1,4 @@
+# docker registry
 class sunet::docker_registry (
     String $registry_public_hostname = 'docker.example.com',
     String $fqdn                     = 'docker-prod-1.example.com',

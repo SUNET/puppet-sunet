@@ -27,43 +27,33 @@ class sunet::lb::load_balancer(
   }
 
   $config = hiera_hash('sunet_frontend')
-  if $config =~ Hash[String, Hash] {
 
-    if has_key($config['load_balancer'], 'websites') and has_key($config['load_balancer'], 'websites2') {
-      fail("Can't configure websites and websites2 at the same time unfortunately")
-    }
+  $confdir = "${basedir}/config"
+  $scriptdir = "${basedir}/scripts"
+  $apidir = "${basedir}/api"
 
-    if has_key($config['load_balancer'], 'websites') {
-      $websites = $config['load_balancer']['websites']
-    } elsif has_key($config['load_balancer'], 'websites2') {
-      # name used during migration
-      $websites = $config['load_balancer']['websites2']
-    } else {
-      fail('Load balancer config contains neither "websites" nor "websites2"')
-    }
+  ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
+                  { owner => 'root', group => 'root', mode => '0755' })
 
-    $confdir = "${basedir}/config"
-    $scriptdir = "${basedir}/scripts"
+  ensure_resource('sunet::misc::create_dir', [ "${confdir}/ssl"],
+                  { owner => 'root', group => 'haproxy', mode => '0750' })
 
-    ensure_resource('sunet::misc::create_dir', [$confdir, $scriptdir],
-                    { owner => 'root', group => 'root', mode => '0755' })
+  $websites = $config['load_balancer']['websites']
 
-    sunet::lb::load_balancer::configure_websites { 'websites':
-      interface => $interface,
-      websites  => $websites,
-      basedir   => $basedir,
-      confdir   => $confdir,
-      scriptdir => $scriptdir,
-    }
-
-    class { 'sunet::lb::load_balancer::services':
-      interface => $interface,
-      router_id => $router_id,
-      basedir   => $basedir,
-      config    => $config,
-    }
+  sunet::lb::load_balancer::configure_websites { 'websites':
+    interface => $interface,
+    websites  => $websites,
+    basedir   => $basedir,
+    confdir   => $confdir,
+    scriptdir => $scriptdir,
   }
 
+  class { 'sunet::lb::load_balancer::services':
+    interface => $interface,
+    router_id => $router_id,
+    basedir   => $basedir,
+    config    => $config,
+  }
 
   # Create snakeoil bundle as fallback certificate for haproxy
   $snakeoil_key = '/etc/ssl/private/ssl-cert-snakeoil.key'
@@ -75,5 +65,22 @@ class sunet::lb::load_balancer(
                 "out=${snakeoil_bundle}",
                 ],
     group  => 'ssl-cert',
+  }
+
+  $fqdn = $facts['networking']['fqdn']
+
+  if $fqdn in $facts['tls_certificates'] and 'infra_cert' in $facts['tls_certificates'][$fqdn] {
+    $infra_cert = $facts['tls_certificates'][$fqdn]['infra_cert']
+    $infra_key = $facts['tls_certificates'][$fqdn]['infra_key']
+
+    # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
+    ensure_resource(sunet::misc::certbundle, "${fqdn}_haproxy", {
+      bundle => [
+        "cert=${infra_cert}",
+        "key=${infra_key}",
+        'out=/opt/frontend/config/ssl/infra_haproxy.crt',
+      ],
+      group => 'haproxy',
+    })
   }
 }

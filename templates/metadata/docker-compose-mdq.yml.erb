@@ -1,0 +1,19 @@
+version: '3.2'
+
+services:
+  mdq:
+    hostname: <%= @hostname %>
+    image: docker.sunet.se/swamid/mdq-publisher:<%= @imagetag %>
+    volumes:
+      - '/etc/dehydrated:/etc/dehydrated'
+      - '/etc/ssl:/etc/ssl'
+      - '/var/www/html:/var/www/html'
+    environment:
+<%- @env.each do |env| -%>
+      - "<%= env %>"
+<%- end -%>
+<%- @env_certs.each do |env| -%>
+      - "<%= env %>"
+<%- end -%>
+    ports:
+      - "443:443"

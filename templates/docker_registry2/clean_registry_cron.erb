@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# If cosmos is disabled we should avoid running
+if [ -f /etc/no-automatic-cosmos ]; then
+    echo "Exiting since Cosmos is disabled"
+    exit 1
+fi
+
+# We don't want to run cosmos during the cleanup
+# to avoid that e.g. apache starts again and clients
+# starts pulling and pushing.
+echo "Disabling Cosmos while running the script"
+touch /etc/no-automatic-cosmos
+
+# Place the registry auth container in read-only mode,
+# so no new write requests gets thrue to the registry container
+# during the cleanup.
+echo "Set read-only on the container registry-auth ..."
+docker exec registry-auth bash -c 'touch /read-only ; apache2ctl -k graceful'
+exit_status="${?}"
+
+if [ "${exit_status}" = "0" ]; then
+    echo "Starting the cleanup ..."
+    /usr/local/bin/clean-registry/clean_registry.py "<%= @clean_registry_conf_dir %>/config_file.yaml"
+    exit_status="${?}"
+else
+    echo "Not proceeding with cleanup, since docker exec registry-auth did not exit correctly"
+fi
+
+if [ "${exit_status}" = "0" ]; then
+    # A sleep before we start again might be good
+    echo "Sleeping for 10s ..."
+    sleep 10
+
+    # Run the garbage collection after removing layers
+    echo "Running garbage collection ..."
+    docker exec registry /bin/registry garbage-collect --delete-untagged /etc/docker/registry/config.yml
+    exit_status="${?}"
+else
+    echo "Not running garbage collection since the cleanup did not exit correctly"
+fi
+
+echo "Restart registry to have it drop its blobdescriptorcache"
+docker restart registry
+
+echo "Set rw mode on the container registry-auth ..."
+docker exec registry-auth bash -c 'rm -f /read-only ; apache2ctl -k graceful'
+
+echo "Enabling Cosmos again by removing /etc/no-automatic-cosmos"
+rm /etc/no-automatic-cosmos
+
+# Use the exit status from the commands we care about
+exit "${exit_status}"

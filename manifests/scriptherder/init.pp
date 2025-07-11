@@ -15,12 +15,16 @@ class sunet::scriptherder::init (
   Enum['present', 'absent'] $ensure = 'present',
 ) {
   if $install {
-    if $::facts['operatingsystem'] == 'Ubuntu' and versioncmp($::facts['operatingsystemrelease'], '18.04') < 0 {
+    if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '18.04') < 0 {
       notice('Not installing Scriptherder on Ubuntu < 18.04 (because of too old Python version)')
     } else {
       file { '/usr/local/bin/scriptherder':
         mode   => '0755',
         source => 'puppet:///modules/sunet/scriptherder/scriptherder.py',
+      }
+      file { '/etc/bash_completion.d/scriptherder-tab-completion.sh':
+        mode   => '0755',
+        source => 'puppet:///modules/sunet/scriptherder/scriptherder-tab-completion.sh',
       }
     }
   }
@@ -65,9 +69,13 @@ class sunet::scriptherder::init (
     }
   }
 
-  # Remove scriptherder data older than 7 days.
+  file { '/usr/local/bin/cleanup_scriptherder':
+    mode   => '0755',
+    source => 'puppet:///modules/sunet/scriptherder/cleanup_scriptherder',
+  }
+  # Remove scriptherder data older than X days.
   cron { 'scriptherder_cleanup':
-    command => "test -d ${scriptherder_dir} && (find ${scriptherder_dir} -type f -mtime +${keep_days} -print0 | xargs -0 rm -f)",
+    command => "test -d ${scriptherder_dir} && /usr/local/bin/cleanup_scriptherder",
     user    => 'root',
     special => 'daily',
   }

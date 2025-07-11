@@ -305,6 +305,9 @@ proxy_set_header X-Forwarded-Ssl $proxy_x_forwarded_ssl;
 proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
 proxy_set_header X-Original-URI $request_uri;
 
+client_max_body_size 512M;
+
+
 # Mitigate httpoxy attack (see README for details)
 proxy_set_header Proxy "";
 {{- end }}
@@ -495,6 +498,10 @@ server {
     include /etc/nginx/vhost.d/default;
     {{- end }}
 
+    location = /robots.txt {
+        add_header Content-Type text/plain;
+        return 200 "User-agent: *\nDisallow: /\n";
+    }
     {{- range $path, $containers := $paths }}
         {{- /*
              * Get the VIRTUAL_PROTO defined by containers w/ the same

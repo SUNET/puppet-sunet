@@ -1,16 +1,17 @@
 # microk8s cluster node
 class sunet::microk8s::node(
   String  $channel                = '1.28/stable',
-  Boolean $traefik                = true,
+  Boolean $traefik                = false,
   Integer $failure_domain         = 42,
   Integer $web_nodeport           = 30080,
   Integer $websecure_nodeport     = 30443,
   Optional[Array[String]] $peers  = [],
+  Boolean $drain_reboot_cron      = false,
 ) {
   include sunet::packages::snapd
 
   $hiera_peers =  lookup('microk8s_peers', undef, undef, [])
-  if $facts['hostname'] =~ /(^kubew|k8sw-)[0-9]/ {
+  if $facts['microk8s_role'] == 'worker' {
     $type = 'worker'
   } else {
     $type = 'controller'
@@ -20,34 +21,33 @@ class sunet::microk8s::node(
     $final_peers = $peers
   } elsif $hiera_peers != [] {
     $final_peers = $hiera_peers
-  } else {
-    $final_peers = map(split($facts['microk8s_peers'], ',')) | String $peer| {
-      $peer_ip = $facts[join(['microk8s_peer_', $peer])]
-      "${peer_ip} ${peer}"
-    }
   }
-    # Loop through peers and do things that require their ip:s
-  $final_peers.each | String $peer_tuple| {
-    $peer_ip = split($peer_tuple, ' ')[0]
-    $peer = split($peer_tuple, ' ')[1]
-    unless $peer == 'unknown' or $peer_ip == $facts['ipaddress'] {
-      file_line { "hosts_${peer}":
-        path => '/etc/hosts',
-        line => "${peer_ip} ${peer}",
+  elsif $facts['configured_hosts_in_cosmos']['sunet::microk8s::node'] != [] {
+    $final_peers = $facts['configured_hosts_in_cosmos']['sunet::microk8s::node']
+  } else {
+    warning('Unable to figure out our peers, leaving BROKEN firewalls')
+  }
+  notice('microk8s peers: ',$final_peers)
+  $public_controller_ports = [8080, 8443, 16443]
+  $private_controller_ports = [10250, 10255, 25000, 12379, 10257, 10259, 19001]
+  $private_worker_ports = [10250, 10255, 16443, 25000, 12379, 10257, 10259, 19001]
+  # Loop through peers and do things that require their ip:s
+  $final_peers.each | String $peer| {
+    $peer_ip = dns_lookup($peer)
+    $short_peer = split($peer, '[.]')[0]
+    unless $peer == 'unknown' or $facts['networking']['ip'] in $peer_ip {
+      $peer_ip.each | String $ip | {
+        file_line { "hosts_${peer}_${ip}":
+          path => '/etc/hosts',
+          line => "${ip} ${peer} ${short_peer}",
+        }
       }
     }
-    $public_controller_ports = [8080, 8443, 16443]
-    $private_controller_ports = [10250, 10255, 25000, 12379, 10257, 10259, 19001]
-    $private_worker_ports = [10250, 10255, 16443, 25000, 12379, 10257, 10259, 19001]
     if $::facts['sunet_nftables_enabled'] == 'yes' {
       if $type == 'controller' {
         sunet::nftables::allow { "nft_${peer}_private":
           port => $private_controller_ports,
           from => $peer_ip,
-        }
-        sunet::nftables::allow { "nft_${peer}_public":
-          port => $public_controller_ports,
-          from => 'any',
         }
       } else {
         sunet::nftables::allow { "nft_${peer}_private":
@@ -62,13 +62,9 @@ class sunet::microk8s::node(
       }
     } else {
       if $type == 'controller' {
-        sunet::misc::ufw_allow {"nft_${peer}_private":
+        sunet::misc::ufw_allow { "nft_${peer}_private":
           port => $private_controller_ports,
           from => $peer_ip,
-        }
-        sunet::misc::ufw_allow { "nft_${peer}_public":
-          port => $public_controller_ports,
-          from => 'any',
         }
       } else {
         sunet::misc::ufw_allow { "nft_${peer}_private":
@@ -80,6 +76,22 @@ class sunet::microk8s::node(
         port  => [4789],
         from  => $peer_ip,
         proto => 'udp',
+      }
+    }
+  }
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    if $type == 'controller' {
+      sunet::nftables::allow { 'nft_public':
+        port => $public_controller_ports,
+        from => 'any',
+      }
+    }
+  }
+  else {
+    if $type == 'controller' {
+      sunet::misc::ufw_allow { 'nft_public':
+        port => $public_controller_ports,
+        from => 'any',
       }
     }
   }
@@ -111,8 +123,11 @@ class sunet::microk8s::node(
     }
   }
   exec { 'install_microk8s':
-    command => "snap install microk8s --classic --channel=${channel}",
+    command => "snap install core && snap install microk8s --classic --channel=${channel}",
     unless  => 'snap list microk8s',
+  }
+  -> file { '/etc/docker':
+    ensure  => directory,
   }
   -> file { '/etc/docker/daemon.json':
     ensure  => file,
@@ -124,33 +139,6 @@ class sunet::microk8s::node(
     content => "failure-domain=${failure_domain}\n",
     mode    => '0660',
   }
-  unless any2bool($facts['microk8s_rbac']) {
-    exec { 'enable_plugin_rbac':
-      command  => '/snap/bin/microk8s enable rbac',
-      provider => 'shell',
-    }
-  }
-  unless any2bool($facts['microk8s_dns']) {
-    exec { 'enable_plugin_dns':
-      command  => '/snap/bin/microk8s enable dns:89.32.32.32',
-      provider => 'shell',
-    }
-  }
-  unless any2bool($facts['microk8s_community']) {
-    exec { 'enable_community_repo':
-      command  => '/snap/bin/microk8s enable community',
-      provider => 'shell',
-    }
-    $line1 ="/snap/bin/microk8s enable traefik --set ports.websecure.nodePort=${websecure_nodeport}"
-    $line2 = "--set  ports.web.nodePort=${web_nodeport} --set deployment.kind=DaemonSet"
-    $traefik_command = "${line1} ${line2}"
-    unless any2bool($facts['microk8s_traefik']) and $traefik {
-      exec { 'enable_plugin_traefik':
-        command  => $traefik_command,
-        provider => 'shell',
-      }
-    }
-  }
   exec { 'alias_kubectl':
     command  => '/usr/bin/snap alias microk8s.kubectl kubectl',
     provider => 'shell',
@@ -161,8 +149,20 @@ class sunet::microk8s::node(
   }
   $namespaces = lookup('microk8s_secrets', undef, undef, {})
   $namespaces.each |String $namespace, Hash $secrets| {
-      $secrets.each |String $name, Array $secret| {
-        set_microk8s_secret($namespace, $name, $secret)
+    $secrets.each |String $name, Array $secret| {
+      set_microk8s_secret($namespace, $name, $secret)
     }
   }
+  if $drain_reboot_cron == true {
+      file { '/usr/local/bin/drainreboot':
+          content => file('sunet/microk8s/drainreboot'),
+          mode    => '0755',
+      }
+      sunet::scriptherder::cronjob { 'drain_and_reboot':
+          ensure => present,
+          cmd    => '/usr/local/bin/drainreboot',
+          user   => 'root',
+          minute => '*/15',
+      }
+    }
 }

@@ -1,0 +1,39 @@
+#!/bin/bash
+
+while getopts hk option
+do
+    case "${option}" in
+        h) help='false';;
+        k) keepbackup='false';;
+    esac
+done
+
+if [ $help ]; then
+  echo "Usage is: ./$0 -h <for help> -k <to keep backup directory intact for migration to another machine or such>"
+  exit 1
+fi
+
+INFLUXv2="/usr/local/bin/influx"
+BACKUP_DIR="/var/lib/influxdb/backup"
+BACKUP_FLAGS="--skip-verify --host https://127.0.0.1:8086"
+# FIXME: WARNING: We're currently using admin token for backups, searched a lot for a reason WHY this has to be an all-access token(!?) but got no good answers from Influxv2-sources.
+BACKUP_TOKEN="<%= scope.call_function('safe_hiera',['backup_token']) %>"
+
+# Clear target dir to avoid duplicates
+/bin/rm $BACKUP_DIR/today/*
+
+# Send daily backup into "today"; touch files if commands went through, status can be seen in Scriptherder
+$INFLUXv2 backup $BACKUP_FLAGS -t $BACKUP_TOKEN $BACKUP_DIR/today/ && echo "`date +"%Y-%m-%d %H:%M:%S:"` Influx db v2 backed up successfully" >> $BACKUP_DIR/status.txt
+
+# Hopefully both databases are backed from previous 2 commands, tar them into corresponding weekday in main folder
+/bin/tar -cvf $BACKUP_DIR/influx-v1-v2.$(date +%A).gz $BACKUP_DIR/today/*
+
+# Clear target dir again to avoid sending duplicated data into BaaS *UNLESS* user has opted to keep with -k
+if [ $keepbackup ]; then
+  echo "$BACKUP_DIR/today/ has not been cleared as -k was invoked, listing contents of backup:"
+  /bin/ls -la $BACKUP_DIR/today/
+  exit 1
+fi
+
+# Purge raw data in backup dir unless -k was invoked
+/bin/rm $BACKUP_DIR/today/*

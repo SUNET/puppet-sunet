@@ -5,6 +5,7 @@ class sunet::bankidp(
   Array $ports_extras = [],
   Array $resolvers = [],
   Array $volumes_extras = [],
+  Array[String] $register_lbs = lookup('register_lbs', Array[String], undef, ['tug-lb-1.sunet.se', 'sthb-lb-1.sunet.se']),
   Boolean $swamid = true,
   Boolean $swedenconnect = false,
   Boolean $app_node = false,
@@ -84,7 +85,7 @@ class sunet::bankidp(
     class { 'sunet::frontend::register_sites':
       sites => {
         $service_name => {
-          frontends => ['se-fre-lb-1.sunet.se', 'se-tug-lb-1.sunet.se'],
+          frontends => $register_lbs,
           port      => '443',
         }
       }
@@ -153,19 +154,19 @@ class sunet::bankidp(
   }
   if $redis_node {
     class { 'sunet::rediscluster':
-      numnodes => 2,
-      hostmode => true,
-      tls      => true,
+      numnodes          => 2,
+      hostmode          => true,
+      tls               => true,
       automatic_rectify => true,
-      prevent_reboot => true
+      prevent_reboot    => true
     }
 
     file { "/etc/ssl/certs/${fqdn}_infra.crt":
       mode   => '0644',
     }
 
-    file { "/etc/ssl/private":
-      mode   => '711',
+    file { '/etc/ssl/private':
+      mode   => '0711',
     }
 
     package { ['redis-tools']:
