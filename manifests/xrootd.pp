@@ -15,7 +15,8 @@ class sunet::xrootd(
 
   $hostname = $facts['networking']['fqdn']
   $cahash = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/ca.crt -noout -hash').chomp
-  $cahash2 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant.crt -noout -hash').chomp
+  $cahash2 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-auth-ca.crt -noout -hash').chomp
+  $cahash3 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-trust-ca.crt -noout -hash').chomp
 
   if ($hostname in $managers ) {
     $role = 'manager'
@@ -87,13 +88,21 @@ class sunet::xrootd(
     ensure  => link,
     target  => 'ca.pem'
   }
-  file { '/opt/xrootd/grid-security/certificates/geant.crt':
+  file { '/opt/xrootd/grid-security/certificates/geant-auth-ca.crt':
     ensure  => file,
-    content => file('sunet/xrootd/geant.crt'),
+    content => file('sunet/xrootd/geant-auth-ca.crt'),
   }
   file { "/opt/xrootd/grid-security/certificates/${cahash2}.0":
     ensure  => link,
-    target  => 'geant.crt'
+    target  => 'geant-auth-ca.crt'
+  }
+  file { '/opt/xrootd/grid-security/certificates/geant-trust-ca.crt':
+    ensure  => file,
+    content => file('sunet/xrootd/geant-trust-ca.crt'),
+  }
+  file { "/opt/xrootd/grid-security/certificates/${cahash3}.0":
+    ensure  => link,
+    target  => 'geant-trust-ca.crt'
   }
   file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
     ensure  => file,
