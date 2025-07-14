@@ -55,7 +55,7 @@ class sunet::xrootd(
   }
   file { '/opt/xrootd/admin':
     ensure  => directory,
-    recurse => true
+    recurse => true,
     owner   => '996',
     group   => '996',
   }
