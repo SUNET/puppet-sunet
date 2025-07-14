@@ -54,9 +54,10 @@ class sunet::xrootd(
     group  => '996',
   }
   file { '/opt/xrootd/admin':
-    ensure => directory,
-    owner  => '996',
-    group  => '996',
+    ensure  => directory,
+    recurse => true
+    owner   => '996',
+    group   => '996',
   }
   file { '/opt/xrootd/grid-security/xrd':
     ensure => directory,
