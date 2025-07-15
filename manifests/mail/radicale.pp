@@ -29,7 +29,7 @@ class sunet::mail::radicale(
   }
   $mariadb_password = lookup('mariadb_password', undef, undef, undef)
   $mariadb_user = 'radicale'
-  $db_url="mysql://${mariadb_user}:${mariadb_password}@${mariadb_host}/radicale??implicit_returning=false"
+  $db_url="mysql://${mariadb_user}:${mariadb_password}@${mariadb_host}/radicale?implicit_returning=false"
   $conf_dir = '/opt/radicale/config'
   file { [$conf_dir]:
     ensure => directory,
