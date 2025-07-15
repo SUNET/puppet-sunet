@@ -14,7 +14,7 @@ class sunet::xrootd(
 {
 
   $hostname = $facts['networking']['fqdn']
-  $cahash = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/ca.crt -noout -hash').chomp
+  $cahash = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/wildcard.drive.test.sunet.se.crt -noout -hash').chomp
   $cahash2 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-auth-ca.crt -noout -hash').chomp
   $cahash3 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-trust-ca.crt -noout -hash').chomp
 
@@ -81,13 +81,13 @@ class sunet::xrootd(
     ensure  => file,
     content => file('sunet/xrootd/grid-mapfile'),
   }
-  file { '/opt/xrootd/grid-security/certificates/ca.pem':
+  file { '/opt/xrootd/grid-security/certificates/wildcard.drive.test.sunet.se.crt':
     ensure  => file,
-    content => file('sunet/xrootd/ca.crt'),
+    content => file('sunet/xrootd/wildcard.drive.test.sunet.se.crt'),
   }
   file { "/opt/xrootd/grid-security/certificates/${cahash}.0":
     ensure  => link,
-    target  => 'ca.pem'
+    target  => 'wildcard.drive.test.sunet.se.crt'
   }
   file { '/opt/xrootd/grid-security/certificates/geant-auth-ca.crt':
     ensure  => file,
