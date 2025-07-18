@@ -1,5 +1,6 @@
 # signservice class
 class sunet::edusign::signservice($version='latest', $host=undef, $ensure='present') {
+  $signservice_key = safe_hiera('signservice_key')
   $_host = $host ? {
     undef    => $facts['networking']['fqdn'],
     default  => $host
@@ -27,5 +28,12 @@ class sunet::edusign::signservice($version='latest', $host=undef, $ensure='prese
       port          => '443',
       iif           => $facts['interface_default'],
     }
+  }
+  file { '/etc/edusign-signservice/config/credentials/signservice.key':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => $signservice_key,
   }
 }
