@@ -3,7 +3,7 @@
 services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
-<% if @@networking['fqdn'] == true -%>
+<% if @networking['fqdn'] == true -%>
     hostname: <%= @facts['fqdn'] %>
 <%- end -%>
     expose:
