@@ -3,6 +3,9 @@
 services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
+<% if @@networking['fqdn'] == true -%>
+    hostname: <%= @facts['fqdn'] %>
+<%- end -%>
     expose:
 <% if @varnish_enabled == true -%>
       - 1080
