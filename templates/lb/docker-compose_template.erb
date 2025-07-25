@@ -3,8 +3,8 @@
 services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
-<% if @networking['fqdn'] == true -%>
-    hostname: <%= @facts['fqdn'] %>
+<% if @set_fqdn == true -%>
+    hostname: <%= @networking['fqdn'] %>
 <%- end -%>
     expose:
 <% if @varnish_enabled == true -%>
