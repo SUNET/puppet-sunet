@@ -498,6 +498,10 @@ server {
     include /etc/nginx/vhost.d/default;
     {{- end }}
 
+    location = /robots.txt {
+        add_header Content-Type text/plain;
+        return 200 "User-agent: *\nDisallow: /\n";
+    }
     {{- range $path, $containers := $paths }}
         {{- /*
              * Get the VIRTUAL_PROTO defined by containers w/ the same

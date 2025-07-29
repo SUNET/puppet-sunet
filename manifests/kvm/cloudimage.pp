@@ -9,7 +9,7 @@ define sunet::kvm::cloudimage (
   String                   $description     = '',
   Boolean                  $dhcp4           = true,
   Boolean                  $dhcp6           = false,
-  Boolean                  $disable_ec2     = false,  # set to true to disable fetching of metadata from 169.254.169.254
+  Boolean                  $disable_ec2     = true,  # set to false to enable fetching of metadata from 169.254.169.254
   Optional[String]         $gateway         = undef,
   Optional[String]         $gateway6        = undef,
   String                   $image_url       = 'https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk1.img',

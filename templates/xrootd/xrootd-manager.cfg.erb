@@ -7,6 +7,11 @@ if exec xrootd
   xrd.port <%= @xrootd_port %>
 fi
 
+# Config TLS
+xrd.tls /etc/grid-security/xrd/xrdcert.pem /etc/grid-security/xrd/xrdkey.pem
+xrd.tlsca certdir /etc/grid-security/certificates refresh 8h
+xrootd.tls capable all -data
+
 # Upon last testing, the plugin did not yet work in async mode
 xrootd.async off
 
@@ -60,7 +65,7 @@ s3.url_style path
 s3.trace all
 xrd.trace    all
 cms.trace all
-xrootd.trace all dump
+xrootd.trace all
 # Setting up S3 plugin
 ofs.osslib libXrdS3.so
 
