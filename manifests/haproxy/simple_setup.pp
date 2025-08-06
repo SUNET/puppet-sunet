@@ -29,16 +29,18 @@ define sunet::haproxy::simple_setup(
     mode  => '0640',
   }
 
-  concat::fragment { "${name}_simple_haproxy_header":
-    target  => $config,
-    order   => '10000',
-    content => template('sunet/haproxy/simple_haproxy_base.cfg.erb'),
-  }
-
-  concat::fragment { "${name}_simple_haproxy_config":
-    target  => $config,
-    order   => '10',
-    content => $content,
+  if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') >= 0) {
+    concat::fragment { "${name}_simple_haproxy_header":
+      target  => $config,
+      order   => '10000',
+      content => template('sunet/haproxy/simple_haproxy_base.cfg.erb'),
+    }
+  } else {
+    concat::fragment { "${name}_simple_haproxy_config":
+      target  => $config,
+      order   => '10',
+      content => $content,
+    }
   }
 
   sunet::misc::ufw_allow { "${name}_allow_clients":

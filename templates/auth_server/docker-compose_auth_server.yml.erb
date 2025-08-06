@@ -56,7 +56,7 @@ services:
       - <%= @port %>:443
     volumes:
       - /opt/sunet/<%= @service_name %>-haproxy/etc:/etc/haproxy:ro
-      - <%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>:<%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>:ro
+      - <%= @tls_certificates [@networking['fqdn']][ 'haproxy' ] %>:<%= @tls_certificates[ @networking['fqdn']][ 'haproxy' ] %>:ro
       - /etc/ssl:/etc/ssl
     links:
      - auth_server
