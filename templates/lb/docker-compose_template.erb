@@ -10,6 +10,9 @@ services:
 <% @exposed_ports.each do |port| -%>
       - <%= port %>
 <%- end -%>
+<% if @stats_port.is_a? String and @stats_port != '' -%>
+      - <%= @stats_port %>
+<%- end -%>
     # No point in restarting the haproxy container - the systemd service ExecStartPost will not
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
     # nothing will work anyways until the whole service is restarted

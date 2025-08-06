@@ -1,6 +1,7 @@
 # @summary Run naemon with Thruk.
-# @param receive_otel Feature flag to enable the LGTM stack
-# @param otel_retention Number of hours to keep logs, metrics and traces, defaults to 3 months
+# @param receive_otel                     Feature flag to enable the LGTM stack
+# @param otel_retention                   Number of hours to keep logs, metrics and traces, defaults to 3 months
+# @param naemon_automatic_repo_hosts      Option to skip the automatic monitoring of hosts in the ops-repo where the server resides
 #
 class sunet::naemon_monitor (
   String $domain,
@@ -29,6 +30,7 @@ class sunet::naemon_monitor (
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
   Array $exclude_hosts = [],
+  Boolean $naemon_automatic_repo_hosts = true,
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
   Optional[Boolean] $receive_otel = false,
@@ -470,17 +472,35 @@ class sunet::naemon_monitor (
     warn_criteria => ['exit_status=1', 'max_age=24h'],
   }
 
-  class { 'nagioscfg':
-    additional_entities => $additional_entities,
-    config              => 'naemon_monitor',
-    default_host_group  => $default_host_group,
-    manage_package      => false,
-    manage_service      => false,
-    cfgdir              => '/etc/naemon/conf.d/nagioscfg',
-    host_template       => 'naemon-host',
-    service             => 'sunet-naemon_monitor',
-    single_ip           => true,
-    require             => File['/etc/naemon/conf.d/nagioscfg/'],
-    exclude_hosts       => $exclude_hosts,
+  if $naemon_automatic_repo_hosts {
+    class { 'nagioscfg':
+      additional_entities => $additional_entities,
+      config              => 'naemon_monitor',
+      default_host_group  => $default_host_group,
+      manage_package      => false,
+      manage_service      => false,
+      cfgdir              => '/etc/naemon/conf.d/nagioscfg',
+      host_template       => 'naemon-host',
+      service             => 'sunet-naemon_monitor',
+      single_ip           => true,
+      require             => File['/etc/naemon/conf.d/nagioscfg/'],
+      exclude_hosts       => $exclude_hosts,
+    }
+  }
+  else {
+    class { 'nagioscfg':
+      additional_entities => $additional_entities,
+      config              => 'naemon_monitor',
+      default_host_group  => $default_host_group,
+      manage_package      => false,
+      manage_service      => false,
+      cfgdir              => '/etc/naemon/conf.d/nagioscfg',
+      host_template       => 'naemon-host',
+      hostgroups          => [],
+      service             => 'sunet-naemon_monitor',
+      single_ip           => true,
+      require             => File['/etc/naemon/conf.d/nagioscfg/'],
+      exclude_hosts       => $exclude_hosts,
+    }
   }
 }

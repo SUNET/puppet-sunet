@@ -2,6 +2,7 @@ version: '3.2'
 
 services:
   mdq:
+    hostname: <%= @hostname %>
     image: docker.sunet.se/swamid/mdq-publisher:<%= @imagetag %>
     volumes:
       - '/etc/dehydrated:/etc/dehydrated'
