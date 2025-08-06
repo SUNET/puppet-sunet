@@ -30,6 +30,7 @@ define sunet::haproxy::simple_setup(
   }
 
   if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') >= 0) {
+    notice("---------- >= 24")
     concat::fragment { "${name}_simple_haproxy_header":
       target  => $config,
       order   => '10',
@@ -59,6 +60,5 @@ define sunet::haproxy::simple_setup(
     from => $allow_clients,
     to   => 'any',
     port => $port,
-  }
   }
 }
