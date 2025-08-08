@@ -6,7 +6,6 @@ define sunet::haproxy::simple_setup(
   String $server_name    = $facts['networking']['fqdn'],
   String $port           = '443',
   Array  $allow_clients  = [],
-  Array  $lb_hosts       = [],
 ) {
   ensure_resource(sunet::misc::system_user, 'haproxy', {group => 'haproxy' })
 
