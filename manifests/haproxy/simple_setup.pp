@@ -6,6 +6,7 @@ define sunet::haproxy::simple_setup(
   String $server_name    = $facts['networking']['fqdn'],
   String $port           = '443',
   Array  $allow_clients  = [],
+  Array  $lb_hosts       = [],
 ) {
   ensure_resource(sunet::misc::system_user, 'haproxy', {group => 'haproxy' })
 
@@ -56,9 +57,16 @@ define sunet::haproxy::simple_setup(
     }
   }
 
-  sunet::misc::ufw_allow { "${name}_allow_clients":
-    from => $allow_clients,
-    to   => 'any',
-    port => $port,
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { $name :
+      allow_clients => flatten($allow_clients),
+      port          => $port,
+    }
+  } else {
+    sunet::misc::ufw_allow { "${name}_allow_clients":
+      from => $allow_clients,
+      to   => 'any',
+      port => $port,
+    }
   }
 }

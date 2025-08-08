@@ -12,6 +12,7 @@ define sunet::auth_server(
     Boolean $saml_sp         = false,
     String $pysaml2_base_url = "https://${facts['networking']['fqdn']}/saml2/sp",
     Array $allow_clients     = [$facts['cosmos']['frontend_server_addrs']],
+    Array $lb_hosts          = [$facts['cosmos']['frontend_server_hosts']],
 ) {
 
     ensure_resource('sunet::system_user', $username, {
@@ -25,6 +26,7 @@ define sunet::auth_server(
         key           => $key_file,
         content       => template('sunet/auth_server/haproxy.cfg.erb'),
         allow_clients => flatten($allow_clients),
+        lb_hosts      => $lb_hosts,
         port          => $port,
     }
 
