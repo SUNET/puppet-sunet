@@ -11,7 +11,7 @@ frontend auth-server-https
     use_backend auth_server if is_frontend
 
 backend auth_server
-<% if !@facts['dockerhost2'] || @facts['dockerhost2'] != 'yes' %>
+<% if @facts['dockerhost2'] && @facts['dockerhost2'] == 'yes' %>
     server auth_server1 <%= @service_name %>-auth_server-1:8080  check  resolvers docker_dns init-addr none
 <% else -%>
     server auth_server1 <%= @service_name %>_auth_server_1:8080  check  resolvers docker_dns  init-addr none
