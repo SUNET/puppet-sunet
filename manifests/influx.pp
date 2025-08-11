@@ -11,7 +11,6 @@ class sunet::influx(
   String        $servicename='',
   String        $influxdb_version='latest',
   String        $influxdb2_tag='ci-docker-influxdb2-292',
-  Array[String] $influx_producer_networks,
   Boolean       $legacy_settings = true,
 ) {
 
