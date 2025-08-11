@@ -3,16 +3,21 @@ class sunet::certbot::sync::client(
 ){
   $key_path = '/root/.ssh/id_certbot_sync_client'
 
-  exec { '/usr/bin/mkdir -p /opt/certbot/libexec':
-    unless  => '/usr/bin/test -d /opt/certbot/libexec'
+  require sunet::certbot::sync::client::dirs
+
+  file { '/opt/certbot-sync/conf/certbot-sync-from-server.source':
+    ensure  => file,
+    mode    => '0400',
+    content => template('sunet/certbot-sync/certbot-sync-from-server.source.erb'),
   }
-  file { '/opt/certbot/libexec/certbot-sync-from-server.sh':
+
+  file { '/opt/certbot-sync/libexec/certbot-sync-from-server.sh':
     ensure  => file,
     mode    => '0700',
-    content => template('sunet/certbot/certbot-sync-from-server.sh.erb'),
+    content => file('sunet/certbot-sync/certbot-sync-from-server.sh'),
   }
   sunet::scriptherder::cronjob { 'certbot-sync-from-server':
-    cmd           => '/opt/certbot/libexec/certbot-sync-from-server.sh',
+    cmd           => '/opt/certbot-sync/libexec/certbot-sync-from-server.sh',
     minute        => '27',
     hour          => '*',
     ok_criteria   => ['exit_status=0', 'max_age=3h'],

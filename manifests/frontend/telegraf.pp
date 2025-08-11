@@ -39,8 +39,8 @@ define sunet::frontend::telegraf(
     expose   => ["${statsd_listen_port}/udp"],
     net      => 'host',  # listening on localhost with --net host is better than exposing ports that will sneak past ufw rules
     volumes  => flatten(["${basedir}/telegraf.conf:/etc/telegraf/telegraf.conf:ro",
-                         $docker_volumes,
-                         ]),
+                        $docker_volumes,
+                        ]),
   }
 
   sunet::misc::ufw_allow { 'allow_telegraf_statsd':

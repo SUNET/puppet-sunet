@@ -122,8 +122,9 @@ define sunet::docker_run(
       # Docker DNS isn't available on the default 'bridge' interface, so another
       # bridge interface is needed for containers benefiting from the DNS resolution
       # but not running using docker-compose.
-      exec { "/usr/bin/docker network create docker":
-        unless  => "/usr/bin/docker network inspect docker > /dev/null 2>&1",
+      exec { "network_create_docker_${name}":
+        command => '/usr/bin/docker network create docker',
+        unless  => '/usr/bin/docker network inspect docker > /dev/null 2>&1',
       }
 
       # Disable and remove the service under the old name without interfering with the Alias set in the new service file

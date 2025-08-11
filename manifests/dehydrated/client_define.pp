@@ -14,7 +14,12 @@ define sunet::dehydrated::client_define(
     'root'  => '/root',
     default => "/home/${user}"
   }
-  ensure_resource('file', "${home}/.ssh", { ensure => 'directory' })
+  ensure_resource('file', "${home}/.ssh", {
+      ensure    => directory,
+      mode      => '0700',
+      owner     => $user,
+      group     => $user,
+  });
   ensure_resource('file', '/etc/dehydrated', { ensure => directory })
   ensure_resource('file', '/etc/dehydrated/certs', { ensure => directory })
   ensure_resource('file', '/usr/bin/le-ssl-compat.sh', {
@@ -52,10 +57,11 @@ define sunet::dehydrated::client_define(
       minute  => fqdn_rand(60),
     }
   } else {
+    $minute_random = String(fqdn_rand(60))
     ensure_resource('sunet::scriptherder::cronjob',  "dehydrated_fetch_${server}", {
       cmd    => "sh -c 'ssh -Ti \$HOME/.ssh/id_${_ssh_id} root@${server} | /bin/tar xvf - -C /etc/dehydrated/certs && /usr/bin/le-ssl-compat.sh'",
       user   => $user,
-      minute => '*/20',
+      minute => $minute_random,
       ok_criteria   => ['exit_status=0', 'max_age=2h'],
       warn_criteria => ['exit_status=0', 'max_age=96h'],
     })

@@ -1,19 +1,19 @@
 # Install baseline of tools
 class sunet::tools {
   $debian_tools = ['vim',
-                   'traceroute',
-                   'tcpdump',
-                   'molly-guard',
-                   'less',
-                   'rsync',
-                   'screen',
-                   'strace',
-                   'lsof',
-                   ]
+                  'traceroute',
+                  'tcpdump',
+                  'molly-guard',
+                  'less',
+                  'rsync',
+                  'screen',
+                  'strace',
+                  'lsof',
+                  ]
   $extra_tools = $facts['os']['name'] ? {
     'Ubuntu' => ['update-manager-core',
-                 'unattended-upgrades',
-                 ],
+                'unattended-upgrades',
+                ],
     default => []
   }
 

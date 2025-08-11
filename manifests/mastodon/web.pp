@@ -5,6 +5,7 @@ class sunet::mastodon::web(
   String $db_port                  = '5432',
   String $db_user                  = 'postgres',
   String $interface                = 'ens3',
+  String $mastodon_image           = 'ghcr.io/mastodon/mastodon',
   String $mastodon_version         = 'latest',
   String $redis_host               = 'redis',
   String $redis_port               = '6379',
@@ -19,6 +20,8 @@ class sunet::mastodon::web(
   String $smtp_openssl_verify_mode = 'none',
   String $smtp_port                = '587',
   String $smtp_server              = 'smtp.sunet.se',
+  String $streaming_image          = 'ghcr.io/mastodon/mastodon-streaming',
+  String $streaming_version        = 'latest',
   String $vhost                    = 'social.sunet.se',
 ) {
 
@@ -29,6 +32,9 @@ class sunet::mastodon::web(
 
 
   # Must set in hiera eyaml
+  $active_record_encryption_primary_key = safe_hiera('active_record_encryption_primary_key')
+  $active_record_encryption_key_derivation_salt = safe_hiera('active_record_encryption_key_derivation_salt')
+  $active_record_encryption_deterministic_key = safe_hiera('active_record_encryption_deterministic_key')
   $aws_access_key_id=safe_hiera('aws_access_key_id')
   $aws_secret_access_key=safe_hiera('aws_secret_access_key')
   $db_pass=safe_hiera('db_pass')
@@ -101,6 +107,17 @@ class sunet::mastodon::web(
     mode    => '0750',
     content => template('sunet/mastodon/web/tootctl.erb.sh'),
   }
+
+  file { '/usr/lib/nagios/plugins/check_mastodon_version':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    content => template('sunet/mastodon/web/check_mastodon_version.py.erb'),
+  }
+  sunet::nagios::nrpe_command { 'check_mastodon_version':
+    command_line => '/usr/lib/nagios/plugins/check_mastodon_version',
+  }
   $tl_dirs = ['mastodon', 'nginx']
   $tl_dirs.each | $dir| {
     file { "/opt/mastodon_web/${dir}":
@@ -111,9 +128,9 @@ class sunet::mastodon::web(
     }
   }
   file { '/opt/mastodon_web/files-nginx-www-root/':
-    ensure => 'directory',
+    ensure  => 'directory',
     recurse => true,
-    source => 'puppet:///modules/sunet/mastodon/www',
+    source  => 'puppet:///modules/sunet/mastodon/www',
   }
   $nginx_dirs = ['acme', 'certs', 'conf', 'dhparam', 'html', 'vhost']
   $nginx_dirs.each | $dir| {

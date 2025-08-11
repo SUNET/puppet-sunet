@@ -16,9 +16,9 @@ define sunet::ici_ca(
     # Needed because: "/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so: undefined"
     # https://stackoverflow.com/questions/76758096/where-is-engine-pkcs11-so
     exec { '/usr/bin/mkdir -p /usr/lib/engines':
-      unless  => "/usr/bin/test -d /usr/lib/engine"
+      unless  => '/usr/bin/test -d /usr/lib/engine'
     }
-    file { "/usr/lib/engines/engine_pkcs11.so": ensure => link, target => "/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so" }
+    file { '/usr/lib/engines/engine_pkcs11.so': ensure => link, target => '/usr/lib/x86_64-linux-gnu/engines-3/pkcs11.so' }
 
     apt::ppa { 'ppa:sunet/ppa': }
     package { 'ici': ensure => latest }
@@ -84,10 +84,10 @@ define sunet::ici_ca::rp(
 
   if ($monitor_infra_cert) {
     sunet::scriptherder::cronjob { 'check_infra_cert':
-        cmd           => "/usr/bin/check_infra_cert_expire /etc/ssl/certs/${host}_infra.crt",
-        minute        => '30',
-        hour          => '8',
-        ok_criteria   => ['exit_status=0', 'max_age=25h'],
+        cmd         => "/usr/bin/check_infra_cert_expire /etc/ssl/certs/${host}_infra.crt",
+        minute      => '30',
+        hour        => '8',
+        ok_criteria => ['exit_status=0', 'max_age=25h'],
     }
   }
 }

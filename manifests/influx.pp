@@ -7,6 +7,7 @@
 # @param influx_producer_networks  A list of networks allowed to access influx port 8086
 # @param legacy_settings           Set to false to switch to docker-compose, a never acme-d reload method & and dockerhostv2 nftable compability
 class sunet::influx(
+  Array[String] $influx_producer_networks,
   String        $servicename='',
   String        $influxdb_version='latest',
   String        $influxdb2_tag='ci-docker-influxdb2-292',
