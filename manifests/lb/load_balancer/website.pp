@@ -147,6 +147,7 @@ define sunet::lb::load_balancer::website(
   $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
   $statsd_host            = pick($_docker_ip, $facts['networking']['ip'])
+  $set_fqdn               = pick($config['set_fqdn'], false)
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
