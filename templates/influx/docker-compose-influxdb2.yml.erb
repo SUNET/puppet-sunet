@@ -3,6 +3,7 @@ services:
 
   influxdb2:
     image: docker.sunet.se/docker-influxdb2:<%= @influxdb2_tag %>
+    container_name: influxdb2
     ports:
       - '8086:8086'
     environment:
