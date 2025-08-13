@@ -13,11 +13,34 @@ add rule ip6 nat postrouting ip6 saddr { fd0c::/64 } iifname to_<%= @instance -%
 #
 # Allow exposed ports from <%= @interface %> to frontend instance docker containers
 <% if @tcp_dport.is_a? String -%>
+<%# if source address not specified it returns 'any' which is translated to an empty string %>
+<% if @saddr == '' -%>
 add rule inet filter forward oifname to_<%= @instance -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+<% else %>
+
+<% if @saddr_v4.is_a? String -%>
+add rule inet filter forward oifname to_<%= @instance -%> tcp <%= @tcp_dport -%> ip <%= @saddr_v4 -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+<% end %>
+
+<% if @saddr_v6.is_a? String -%>
+add rule inet filter forward oifname to_<%= @instance -%> tcp <%= @tcp_dport -%> ip6 <%= @saddr_v6 -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+<% end %>
+<% end %>
+
+<% if @stats_dport.is_a? String -%>
+# Allow haproxy stats ports from <%= @interface %> to frontend instance docker containers
+<% if @stats_allow_v4.is_a? String -%>
+add rule inet filter forward oifname to_<%= @instance -%> tcp <%= @stats_dport -%> ip <%= @stats_allow_v4 -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+<% end %>
+<% if @stats_allow_v6.is_a? String -%>
+add rule inet filter forward oifname to_<%= @instance -%> tcp <%= @stats_dport -%> ip6 <%= @stats_allow_v6 -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+<% end %>
+<% end %>
+
 # icmp is necessary for path-mtu
 add rule inet filter forward oifname to_<%= @instance -%> ip protocol icmp counter accept comment "Allow ICMP to frontend instance <%= @instance -%>"
 add rule inet filter forward oifname to_<%= @instance -%> ip6 nexthdr icmpv6 counter accept comment "Allow ICMPv6 to frontend instance <%= @instance -%>"
 # We could filter on destination address too, but I'm not sure it would be worth the extra clock cylces
-# add rule inet filter forward iif <%= @interface %> ip  daddr <%= @frontend_ips_v4 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
+# add rule inet filter forward iif <%= @interface %> ip <% if @saddr.is_a? String -%> saddr <%= @saddr -%><% end -%> tcp <%= @tcp_dport -%>  daddr <%= @frontend_ips_v4 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
 # add rule inet filter forward iif <%= @interface %> ip6 daddr <%= @frontend_ips_v6 -%> tcp <%= @tcp_dport -%> counter accept comment "Allow traffic to frontend instance <%= @instance -%>"
 <% end -%>

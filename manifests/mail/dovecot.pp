@@ -1,10 +1,13 @@
 # Dovecot for SUNET mail
 class sunet::mail::dovecot(
   String $replication_partner,
+  String $replication_partner_ipv4,
+  String $replication_partner_ipv6,
   Array[String] $allow_nets,
   String $domain,
   String $imap_domain,
   String $environment,
+  Optional[String] $partner_pub_key = undef,
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
   String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
@@ -19,7 +22,14 @@ class sunet::mail::dovecot(
 
   $replication_password = lookup('replication_password')
   $master_password = lookup('master_password')
-
+  sunet::snippets::ssh_keygen {'id_dovecot_ed25519':
+  }
+  if $partner_pub_key {
+    file_line { 'partner_pub_key':
+      path => '/root/.ssh/authorized_keys',
+      line => $partner_pub_key,
+    }
+  }
 
   $db_hosts = join($config['db_hosts'], ' host=')
   ## FIXME: This is NOT what Nextcloud calls 'salt', but instead what they call 'secret'.
@@ -40,11 +50,18 @@ class sunet::mail::dovecot(
     compose_filename => 'docker-compose.yml',
     description      => 'Dovecot',
   }
-  $ports = [24, 143, 993, 4190, 12345, 12346]
+  $ports = [24, 143, 465, 993, 4190, 12345, 12346]
   $ports.each|$port| {
     sunet::nftables::docker_expose { "mail_port_${port}":
       allow_clients => 'any',
       port          => $port,
+      iif           => $interface,
+    }
+  }
+  [$replication_partner_ipv4, $replication_partner_ipv6].each|$ip| {
+    sunet::nftables::docker_expose { "mail_port_ssh_${ip}":
+      allow_clients => $ip,
+      port          => 22,
       iif           => $interface,
     }
   }

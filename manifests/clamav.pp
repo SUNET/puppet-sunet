@@ -86,6 +86,10 @@ class sunet::clamav (
     path => '/etc/clamav/clamd.conf',
     line => 'ExcludePath ^/var/spool/postfix/'
   }
+  -> file_line { 'exclude_etc_cosmos_gnupg':
+    path => '/etc/clamav/clamd.conf',
+    line => 'ExcludePath ^/etc/cosmos/gnupg/'
+  }
   sunet::scriptherder::cronjob { 'clamav_scan':
     cmd           => '/opt/clamav/scan.sh',
     minute        => $minute,

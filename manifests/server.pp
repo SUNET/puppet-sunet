@@ -59,7 +59,11 @@ class sunet::server (
   }
 
   if $ntpd_config {
-    include sunet::ntp
+    if $::facts['sunet_chrony_enabled'] == 'yes' {
+      include sunet::chrony
+    } else {
+      include sunet::ntp
+    }
   }
 
   if $scriptherder {
