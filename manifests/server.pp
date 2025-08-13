@@ -74,7 +74,7 @@ class sunet::server (
     class { 'sunet::security::disable_all_local_users': }
   }
 
-  if $::facts['is_virtual'] == true {
+  if $::facts['is_virtual'] == true and $facts['dmi']['product']['name'] !~ /OpenStack\s(Compute|Nova)/ {
     file { '/usr/local/bin/sunet-reinstall':
       ensure  => file,
       mode    => '0755',
