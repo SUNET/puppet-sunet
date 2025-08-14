@@ -80,7 +80,7 @@ define sunet::kvm::cloudimage (
       mode    => '0750',
       ;
     $network_config:
-      content => template('sunet/kvm/network_config-v2.erb'),
+      content => template('sunet/kvm/network_config-v2-new.erb'),
       require => File[$script_dir],
       mode    => '0750',
       ;
