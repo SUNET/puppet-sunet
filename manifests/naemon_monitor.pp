@@ -194,12 +194,12 @@ class sunet::naemon_monitor (
     group  => 'root',
   }
   if $receive_otel {
-    # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone editors
-    # and admins can be manually assigned via gui.
+    # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone Viewers
+    # and admins will be set with the sql below.
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
     $thruk_admins.each |$user| {
       exec { "set-admin for ${user}":
-        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db \"update user set is_admin=1 where login='${user}'\"",
+        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db \"update user set is_admin=1 where login='${user}';UPDATE org_user SET role = 'Admin' WHERE user_id=(SELECT id from user where login='${user}');\"",
         onlyif  => 'test -f /opt/naemon_monitor/grafana/grafana.db'
       }
     }
