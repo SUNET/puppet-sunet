@@ -45,7 +45,7 @@ class sunet::server (
     }
   }
 
-  if $trigger_reboot and os.path.exists('/etc/cosmos-automatic-reboot') {
+  if $trigger_reboot and find_file('/etc/cosmos-automatic-reboot') {
     if $facts['system_uptime']['days'] > $trigger_reboot {
       file { '/var/run/reboot-required':
         ensure => present,
