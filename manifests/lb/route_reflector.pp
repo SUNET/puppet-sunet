@@ -5,7 +5,7 @@ class sunet::lb::route_reflector(
   $config = hiera_hash('sunet_frontend')
   if $config =~ Hash[String, Hash] {
     $ignore_peers_h = $config['route_reflector']['peers'].filter | $peer, $params | {
-      has_key($params, 'monitor') and $params['monitor'] == false
+      'monitor' in $params and $params['monitor'] == false
     }
 
     $ignore_peers = join(keys($ignore_peers_h), ' ')

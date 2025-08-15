@@ -15,11 +15,11 @@ define sunet::frontend::load_balancer::website(
   $haproxy_template_dir = lookup('haproxy_template_dir', undef, undef, $instance)
 
   # Figure out what certificate to pass to the haproxy container
-  if ! has_key($config, 'tls_certificate_bundle') {
-    if has_key($facts['tls_certificates'], 'snakeoil') {
+  if ! 'tls_certificate_bundle' in $config {
+    if 'snakeoil' in $facts['tls_certificates'] {
       $snakeoil = $facts['tls_certificates']['snakeoil']['bundle']
     }
-    if has_key($facts['tls_certificates'], $site_name) {
+    if $site_name in$facts['tls_certificates'] {
       # Site name found in tls_certificates - good start
       $_tls_certificate_bundle = pick(
         $facts['tls_certificates'][$site_name]['haproxy'],
@@ -186,11 +186,11 @@ define sunet::frontend::load_balancer::website(
 
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     # OLD way
-    if has_key($config, 'allow_ports') {
+    if 'allow_ports' in $config {
       each($config['frontends']) | $k, $v | {
         # k should be a frontend FQDN and $v a hash with ips in it:
         #   $v = {ips => [192.0.2.1]}}
-        if is_hash($v) and has_key($v, 'ips') {
+        if is_hash($v) and 'ips' in $v {
           sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
             from => 'any',
             to   => $v['ips'],
@@ -228,7 +228,7 @@ define sunet::frontend::load_balancer::website(
     })
   }
 
-  if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $facts['networking']['fqdn'] {
+  if 'letsencrypt_server' in $config and $config['letsencrypt_server'] != $facts['networking']['fqdn'] {
     sunet::dehydrated::client_define { $name :
       domain        => $name,
       server        => $config['letsencrypt_server'],
@@ -258,13 +258,13 @@ define sunet::frontend::load_balancer::website(
 function get_all_frontend_ips(
   Hash[String, Any] $config,
 ) >> Array[String] {
-  if ! has_key($config, 'frontends') {
+  if ! 'frontends' in $config {
     fail('Website config contains no frontends section')
   }
   $all_ips = map($config['frontends']) | $frontend_fqdn, $v | {
     # k should be a frontend FQDN and $v a hash with ips in it:
     #   $v = {ips => [192.0.2.1]}}
-    (is_hash($v) and has_key($v, 'ips')) ? {
+    (is_hash($v) and 'ips' in $v) ? {
       true  => $v['ips'],
       false => []
     }

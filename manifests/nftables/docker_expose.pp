@@ -33,7 +33,7 @@ define sunet::nftables::docker_expose (
     $dport = sunet::format_nft_set('dport', $port)
     $v6_dnat_dport = sunet::format_nft_set('dport', $dnat_v6_port)
 
-    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+    if ! 'to_docker' in $facts['networking']['interfaces'] {
       notice('No to_docker interface found, not setting up the DNAT rules for Docker (will probably work next time)')
     } else {
       file {

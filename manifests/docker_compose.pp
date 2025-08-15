@@ -20,7 +20,7 @@ define sunet::docker_compose (
   }
   if ($docker_class == 'sunet::dockerhost') {
     # handle legacy class
-    $nftenabled_and_interface =  $::facts['sunet_nftables_enabled'] == 'yes' and has_key($::facts['networking']['interfaces'], 'to_docker')
+    $nftenabled_and_interface =  $facts['sunet_nftables_enabled'] == 'yes' and 'to_docker' in $facts['networking']['interfaces']
     $advanced_network_or_nftdisabled = $::facts['dockerhost_advanced_network'] == 'yes' or $::facts['sunet_nftables_enabled'] == 'no'
     if ( $nftenabled_and_interface or  $advanced_network_or_nftdisabled ) {
       $_install_service = true

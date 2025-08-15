@@ -13,12 +13,12 @@ define sunet::frontend::load_balancer::website2(
   $site_name = pick($config['site_name'], $instance)
   $haproxy_template_dir = lookup('haproxy_template_dir', undef, undef, $instance)
 
-  if ! has_key($config, 'tls_certificate_bundle') {
+  if ! 'tls_certificate_bundle' in $config {
     # Put suitable certificate path in $config['tls_certificate_bundle']
-    if has_key($facts['tls_certificates'], 'snakeoil') {
+    if 'snakeoil' in $facts['tls_certificates'] {
       $snakeoil = $facts['tls_certificates']['snakeoil']['bundle']
     }
-    if has_key($facts['tls_certificates'], $site_name) {
+    if $site_name in $facts['tls_certificates'] {
       # Site name found in tls_certificates - good start
       $_tls_certificate_bundle = pick(
         $facts['tls_certificates'][$site_name]['haproxy'],
@@ -148,11 +148,11 @@ define sunet::frontend::load_balancer::website2(
     start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
   }
 
-  if has_key($config, 'allow_ports') {
+  if 'allow_ports' in $config {
     each($config['frontends']) | $k, $v | {
       # k should be a frontend FQDN and $v a hash with ips in it:
       #   $v = {ips => [192.0.2.1]}}
-      if is_hash($v) and has_key($v, 'ips') {
+      if is_hash($v) and 'ips' in $v {
         sunet::misc::ufw_allow { "allow_ports_to_${instance}_frontend_${k}":
           from => 'any',
           to   => $v['ips'],
@@ -165,7 +165,7 @@ define sunet::frontend::load_balancer::website2(
     command => "/usr/sbin/ufw route allow out on br-${instance}",
   }
 
-  if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $facts['networking']['fqdn'] {
+  if 'letsencrypt_server' in $config and $config['letsencrypt_server'] != $facts['networking']['fqdn'] {
     sunet::dehydrated::client_define { $name :
       domain        => $name,
       server        => $config['letsencrypt_server'],

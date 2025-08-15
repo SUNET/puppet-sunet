@@ -43,7 +43,7 @@ class sunet::dockerhost(
         ;
     }
 
-    if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+    if ! 'to_docker' in $facts['networking']['interfaces'] {
       # Have to check if the Docker service has been (re-)started yet with the nftables ns dropin file in place.
       # If not, there won't be a to_docker interface, and we can't set up the firewall rules.
       notice('No to_docker interface found, not setting up the firewall rules for Docker (will probably work next time)')
@@ -142,7 +142,7 @@ class sunet::dockerhost(
     default => $docker_dns,
   }
 
-  if $tcp_bind and has_key($facts['tls_certificates'], $facts['networking']['fqdn']) and has_key($facts['tls_certificates'][$::fqdn], 'infra_cert') {
+  if $tcp_bind and $facts['networking']['fqdn'] in $facts['tls_certificates'] and 'infra_cert' in $facts['tls_certificates'][$::fqdn] {
     $_tcp_bind = $tcp_bind
     $tls_enable = true
     $tls_cacert = '/etc/ssl/certs/infra.crt'

@@ -23,17 +23,17 @@ class sunet::frontend::load_balancer(
     ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
                     { owner => 'root', group => 'root', mode => '0755' })
 
-    if has_key($config['load_balancer'], 'websites') and has_key($config['load_balancer'], 'websites2') {
+    if 'websites' in $config['load_balancer'] and 'websites2' in $config['load_balancer'] {
       fail("Can't configure websites and websites2 at the same time unfortunately")
     }
 
-    if has_key($config['load_balancer'], 'websites') {
+    if 'websites' in $config['load_balancer'] {
       #
       # Old style config
       #
       fail("Migrate your frontend config from 'websites' to 'websites2'")
     }
-    if has_key($config['load_balancer'], 'websites2') {
+    if 'websites2' in $config['load_balancer'] {
       #
       # New style config
       #
@@ -55,7 +55,7 @@ class sunet::frontend::load_balancer(
       }
     }
 
-    $exabgp_imagetag = has_key($config['load_balancer'], 'exabgp_imagetag') ? {
+    $exabgp_imagetag = 'exabgp_imagetag' in $config['load_balancer'] ? {
       true  => $config['load_balancer']['exabgp_imagetag'],
       false => 'latest',
     }

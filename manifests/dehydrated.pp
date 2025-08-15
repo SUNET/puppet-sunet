@@ -14,7 +14,7 @@ class sunet::dehydrated(
   if $conf !~ Hash {
     fail("Hiera key 'dehydrated' is not a hash")
   }
-  if ! has_key($conf, 'domains') {
+  if ! 'domains' in $conf {
     fail("Hiera hash 'dehydrated' does not contain 'domains'")
     # Old default domains hash if none was set:
     # [{$::fqdn => {"names" => [$::fqdn]}}]
@@ -100,7 +100,7 @@ class sunet::dehydrated(
   if ($apache) {
     sunet::dehydrated::apache_server { 'dehydrated_apache_server': }
   }
-  if has_key($conf, 'clients') {
+  if 'clients' in $conf {
     $clients = $conf['clients']
   } else {
     $clients = false
@@ -114,7 +114,7 @@ class sunet::dehydrated(
       #          $info = {names => [foo.sunet.se],
       #                   clients => [frontend1.sunet.se, frontend2.sunet.se]
       #                  }
-      if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
+      if ('ssh_key_type' in $info and 'ssh_key' in $info) {
         sunet::rrsync { "/etc/dehydrated/certs/${domain}":
           ssh_key_type       => $info['ssh_key_type'],
           ssh_key            => $info['ssh_key'],
@@ -129,7 +129,7 @@ class sunet::dehydrated(
       # Make a list of all the domains that list this client in their 'clients' list
       $domain_list1 = $thedomains.map |$domain_hash| {
         $domain_hash.map |$domain, $info| {
-          if has_key($info, 'clients') {
+          if 'clients' in $info {
             if ($client in $info['clients']) {
               $domain
             }

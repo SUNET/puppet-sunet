@@ -32,7 +32,7 @@ define sunet::docker_run(
 
   if ($docker_class == 'sunet::dockerhost') {
     if $::facts['sunet_nftables_enabled'] == 'yes' {
-      if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
+      if ! 'to_docker' in $facts['networking']['interfaces'] {
         notice("sunet::docker_compose: No to_docker interface found, not installing ${name}")
         $_install_service = false
       } else {
