@@ -11,6 +11,7 @@ class sunet::metadata::mdq_publisher(
   Optional[String] $extra_entities='',
   Optional[String] $xml_dir='md',
   Optional[String] $imagetag='latest',
+  Array[String] $allowed_https_clients = lookup('mdq_allowed_https_clients', undef, undef, ['any']),
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
@@ -19,6 +20,7 @@ class sunet::metadata::mdq_publisher(
     notice('Enabling nftables (opt-in, or Ubuntu >= 22.04)')
     ensure_resource ('class','sunet::nftables::init', {})
   }
+  $hostname = $facts['networking']['fqdn']
 
   $signers = lookup('signers')
   $signers.each |$signer_name, $signer| {
@@ -105,7 +107,7 @@ class sunet::metadata::mdq_publisher(
     sunet::docker_run { 'swamid-mdq-publisher':
       image               => 'docker.sunet.se/swamid/mdq-publisher',
       imagetag            => $imagetag,
-      hostname            => $facts['networking']['fqdn'],
+      hostname            => $hostname,
       volumes             => [
         '/etc/ssl:/etc/ssl',
         '/var/www/html:/var/www/html',
@@ -119,13 +121,13 @@ class sunet::metadata::mdq_publisher(
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'expose publisher' :
-      allow_clients => 'any',
+      allow_clients => $allowed_https_clients,
       port          => 443,
       iif           => $facts['networking']['primary'],
     }
   } else {
     sunet::misc::ufw_allow { 'allow-https':
-      from => 'any',
+      from => $allowed_https_clients,
       port => '443'
     }
   }

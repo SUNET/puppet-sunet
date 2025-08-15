@@ -1,0 +1,41 @@
+publiccodeYmlVersion: "0.4"
+
+name: puppet-sunet
+url: "https://github.com/SUNET/puppet-sunet"
+platforms:
+  - linux
+
+categories:
+  - it-service-management
+
+developmentStatus: stable
+
+softwareType: "standalone/other"
+
+description:
+  en:
+    shortDescription: >
+      Puppet classes for configurstion management. 
+
+    longDescription: >
+      Puppet classes for configurstion management. 
+
+    features:
+      - Configuration management
+
+legal:
+  license: BSD-2-Clause
+
+maintenance:
+  type: "community"
+
+  contacts:
+    - name: Johan Wassberg <jocar@sunet.se>
+    - name: Leif Johansson <leifj@sunet.se>
+    - name: Micke Nordin <kano@sunet.se>
+    - name: Mikael Frykholm <mifr@sunet.se>
+
+localisation:
+  localisationReady: false
+  availableLanguages:
+    - en

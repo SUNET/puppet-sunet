@@ -21,7 +21,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
     mode    => '0644',
     content => template('nunoc/edusign/logrotate-edusign.erb')
   }
-  sunet::metadata::swamid_idp_transitive { '/etc/metadata/swamid-idp-transitive.xml': }
+  sunet::metadata::trust::swamid {'required_title':}
 
   $edusign_idp_entityid = hiera('edusign_idp_entityid', '')
   $edusign_metadata_file = hiera('edusign_metadata_file', '')
@@ -32,7 +32,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
       image    => 'docker.sunet.se/edusign-sp',
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
+      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
                     "SP_HOSTNAME=${_host}",
                     'BACKEND_HOST=edusign-app.docker',
@@ -52,15 +52,16 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
       image    => 'docker.sunet.se/edusign-sp',
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro'],
+      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
-                  "SP_HOSTNAME=${_host}",
-                  "IDP_ENTITYID=${edusign_idp_entityid}",
-                  "METADATA_FILE=${edusign_metadata_file}",
-                  'BACKEND_HOST=edusign-app.docker',
-                  'MAX_FILE_SIZE=20M',
-                  'ACMEPROXY=acme-c.sunet.se',
-                  "MULTISIGN_BUTTONS=${invites}"],
+                    "SP_HOSTNAME=${_host}",
+                    'BACKEND_HOST=edusign-app.docker',
+                    'MAX_FILE_SIZE=20M',
+                    'ACMEPROXY=acme-c.sunet.se',
+                    'DISCO_URL=https://service.seamlessaccess.org/ds',
+                    "MULTISIGN_BUTTONS=${invites}",
+                    'MDQ_BASE_URL=https://mds.swamid.se/',
+                    'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt'],
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
     }
@@ -77,7 +78,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
   $debug = hiera('edusign_app_debug','false')
   $sign_requester_id = hiera('edusign_sign_requester_id', "https://${_host}/shibboleth")
   $scope_whitelist = hiera('edusign_whitelist')
-
+  $edusign_app_polling = hiera('edusign_app_polling', 'inviter')
   $edusign_app_extra_variables = hiera('edusign_app_extra_variables', [])
 
   $env_app = [ "SP_HOSTNAME=${_host}",
@@ -106,7 +107,8 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
               "MULTISIGN_BUTTONS=${invites}",
               "SESSION_COOKIE_NAME=${profile}",
               'LOCAL_STORAGE_BASE_DIR=/etc/edusign/data',
-              'SQLITE_MD_DB_PATH=/etc/edusign/data/edusign.db'
+              'SQLITE_MD_DB_PATH=/etc/edusign/data/edusign.db',
+              "POLLING=${edusign_app_polling}"
   ]
 
   $env_app_final = $env_app + $edusign_app_extra_variables
