@@ -535,15 +535,20 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="version of client to install")
-    parser.add_argument("--install", help="install backup client", action="store_true")
-    parser.add_argument(
+    exclusive_group = parser.add_mutually_exclusive_group(required=True)
+    exclusive_group.add_argument(
+        "--install", help="install backup client", action="store_true"
+    )
+    exclusive_group.add_argument(
         "--register", help="register client with backup server", action="store_true"
     )
     args = parser.parse_args()
 
     if args.install and not args.version:
-        print("--install requires that you supply --version")
-        sys.exit(1)
+        parser.error("--install requires that you supply --version")
+
+    if args.register and args.version:
+        parser.error("--register does not support --version")
 
     installed_version = get_installed_version()
 
