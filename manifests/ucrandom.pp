@@ -23,39 +23,12 @@ define sunet::ucrandom(
       mode    => '0660',
       content => template('sunet/ucrandom/default.erb')
   }
-  case $facts['init_type'] {
-      'upstart': {
-        file {'/etc/init/ucrandom.conf':
-          ensure  => $ensure_file,
-          owner   => root,
-          group   => root,
-          mode    => '0660',
-          content => template('sunet/ucrandom/ucrandom.conf.erb')
-        }
-      }
-      'systemd-sysv': {
-        file {'/lib/systemd/system/ucrandom.service':
-          ensure  => $ensure_file,
-          owner   => root,
-          group   => root,
-          mode    => '0600',
-          content => template('sunet/ucrandom/ucrandom.unit.erb')
-        }
-      }
-      default: {
-        file {'/lib/systemd/system/ucrandom.service':
-          ensure  => $ensure_file,
-          owner   => root,
-          group   => root,
-          mode    => '0600',
-          content => template('sunet/ucrandom/ucrandom.unit.erb')
-        }
-      }
-  }
-  $_provider = $facts['init_type'] ? {
-      'upstart'      => 'upstart',
-      'systemd-sysv' => 'systemd',
-      default        => 'debian'
+  file {'/lib/systemd/system/ucrandom.service':
+    ensure  => $ensure_file,
+    owner   => root,
+    group   => root,
+    mode    => '0600',
+    content => template('sunet/ucrandom/ucrandom.unit.erb')
   }
   $ensure_service = $ensure ? {
     'present' => 'running',
@@ -63,6 +36,6 @@ define sunet::ucrandom(
   }
   service {'ucrandom':
     ensure   => $ensure_service,
-    provider => $_provider,
+    provider => 'systemd',
   }
 }
