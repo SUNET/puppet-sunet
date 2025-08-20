@@ -21,6 +21,7 @@ otelcol.processor.batch "otel" {
     traces  = [otelcol.exporter.otlp.default.input]
   }
 }
+//We need to to this for the labels to survice out of loki to the otel world
 loki.relabel "journal" {
   forward_to = []
 
@@ -66,7 +67,6 @@ otelcol.processor.transform "fixes" {
       `set(resource.attributes["host.id"], attributes["machine_id"])`,
       `set(attributes["severityname"], attributes["level"])`,
       `delete_key(attributes, "hostname")`,
-      `delete_key(attributes, "loki_attribute_labels")`,
       `delete_key(attributes, "machine_id")`,
     ]
   }
