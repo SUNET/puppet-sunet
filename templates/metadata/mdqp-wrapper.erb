@@ -36,10 +36,13 @@ for part in ${parts}; do
     "${part}" "$@"
 done
 
+<% if @mdq %>
 # Main stuff like fetching the metadata from MDQ
 cmd="docker run --rm --net pyff_default -e MDQ_SERVICE=<%= @mdq_service %> -e RPH=<%= @runs_per_hour %> -v /opt/mdqp/work:/work <%= @image_tag %> /mdqp.py"
 echo "Running main code: $cmd"
 eval $cmd
+<% end -%>
+
 
 # Post parts like rsyncing metadata to fronts
 parts=$(get_parts "post")

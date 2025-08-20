@@ -87,7 +87,7 @@ def last_scheduled_start_time() -> Union[datetime.datetime, None]:
     return returned_timestamp
 
 
-def last_error_time() -> Union[datetime.datetime, None]:
+def last_error_time(error_logfile: str) -> Union[datetime.datetime, None]:
     """return the last time we saw an error logged"""
     returned_timestamp = None
     # Sometimes the client logs stuff that we do not consider to be critical,
@@ -96,12 +96,11 @@ def last_error_time() -> Union[datetime.datetime, None]:
         r" ANS0361I DIAG: A record has been deleted from password file, due to password change or wrong password.$",  # pylint:disable=line-too-long
         r" ANS1138E The 'QUERY' command must be followed by a subcommand$",
     )
-    with open("/var/log/dsmerror.log", "r", encoding="utf-8") as fileobj:
+    with open(error_logfile, "r", encoding="utf-8") as fileobj:
         for line in fileobj:
             line = line.rstrip()
             for regex in non_critical_logrows:
                 if re.search(regex, line):
-                    print(f"Ignoring line considered non-critical: {line}")
                     break
             else:
                 # We are only interested in lines beginning with a timestamp, it
@@ -156,12 +155,14 @@ def main() -> None:
     # started a scheduled backup this indicates the latest backup had problems.
     # If we did not get a datetime.datetime this means we found no errors and
     # this is OK.
-    last_error = last_error_time()
+    error_logfile = "/var/log/dsmerror.log"
+    last_error = last_error_time(error_logfile)
     if isinstance(last_error, datetime.datetime):
         if last_error > last_start:
             print(
                 f"CRITICAL: last error time ({last_error})",
                 f"is newer than last start time ({last_start})",
+                f"for details see '{error_logfile}'",
             )
             sys.exit(1)
 
