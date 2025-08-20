@@ -41,7 +41,7 @@ loki.relabel "journal" {
     target_label  = "machine_id"
   }
   rule {
-    source_labels = ["__journal__priority"]
+    source_labels = ["__journal_priority_keyword"]
     target_label  = "level"
   }
   rule {
