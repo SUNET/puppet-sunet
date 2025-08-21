@@ -17,22 +17,65 @@ otelcol.receiver.otlp "otel" {
 otelcol.processor.batch "otel" {
   output {
     metrics = [otelcol.exporter.otlp.default.input]
-    logs    = [otelcol.exporter.otlp.default.input]
+    logs    = [otelcol.processor.transform.fixes.input]
     traces  = [otelcol.exporter.otlp.default.input]
   }
 }
+//We need to to this for the labels to survice out of loki to the otel world
 loki.relabel "journal" {
   forward_to = []
 
   rule {
     source_labels = ["__journal__systemd_unit"]
-    target_label  = "unit"
+    target_label  = "service_name" // This is the new otel name for a service instead of the ad-hoc unit
   }
   rule {
     source_labels = ["__journal__hostname"]
     target_label  = "hostname"
   }
+  rule {
+    source_labels = ["__journal__boot_id"]
+    target_label  = "boot_id"
+  }
+  rule {
+    source_labels = ["__journal__machine_id"]
+    target_label  = "machine_id"
+  }
+  rule {
+    source_labels = ["__journal_priority_keyword"]
+    target_label  = "level"
+  }
+  rule {
+    source_labels = ["__journal__syslog_identifier"]
+    target_label  = "syslog_identifier"
+  }
+  rule {
+    source_labels = ["__journal__transport"]
+    target_label  = "transport"
+  }
 }
+// Map old style loki names to opentelemetry resource.attributes
+// https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/7298#issuecomment-3187693464
+otelcol.processor.transform "fixes" {
+  error_mode = "silent"
+
+  log_statements {
+    context = "log"
+    statements = [
+      `set(resource.attributes["service.name"], attributes["service_name"])`,
+      `set(resource.attributes["host.name"], attributes["hostname"])`,
+      `set(resource.attributes["host.id"], attributes["machine_id"])`,
+      `set(attributes["severityname"], attributes["level"])`,
+      `delete_key(attributes, "hostname")`,
+      `delete_key(attributes, "machine_id")`,
+    ]
+  }
+
+  output {
+    logs    = [otelcol.exporter.otlp.default.input]
+  }
+}
+
 otelcol.receiver.loki "default" {
   output {
     metrics = [otelcol.processor.batch.otel.input]

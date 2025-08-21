@@ -19,12 +19,12 @@ class sunet::naemon_monitor (
   String $influxdb_tag = '1.8',
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
-  String $grafana_tag = '11.6.0',
+  String $grafana_tag = '12.1.1',
   String $grafana_default_role = 'Viewer',
-  String $loki_tag = '3.4.2',
-  String $mimir_tag = '2.15.1',
-  String $tempo_tag = '2.7.2',
-  String $alloy_tag = 'v1.7.5',
+  String $loki_tag = '3.4.5',
+  String $mimir_tag = '2.16.1',
+  String $tempo_tag = '2.8.2',
+  String $alloy_tag = 'v1.10.2',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
@@ -194,6 +194,8 @@ class sunet::naemon_monitor (
     group  => 'root',
   }
   if $receive_otel {
+    package { ['sqlite3']: ensure => 'present' }
+
     # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone Viewers
     # and admins will be set with the sql below.
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
