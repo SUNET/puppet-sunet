@@ -194,6 +194,8 @@ class sunet::naemon_monitor (
     group  => 'root',
   }
   if $receive_otel {
+    package { ['sqlite3']: ensure => 'present' }
+
     # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone Viewers
     # and admins will be set with the sql below.
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
