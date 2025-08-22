@@ -156,9 +156,7 @@ class sunet::microk8s::node(
   }
   if $csr_conf_template and !empty($csr_conf_template) {
       file { '/var/snap/microk8s/current/certs/csr.conf.template':
-        ensure  => files,
-        source => undef,
-        target => undef,
+        ensure  => file,
         content => template('sunet/microk8s/csr.conf.template.erb'),
         mode    => '0660',
         owner   => 'root',
