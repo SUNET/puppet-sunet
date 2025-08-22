@@ -13,7 +13,7 @@ otelcol.receiver.otlp "otel" {
     traces  = [otelcol.processor.batch.otel.input]
   }
 }
-// Batch send eveything to the default exporter below. 
+// Batch send eveything to the default exporter below.
 otelcol.processor.batch "otel" {
   output {
     metrics = [otelcol.exporter.otlp.default.input]
@@ -101,7 +101,7 @@ otelcol.receiver.prometheus "default" {
   }
 }
 // change name of job to node
-discovery.relabel "node_exporter" { 
+discovery.relabel "node_exporter" {
     // workaround that the job name get set to 'integrations/unix' instead of 'node' that the dashboard expects
   targets = prometheus.exporter.unix.default.targets
   rule {
@@ -113,7 +113,7 @@ discovery.relabel "node_exporter" {
 discovery.file "targetsd" {
   files = ["/etc/alloy/targets.d/*.yaml"]
 }
-// scrape our own metrics 
+// scrape our own metrics
 prometheus.scrape "default" {
   targets = discovery.relabel.node_exporter.output
   forward_to = [
@@ -126,7 +126,7 @@ prometheus.scrape "targetsd" {
     otelcol.receiver.prometheus.default.receiver,
   ]
 }
-// Write everything to the receiver below. 
+// Write everything to the receiver below.
 otelcol.exporter.otlp "default" {
   client {
     endpoint = "<%= @otel_receiver %>:4317"
