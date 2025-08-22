@@ -155,12 +155,13 @@ class sunet::microk8s::node(
     }
   }
   if $csr_conf_template and !empty($csr_conf_template) {
-    file { '/var/snap/microk8s/current/certs/csr.conf.template':
-      ensure  => files,
-      content => template('sunet/microk8s/csr.conf.template.erb'),
-      mode    => '0660',
-      owner   => 'root',
-      group   => 'microk8s',
+      file { '/var/snap/microk8s/current/certs/csr.conf.template':
+        ensure  => files,
+        content => template('sunet/microk8s/csr.conf.template.erb'),
+        mode    => '0660',
+        owner   => 'root',
+        group   => 'microk8s',
+      }
     }
   if $drain_reboot_cron == true {
       file { '/usr/local/bin/drainreboot':
