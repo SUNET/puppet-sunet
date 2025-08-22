@@ -1,6 +1,7 @@
 # @summary Run naemon with Thruk.
-# @param receive_otel Feature flag to enable the LGTM stack
-# @param otel_retention Number of hours to keep logs, metrics and traces, defaults to 3 months
+# @param receive_otel                     Feature flag to enable the LGTM stack
+# @param otel_retention                   Number of hours to keep logs, metrics and traces, defaults to 3 months
+# @param naemon_automatic_repo_hosts      Option to skip the automatic monitoring of hosts in the ops-repo where the server resides
 #
 class sunet::naemon_monitor (
   String $domain,
@@ -18,17 +19,18 @@ class sunet::naemon_monitor (
   String $influxdb_tag = '1.8',
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
-  String $grafana_tag = '11.6.0',
+  String $grafana_tag = '12.1.1',
   String $grafana_default_role = 'Viewer',
-  String $loki_tag = '3.4.2',
-  String $mimir_tag = '2.15.1',
-  String $tempo_tag = '2.7.2',
-  String $alloy_tag = 'v1.7.5',
+  String $loki_tag = '3.4.5',
+  String $mimir_tag = '2.16.1',
+  String $tempo_tag = '2.8.2',
+  String $alloy_tag = 'v1.10.2',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
   Array $exclude_hosts = [],
+  Boolean $naemon_automatic_repo_hosts = true,
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
   Optional[Boolean] $receive_otel = false,
@@ -192,12 +194,14 @@ class sunet::naemon_monitor (
     group  => 'root',
   }
   if $receive_otel {
-    # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone editors
-    # and admins can be manually assigned via gui.
+    package { ['sqlite3']: ensure => 'present' }
+
+    # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone Viewers
+    # and admins will be set with the sql below.
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
     $thruk_admins.each |$user| {
       exec { "set-admin for ${user}":
-        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db \"update user set is_admin=1 where login='${user}'\"",
+        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db \"update user set is_admin=1 where login='${user}';UPDATE org_user SET role = 'Admin' WHERE user_id=(SELECT id from user where login='${user}');\"",
         onlyif  => 'test -f /opt/naemon_monitor/grafana/grafana.db'
       }
     }
@@ -470,17 +474,35 @@ class sunet::naemon_monitor (
     warn_criteria => ['exit_status=1', 'max_age=24h'],
   }
 
-  class { 'nagioscfg':
-    additional_entities => $additional_entities,
-    config              => 'naemon_monitor',
-    default_host_group  => $default_host_group,
-    manage_package      => false,
-    manage_service      => false,
-    cfgdir              => '/etc/naemon/conf.d/nagioscfg',
-    host_template       => 'naemon-host',
-    service             => 'sunet-naemon_monitor',
-    single_ip           => true,
-    require             => File['/etc/naemon/conf.d/nagioscfg/'],
-    exclude_hosts       => $exclude_hosts,
+  if $naemon_automatic_repo_hosts {
+    class { 'nagioscfg':
+      additional_entities => $additional_entities,
+      config              => 'naemon_monitor',
+      default_host_group  => $default_host_group,
+      manage_package      => false,
+      manage_service      => false,
+      cfgdir              => '/etc/naemon/conf.d/nagioscfg',
+      host_template       => 'naemon-host',
+      service             => 'sunet-naemon_monitor',
+      single_ip           => true,
+      require             => File['/etc/naemon/conf.d/nagioscfg/'],
+      exclude_hosts       => $exclude_hosts,
+    }
+  }
+  else {
+    class { 'nagioscfg':
+      additional_entities => $additional_entities,
+      config              => 'naemon_monitor',
+      default_host_group  => $default_host_group,
+      manage_package      => false,
+      manage_service      => false,
+      cfgdir              => '/etc/naemon/conf.d/nagioscfg',
+      host_template       => 'naemon-host',
+      hostgroups          => [],
+      service             => 'sunet-naemon_monitor',
+      single_ip           => true,
+      require             => File['/etc/naemon/conf.d/nagioscfg/'],
+      exclude_hosts       => $exclude_hosts,
+    }
   }
 }
