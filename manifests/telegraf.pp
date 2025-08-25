@@ -34,11 +34,6 @@ class sunet::telegraf($repo = 'stable') {
         subscribe   => [Apt::Key['telegraf']],
         refreshonly => true,
     }
-    $_provider = $facts['init_type'] ? {
-        'upstart'      => 'upstart',
-        'systemd-sysv' => 'systemd',
-        default        => 'debian'
-    }
     package { 'telegraf':
         ensure  => latest,
         require => Exec['telegraf_apt_get_update'],
@@ -47,7 +42,7 @@ class sunet::telegraf($repo = 'stable') {
         ensure  => file,
         content => inline_template("INFLUXDB_V2_TOKEN=${token}\n")
     }
-    -> service {'telegraf': ensure => running, provider => $_provider }
+    -> service {'telegraf': ensure => running, provider => 'systemd' }
     file {'/etc/telegraf/telegraf.conf':
         ensure  => file,
         content => template('sunet/telegraf/telegraf-conf.erb'),

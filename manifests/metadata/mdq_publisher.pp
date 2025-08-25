@@ -11,6 +11,7 @@ class sunet::metadata::mdq_publisher(
   Optional[String] $extra_entities='',
   Optional[String] $xml_dir='md',
   Optional[String] $imagetag='latest',
+  Array[String] $allowed_https_clients = lookup('mdq_allowed_https_clients', undef, undef, ['any']),
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
@@ -120,13 +121,13 @@ class sunet::metadata::mdq_publisher(
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'expose publisher' :
-      allow_clients => 'any',
+      allow_clients => $allowed_https_clients,
       port          => 443,
       iif           => $facts['networking']['primary'],
     }
   } else {
     sunet::misc::ufw_allow { 'allow-https':
-      from => 'any',
+      from => $allowed_https_clients,
       port => '443'
     }
   }
