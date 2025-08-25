@@ -34,7 +34,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: <%= @mongodb_root_password %>
 
   pyff:
-    image: 'docker.sunet.se/pyff:2.0.0'
+    image: 'docker.sunet.se/pyff:<%= @pyff_version %>'
     restart: always
     expose:
       - 8080
