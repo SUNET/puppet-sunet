@@ -20,7 +20,7 @@ ethernets:
 <% if @gateway -%>
     gateway4: '<%= @gateway %>'
 <% end -%>
-<% if @network_ver == '2' and @gateway6 -%>
+<% if @gateway6 -%>
     gateway6: '<%= @gateway6 %>'
 <% end -%>
 <% if @resolver -%>
