@@ -15,6 +15,7 @@ class sunet::server (
   Boolean $disable_all_local_users = false,
   Array $mgmt_addresses = [lookup('mgmt_addresses', undef, undef, [])],
   Boolean $ssh_allow_from_anywhere = false,
+  Variant[Integer, Undef] $reboot_trigger = undef,
 ) {
   if $fail2ban {
     # Configure fail2ban to lock out SSH scanners
@@ -41,6 +42,14 @@ class sunet::server (
       mgmt_addresses      => flatten($mgmt_addresses),
       nftables_init       => $nftables_init,
       port                => pick($ssh_port, 22),
+    }
+  }
+
+  if $reboot_trigger and find_file('/etc/cosmos-automatic-reboot') {
+    if $facts['system_uptime']['days'] > $reboot_trigger {
+      file { '/var/run/reboot-required':
+        ensure => present,
+      }
     }
   }
 
