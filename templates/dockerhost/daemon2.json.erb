@@ -18,6 +18,7 @@
   <% end -%>
   <% if @ipv6 -%>
   "fixed-cidr-v6": "<%= @docker_network_v6 -%>",
+  "default-network-opts": {"bridge":{"com.docker.network.enable_ipv6":"true"}},
   <% end -%>
   "ipv6": <%= @ipv6 -%>,
   "log-driver": "json-file",
