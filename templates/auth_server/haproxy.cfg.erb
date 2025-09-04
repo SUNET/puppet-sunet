@@ -2,13 +2,17 @@
 frontend auth-server-https
     # frontends use HTTP/2.0, monitoring etc. use HTTP/1.1
     # setup tls check using infra certs
-    bind *:443  ssl  crt <%= @tls_certificates[ @fqdn ][ 'haproxy' ] %>  ca-file /etc/ssl/certs/infra.crt  verify required  alpn h2,http/1.1
+    bind *:443  ssl  crt <%= @tls_certificates[@networking['fqdn']][ 'haproxy' ] %>  ca-file /etc/ssl/certs/infra.crt  verify required  alpn h2,http/1.1
     # Only allow frontend server requests
-<% @facts['cosmos']['frontend_server_hosts'].each do | name | -%>
+<% @lb_hosts.each do | name | -%>
     acl is_frontend ssl_c_s_dn(cn) "<%= name %>"
 <% end -%>
     http-request deny deny_status 400 if !is_frontend
     use_backend auth_server if is_frontend
 
 backend auth_server
+<% if @facts['dockerhost2'] && @facts['dockerhost2'] == 'yes' %>
+    server auth_server1 <%= @service_name %>-auth_server-1:8080  check  resolvers docker_dns init-addr none
+<% else -%>
     server auth_server1 <%= @service_name %>_auth_server_1:8080  check  resolvers docker_dns  init-addr none
+<% end -%>

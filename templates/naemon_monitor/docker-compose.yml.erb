@@ -18,6 +18,7 @@ services:
 
   naemon:
     init: true
+    restart: on-failure
     image: docker.sunet.se/naemon:<%= @naemon_tag %>
 <% unless @resolvers.empty? -%>
     dns:
@@ -40,6 +41,7 @@ services:
 <%- end -%>
 
   thruk:
+    restart: on-failure
     image: docker.sunet.se/thruk:<%= @thruk_tag %>
 <% unless @resolvers.empty? -%>
     dns:
@@ -69,6 +71,7 @@ services:
 <%- end -%>
 
   influxdb:
+    restart: on-failure
     image: influxdb:<%= @influxdb_tag %>
     volumes:
       - '/var/lib/influxdb:/var/lib/influxdb'
@@ -78,9 +81,11 @@ services:
 <%- end -%>
 
   histou:
+    restart: on-failure
     image: docker.sunet.se/histou:<%= @histou_tag %>
 
   nagflux:
+    restart: on-failure
     image: docker.sunet.se/nagflux:<%= @nagflux_tag %>
     volumes:
       - '/var/nagflux/:/var/nagflux/'
@@ -90,6 +95,7 @@ services:
 <%- end -%>
 
   grafana:
+    restart: on-failure
     image: grafana/grafana:<%= @grafana_tag %>
     volumes:
       - '/opt/naemon_monitor/grafana.ini/:/etc/grafana/grafana.ini'
@@ -99,6 +105,7 @@ services:
 
 <% if @receive_otel -%>
   loki:
+    restart: on-failure
     image: grafana/loki:<%= @loki_tag %>
     ports:
       - "3100:3100"
@@ -108,6 +115,7 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
 
   tempo:
+    restart: on-failure
     image: grafana/tempo:<%= @tempo_tag %>
     ports:
       - "14268:14268"  # jaeger ingest
@@ -123,6 +131,7 @@ services:
       - "/opt/naemon_monitor/tempo:/var/tempo:rw"
 
   mimir:
+    restart: on-failure
     image: grafana/mimir:<%= @mimir_tag %>
     command: ["-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml"]
     ports:
@@ -130,7 +139,9 @@ services:
     volumes:
       - "/opt/naemon_monitor/mimir-server.yaml:/etc/mimir.yaml:ro"
       - "/opt/naemon_monitor/mimir:/data:rw"
+
   alloy: #Router for otel
+    restart: on-failure
     image: grafana/alloy:<%= @alloy_tag %>
     command: ["run", "/etc/alloy/config.alloy"]
     ports:
