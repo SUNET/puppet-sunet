@@ -43,7 +43,7 @@ esac
 
 SLOT=$(/usr/safenet/lunaclient/bin/vtl verify | grep "$SERIAL" | awk '{print $1}')
 
-if [ "$SLOT" -lt 0 ] || [ "$SLOT" -gt 4 ]; then
+if [ -z "${SLOT}" ] ; then
 	echo "Warning: Could not find correct SLOT - $SLOT"
 	exit 1
 fi
