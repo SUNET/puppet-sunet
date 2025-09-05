@@ -41,7 +41,7 @@ class sunet::metadata::mdq_publisher(
     }
 
     if ($addresses) {
-      notice("allow-ssh-from-${signer_name} -> ${signer_ip}")
+      notice("allow-ssh-from-${signer_name} -> ${addresses}")
       sunet::misc::ufw_allow { "allow-ssh-from-${signer_name}":
         from => $addresses,
         port => 22
