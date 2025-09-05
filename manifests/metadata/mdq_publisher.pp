@@ -25,8 +25,8 @@ class sunet::metadata::mdq_publisher(
   $signers = lookup('signers')
   $signers.each |$signer_name, $signer| {
     $addresses = $signer['ipnumber'] ? {
-      undef   => $signer['addresses']
-      default => $signer['ipnumber']
+      undef   => $signer['addresses'],
+      default => $signer['ipnumber'],
     }
     $ssh_key = $signer['ssh_key']
     $ssh_key_type = $signer['ssh_key_type']
