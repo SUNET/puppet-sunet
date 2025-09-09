@@ -5,7 +5,7 @@ define sunet::apt::repo_grafana (
   apt::source { 'grafana':
       location => 'https://apt.grafana.com',
       repos    => 'main',
-      release  => 'stable'
+      release  => 'stable',
       key      => {
         name    => 'grafana.gpg',
         content => file('sunet/apt/grafana.gpg'),
