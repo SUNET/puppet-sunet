@@ -67,7 +67,7 @@ class sunet::dockerhost2(
     '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
       ensure  => file,
       mode    => '0644',
-      content => template('sunet/dockerhost/docker_ce-8D81803C0EBFCD88.pub.erb'),
+      content => file('sunet/docker/docker.asc'),
       ;
     }
   apt::key { 'docker_ce':
