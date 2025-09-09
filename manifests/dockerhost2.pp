@@ -97,7 +97,7 @@ class sunet::dockerhost2(
       origin   => 'download.docker.com'
     }
   } else {
-    ensure_resource('sunet::apt::repo_docker, 'sunet-dockerhost2-docker-repo')
+    ensure_resource('sunet::apt::repo_docker', 'sunet-dockerhost2-docker-repo')
   }
 
   exec { 'dockerhost_apt_get_update':
