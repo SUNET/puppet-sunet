@@ -12,9 +12,8 @@ define sunet::apt::repo_docker (
     key      => {
       name    => 'docker.asc',
       content => file('sunet/apt/docker.asc'),
-    }
+    },
     notify   => Exec['dockerhost_apt_get_update'],
-
   }
   apt::pin { 'Pin docker repo':
     packages => '*',
