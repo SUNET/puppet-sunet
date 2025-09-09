@@ -11,9 +11,6 @@ define sunet::apt::repo_grafana (
         content => file('sunet/apt/grafana.gpg'),
       }
   }
-  file { '/etc/apt/sources.list.d/grafana.list' :
-    ensure  => 'absent',
-  }
 
   $origins_from_template = '/etc/apt/apt.conf.d/51unattended-upgrades-origins'
   # This might be a race on first run depending on exection order but it's the best I can come up with at the time. Sorry.
