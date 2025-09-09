@@ -93,7 +93,7 @@ class sunet::dockerhost2(
   } else {
     apt::source { 'docker':
       location => "https://download.docker.com/linux/${lc_distro}",
-      repos    => $facts['os']['distro']['codename'],
+      repos    => $docker_repo,
       key      => {
         name    => 'docker.asc',
         content => file('sunet/docker/docker.asc'),
