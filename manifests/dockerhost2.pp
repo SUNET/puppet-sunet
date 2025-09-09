@@ -72,7 +72,7 @@ class sunet::dockerhost2(
       '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
         ensure  => file,
         mode    => '0644',
-        content => file('sunet/docker/docker.asc'),
+        content => file('sunet/apt/docker.asc'),
         ;
       }
     apt::key { 'docker_ce':
@@ -90,21 +90,14 @@ class sunet::dockerhost2(
       key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
       notify   => Exec['dockerhost_apt_get_update'],
     }
-  } else {
-    apt::source { 'docker':
-      location => "https://download.docker.com/linux/${lc_distro}",
-      repos    => $docker_repo,
-      key      => {
-        name    => 'docker.asc',
-        content => file('sunet/docker/docker.asc'),
-      }
-    }
-  }
 
-  apt::pin { 'Pin docker repo':
-    packages => '*',
-    priority => 1,
-    origin   => 'download.docker.com'
+    apt::pin { 'Pin docker repo':
+      packages => '*',
+      priority => 1,
+      origin   => 'download.docker.com'
+    }
+  } else {
+    ensure_resource('sunet::apt::repo_docker, 'sunet-dockerhost2-docker-repo')
   }
 
   exec { 'dockerhost_apt_get_update':
