@@ -8,7 +8,7 @@ define sunet::apt::repo_grafana (
       release  => 'stable'
       key      => {
         name    => 'grafana.gpg',
-        content => file( 'sunet/apt/grafana.gpg' ),
+        content => file('sunet/apt/grafana.gpg'),
       }
   }
   file { '/etc/apt/sources.list.d/grafana.list' :
