@@ -96,14 +96,13 @@ class sunet::dockerhost2(
       priority => 1,
       origin   => 'download.docker.com'
     }
+    exec { 'dockerhost_apt_get_update':
+      command     => '/usr/bin/apt-get update',
+      cwd         => '/tmp',
+      refreshonly => true,
+    }
   } else {
     ensure_resource('sunet::apt::repo_docker', 'sunet-dockerhost2-docker-repo')
-  }
-
-  exec { 'dockerhost_apt_get_update':
-    command     => '/usr/bin/apt-get update',
-    cwd         => '/tmp',
-    refreshonly => true,
   }
 
   package { $docker_package_name :
