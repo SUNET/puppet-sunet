@@ -60,6 +60,7 @@ class sunet::dockerhost2(
   }
 
   $distro = $facts['os']['distro']['id']
+  $lc_distro = downcase($distro)
   $release = $facts['os']['distro']['release']['major']
 
   if $distro == 'Ubuntu' or ($distro == 'Debian' and versioncmp($release, '12') <= 0) {
@@ -83,7 +84,7 @@ class sunet::dockerhost2(
 
     # new source
     apt::source {'docker_ce':
-      location => "https://download.docker.com/linux/${distro}",
+      location => "https://download.docker.com/linux/${lc_distro}",
       release  => $facts['os']['distro']['codename'],
       repos    => $docker_repo,
       key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
@@ -91,7 +92,7 @@ class sunet::dockerhost2(
     }
   } else {
     apt::source { 'docker':
-      location => "https://download.docker.com/linux/${distro}",
+      location => "https://download.docker.com/linux/${lc_distro}",
       repos    => $facts['os']['distro']['codename'],
       key      => {
         name    => 'docker.asc',
