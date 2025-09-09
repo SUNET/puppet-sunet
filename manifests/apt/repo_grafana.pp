@@ -2,22 +2,17 @@
 # E.g used for alloy and grafana
 define sunet::apt::repo_grafana (
 ) {
-  file { '/etc/apt/keyrings' :
-    ensure => 'directory',
-    mode   => '0644',
-    group  => 'root'
-  }
-  file { '/etc/apt/keyrings/grafana.gpg' :
-    ensure  => 'file',
-    mode    => '0644',
-    group   => 'root',
-    content => file( 'sunet/apt/grafana.gpg' ),
+  apt::source { 'grafana':
+      location => 'https://apt.grafana.com',
+      repos    => 'main',
+      release  => 'stable'
+      key      => {
+        name    => 'grafana.gpg',
+        content => file( 'sunet/apt/grafana.gpg' ),
+      }
   }
   file { '/etc/apt/sources.list.d/grafana.list' :
-    ensure  => 'file',
-    mode    => '0644',
-    group   => 'root',
-    content => 'deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main',
+    ensure  => 'absent',
   }
 
   $origins_from_template = '/etc/apt/apt.conf.d/51unattended-upgrades-origins'
