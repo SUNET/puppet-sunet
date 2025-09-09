@@ -13,10 +13,18 @@ define sunet::apt::repo_docker (
       name    => 'docker.asc',
       content => file('sunet/apt/docker.asc'),
     }
+    notify   => Exec['dockerhost_apt_get_update'],
+
   }
   apt::pin { 'Pin docker repo':
     packages => '*',
     priority => 1,
     origin   => 'download.docker.com'
+  }
+
+  exec { 'dockerhost_apt_get_update':
+    command     => '/usr/bin/apt-get update',
+    cwd         => '/tmp',
+    refreshonly => true,
   }
 }
