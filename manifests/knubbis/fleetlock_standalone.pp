@@ -186,11 +186,11 @@ class sunet::knubbis::fleetlock_standalone(
             # docker-proxy acting as source for all traffic.
             # The 172.16.1.2 address is statically configured in the compose file so it will not change
             sunet::nftables::rule { "DNAT port 443 to knubbis-fleetlock":
-                rule => "add rule ip nat prerouting iifname != "br-*" ip daddr ${facts['networking']['ip']} tcp dport 443 counter dnat to 172.16.1.2:8443 comment \"DNAT HTTPS directly to knubbis-fleetlock\""
+                rule => "add rule ip nat prerouting iifname != \"br-*\" ip daddr ${facts['networking']['ip']} tcp dport 443 counter dnat to 172.16.1.2:8443 comment \"DNAT HTTPS directly to knubbis-fleetlock\""
             }
 
             sunet::nftables::rule { "allow post-DNAT traffic to knubbis-fleetlock":
-                rule => "add rule inet filter forward iifname != "br-*" oifname "br-*" ip daddr 172.16.1.2 tcp dport 8443 counter accept comment \"allow post-DNAT HTTPS to knubbis-fleetlock\""
+                rule => "add rule inet filter forward iifname != \"br-*\" oifname \"br-*\" ip daddr 172.16.1.2 tcp dport 8443 counter accept comment \"allow post-DNAT HTTPS to knubbis-fleetlock\""
             }
 
             file { '/usr/local/sbin/knubbis-fleetlock_standalone-backup':
