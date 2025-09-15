@@ -20,14 +20,15 @@ define sunet::apt::repo_grafana (
     }
 
   } else {
-  apt::source { 'grafana':
-      location => 'https://apt.grafana.com',
-      repos    => 'main',
-      release  => 'stable',
-      key      => {
-        name    => 'grafana.gpg',
-        content => file('sunet/apt/grafana.gpg'),
-      }
+    apt::source { 'grafana':
+        location => 'https://apt.grafana.com',
+        repos    => 'main',
+        release  => 'stable',
+        key      => {
+          name    => 'grafana.gpg',
+          content => file('sunet/apt/grafana.gpg'),
+        }
+    }
   }
 
 
