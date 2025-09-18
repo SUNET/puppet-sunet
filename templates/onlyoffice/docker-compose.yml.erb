@@ -42,3 +42,7 @@ services:
         - '5432'
       volumes:
         - /opt/onlyoffice/postgres/data:/var/lib/postgresql
+<% if @postgres_backup -%>
+        - '/etc/luna/cert:/usr/safenet/lunaclient/cert'
+        - '/opt/onlyoffice/backup/postgres:/var/lib/postgresql/backup'
+<% end -%>
