@@ -45,7 +45,7 @@ define sunet::onlyoffice::docs(
 
   if ($db_type == 'postgres'and $postgres_backup) {
 
-    sunet::misc::create_dir { "/opt/onlyoffice/backup/postgres/": owner => 'root', group => 'root', mode => '0777', }
+    sunet::misc::create_dir { '/opt/onlyoffice/backup/postgres/': owner => 'root', group => 'root', mode => '0777', }
 
     file { '/opt/onlyoffice/backup/postgres/postgres_backup.sh':
       mode    => '0744',
