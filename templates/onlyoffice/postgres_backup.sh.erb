@@ -25,6 +25,6 @@ test -f ${BACKUPROOT}/postgres-dumpall.gz.1 && mv ${BACKUPROOT}/postgres-dumpall
 
 echo "Running postgres pg_dumpall..."
 cd ${BACKUPROOT}
-pg_dumpall -U onlyoffice | /bin/gzip > postgres-dumpall.gz
+pg_dumpall -U <%= db_user %> | /bin/gzip > postgres-dumpall.gz
 mv ${BACKUPROOT}/postgres-dumpall.gz ${BACKUPROOT}/postgres-dumpall.gz.1
 echo "...done."

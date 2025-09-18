@@ -49,7 +49,7 @@ define sunet::onlyoffice::docs(
 
     file { '/opt/onlyoffice/backup/postgres/postgres_backup.sh':
       mode    => '0744',
-      content => file('sunet/onlyoffice/postgres_backup.sh'),
+      content => template('sunet/onlyoffice/postgres_backup.sh.erb'),
     }
     sunet::scriptherder::cronjob { 'postgres_backup':
       cmd           => '/usr/bin/docker compose -f /opt/onlyoffice/docker-compose.yml exec -T postgresql /var/lib/postgresql/backup/postgres_backup.sh',
