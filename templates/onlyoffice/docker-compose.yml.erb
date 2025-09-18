@@ -42,3 +42,6 @@ services:
         - '5432'
       volumes:
         - /opt/onlyoffice/postgres/data:/var/lib/postgresql
+<% if @postgres_backup -%>
+        - '/opt/onlyoffice/backup/postgres:/var/lib/postgresql/backup'
+<% end -%>

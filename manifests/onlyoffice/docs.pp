@@ -1,19 +1,20 @@
 # OnlyOffice document server
 define sunet::onlyoffice::docs(
-  String           $amqpuri      = 'amqp://guest:guest@rabbitmq',
-  String           $basedir      = "/opt/onlyoffice/docs/${name}",
-  String           $contact_mail = 'noc@sunet.se',
-  String           $db_host      = 'postgres',
-  String           $db_name      = 'onlyoffice',
-  String           $db_type      = 'postgres',
-  String           $db_user      = 'onlyoffice',
-  String           $docker_image = 'onlyoffice/documentserver',
-  String           $docker_tag   = 'latest',
-  Array[String]    $dns          = [],
-  String           $hostname     = $facts['networking']['fqdn'],
-  Enum['yes','no'] $letsencrypt  = 'no',
-  Integer          $port         = 8080,
-  Integer          $tls_port     = 8443,
+  String           $amqpuri         = 'amqp://guest:guest@rabbitmq',
+  String           $basedir         = "/opt/onlyoffice/docs/${name}",
+  String           $contact_mail    = 'noc@sunet.se',
+  String           $db_host         = 'postgres',
+  String           $db_name         = 'onlyoffice',
+  String           $db_type         = 'postgres',
+  String           $db_user         = 'onlyoffice',
+  String           $docker_image    = 'onlyoffice/documentserver',
+  String           $docker_tag      = 'latest',
+  Array[String]    $dns             = [],
+  String           $hostname        = $facts['networking']['fqdn'],
+  Enum['yes','no'] $letsencrypt     = 'no',
+  Integer          $port            = 8080,
+  Integer          $tls_port        = 8443,
+  Boolean          $postgres_backup = false,
   ) {
 
   sunet::system_user {'ds': username => 'ds',group => 'ds' }
@@ -40,6 +41,23 @@ define sunet::onlyoffice::docs(
   $jwt_env = $jwt_secret ? {
     undef   => [],
     default => ['JWT_ENABLED=true',"JWT_SECRET=${jwt_secret}"]
+  }
+
+  if ($db_type == 'postgres'and $postgres_backup) {
+
+    sunet::misc::create_dir { '/opt/onlyoffice/backup/postgres/': owner => 'root', group => 'root', mode => '0777', }
+
+    file { '/opt/onlyoffice/backup/postgres/postgres_backup.sh':
+      mode    => '0744',
+      content => template('sunet/onlyoffice/postgres_backup.sh.erb'),
+    }
+    sunet::scriptherder::cronjob { 'postgres_backup':
+      cmd           => '/usr/bin/docker compose -f /opt/onlyoffice/docker-compose.yml exec -T postgresql /var/lib/postgresql/backup/postgres_backup.sh',
+      minute        => '34',
+      hour          => '3',
+      ok_criteria   => ['exit_status=0', 'max_age=25h'],
+      warn_criteria => ['exit_status=0', 'max_age=49h'],
+    }
   }
 
 
