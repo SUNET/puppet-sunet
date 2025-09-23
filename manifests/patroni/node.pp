@@ -3,7 +3,7 @@ class sunet::patroni::node(
   String $patroni_cluster_name = 'batman',
   Integer $patroni_rest_api_port = 8008,
   Integer $postgres_port = 5432,
-  String $patroni_imagetag = 'latest'
+  String $patroni_imagetag = '4.0.7'
 ) {
 
   $myself = $facts['networking']['fqdn'] # Use with connect_addr

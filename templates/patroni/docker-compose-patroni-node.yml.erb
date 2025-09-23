@@ -3,7 +3,7 @@ services:
   patroni:
     container_name: patroni
     network_mode: host
-    image: patroni:<%= @patroni_imagetag %>
+    image: docker.sunet.se/patroni:<%= @patroni_imagetag %>
     # Random number that we hope will not interfer with others…
     user: '41227'
     volumes:
