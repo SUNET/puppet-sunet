@@ -2,27 +2,19 @@
 # script created by Puppet (sunet::etcd::node)
 
 common_args="--endpoints <%= @advertise_client_urls[0] %>"
+params="-e ETCDCTL_API=3"
+args="$common_args                 \
+  --key <%= @key_file %>           \
+  --cacert <%= @trusted_ca_file %> \
+  --cert <%= @cert_file %>"
 
-if [ "x$1" = "x-3" ]; then
-    shift
-    params="-e ETCDCTL_API=3"
-    args="$common_args \
-                --key <%= @key_file %> \
-                --cacert <%= @trusted_ca_file %> \
-                --cert <%= @cert_file %>"
-else
-    params=''
-    args="$common_args \
-                --key-file <%= @key_file %> \
-                --ca-file <%= @trusted_ca_file %> \
-                --cert-file <%= @cert_file %>"
-fi
-exec docker run --rm -it \
-     -v <%= @cert_file %>:<%= @cert_file %>:ro \
-     -v <%= @key_file %>:<%= @key_file %>:ro \
-     -v <%= @trusted_ca_file %>:<%= @trusted_ca_file %>:ro \
-     $params \
-     --entrypoint /usr/local/bin/etcdctl \
-     <%= @docker_image %>:<%= @docker_tag %> \
-     $args \
-     $*
+
+exec docker run --rm -it                                \
+  -v <%= @cert_file %>:<%= @cert_file %>:ro             \
+  -v <%= @key_file %>:<%= @key_file %>:ro               \
+  -v <%= @trusted_ca_file %>:<%= @trusted_ca_file %>:ro \
+  $params                                               \
+  --entrypoint /usr/local/bin/etcdctl                   \
+  <%= @docker_image %>:<%= @docker_tag %>               \
+  $args                                                 \
+  $*
