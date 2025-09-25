@@ -6,7 +6,7 @@ me=$(hostname -f)
 if [ "${current_leader}" != "${me}" ]; then
 	echo "WARNING"
 	echo "WARNING - I am not the current patroni leader!"
-	echo "WARNING - ${current_leader} is in charged!"
+	echo "WARNING - ${current_leader} is in charge!"
 	echo "WARNING"
 	echo
 fi
