@@ -18,7 +18,7 @@ class sunet::etcd::node(
   Optional[String] $tls_cert_file              = undef,
   Boolean          $expose_ports               = true,
   String           $expose_port_pre            = '',   # string prepended to ports (e.g. "127.0.0.1:")
-  Array[String]    $allow_clients              = ['any'],
+  Array[String]    $allow_clients              = [],
   Array[String]    $allow_peers                = [],
   Boolean          $client_cert_auth           = true,  # Enable TLS client certificate authentication - turn CN into username
   String           $base_dir                   = '/opt',
