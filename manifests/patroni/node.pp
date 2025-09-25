@@ -44,6 +44,12 @@ class sunet::patroni::node(
     content => template('sunet/patroni/patroni.yml.erb'),
     mode    => '0755',
   }
+
+  file { '/usr/local/bin/patronictl':
+    content => file('sunet/patroni/patronictl'),
+    mode    => '0755',
+  }
+
   sunet::docker_compose { 'patroni':
     content          => template('sunet/patroni/docker-compose-patroni-node.yml.erb'),
     service_name     => 'patroni',
