@@ -50,6 +50,11 @@ class sunet::patroni::node(
     mode    => '0755',
   }
 
+  file { '/usr/local/bin/psql':
+    content => template('sunet/patroni/psql.erb'),
+    mode    => '0755',
+  }
+
   sunet::docker_compose { 'patroni':
     content          => template('sunet/patroni/docker-compose-patroni-node.yml.erb'),
     service_name     => 'patroni',

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+current_leader=$(patronictl list --format json |jq '.[] | select(.Role=="Leader").Host' -r)
+me=$(hostname -f)
+
+if [ "${current_leader}" != "${me}" ]; then
+	echo "WARNING"
+	echo "WARNING - ${me} is not the current patroni leader!"
+	echo "WARNING"
+	echo
+fi
+
+docker exec -it -e PGPASSWORD=<%= @superuser_password %> patroni psql -h 127.0.0.1 -U postgres -w
