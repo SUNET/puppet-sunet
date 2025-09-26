@@ -1,5 +1,5 @@
 # The HSM client
-class sunet::hsm::client_auth (
+define sunet::hsm::client_auth (
   String $mode = '0750',
 ) {
 

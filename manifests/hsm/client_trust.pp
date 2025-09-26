@@ -1,5 +1,5 @@
 # The HSM client trust  fabric
-class sunet::hsm::client_trust (
+define sunet::hsm::client_trust (
   Array   $hsm_servers,
   String  $mode = '0750',
   String  $owner = 'root',
