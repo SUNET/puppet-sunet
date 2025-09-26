@@ -7,7 +7,7 @@ define sunet::hsm::client_chrystoki (
     ensure_newline => true,
   }
 
-  $me = facts['networking']['fqdn']
+  $me = $facts['networking']['fqdn']
   concat::fragment { 'chrystoki_header':
     target  => '/etc/Chrystoki.conf',
     content => template('sunet/hsm/chrystoki.conf-header.erb'),
