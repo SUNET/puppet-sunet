@@ -1,5 +1,5 @@
-module Puppet::Parser::Functions
-  newfunction(:dir_glob, :type => :rvalue) do |args|
-    return Dir.glob(args[0]);
+Puppet::Functions.create_function(:dir_glob) do
+  def dir_glob(*arguments)
+    Dir.glob(arguments[0]);
   end
 end
