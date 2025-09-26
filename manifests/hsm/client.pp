@@ -40,6 +40,9 @@ class sunet::hsm::client (
       hsm_servers => $hsm_servers,
   )
 
+  ensure_resource('sunet::hsm::client_auth', 'client_cert', {
+  )
+
   file { '/opt/hsmclient/libexec/configure-luna':
     ensure  => 'file',
     mode    => '0755',

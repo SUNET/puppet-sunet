@@ -81,7 +81,3 @@ fi
 
 mv "${tempfile}" /etc/Chrystoki.conf
 mv "${tempca}" /usr/safenet/lunaclient/cert/server/CAFile.pem
-
-if [ ! -f "/usr/safenet/lunaclient/cert/client/${HOSTNAME}.pem" ] || [ ! -f "/usr/safenet/lunaclient/cert/client/${HOSTNAME}Key.pem" ]; then
-   vtl createCert -n "${HOSTNAME}"
-fi
