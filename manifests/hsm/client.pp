@@ -41,16 +41,7 @@ class sunet::hsm::client (
 
   sunet::hsm::client_auth {'client_cert': }
 
-  file { '/opt/hsmclient/libexec/configure-luna':
-    ensure  => 'file',
-    mode    => '0755',
-    owner   => 'root',
-    content => file('sunet/hsm/configure-luna')
-  }
-
-  exec { '/opt/hsmclient/libexec/configure-luna':
-    onlyif =>  'test `grep  sunet.se /etc/Chrystoki.conf |wc -l` -eq 0',
-  }
+  sunet::hsm::client_chrystoki {'/etc/Chrystoki.conf': }
 
   if ($allow_remote_ped_from) {
     sunet::nftables::allow{ 'ped':
