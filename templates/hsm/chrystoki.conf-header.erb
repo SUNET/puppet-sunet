@@ -39,8 +39,8 @@ Secure Trusted Channel = {
 LunaSA Client = {
    ReceiveTimeout = 20000;
    SSLConfigFile = /usr/safenet/lunaclient/bin/openssl.cnf;
-   ClientPrivKeyFile = /usr/safenet/lunaclient/cert/client/<% @me %>Key.pem;
-   ClientCertFile = /usr/safenet/lunaclient/cert/client/<% @me %>.pem;
+   ClientPrivKeyFile = /usr/safenet/lunaclient/cert/client/<%= @me %>Key.pem;
+   ClientCertFile = /usr/safenet/lunaclient/cert/client/<%= @me %>.pem;
    ServerCAFile = /usr/safenet/lunaclient/cert/server/CAFile.pem;
    NetClient = 1;
    TCPKeepAlive = 1;
