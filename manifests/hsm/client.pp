@@ -35,15 +35,10 @@ class sunet::hsm::client (
     line     => 'export PATH=$PATH:/usr/safenet/lunaclient/bin',
   }
 
-  $hsm_servers.each  | $hsm | {
 
-    file { "/usr/safenet/lunaclient/cert/server/${hsm}Cert.pem":
-      ensure  => 'file',
-      mode    => '0750',
-      owner   => 'root',
-      content => file("sunet/hsm/servers/${hsm}Cert.pem")
-    }
-  }
+  ensure_resource('sunet::hsm::client_trust', 'hsms', {
+      hsm_servers => $hsm_servers,
+  )
 
   file { '/opt/hsmclient/libexec/configure-luna':
     ensure  => 'file',
