@@ -47,7 +47,7 @@ LunaSA Client = {
 
 <% @counter = 0 %>
 <% @hsm_servers.each do | hsm | -%>
-  ServerName0<%= @counter %> = <%= @hsm %>;
+  ServerName0<%= @counter %> = <%= hsm %>;
    ServerPort0<%= @counter %> = 1792;
    ServerHtl0<%= @counter %> = 0;
 <% @counter += 1 %>
