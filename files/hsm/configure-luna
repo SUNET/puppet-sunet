@@ -4,7 +4,6 @@ set -e
 
 HOSTNAME=$(hostname -f)
 tempfile=$(mktemp)
-tempca=$(mktemp)
 
 cat>"${tempfile}"<<EOF
 Chrystoki2 = {
@@ -69,7 +68,6 @@ cat>>"${tempfile}"<<EOF
    ServerHtl${NN} = 0;
 EOF
    ((N=N+1))
-   cat "${cert}" >> "${tempca}"
  done < <(find /usr/safenet/lunaclient/cert/server -name \*Cert.pem -print0)
 cat>>"${tempfile}"<<EOF
 }
@@ -80,4 +78,3 @@ if [ -d /etc/Chrystoki.conf.d ]; then
 fi
 
 mv "${tempfile}" /etc/Chrystoki.conf
-mv "${tempca}" /usr/safenet/lunaclient/cert/server/CAFile.pem

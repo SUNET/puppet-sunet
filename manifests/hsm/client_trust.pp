@@ -10,6 +10,13 @@ class sunet::hsm::client_trust (
     mode   => $mode,
   }
 
+  concat { '/usr/safenet/lunaclient/cert/server/CAFile.pem':
+    owner          => $owner,
+    ensure_newline => true,
+    mode           => $mode,
+  }
+
+
   $hsm_servers.each  | $hsm | {
 
     file { "/usr/safenet/lunaclient/cert/server/${hsm}Cert.pem":
@@ -18,5 +25,11 @@ class sunet::hsm::client_trust (
       owner   => $owner,
       content => file("sunet/hsm/servers/${hsm}Cert.pem")
     }
+
+     concat::fragment { $hsm:
+      target  => '/usr/safenet/lunaclient/cert/server/CAFile.pem',
+      content => file("sunet/hsm/servers/${hsm}Cert.pem")
+    }
+
   }
 }
