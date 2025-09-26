@@ -46,7 +46,7 @@ LunaSA Client = {
    TCPKeepAlive = 1;
 
 <% @counter = 0 %>
-<% @hsms.each do | hsm | -%>
+<% @hsm_servers.each do | hsm | -%>
   ServerName0<%= @counter %> = <%= @hsm %>;
    ServerPort0<%= @counter %> = 1792;
    ServerHtl0<%= @counter %> = 0;
