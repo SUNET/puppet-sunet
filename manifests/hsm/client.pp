@@ -38,10 +38,9 @@ class sunet::hsm::client (
 
   ensure_resource('sunet::hsm::client_trust', 'hsms', {
       hsm_servers => $hsm_servers,
-  )
+  })
 
-  ensure_resource('sunet::hsm::client_auth', 'client_cert', {
-  )
+  ensure_resource('sunet::hsm::client_auth', 'client_cert')
 
   file { '/opt/hsmclient/libexec/configure-luna':
     ensure  => 'file',
