@@ -41,7 +41,9 @@ class sunet::hsm::client (
 
   sunet::hsm::client_auth {'client_cert': }
 
-  sunet::hsm::client_chrystoki {'/etc/Chrystoki.conf': }
+  sunet::hsm::client_chrystoki {'/etc/Chrystoki.conf':
+      hsm_servers => $hsm_servers,
+  }
 
   if ($allow_remote_ped_from) {
     sunet::nftables::allow{ 'ped':
