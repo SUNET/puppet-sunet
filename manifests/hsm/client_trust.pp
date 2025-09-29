@@ -26,7 +26,7 @@ define sunet::hsm::client_trust (
       content => file("sunet/hsm/servers/${hsm}Cert.pem")
     }
 
-     concat::fragment { $hsm:
+    concat::fragment { $hsm:
       target  => '/usr/safenet/lunaclient/cert/server/CAFile.pem',
       content => file("sunet/hsm/servers/${hsm}Cert.pem")
     }
