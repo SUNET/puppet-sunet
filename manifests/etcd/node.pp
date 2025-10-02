@@ -103,6 +103,21 @@ class sunet::etcd::node(
     description      => 'etcd',
   }
 
+  # Monitoring script that can be executed with NRPE
+  file { '/usr/local/sbin/check-etcd-status.py':
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    content => file('sunet/etcd/check-etcd-status.py')
+  }
+  # NRPE commands file
+  file { '/etc/nagios/nrpe.d/nrpe-etcd.cfg':
+    ensure  => 'file',
+    mode    => '0644',
+    owner   => 'root',
+    content => file('sunet/etcd/nrpe-etcd.cfg')
+  }
+
   sunet::nftables::allow { 'allow-etcd-peer':
     from => $allow_peers,
     port => 2380,
