@@ -1,0 +1,16 @@
+---
+services:
+  patroni:
+    container_name: patroni
+    network_mode: host
+    image: docker.sunet.se/patroni:<%= @patroni_imagetag %>
+    # Random number that we hope will not interfer with others…
+    user: '41227'
+    volumes:
+      - '/etc/ssl:/etc/ssl:ro'
+      - '/etc/passwd:/etc/passwd:ro'
+      - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
+      - '/opt/patroni/data:/home/postgres/data:rw'
+      - '/opt/patroni/certs:/opt/patroni/certs:ro'
+    entrypoint: /usr/bin/python3
+    command: /patroni.py patroni.yml
