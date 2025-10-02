@@ -22,7 +22,7 @@ if (redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}
   echo SLAVE, failing over to master
   if [ "${dryrun}" ]; then
     echo "No failover will happen in dryrun"
-    exit 0
+    exit 1
   fi
 
   lock_file="/etc/no-automatic-cosmos"
