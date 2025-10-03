@@ -382,8 +382,8 @@ def _load_backends(config, args, logger):
                             )
                         )
                         continue
-                params.update(data)
-                servers += [params]
+                    params.update(data)
+                    servers += [params]
             else:
                 # add anything else as config
                 backend_config.update({item: params})
