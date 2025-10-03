@@ -14,6 +14,7 @@ class sunet::lb::load_balancer(
   Integer $haproxy     = $base_uidgid + 10,
   Integer $telegraf    = $base_uidgid + 11,
   Integer $varnish     = $base_uidgid + 12,
+  String  $docker_bin  = '/usr/bin/docker',
 ) {
   # Set up users for running all services as non-root
   class { 'sunet::lb::load_balancer::users':
@@ -41,11 +42,12 @@ class sunet::lb::load_balancer(
   $websites = $config['load_balancer']['websites']
 
   sunet::lb::load_balancer::configure_websites { 'websites':
-    interface => $interface,
-    websites  => $websites,
-    basedir   => $basedir,
-    confdir   => $confdir,
-    scriptdir => $scriptdir,
+    interface  => $interface,
+    websites   => $websites,
+    basedir    => $basedir,
+    confdir    => $confdir,
+    scriptdir  => $scriptdir,
+    docker_bin => $docker_bin,
   }
 
   class { 'sunet::lb::load_balancer::services':
