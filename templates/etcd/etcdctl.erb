@@ -2,7 +2,6 @@
 # script created by Puppet (sunet::etcd::node)
 
 common_args="--endpoints <%= @advertise_client_urls[0] %>"
-params="-e ETCDCTL_API=3"
 args="$common_args                 \
   --key <%= @key_file %>           \
   --cacert <%= @trusted_ca_file %> \

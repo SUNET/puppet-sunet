@@ -55,6 +55,21 @@ class sunet::patroni::node(
     mode    => '0755',
   }
 
+  # Monitoring script that can be executed with NRPE
+  file { '/usr/local/sbin/check-patroni-status.py':
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    content => file('sunet/patroni/check-patroni-status.py')
+  }
+  # NRPE commands file
+  file { '/etc/nagios/nrpe.d/nrpe-patroni.cfg':
+    ensure  => 'file',
+    mode    => '0644',
+    owner   => 'root',
+    content => file('sunet/patroni/nrpe-patroni.cfg')
+  }
+
   sunet::docker_compose { 'patroni':
     content          => template('sunet/patroni/docker-compose-patroni-node.yml.erb'),
     service_name     => 'patroni',
