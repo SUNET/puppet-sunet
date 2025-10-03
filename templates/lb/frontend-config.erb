@@ -364,10 +364,7 @@ def _load_backends(config, args, logger):
         servers = []
         backend_config = {}
         be_name = "{}__{}".format(config["site_name"], be)
-        logger.info(f"{be_name=}")
         for item, params in config["backends"][be].items():
-            logger.info(f"{item=}")
-            logger.info(f"{params=}")
             if "ips" in params:
                 # item is a host
                 be_ips = params.pop("ips", [])
