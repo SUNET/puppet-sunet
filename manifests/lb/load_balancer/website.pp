@@ -6,7 +6,6 @@ define sunet::lb::load_balancer::website(
   Hash    $config,
   String  $interface = 'eth0',
   Integer $api_port = 8080,
-  String  $docker_bin = '/usr/bin/docker',
 ) {
   $instance  = $name
   if length($instance) > 12 {
@@ -186,7 +185,7 @@ define sunet::lb::load_balancer::website(
     compose_dir      => "${basedir}/compose",
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
-    start_command    => "/usr/local/bin/start-frontend --docker_bin ${docker_bin} ${basedir} ${name} ${basedir}/compose/${instance}/docker-compose.yml",
+    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${basedir}/compose/${instance}/docker-compose.yml",
   }
 
   if $::facts['sunet_nftables_enabled'] != 'yes' {
