@@ -26,6 +26,7 @@ Facter.add('tls_certificates') do
   # res[hostname][rest_of_path]
   filenames = Dir.glob(['/etc/ssl/*_*.pem',
                         '/etc/ssl/*_*.crt',
+                        '/etc/ssl/certs/*_*.crt',
                         '/etc/ssl/private/*_*.pem',
                         '/etc/ssl/private/*_*.crt',
                         '/etc/ssl/private/*_*.key'
@@ -61,6 +62,10 @@ Facter.add('tls_certificates') do
           # turn 'infra' into 'infra_cert'
           rest = rest + '_cert'
       end
+    elsif parts.count == 1 and fn.end_with? '_infra.crt'
+        # Handle known bundle created by cronjob script dl_ici_cert
+        # turn 'infra' into 'infra_bundle'
+        rest = rest + '_cert'
     end
     res[hostpart] ||= {}
     if ! res[hostpart][rest].nil?
