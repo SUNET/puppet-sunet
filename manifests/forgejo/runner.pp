@@ -37,7 +37,7 @@ class sunet::forgejo::runner (
     content => file('sunet/forgejo/fedora.gpg'),
   }
 
-  file { '/opt/forgejo-runner/bin/forgejo-runner':
+  file { "/opt/forgejo-runner/images/unverified/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz":
     ensure         => 'file',
     source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
     checksum_value => $version_sha256sum,
