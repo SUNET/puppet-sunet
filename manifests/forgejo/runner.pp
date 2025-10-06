@@ -52,7 +52,7 @@ class sunet::forgejo::runner (
     range(0, $runners - 1).each |$runner|{
       $user = "runner-${runner}"
 
-      user { $runner:
+      user { $user:
         ensure => 'present',
         groups => ['kvm'],
         home   => "/home/${user}",
