@@ -266,10 +266,13 @@ define sunet::lb::load_balancer::website(
     #   $v = {host.example.org => {ips => [192.0.2.1]}}
     if $v =~ Hash {
       each($v) | $name, $params | {
-        sunet::lb::api::instance { "api_${instance}_${k}_${name}":
-          site_name   => $site_name,
-          backend_ips => $params['ips'],
-          api_port    => $api_port,
+        # allow for other data in backends part of yaml config
+        if 'ips' in $params {
+          sunet::lb::api::instance { "api_${instance}_${k}_${name}":
+            site_name   => $site_name,
+            backend_ips => $params['ips'],
+            api_port    => $api_port,
+          }
         }
       }
     }
