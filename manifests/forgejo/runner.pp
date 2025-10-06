@@ -30,7 +30,7 @@ class sunet::forgejo::runner (
 
   file { '/opt/forgejo-runner/trust/fedora.gpg':
     ensure => 'file',
-    source => file('sunet/forgejo/fedora.gpg'),
+    content => file('sunet/forgejo/fedora.gpg'),
   }
 
 }
