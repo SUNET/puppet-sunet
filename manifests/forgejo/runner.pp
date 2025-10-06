@@ -43,6 +43,12 @@ class sunet::forgejo::runner (
     notify         =>  Exec["verify_image"],
   }
 
+  file { "/opt/forgejo-runner/images/unverified/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz.sig":
+    ensure         => 'file',
+    source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz.sig",
+    notify         =>  Exec["verify_image"],
+  }
+
   exec { 'verify_image':
     command     => "/usr/bin/gpgv --keyring /opt/forgejo-runner/trust/fedora.gpg /opt/forgejo-runner/images/unverified/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
     refreshonly => true,
