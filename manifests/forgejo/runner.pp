@@ -53,10 +53,11 @@ class sunet::forgejo::runner (
       $user = "runner-${runner}"
 
       user { $user:
-        ensure => 'present',
-        groups => ['kvm'],
-        home   => "/home/${user}",
-        notify => Exec["linger_user_${runner}"]
+        ensure     => 'present',
+        groups     => ['kvm'],
+        home       => "/home/${user}",
+        managehome => true,
+        notify     => Exec["linger_user_${runner}"]
       }
 
       exec { "linger_user_${runner}":
