@@ -4,6 +4,7 @@ class sunet::forgejo::runner (
   String $version_sha256sum = '6442d46db2434a227e567a116c379d0eddbe9e7a3f522596b25d31979fd59c8d',
   String $machine_version = '42.20250914.3.0',
   String $machine_sha256sum = 'de60a6a1f10723ef54621952665d3d72758a476fa32f58e47ce8756941f7bd75',
+  Integer $runners = 4,
 ) {
 
   file {'/opt/forgejo-runner':
@@ -48,5 +49,19 @@ class sunet::forgejo::runner (
     refreshonly => true,
   }
 
+    range(0, $runners - 1).each |$runner|{
+      $user = "runner-${runner}"
 
+      user { $runner:
+        ensure => 'present',
+        groups => ['kvm'],
+        home   => "/home/${user}",
+        notify => Exec["linger_user_${runner}"]
+      }
+
+      exec { "linger_user_${runner}":
+        command     => "/usr/bin/loginctl enable-linger ${user}",
+        refreshonly => true,
+      }
+    }
 }
