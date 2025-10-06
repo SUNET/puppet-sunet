@@ -3,6 +3,7 @@ class sunet::forgejo::runner (
   String $version           = '11.1.2',
   String $version_sha256sum = '6442d46db2434a227e567a116c379d0eddbe9e7a3f522596b25d31979fd59c8d',
   String $machine_version = '42.20250914.3.0',
+  String $machine_sha256sum = 'de60a6a1f10723ef54621952665d3d72758a476fa32f58e47ce8756941f7bd75',
 ) {
 
   file {'/opt/forgejo-runner':
@@ -15,10 +16,6 @@ class sunet::forgejo::runner (
   file {'/opt/forgejo-runner/images':
     ensure  => 'directory',
   }
-  file {'/opt/forgejo-runner/images/unverified':
-    ensure  => 'directory',
-  }
-
 
   file {'/opt/forgejo-runner/trust':
     ensure  => 'directory',
@@ -37,21 +34,11 @@ class sunet::forgejo::runner (
     content => file('sunet/forgejo/fedora.gpg'),
   }
 
-  file { "/opt/forgejo-runner/images/unverified/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz":
+  file { "/opt/forgejo-runner/images/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz":
     ensure         => 'file',
     source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
-    notify         =>  Exec["verify_image"],
-  }
-
-  file { "/opt/forgejo-runner/images/unverified/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz.sig":
-    ensure         => 'file',
-    source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz.sig",
-    notify         =>  Exec["verify_image"],
-  }
-
-  exec { 'verify_image':
-    command     => "/usr/bin/gpgv --keyring /opt/forgejo-runner/trust/fedora.gpg /opt/forgejo-runner/images/unverified/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
-    refreshonly => true,
+    checksum       => 'sha256',
+    checksum_value => $machine_sha256sum,
   }
 
 }
