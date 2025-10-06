@@ -18,7 +18,7 @@ class sunet::forgejo::runner (
     ensure  => 'directory',
   }
 
-  file {'/opt/forgejo-runner/trust':
+  file {'/opt/forgejo-runner/libexec':
     ensure  => 'directory',
   }
 
@@ -30,12 +30,15 @@ class sunet::forgejo::runner (
     mode           => '0755',
   }
 
-  file { '/opt/forgejo-runner/trust/fedora.gpg':
+  file { '/opt/forgejo-runner/libexec/runner-systemd-wrapper':
     ensure => 'file',
-    content => file('sunet/forgejo/fedora.gpg'),
+    content => template('sunet/forgejo/runner-systemd-wrapper.erb'),
+    mode           => '0755',
   }
 
-  file { "/opt/forgejo-runner/images/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz":
+  machine_image_path = "/opt/forgejo-runner/images/fedora-coreos-${machine_version}-qemu.x86_64.qcow2"
+  machine_image_path_xz = "${machine_image_path}.xz"
+  file { "${machine_image_path_xz}":
     ensure         => 'file',
     source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
     checksum       => 'sha256',
@@ -45,7 +48,7 @@ class sunet::forgejo::runner (
   }
 
     exec { 'unpack_image':
-    command     => "/usr/bin/unxz --keep /opt/forgejo-runner/images/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
+    command     => "/usr/bin/unxz --keep ${machine_image_path_xz}",
     refreshonly => true,
   }
 

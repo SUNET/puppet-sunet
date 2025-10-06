@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+XDG_RUNTIME_DIR=/run/user/$(id -u)
+export XDG_RUNTIME_DIR
+
+while true; do
+
+        podman machine init --image-path "<%= @machine_image_path %>" --memory 4096 --rootful --now
+        podman machine ssh "/home/$(whoami)/runner-wrapper"
+        podman machine rm -f
+
+        sleep 1
+done
