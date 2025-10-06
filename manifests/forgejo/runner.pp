@@ -21,16 +21,16 @@ class sunet::forgejo::runner (
   }
 
   file { '/opt/forgejo-runner/bin/forgejo-runner':
+    ensure         => 'file',
     source         => "https://code.forgejo.org/forgejo/runner/releases/download/v${version}/forgejo-runner-${version}-linux-amd64",
     checksum       => 'sha256',
     checksum_value => $version_sha256sum,
     mode           => '0755',
-    ensure         => 'file',
   }
 
   file { '/opt/forgejo-runner/trust/fedora.gpg':
-    source         => file('sunet/forgejo/fedora.gpg'),
-    ensure         => 'file',
+    ensure => 'file',
+    source => file('sunet/forgejo/fedora.gpg'),
   }
 
 }
