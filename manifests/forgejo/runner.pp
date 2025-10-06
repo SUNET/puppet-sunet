@@ -44,7 +44,7 @@ class sunet::forgejo::runner (
   }
 
     exec { 'unpack_image':
-    command     => '/usr/bin/unxz /opt/forgejo-runner/images/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz --keep',
+    command     => "/usr/bin/unxz --keep /opt/forgejo-runner/images/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
     refreshonly => true,
   }
 
