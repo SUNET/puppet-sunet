@@ -39,6 +39,14 @@ class sunet::forgejo::runner (
     source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
     checksum       => 'sha256',
     checksum_value => $machine_sha256sum,
+    notify         =>  Exec["unpack_image"],
+
   }
+
+    exec { 'unpack_image':
+    command     => '/usr/bin/unxz /opt/forgejo-runner/images/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz --keep',
+    refreshonly => true,
+  }
+
 
 }
