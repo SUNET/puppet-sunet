@@ -9,6 +9,7 @@ class sunet::forgejo::runner (
     checksum       => 'sha256',
     checksum_value => $version_sha256sum,
     mode           => '0755',
+    ensure         => 'file',
   }
 
 }
