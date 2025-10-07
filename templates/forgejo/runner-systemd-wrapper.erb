@@ -7,7 +7,7 @@ PATH="${PATH}:/usr/libexec/"
 
 while true; do
 
-        podman machine init --image-path "<%= @machine_image_path %>" --volume "/opt/forgejo-runner/libexec/:/opt/forgejo-runner/libexec/:ro"--memory 4096 --rootful --now
+        podman machine init --image-path "<%= @machine_image_path %>" --volume "/opt/forgejo-runner/libexec/:/opt/forgejo-runner/libexec/:ro" --memory 4096 --rootful --now
         podman machine ssh "/opt/forgejo-runner/libexec/runner-wrapper"
         podman machine rm -f
 
