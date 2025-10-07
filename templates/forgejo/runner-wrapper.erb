@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+while true; do
+  /opt/forgejo-runner/bin/forgejo-runner one-job 2>&1 | sed '/^Error: could not fetch task/,$b;$q1'
+
+  # Match for Error: could not fetch task in sed
+  # aka no jobs to fetch
+  # Try again lateer
+  if [ "${PIPESTATUS[1]}" -eq "0" ]; then
+          sleep 5
+          continue
+  else
+          break
+  fi
+done
+
+echo "Exiting to destroy VM - BOOM"

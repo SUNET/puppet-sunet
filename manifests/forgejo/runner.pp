@@ -39,6 +39,12 @@ class sunet::forgejo::runner (
     mode           => '0755',
   }
 
+  file { '/opt/forgejo-runner/libexec/runner-wrapper':
+    ensure  => 'file',
+    content => template('sunet/forgejo/runner-wrapper.erb'),
+    mode    => '0755',
+  }
+
   file { "${machine_image_path_xz}":
     ensure         => 'file',
     source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
