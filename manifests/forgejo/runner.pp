@@ -45,7 +45,7 @@ class sunet::forgejo::runner (
     mode    => '0755',
   }
 
-  file { '/etc/systemd/system/sunet-forgejo-runner.service':
+  file { '/etc/systemd/system/sunet-forgejo-runner@.service':
     ensure  => 'file',
     content => file('sunet/forgejo/forgejo-runner.service'),
     mode    => '0744',
