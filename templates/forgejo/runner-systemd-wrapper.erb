@@ -3,6 +3,8 @@
 XDG_RUNTIME_DIR=/run/user/$(id -u)
 export XDG_RUNTIME_DIR
 
+PATH="${PATH}:/usr/libexec/"
+
 while true; do
 
         podman machine init --image-path "<%= @machine_image_path %>" --memory 4096 --rootful --now
