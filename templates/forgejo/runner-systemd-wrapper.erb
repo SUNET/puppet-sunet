@@ -11,7 +11,7 @@ cp /opt/forgejo-runner/bin/forgejo-runner ${HOME}/
 while true; do
 
         podman machine init --image-path "<%= @machine_image_path %>" --memory 4096 --rootful --now
-        podman machine ssh "/home/$(whoami)/runner-wrapper"
+        podman machine ssh "/home/$(whoami)/runner-wrapper $(whoami)"
         podman machine rm -f
 
         sleep 1
