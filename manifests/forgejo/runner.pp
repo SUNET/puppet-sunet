@@ -45,6 +45,12 @@ class sunet::forgejo::runner (
     mode    => '0755',
   }
 
+  file { '/etc/systemd/system/sunet-forgejo-runner.service':
+    ensure  => 'file',
+    content => file('sunet/forgejo/forgejo-runner.service'),
+    mode    => '0744',
+  }
+
   file { "${machine_image_path_xz}":
     ensure         => 'file',
     source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
