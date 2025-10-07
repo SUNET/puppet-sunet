@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 while true; do
-  /opt/forgejo-runner/bin/forgejo-runner one-job 2>&1 | sed '/^Error: could not fetch task/,$b;$q1'
+  /home/$(whoami)/forgejo-runner one-job 2>&1 | sed '/^Error: could not fetch task/,$b;$q1'
 
   # Match for Error: could not fetch task in sed
   # aka no jobs to fetch
