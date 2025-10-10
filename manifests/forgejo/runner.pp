@@ -57,7 +57,7 @@ class sunet::forgejo::runner (
   file { '/etc/systemd/system/sunet-forgejo-runner@.service':
     ensure  => 'file',
     content => file('sunet/forgejo/forgejo-runner.service'),
-    mode    => '0744',
+    mode    => '0644',
   }
 
     range(0, $runners - 1).each |$runner|{
