@@ -6,6 +6,9 @@ class sunet::forgejo::runner (
   Integer $runners = 4,
 ) {
 
+  include sunet::packages::podman
+  include sunet::packages::virtiofsd
+
   file {'/opt/forgejo-runner':
     ensure  => 'directory',
   }
