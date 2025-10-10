@@ -71,7 +71,7 @@ class sunet::forgejo::runner (
         ensure  => 'file',
         content => template('sunet/forgejo/runner.config.erb'),
         mode    => '0700',
-        owner   => $runner,
+        owner   => $user,
       }
     }
 }
