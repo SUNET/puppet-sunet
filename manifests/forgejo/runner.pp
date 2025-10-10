@@ -20,18 +20,18 @@ class sunet::forgejo::runner (
   $registration_token = lookup('forgejo_registration_token', undef, undef, 'NOT_SET_IN_HIERA');
 
   file {'/opt/forgejo-runner':
-    ensure  => 'directory',
+    ensure => 'directory',
   }
   file {'/opt/forgejo-runner/bin':
-    ensure  => 'directory',
+    ensure => 'directory',
   }
 
   file {'/opt/forgejo-runner/images':
-    ensure  => 'directory',
+    ensure => 'directory',
   }
 
   file {'/opt/forgejo-runner/libexec':
-    ensure  => 'directory',
+    ensure => 'directory',
   }
 
   file { '/opt/forgejo-runner/bin/forgejo-runner':
