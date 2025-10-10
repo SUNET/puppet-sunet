@@ -2,8 +2,7 @@
 class sunet::forgejo::runner (
   String $version           = '11.1.2',
   String $version_sha256sum = '6442d46db2434a227e567a116c379d0eddbe9e7a3f522596b25d31979fd59c8d',
-  String $machine_version = '42.20250914.3.0',
-  String $machine_sha256sum = 'de60a6a1f10723ef54621952665d3d72758a476fa32f58e47ce8756941f7bd75',
+  String $machine_image     = 'quay.io/podman/machine-os:5.4',
   Integer $runners = 4,
 ) {
 
@@ -30,9 +29,6 @@ class sunet::forgejo::runner (
     mode           => '0755',
   }
 
-  $machine_image_path = "/opt/forgejo-runner/images/fedora-coreos-${machine_version}-qemu.x86_64.qcow2"
-  $machine_image_path_xz = "${machine_image_path}.xz"
-
   file { '/opt/forgejo-runner/libexec/runner-systemd-wrapper':
     ensure => 'file',
     content => template('sunet/forgejo/runner-systemd-wrapper.erb'),
@@ -49,20 +45,6 @@ class sunet::forgejo::runner (
     ensure  => 'file',
     content => file('sunet/forgejo/forgejo-runner.service'),
     mode    => '0744',
-  }
-
-  file { "${machine_image_path_xz}":
-    ensure         => 'file',
-    source         => "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/${machine_version}/x86_64/fedora-coreos-${machine_version}-qemu.x86_64.qcow2.xz",
-    checksum       => 'sha256',
-    checksum_value => $machine_sha256sum,
-    notify         =>  Exec["unpack_image"],
-
-  }
-
-    exec { 'unpack_image':
-    command     => "/usr/bin/unxz --keep ${machine_image_path_xz}",
-    refreshonly => true,
   }
 
     range(0, $runners - 1).each |$runner|{
