@@ -4,6 +4,7 @@ class sunet::forgejo::runner (
   String $version_sha256sum = '6442d46db2434a227e567a116c379d0eddbe9e7a3f522596b25d31979fd59c8d',
   String $machine_image     = 'quay.io/podman/machine-os:5.4',
   Integer $runners = 4,
+  String $forgejo_instance  =  "platform.sunet.se",
 ) {
 
   include sunet::packages::podman

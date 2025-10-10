@@ -8,6 +8,12 @@ PATH="${PATH}:/usr/libexec/"
 cp /opt/forgejo-runner/libexec/runner-wrapper ${HOME}/
 cp /opt/forgejo-runner/bin/forgejo-runner ${HOME}/
 
+
+if [ ! -f "/home/$(whoami)/.runner" ]; then
+  # Registration needed
+  /opt/forgejo-runner/bin/forgejo-runner --config "/home/$(whoami)/runner.config registration --no-interactive --instance "https://<%= @forgejo_instance %>" --token "<%= @registration_token %>" --name "$(hostname -f)-$(whoami)"
+fi
+
 while true; do
 
         podman machine init --image "<%= @machine_image %>" --memory 4096 --rootful --now
