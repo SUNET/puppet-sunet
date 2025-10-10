@@ -8,6 +8,7 @@ class sunet::forgejo::runner (
 
   include sunet::packages::podman
   include sunet::packages::virtiofsd
+  include sunet::packages::qemu_system_x86
 
   file {'/opt/forgejo-runner':
     ensure  => 'directory',
