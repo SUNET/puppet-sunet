@@ -11,7 +11,7 @@ cp /opt/forgejo-runner/bin/forgejo-runner ${HOME}/
 
 if [ ! -f "/home/$(whoami)/.runner" ]; then
   # Registration needed
-  /opt/forgejo-runner/bin/forgejo-runner --config "/home/$(whoami)/runner.config" register --no-interactive --instance "https://<%= @forgejo_instance %>" --token "<%= @registration_token %>" --name "$(hostname -f)-$(whoami)"
+  /opt/forgejo-runner/bin/forgejo-runner --config "/home/$(whoami)/runner.config" register --no-interactive --instance "https://<%= @forgejo_instance %>" --token "<%= @registration_token %>" --name "$(hostname -f):$(whoami)"
 fi
 
 podman machine rm -f
