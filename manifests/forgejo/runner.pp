@@ -76,5 +76,10 @@ class sunet::forgejo::runner (
         mode    => '0700',
         owner   => $user,
       }
+
+      service { "sunet-forgejo-runner@${user}":
+        ensure => 'running',
+        enable => true,
+      }
     }
 }
