@@ -12,6 +12,11 @@ class sunet::forgejo::runner (
   include sunet::packages::qemu_system_x86
   include sunet::packages::gvproxy
 
+  file {'/usr/lib/podman/gvproxy':
+    ensure  => 'link',
+    target = '/usr/bin/gvproxy'
+  }
+
   $registration_token = lookup('forgejo_registration_token', undef, undef, 'NOT_SET_IN_HIERA');
 
   file {'/opt/forgejo-runner':
