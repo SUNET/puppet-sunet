@@ -67,7 +67,7 @@ class sunet::forgejo::runner (
         refreshonly => true,
       }
 
-      file { "/home/${runner}/runner.config":
+      file { "/home/${user}/runner.config":
         ensure  => 'file',
         content => template('sunet/forgejo/runner.config.erb'),
         mode    => '0700',
