@@ -4,7 +4,7 @@ class sunet::forgejo::runner (
   String $version_sha256sum = '6442d46db2434a227e567a116c379d0eddbe9e7a3f522596b25d31979fd59c8d',
   String $machine_image     = 'quay.io/podman/machine-os:5.4',
   Integer $runners = 4,
-  String $forgejo_instance  =  "platform.sunet.se",
+  String $forgejo_instance  =  'platform.sunet.se',
 ) {
 
   include sunet::packages::podman
@@ -43,9 +43,9 @@ class sunet::forgejo::runner (
   }
 
   file { '/opt/forgejo-runner/libexec/runner-systemd-wrapper':
-    ensure => 'file',
+    ensure  => 'file',
     content => template('sunet/forgejo/runner-systemd-wrapper.erb'),
-    mode           => '0755',
+    mode    => '0755',
   }
 
   file { '/opt/forgejo-runner/libexec/runner-wrapper':
@@ -60,32 +60,32 @@ class sunet::forgejo::runner (
     mode    => '0644',
   }
 
-    range(0, $runners - 1).each |$runner|{
-      $user = "runner-${runner}"
+  range(0, $runners - 1).each |$runner|{
+    $user = "runner-${runner}"
 
-      user { $user:
-        ensure     => 'present',
-        groups     => ['kvm'],
-        home       => "/home/${user}",
-        managehome => true,
-        notify     => Exec["linger_user_${runner}"]
-      }
-
-      exec { "linger_user_${runner}":
-        command     => "/usr/bin/loginctl enable-linger ${user}",
-        refreshonly => true,
-      }
-
-      file { "/home/${user}/runner.config":
-        ensure  => 'file',
-        content => template('sunet/forgejo/runner.config.erb'),
-        mode    => '0700',
-        owner   => $user,
-      }
-
-      service { "sunet-forgejo-runner@${user}":
-        ensure => 'running',
-        enable => true,
-      }
+    user { $user:
+      ensure     => 'present',
+      groups     => ['kvm'],
+      home       => "/home/${user}",
+      managehome => true,
+      notify     => Exec["linger_user_${runner}"]
     }
+
+    exec { "linger_user_${runner}":
+      command     => "/usr/bin/loginctl enable-linger ${user}",
+      refreshonly => true,
+    }
+
+    file { "/home/${user}/runner.config":
+      ensure  => 'file',
+      content => template('sunet/forgejo/runner.config.erb'),
+      mode    => '0700',
+      owner   => $user,
+    }
+
+    service { "sunet-forgejo-runner@${user}":
+      ensure => 'running',
+      enable => true,
+    }
+  }
 }
