@@ -66,5 +66,12 @@ class sunet::forgejo::runner (
         command     => "/usr/bin/loginctl enable-linger ${user}",
         refreshonly => true,
       }
+
+      file { "/home/${runner}/runner.config":
+        ensure  => 'file',
+        content => template('sunet/forgejo/runner.config.erb'),
+        mode    => '0700',
+        owner   => $runner,
+      }
     }
 }
