@@ -1,5 +1,10 @@
 # For edusign validator service
-class sunet::edusign::validator($version='1.0.2', $host=undef, $ensure='present') {
+class sunet::edusign::validator(
+  String            $version       = '1.0.2',
+  Optional[String]  $host          = undef,
+  String            $ensure        = 'present',
+  Array[String]     $loadbalancers = []
+) {
   $_host = $host ? {
       undef    => $facts['networking']['fqdn'],
       default  => $host
@@ -27,7 +32,7 @@ class sunet::edusign::validator($version='1.0.2', $host=undef, $ensure='present'
 
   if $facts['sunet_nftables_opt_in'] == 'yes' or ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
       sunet::nftables::docker_expose { 'signapi' :
-        allow_clients => ['130.242.125.110/32', '130.242.125.140/32'],
+        allow_clients => $loadbalancers,
         port          => '443',
         iif           => $facts['interface_default'],
       }
