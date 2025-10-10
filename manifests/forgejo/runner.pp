@@ -10,6 +10,7 @@ class sunet::forgejo::runner (
   include sunet::packages::podman
   include sunet::packages::virtiofsd
   include sunet::packages::qemu_system_x86
+  include sunet::packages::gvproxy
 
   $registration_token = lookup('forgejo_registration_token', undef, undef, 'NOT_SET_IN_HIERA');
 
