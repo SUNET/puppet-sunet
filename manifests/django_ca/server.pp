@@ -130,11 +130,11 @@ class sunet::django_ca::server (
     content => file('sunet/django-ca/nrpe-djangoca.cfg')
   }
   # Custom monitoring scripts
-  file { '/usr/local/sbin/check-djangoca-status.sh':
+  file { '/usr/local/sbin/check-djangoca-status':
     ensure  => 'file',
     mode    => '0755',
     owner   => 'root',
-    content => file('sunet/django-ca/check-djangoca-status.sh')
+    content => file('sunet/django-ca/check-djangoca-status.py')
   }
 
 }
