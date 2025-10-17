@@ -1,0 +1,49 @@
+CACHES:
+  default:
+    BACKEND: django.core.cache.backends.db.DatabaseCache
+    LOCATION: django_cache
+DATABASES:
+  default:
+    ENGINE: django.db.backends.postgresql
+    HOST: <%= @django_ca_db_servicename %>
+    PORT: 5432
+    NAME: djangoca
+    USER: djangoca
+    PASSWORD: <%= @djangoca_db_password %>
+
+
+CA_OCSP_KEY_BACKENDS:
+    default:
+        BACKEND: django_ca.key_backends.db.DBOCSPBackend
+
+ENABLE_ADMIN: <%= @django_ca_admin_gui %>
+CA_USE_CELERY: false
+
+CA_DEFAULT_HOSTNAME: "<%= @django_ca_servicename %>"
+ALLOWED_HOSTS:
+ - <%= @django_ca_servicename %>
+CA_ENABLE_REST_API: false
+
+CA_KEY_BACKENDS:
+  default:
+    BACKEND: django_ca.key_backends.hsm.HSMBackend
+    OPTIONS:
+      library_path: "/usr/safenet/lunaclient/lib/libCryptoki2_64.so"
+      token: <%= @hsm_partition %>
+      user_pin: <%= @pkcs11_pin %>
+
+
+<% if @django_ca_cmc %>
+EXTEND_INSTALLED_APPS:
+  - django_ca_cmc
+
+EXTEND_URL_PATTERNS:
+  - route: cmc01
+    view:
+      view: django_ca_cmc.views.CMCView
+    name: cmc_default
+  - route: cmc/
+    view:
+      module: django_ca_cmc.urls
+      namespace: django_ca_cmc
+<% end %>
