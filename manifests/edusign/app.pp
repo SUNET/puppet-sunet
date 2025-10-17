@@ -4,7 +4,7 @@ class sunet::edusign::app(
   String $profile = 'edusign-test',
   Optional[String] $host = undef,
   String $ensure = 'present',
-  String $invites = 'no',
+  Variant[String, Boolean] $invites = 'no',
   Array[String] $loadbalancers = []) {
   $_host = $host ? {
     undef    => $facts['networking']['fqdn'],
