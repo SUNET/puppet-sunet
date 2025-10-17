@@ -10,7 +10,7 @@ class sunet::geteduroam::db::thinning(
 
   sunet::scriptherder::cronjob { 'db-thinning':
     cmd         => '/usr/local/bin/geteduroam-db-thinning',
-    hour        => '4'
+    hour        => '4',
     minute      => '25',
     ok_criteria => ['exit_status=0', 'max_age=36h'],
   }
