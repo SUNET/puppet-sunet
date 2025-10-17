@@ -12,7 +12,7 @@
 # @param django_ca_tag                      The version of djanog-ca to run
 # @param nginx_tag                          The version of nginx to run
 # @param server_fqdn                        The fqdn of the server, used in nginx.conf
-class sunet::django_ca (
+class sunet::django_ca::server (
   Enum['test', 'prod']      $environment,
   String                    $django_ca_servicename,
   String                    $hsm_partition,
