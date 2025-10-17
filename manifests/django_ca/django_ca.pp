@@ -64,7 +64,7 @@ class sunet::django_ca (
       mode        => '0755',
   }
   sunet::hsm::client_auth {'client_cert':
-      mode        => '0755',
+      mode => '0755',
   }
 
   sunet::hsm::client_chrystoki {'/etc/Chrystoki.conf':
