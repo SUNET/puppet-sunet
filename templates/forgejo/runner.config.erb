@@ -158,9 +158,9 @@ container:
   network: ""
   # Whether to create networks with IPv6 enabled. Requires the Docker daemon to be set up accordingly.
   # Only takes effect if "network" is set to "".
-  enable_ipv6: false
+  enable_ipv6: true
   # Whether to use privileged mode or not when launching task containers (privileged mode is required for Docker-in-Docker).
-  privileged: false
+  privileged: true
   # And other options to be used when the container is started (eg, --volume /etc/ssl/certs:/etc/ssl/certs:ro).
   options:
   # The parent directory of a job's working directory.
