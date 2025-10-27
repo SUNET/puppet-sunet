@@ -1,5 +1,6 @@
 # Get eduroam
 class sunet::geteduroam::radius(
+  String $realm,
   Array $resolvers = [],
   Boolean $ocsp = true,
   String $freeradius_tag = 'latest',
@@ -7,7 +8,6 @@ class sunet::geteduroam::radius(
   String $haproxy_tag = '3.0.2',
   Array $app_admins = [],
   Boolean $qa_federation = false,
-  String $realm,
 ){
 
   class {'sunet::geteduroam::common': }
