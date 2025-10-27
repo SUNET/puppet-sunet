@@ -1,5 +1,5 @@
 # Get eduroam::common
-class sunet::geteduroam::comon(
+class sunet::geteduroam::common(
 ){
 
   ensure_resource('sunet::misc::create_dir', '/opt/geteduroam/config', { owner => 'root', group => 'root', mode => '0750'})
