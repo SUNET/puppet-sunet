@@ -7,6 +7,7 @@ class sunet::geteduroam::radius(
   String $haproxy_tag = '3.0.2',
   Array $app_admins = [],
   Boolean $qa_federation = false,
+  String $realm,
 ){
 
   class {'sunet::geteduroam::common': }
