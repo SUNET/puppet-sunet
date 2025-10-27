@@ -1,5 +1,6 @@
 # Get eduroam
 class sunet::geteduroam::radius(
+  String $realm,
   Array $resolvers = [],
   Boolean $ocsp = true,
   String $freeradius_tag = 'latest',
