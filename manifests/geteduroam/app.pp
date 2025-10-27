@@ -30,7 +30,11 @@ class sunet::geteduroam::app(
   }
 
   if lookup('saml_metadata_key', undef, undef, undef) != undef {
-    sunet::snippets::secret_file { '/opt/geteduroam/cert/saml.key': hiera_key => 'saml_metadata_key', group =>  'www-data',  mode  => '0750', }
+    sunet::snippets::secret_file { '/opt/geteduroam/cert/saml.key':
+      hiera_key => 'saml_metadata_key',
+      group     => 'www-data',
+      mode      => '0750',
+    }
     # assume cert is in cosmos repo
   } else {
     # make key pair
