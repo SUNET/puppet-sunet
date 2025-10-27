@@ -1,27 +1,4 @@
-version: '3.2'
-
 services:
-<% if @app %>
-  app:
-    image: docker.sunet.se/geteduroam-app:<%= @app_tag %>
-<% unless @resolvers.empty? -%>
-    dns:
-<% @resolvers.each do |resolver| -%>
-      - <%= resolver %>
-<% end -%>
-<% end -%>
-    ports:
-      - '443:443'
-    volumes:
-      - "/etc/ssl/private/:/etc/ssl/private/:ro"
-      - "/opt/geteduroam/var:/var/www/var:rw"
-      - "/opt/geteduroam/cert:/var/www/cert:ro"
-      - "/opt/geteduroam/config/letswifi.conf.php:/var/www/etc/letswifi.conf.php:ro"
-      - "/opt/geteduroam/config/config.php:/var/www/simplesamlphp/config/config.php:ro"
-      - "/opt/geteduroam/config/authsources.php:/var/www/simplesamlphp/config/authsources.php:ro"
-<% end %>
-
-<% if @radius %>
   radius:
     image: docker.sunet.se/geteduroam-freeradius:<%= @freeradius_tag %>
 <% unless @resolvers.empty? -%>
@@ -48,7 +25,6 @@ services:
       - SQLUSER=geteduroam
       - SQLDB=geteduroam
       - SQLPASSWORD=<%= scope.call_function('safe_hiera', ['mariadb_user_password'])  %>
-<% end %>
 <% end %>
 
   haproxy:
