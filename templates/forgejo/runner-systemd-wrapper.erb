@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+XDG_RUNTIME_DIR=/run/user/$(id -u)
+export XDG_RUNTIME_DIR
+
+PATH="${PATH}:/usr/libexec/"
+
+cp /opt/forgejo-runner/libexec/runner-wrapper ${HOME}/
+cp /opt/forgejo-runner/bin/forgejo-runner ${HOME}/
+
+
+if [ ! -f "/home/$(whoami)/.runner" ]; then
+  # Registration needed
+  /opt/forgejo-runner/bin/forgejo-runner --config "/home/$(whoami)/runner.config" register --no-interactive --instance "https://<%= @forgejo_instance %>" --token "<%= @registration_token %>" --name "$(hostname -f):$(whoami)"
+fi
+
+podman machine rm -f
+
+while true; do
+
+        podman machine init --image "docker://<%= @machine_image %>" --memory 4096 --rootful --now
+        podman machine ssh "/home/$(whoami)/runner-wrapper $(whoami)"
+        podman machine rm -f
+
+        sleep 1
+done
