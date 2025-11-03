@@ -27,6 +27,12 @@ class sunet::naemon_monitor (
   String $alloy_tag = 'v1.11.2',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
+  Hash $regexp_based_groups = {
+        'prod' => '.*-prod-.*',
+        'test' => '.*-test-.*',
+        'lab' => '.*-lab-.*',
+        'qa' => '.*-qa-.*',
+  },
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
   Array $exclude_hosts = [],
@@ -487,6 +493,7 @@ class sunet::naemon_monitor (
       single_ip           => true,
       require             => File['/etc/naemon/conf.d/nagioscfg/'],
       exclude_hosts       => $exclude_hosts,
+      regexp_based_groups => $regexp_based_groups,
     }
   }
   else {
