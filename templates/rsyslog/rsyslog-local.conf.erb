@@ -10,3 +10,7 @@ input(type="imudp" port="<%= @udp_port %>")
 module(load="imtcp")
 input(type="imtcp" port="<%= @tcp_port %>")
 <% end -%>
+
+<% if @max_message_size -%>
+$MaxMessageSize <%= @max_message_size %>
+<% end -%>
