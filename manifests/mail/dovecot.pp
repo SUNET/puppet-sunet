@@ -11,7 +11,7 @@ class sunet::mail::dovecot(
   String $account_domain         = 'sunet.se',
   String $interface              = 'ens3',
   String $dovecot_image          = 'docker.sunet.se/mail/dovecot',
-  String $dovecot_tag            = 'SUNET-1',
+  String $dovecot_tag            = 'SUNET-2',
 )
 {
   include sunet::packages::xfsprogs # for /opt/dovecot/mail
