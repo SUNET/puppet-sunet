@@ -28,6 +28,7 @@ define sunet::kvm::cloudimage (
   String                   $size            = '10G',
   Optional[Array]          $ssh_keys        = undef,
   Optional[String]         $tagpattern      = undef,
+  Boolean                  $use_deprecated_netplan_gw_syntax  = true,
 )
 {
 
@@ -79,21 +80,11 @@ define sunet::kvm::cloudimage (
       require => File[$script_dir],
       mode    => '0750',
       ;
-  }
-
-  # New syntax for routes in modern netplan
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') >= 0 {
-    file { $network_config:
+    $network_config:
       content => template('sunet/kvm/network_config-v2-ng.erb'),
       require => File[$script_dir],
       mode    => '0750',
-    }
-  } else {
-    file { $network_config:
-      content => template('sunet/kvm/network_config-v2.erb'),
-      require => File[$script_dir],
-      mode    => '0750',
-    }
+      ;
   }
 
   exec { "${name}_fetch_image":
