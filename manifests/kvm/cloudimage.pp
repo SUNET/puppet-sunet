@@ -1,5 +1,6 @@
 # Setup an image in KVM
 
+# @param uefi                                 Set this to true when you need uefi (this is needed for debian13+)
 # @param use_deprecated_netplan_gw_syntax     Set this option to false for all modern VMs (ubuntu24+,debian13+) to use the 'routes' syntax in netplan.
 define sunet::kvm::cloudimage (
   Array[String]            $addresses                        = [],
@@ -30,6 +31,7 @@ define sunet::kvm::cloudimage (
   String                   $size                             = '10G',
   Optional[Array]          $ssh_keys                         = undef,
   Optional[String]         $tagpattern                       = undef,
+  Boolean                  $uefi                             = false,
   Boolean                  $use_deprecated_netplan_gw_syntax = true,
 )
 {
