@@ -4,7 +4,7 @@ services:
   postgres:
     container_name: postgres
     restart: always
-    image: postgres:14-alpine
+    image: <%= @postgres_image %>
     dns:
       - 89.32.32.32
     ports:
@@ -23,7 +23,7 @@ services:
   redis:
     container_name: redis
     restart: always
-    image: redis:6-alpine
+    image: <%= @redis_image %>
     dns:
       - 89.32.32.32
     ports:
