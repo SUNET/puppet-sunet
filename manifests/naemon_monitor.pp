@@ -512,4 +512,15 @@ class sunet::naemon_monitor (
       exclude_hosts       => $exclude_hosts,
     }
   }
+
+  $check_mariadb_password = lookup('check_mariadb_password', String, undef, undef),
+
+  if $check_mariadb_password {
+    file { '/opt/naemon_monitor/check_mariadb.cnf':
+      ensure  => 'file',
+      mode    => '0700',
+      owner   => 'root',
+      content => inline_template("[client]\nuser=naemon\n<%= @check_mariadb_password %>\n"),
+    }
+  }
 }

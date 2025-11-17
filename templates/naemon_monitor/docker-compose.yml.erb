@@ -39,6 +39,9 @@ services:
 <%- @naemon_extra_volumes.each do |extra_volume| -%>
       - "<%= extra_volume %>"
 <%- end -%>
+<% if @check_mariadb_password -%>
+      - "/opt/naemon_monitor/check_mariadb.cnf:/root/.my.cnf:ro"
+<% end -%>
 
   thruk:
     restart: on-failure
