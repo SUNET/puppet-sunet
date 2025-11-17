@@ -17,6 +17,7 @@ ethernets:
 <% if @dhcp6 -%>
     dhcp6: true
 <% end -%>
+<% if !@use_deprecated_netplan_gw_syntax -%>
     routes:
 <% if @gateway -%>
       - to: default
@@ -26,6 +27,14 @@ ethernets:
 <% if @gateway6 -%>
       - to: default
         via: '<%= @gateway6 %>'
+<% end -%>
+<% else -%>
+<% if @gateway -%>
+    gateway4: '<%= @gateway %>'
+<% end -%>
+<% if @gateway6 -%>
+    gateway6: '<%= @gateway6 %>'
+<% end -%>
 <% end -%>
 <% if @resolver -%>
     nameservers:
