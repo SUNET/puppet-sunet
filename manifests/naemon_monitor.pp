@@ -521,7 +521,7 @@ class sunet::naemon_monitor (
       ensure  => 'file',
       mode    => '0700',
       owner   => 'root',
-      content => inline_template("[client]\nuser=naemon\n<%= @check_mariadb_password %>\n"),
+      content => inline_template("[client]\nuser=naemon\npassword=<%= @check_mariadb_password %>\n"),
     }
   }
 }
