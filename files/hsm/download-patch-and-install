@@ -26,7 +26,7 @@ mkdir -p "${archive_dir}"
 tempdir=$(mktemp -d)
 
 if ! [ -f "${archive_dir}${file}" ]; then
-	curl -O --output-dir "${tempdir}" "${baseurl}/${file}"
+	curl -L -O --output-dir "${tempdir}" "${baseurl}/${file}"
 	echo "${shasum} ${tempdir}/${file}" | sha256sum -c
 	mv "${tempdir}/${file}" "${archive_dir}/"
 fi
