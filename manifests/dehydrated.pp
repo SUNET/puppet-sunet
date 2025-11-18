@@ -1,14 +1,13 @@
 # dehydrated
 class sunet::dehydrated(
   Boolean $staging = false,
-  Boolean $httpd = false,
-  Boolean $apache = false,
   Boolean $cron = true,
-  Boolean $cleanup = false,
+  Boolean $cleanup = true,
   String  $src_url = 'https://raw.githubusercontent.com/dehydrated-io/dehydrated/master/dehydrated',
   Array   $allow_clients = [],
   Integer $server_port = 80,
   Integer $ssh_port = 22,
+  String $version, 
 ) {
   $conf = lookup('dehydrated', undef, undef, undef)
   if $conf !~ Hash {
@@ -24,27 +23,16 @@ class sunet::dehydrated(
     fail("Unknown format of 'domains' - bailing out (why it should be a list of hashes instead of just a hash I do not know)")
   }
 
-  $ca = $staging ? {
-    false => 'https://acme-v02.api.letsencrypt.org/directory',
-    true  => 'https://acme-staging.api.letsencrypt.org/directory'
-  }
+  $ca = 'https://acme-v02.api.letsencrypt.org/directory'
+  
   ensure_resource('package','openssl',{ensure=>'latest'})
-  if $src_url =~ String[1] {
-    sunet::remote_file { '/usr/sbin/dehydrated':
-      remote_location => $src_url,
-      mode            => '0755'
-    }
-  }
-
-  exec {'rename-etc-letsencrypt.sh':
-    command => 'mv /etc/letsencrypt.sh /etc/dehydrated',
-    onlyif  => 'test -d /etc/letsencrypt.sh'
+  $src_url = "https://raw.githubusercontent.com/dehydrated-io/dehydrated/refs/tags/${version}/dehydrated"
+  sunet::remote_file { '/usr/sbin/dehydrated':
+    remote_location => $src_url,
+    mode            => '0755'
   }
 
   file {
-    '/usr/sbin/letsencrypt.sh':
-      ensure => absent
-      ;
     '/usr/bin/le-ssl-compat.sh':
       ensure  => 'file',
       owner   => 'root',
@@ -88,18 +76,12 @@ class sunet::dehydrated(
       warn_criteria => ['exit_status=1','max_age=8d'],
     }
   }
-  cron {'dehydrated-cron': ensure => absent }
-  cron {'letsencrypt-cron': ensure => absent }
 
-  if ($httpd) {
-    sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
-      allow_clients => $allow_clients,
-      server_port   => $server_port,
-    }
+  sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
+    allow_clients => $allow_clients,
+    server_port   => $server_port,
   }
-  if ($apache) {
-    sunet::dehydrated::apache_server { 'dehydrated_apache_server': }
-  }
+
   if has_key($conf, 'clients') {
     $clients = $conf['clients']
   } else {
@@ -152,7 +134,7 @@ class sunet::dehydrated(
     warning("Unknown format of 'clients' - ignoring")
   }
 
-  sunet::misc::ufw_allow { 'allow-dehydrated-ssh':
+  sunet::nftables::allow { 'allow-dehydrated-ssh':
     from => $allow_clients,
     port => $ssh_port,
   }
