@@ -139,8 +139,8 @@ class sunet::naemon_monitor (
 
   # Make sure that a user with the name "naemon" is created in the database, with the same password as in Hiera.
   # E.g `CREATE USER naemon IDENTIFIED BY '<something secret>';`
-  $check_mariadb_password = lookup('check_mariadb_password', Variant[String, Undef], undef, undef)
-  if $check_mariadb_password {
+  $check_mariadb_password = lookup('check_mariadb_password', String, undef, 'NOT_SET_IN_HIERA')
+  if $check_mariadb_password != 'NOT_SET_IN_HIERA' {
     file { '/opt/naemon_monitor/check_mariadb.cnf':
       ensure  => 'file',
       mode    => '0700',
