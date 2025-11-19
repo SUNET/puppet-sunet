@@ -137,6 +137,18 @@ class sunet::naemon_monitor (
     notify  => Class['sunet::systemd_reload'],
   }
 
+  # Make sure that a user with the name "naemon" is created in the database, with the same password as in Hiera.
+  # E.g `CREATE USER naemon IDENTIFIED BY '<something secret>';`
+  $check_mariadb_password = lookup('check_mariadb_password', String, undef, 'NOT_SET_IN_HIERA')
+  if $check_mariadb_password != 'NOT_SET_IN_HIERA' {
+    file { '/opt/naemon_monitor/check_mariadb.cnf':
+      ensure  => 'file',
+      mode    => '0700',
+      owner   => 'root',
+      content => inline_template("[client]\nuser=naemon\npassword=<%= @check_mariadb_password %>\n"),
+    }
+  }
+
   sunet::docker_compose { 'naemon_monitor':
     content          => template('sunet/naemon_monitor/docker-compose.yml.erb'),
     service_name     => 'naemon_monitor',
