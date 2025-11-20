@@ -12,4 +12,5 @@ define service {
   register                       0                                   ; DONT REGISTER THIS DEFINITION - ITS NOT A REAL SERVICE, JUST A TEMPLATE!
   retain_nonstatus_information   1                                   ; Retain non-status information across program restarts
   retain_status_information      1                                   ; Retain status information across program restarts
+  obsess                         0                                   ; The default seems to be to obsess
 }
