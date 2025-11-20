@@ -43,6 +43,7 @@ services:
       - "/opt/naemon_monitor/check_mariadb.cnf:/root/.my.cnf:ro"
 <% end -%>
 <% if @nsca -%>
+      - '/etc/naemon/conf.d/nsca:/etc/naemon/conf.d/nsca:ro'
       - "/opt/naemon_monitor/send_nsca.cfg:/etc/send_ncsa.cfg:ro"
       - "/opt/naemon_monitor/obsessive-commands.cfg:/etc/naemon/module-conf.d/obsessive-commands.cfg:ro"
 <% end -%>
