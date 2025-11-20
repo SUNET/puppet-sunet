@@ -8,7 +8,6 @@ define service {
   notification_interval          0                                   ; Re-notify about service problems every hour
   notification_options           u,w,c,r                             ; Send notifications about warning, unknown, critical, and recovery events
   notification_period            24x7                                ; Notifications can be sent out at any time
-  obsess_over_service            1                                   ; We should obsess over this service (if necessary)
   process_perf_data              1                                   ; Process performance data
   register                       0                                   ; DONT REGISTER THIS DEFINITION - ITS NOT A REAL SERVICE, JUST A TEMPLATE!
   retain_nonstatus_information   1                                   ; Retain non-status information across program restarts
