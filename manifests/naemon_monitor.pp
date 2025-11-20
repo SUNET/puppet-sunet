@@ -459,6 +459,7 @@ class sunet::naemon_monitor (
   }
   unless 'scriptherder' in $optout_checks {
     nagioscfg::service { 'check_scriptherder':
+      use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_scriptherder',
       description    => 'Scriptherder Status',
