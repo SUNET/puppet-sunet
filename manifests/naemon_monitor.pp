@@ -356,6 +356,13 @@ class sunet::naemon_monitor (
       group   => 'root',
       owner   => 'root',
     }
+    file { '/opt/naemon_monitor/obsessive-commands.cfg':
+      ensure  => file,
+      content => file('sunet/naemon_monitor/obsessive-commands.cfg'),
+        mode  => '0644',
+        group => 'root',
+        owner => 'root',
+    }
   }
 
   nagioscfg::contactgroup { 'alerts': }
