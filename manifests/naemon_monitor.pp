@@ -423,6 +423,7 @@ class sunet::naemon_monitor (
   }
   unless 'reboot' in $optout_checks {
     nagioscfg::service { 'check_reboot':
+      use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_reboot',
       description    => 'Reboot Needed',
@@ -479,6 +480,7 @@ class sunet::naemon_monitor (
 
   require sunet::nagios::nrpe_check_cosmos_keys
   nagioscfg::service {'check_cosmos_keys':
+    use            => 'naemon-service',
     hostgroup_name => ['sunet::naemon_monitor'],
     check_command  => 'check_nrpe!check_cosmos_keys',
     description    => 'Cosmos GPG keys',
