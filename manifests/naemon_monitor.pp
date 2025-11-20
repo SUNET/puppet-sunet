@@ -41,6 +41,7 @@ class sunet::naemon_monitor (
   Array[Optional[String]] $optout_checks = [],
   Optional[Boolean] $receive_otel = false,
   String $otel_retention = '2232h',
+  Boolean $nsca          = false,
 ) {
   include sunet::systemd_reload
 
@@ -329,6 +330,32 @@ class sunet::naemon_monitor (
         group  => 'root',
         owner  => 'root',
     })
+  }
+
+  if $nsca {
+    $nsca_encryption_method = lookup('nsca_encryption_method', Integer, undef, 14)
+    $nsca_password = lookup('nsca_password', String, undef, 'NOT_SET_IN_HIERA')
+    $nsca_server = lookup('nsca_server', String, undef, '109.105.111.111')
+    ensure_resource('file','/etc/naemon/conf.d/nsca/', {
+        ensure => directory,
+        mode   => '0644',
+        group  => 'root',
+        owner  => 'root',
+    })
+    file { '/etc/naemon/conf.d/nsca/nsca_commands.cfg':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/nsca_commands.cfg.erb'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/send_nsca.cfg':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/send_nsca.cfg.erb'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
   }
 
   nagioscfg::contactgroup { 'alerts': }
