@@ -6,7 +6,7 @@ class sunet::mariadb::backup(
   Boolean $nrpe = true,
   String  $backup_hour = '06',
   String  $backup_minute = '10',
-  Integer $backup_max_age = '24',
+  Integer $backup_max_age = 24,
   Integer $local_retension = 31,
 ) {
 
