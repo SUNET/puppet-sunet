@@ -41,6 +41,7 @@ class sunet::naemon_monitor (
   Array[Optional[String]] $optout_checks = [],
   Optional[Boolean] $receive_otel = false,
   String $otel_retention = '2232h',
+  Boolean $nsca          = false,
 ) {
   include sunet::systemd_reload
 
@@ -331,6 +332,40 @@ class sunet::naemon_monitor (
     })
   }
 
+  if $nsca {
+    $nsca_encryption_method = lookup('nsca_encryption_method', Integer, undef, 14)
+    $nsca_password = lookup('nsca_password', String, undef, 'NOT_SET_IN_HIERA')
+    # Default to nagios.nordu.net (109.105.111.111)
+    $nsca_server = lookup('nsca_server', String, undef, '109.105.111.111')
+    ensure_resource('file','/etc/naemon/conf.d/nsca/', {
+        ensure => directory,
+        mode   => '0644',
+        group  => 'root',
+        owner  => 'root',
+    })
+    file { '/etc/naemon/conf.d/nsca/nsca_commands.cfg':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/nsca_commands.cfg.erb'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/send_nsca.cfg':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/send_nsca.cfg.erb'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/obsessive-commands.cfg':
+      ensure  => file,
+      content => file('sunet/naemon_monitor/obsessive-commands.cfg'),
+        mode  => '0644',
+        group => 'root',
+        owner => 'root',
+    }
+  }
+
   nagioscfg::contactgroup { 'alerts': }
 
   unless 'load' in $optout_checks {
@@ -389,6 +424,7 @@ class sunet::naemon_monitor (
   }
   unless 'reboot' in $optout_checks {
     nagioscfg::service { 'check_reboot':
+      use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_reboot',
       description    => 'Reboot Needed',
@@ -425,6 +461,7 @@ class sunet::naemon_monitor (
   }
   unless 'scriptherder' in $optout_checks {
     nagioscfg::service { 'check_scriptherder':
+      use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_scriptherder',
       description    => 'Scriptherder Status',
@@ -444,6 +481,7 @@ class sunet::naemon_monitor (
 
   require sunet::nagios::nrpe_check_cosmos_keys
   nagioscfg::service {'check_cosmos_keys':
+    use            => 'naemon-service',
     hostgroup_name => ['sunet::naemon_monitor'],
     check_command  => 'check_nrpe!check_cosmos_keys',
     description    => 'Cosmos GPG keys',

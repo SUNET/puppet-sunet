@@ -42,6 +42,11 @@ services:
 <% if @check_mariadb_password != 'NOT_SET_IN_HIERA' -%>
       - "/opt/naemon_monitor/check_mariadb.cnf:/root/.my.cnf:ro"
 <% end -%>
+<% if @nsca -%>
+      - '/etc/naemon/conf.d/nsca:/etc/naemon/conf.d/nsca:ro'
+      - "/opt/naemon_monitor/send_nsca.cfg:/etc/send_nsca.cfg:ro"
+      - "/opt/naemon_monitor/obsessive-commands.cfg:/etc/naemon/module-conf.d/obsessive-commands.cfg:ro"
+<% end -%>
 
   thruk:
     restart: on-failure
