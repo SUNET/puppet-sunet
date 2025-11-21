@@ -5,7 +5,7 @@ set -e
 docker exec mariadb-db-1 /scripts/do_backup.sh
 
 BACKUPDIR=/opt/mariadb/backups
-find "${BACKUPDIR}" -type f -mtime +<%= @local_retension %>' -exec rm -f {} \;
+find "${BACKUPDIR}" -type f -mtime +<%= @local_retension %> -exec rm -f {} \;
 find "${BACKUPDIR}" -empty -type d -delete
 
 /usr/bin/dsmc backup
