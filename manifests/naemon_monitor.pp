@@ -335,6 +335,7 @@ class sunet::naemon_monitor (
   if $nsca {
     $nsca_encryption_method = lookup('nsca_encryption_method', Integer, undef, 14)
     $nsca_password = lookup('nsca_password', String, undef, 'NOT_SET_IN_HIERA')
+    # Default to nagios.nordu.net (109.105.111.111)
     $nsca_server = lookup('nsca_server', String, undef, '109.105.111.111')
     ensure_resource('file','/etc/naemon/conf.d/nsca/', {
         ensure => directory,
