@@ -16,4 +16,5 @@ define host{
                 notification_options            d,u,r
                 contact_groups                  admins
         register                        0       ; DONT REGISTER THIS DEFINITION - ITS NOT A REAL HOST, JUST A TEMPLATE!
+        obsess                          0       ; The default seems to be to obsess
         }
