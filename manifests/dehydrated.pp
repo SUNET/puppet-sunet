@@ -53,6 +53,14 @@ class sunet::dehydrated(
       content => template('sunet/dehydrated/domains.erb'),
       notify  => Exec['dehydrated-runonce']
       ;
+    '/etc/dehydrated/dehydrated_wrapper.sh':
+      ensure  => 'file',
+      content => template('sunet/dehydrated/dehydrated_wrapper.sh.erb')
+      ;
+    '/etc/dehydrated/hook.sh':
+      ensure  => 'file',
+      content => template('sunet/dehydrated/dehydrated/hook.sh')
+      ;
   }
   exec { 'dehydrated-runonce':
     # Run dehydrated once every time domains.txt changes;

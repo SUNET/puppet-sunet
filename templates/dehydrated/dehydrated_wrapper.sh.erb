@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# This wrapper is a bit silly but it might be the best way to be SURE that one broken domain doesn't
+# mess up ALL configured domains. It will also, through scriptherder, hopefully highlight problems
+# with domains that are either misconfigured or have any other kind of issues.
+#
+# This is sadly dependent upon /etc/dehydrated/config2 to work. DOMAINS_TXT variable could not be set
+# outside of the configfile and I didn't want to break backwards comp by fiddling with domains.txt.
+#
+# Scriptherder was not meant to be run dynamically, must cheat to create check/ini-files...
+
+SINGLEDOMAIN="/etc/dehydrated/one-domain.txt"
+DOMAINFILE="/etc/dehydrated/domains.txt"
+HOOKFILE="/etc/dehydrated/hook.sh"
+CONFIGFILE="/etc/dehydrated/config2"
+SCRIPTHERDER="/usr/local/bin/scriptherder"
+SCRIPTHERDER_OPTIONS="--mode wrap --syslog --name "
+SCRIPTHERDER_TEMPLATE="/etc/scriptherder/check/dehydrated_per_domain.ini"
+DEHYDRATED="/usr/sbin/dehydrated"
+DEHYDRATED_OPTIONS="--no-lock -c --hook ${HOOKFILE} --config ${CONFIGFILE} "
+
+# Find and delete all check ini-files since they are recreated below (easiest way to make sure 
+# that we're not generating Nagios alerts for domains that have been removed from Lets Encrypt.
+find /etc/scriptherder/check -regex '.+/dehydrated_.+' | egrep -v per_domain | xargs rm
+
+/bin/cat ${DOMAINFILE} | while read line
+do
+  echo $line > ${SINGLEDOMAIN}
+  JOBNAME="dehydrated_`awk '{ print $1 }' ${SINGLEDOMAIN}`"
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_OPTIONS} && /usr/bin/le-ssl-compat.sh
+  /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
+done
+
+exit 0
