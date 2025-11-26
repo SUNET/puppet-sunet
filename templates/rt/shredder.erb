@@ -1,9 +1,0 @@
-#/usr/bin/perl
-#
-# This simply calls upon RT's shredder binary that does a, similar, ON DELETE CASCADE
-# on the SPAM-queue so that spam doesn't fill the database. Use the command without
-# --force-flag to see what it actual performs.
-
-system("/usr/bin/docker exec rt-swamid /opt/rt4/sbin/rt-shredder --plugin 'Tickets=query,Queue=\"SPAM\"\;limit,5' --force");
-#system("/usr/bin/docker exec rt-swamid /opt/rt4/sbin/rt-shredder --plugin 'Tickets=query,Queue=\"SPAM\"\;limit,5'");
-

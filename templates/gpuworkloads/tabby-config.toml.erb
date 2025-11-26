@@ -1,7 +1,0 @@
-<%- unless @repositories.empty? -%>
-  <%- @repositories.each do |repo| -%>
-[[repositories]]
-git_url = "<%= repo %>"
-  <%- end -%>
-<%- end -%>
-

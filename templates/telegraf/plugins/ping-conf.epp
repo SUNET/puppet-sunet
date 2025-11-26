@@ -1,8 +1,0 @@
-# # Ping given url(s) and return statistics
-[[inputs.ping]]
-   urls = [<% $hosts.each |$host| { %>"<%= $host%>",<% } %>]
-   count = <%= $count %>
-   ping_interval = <%= $ping_interval %>
-   timeout = <%= $timeout %>
-   deadline = <%= $deadline %>
-   interface = "<%= $interface %>"

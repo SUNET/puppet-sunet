@@ -1,5 +1,0 @@
-[[inputs.bind]]
-   urls = ["http://localhost:8053/xml/v3"]
-   #gather_memory_contexts = false
-   #gather_views = false
-

@@ -1,3 +1,0 @@
-# # Read metrics about docker containers
-[[inputs.docker]]
-    endpoint = "unix:///var/run/docker.sock"

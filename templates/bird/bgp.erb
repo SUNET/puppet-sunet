@@ -1,8 +1,0 @@
-
-protocol bgp <%= @title %> from <%= @template %> {
-  neighbor <%= @remote_ip %> as <%= @remote_as %>;
-<% if @password -%>
-  password "<%= @password %>";
-<% end -%>
-  debug { states, routes, filters, interfaces };
-}

@@ -1,8 +1,0 @@
-#!/bin/sh
-#
-# Check if a container is running or not and print its ID.
-# This is a hack to allow Nagios to do exactly this operation from the
-# NRPE check etcd-cluster-health, using sudo.
-#
-
-exec /usr/bin/docker ps -q --filter=name=$1

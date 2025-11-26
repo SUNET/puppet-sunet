@@ -1,8 +1,0 @@
-#!/bin/sh
-#
-# Inspect a docker container and output the network mode for the container.
-# This is a hack to allow Nagios to do exactly this operation from the
-# NRPE check check_docker_hostnames, using sudo.
-#
-
-exec /usr/bin/docker inspect --format '{{ .HostConfig.NetworkMode }}' "$1"

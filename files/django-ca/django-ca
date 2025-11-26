@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-exec docker exec -t django-ca-app manage "$@"

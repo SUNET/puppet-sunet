@@ -1,7 +1,0 @@
-add rule inet filter input iifname "vxlan.calico" counter accept
-add rule inet filter input iifname "cali*" counter accept comment "Allow in-cluster trafic to talk to this host, needed for kubectl top node"
-add rule inet filter forward iifname "vxlan.calico" counter accept
-add rule inet filter forward iifname "cali*" counter accept
-add rule inet filter forward oifname "cali*" counter accept
-add rule inet filter forward ip saddr 10.1.0.0/16 counter accept
-add rule inet filter forward ip daddr 10.1.0.0/16 counter accept

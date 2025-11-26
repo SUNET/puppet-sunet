@@ -1,4 +1,0 @@
-[Service]
-# livestatus.so can't handle HUP with a TCP listner
-# https://github.com/naemon/naemon-livestatus/issues/117
-ExecReload=/usr/bin/docker restart <%= @naemon_container %>

@@ -1,7 +1,0 @@
-#
-# Maintained by puppet - don't edit by hand
-# Source: puppet-sunet/templates/acme/apache-conf.erb
-#
-
-ProxyPass /.well-known/acme-challenge http://<%= @server -%>/.well-known/acme-challenge/
-ProxyPassReverse /.well-known/acme-challenge http://<%= @server -%>/.well-known/acme-challenge/

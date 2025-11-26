@@ -1,6 +1,0 @@
-# # Read metrics from the bare metal servers via IPMI
-[[inputs.ipmi_sensor]]
-   path = "<%= $ipmitool_path %>"
-   timeout = "<%= $timeout %>"
-   metric_version = 2
-
