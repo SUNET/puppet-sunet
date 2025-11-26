@@ -1,10 +1,10 @@
 # api class
 class sunet::edusign::api(
-  String		$version	= '1.0.0',
-  Optional[String] 	$host		= undef,
-  String 		$ensure		= 'present',
-  Array[String]		$loadbalancers  = [],
-  Array[String]		$app_clients    = []
+  String           $version       = '1.0.0',
+  Optional[String] $host          = undef,
+  String           $ensure        = 'present',
+  Array[String]    $loadbalancers = [],
+  Array[String]    $app_clients   = []
 ) {
   $_host = $host ? {
     undef    => $facts['networking']['fqdn'],
@@ -28,7 +28,8 @@ class sunet::edusign::api(
                   "SIGNSERVICE_CREDENTIAL_PASSWORD_GEANT=${cp_geant}",
                   "SIGNSERVICE_CREDENTIAL_KEY_PASSWORD_GEANT=${cp_geant}"]
   }
-  if $facts['sunet_nftables_opt_in'] == 'yes' or ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
+  if $facts['sunet_nftables_opt_in'] == 'yes' or
+    ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
     sunet::nftables::docker_expose { 'signapi' :
       allow_clients => $loadbalancers + $app_clients,
       port          => '443',
