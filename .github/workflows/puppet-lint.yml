@@ -12,10 +12,10 @@ name: puppet-lint
 
 on:
   push:
-    branches: [ "main", "testing" ]
+    branches: [ "testing" ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main", "testing" ]
+    branches: [ "testing" ]
 
 permissions:
   contents: read
