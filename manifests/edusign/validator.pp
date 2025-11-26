@@ -30,7 +30,8 @@ class sunet::edusign::validator(
                   'TOMCAT_TLS_SERVER_CERTIFICATE_CHAIN=/etc/ssl/certs/infra.crt']
   }
 
-  if $facts['sunet_nftables_opt_in'] == 'yes' or ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
+  if $facts['sunet_nftables_opt_in'] == 'yes' or
+    ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
       sunet::nftables::docker_expose { 'signapi' :
         allow_clients => $loadbalancers,
         port          => '443',

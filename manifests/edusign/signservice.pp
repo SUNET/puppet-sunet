@@ -16,7 +16,8 @@ class sunet::edusign::signservice($version='latest', $host=undef, $ensure='prese
                   'SPRING_CONFIG_LOCATION=/opt/edusign-signservice/config/application.yml' ]
   }
 
-  if $facts['sunet_nftables_opt_in'] == 'yes' or ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
+  if $facts['sunet_nftables_opt_in'] == 'yes' or
+    ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
     sunet::nftables::docker_expose { 'signservice' :
       allow_clients => ['130.242.125.110/32', '130.242.125.140/32'],
       port          => '443',

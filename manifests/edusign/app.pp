@@ -32,7 +32,8 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
       image    => 'docker.sunet.se/edusign-sp',
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
+      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
+                    '/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
                     "SP_HOSTNAME=${_host}",
                     'BACKEND_HOST=edusign-app.docker',
@@ -52,7 +53,8 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
       image    => 'docker.sunet.se/edusign-sp',
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
+      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
+                    '/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
                     "SP_HOSTNAME=${_host}",
                     'BACKEND_HOST=edusign-app.docker',
@@ -122,7 +124,8 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
     env      => $env_app_final
   }
 
-  if $facts['sunet_nftables_opt_in'] == 'yes' or ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
+  if $facts['sunet_nftables_opt_in'] == 'yes' or
+    ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
     sunet::nftables::docker_expose { 'signapp' :
       allow_clients => ['130.242.125.110/32', '130.242.125.140/32'],
       port          => '443',
