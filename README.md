@@ -11,4 +11,3 @@ Your configuration specifies to merge with the ref 'refs/heads/main'
 from the remote, but no such ref was fetched.
 ```
 
-
