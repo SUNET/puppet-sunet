@@ -32,6 +32,11 @@ class sunet::dehydrated(
     mode            => '0755'
   }
 
+  $cleanupstring = $cleanup ? {
+    false => '',
+    true  => '--cleanup'
+  }
+
   file {
     '/usr/bin/le-ssl-compat.sh':
       ensure  => 'file',
@@ -62,21 +67,17 @@ class sunet::dehydrated(
       content => template('sunet/dehydrated/dehydrated/hook.sh')
       ;
   }
+  $cmd = '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh'
   exec { 'dehydrated-runonce':
     # Run dehydrated once every time domains.txt changes;
     # UPDATE 2018-02, since we're using the wrapper now Nagios stuff will break if we run the old command
     # command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /usr/sbin/dehydrated -c
     # && /usr/bin/le-ssl-compat.sh',
-    command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh',
+    command     => $cmd,
     refreshonly => true
   }
 
   if ($cron) {
-    if ($cleanup) {
-      $cmd = 'bash -c \'/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/sbin/dehydrated --cleanup && /usr/bin/le-ssl-compat.sh\''
-    } else {
-      $cmd = 'bash -c \'/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh\''
-    }
     sunet::scriptherder::cronjob { 'dehydrated':
       cmd           => $cmd,
       special       => 'daily',

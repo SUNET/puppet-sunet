@@ -27,7 +27,7 @@ find /etc/scriptherder/check -regex '.+/dehydrated_.+' | egrep -v per_domain | x
 do
   echo $line > ${SINGLEDOMAIN}
   JOBNAME="dehydrated_`awk '{ print $1 }' ${SINGLEDOMAIN}`"
-  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_OPTIONS} && /usr/bin/le-ssl-compat.sh
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_OPTIONS} <%= @cleanupstring %> && /usr/bin/le-ssl-compat.sh
   /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
 done
 
