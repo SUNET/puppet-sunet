@@ -63,7 +63,7 @@ class sunet::dehydrated(
       ;
     '/etc/dehydrated/hook.sh':
       ensure  => 'file',
-      content => template('sunet/dehydrated/dehydrated/hook.sh')
+      content => template('sunet/dehydrated/hook.sh.erb')
       ;
   }
   $cmd = '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh'
