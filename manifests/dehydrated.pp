@@ -3,7 +3,6 @@ class sunet::dehydrated(
   Boolean $staging = false,
   Boolean $cron = true,
   Boolean $cleanup = true,
-  String  $src_url = 'https://raw.githubusercontent.com/dehydrated-io/dehydrated/master/dehydrated',
   Array   $allow_clients = [],
   Integer $server_port = 80,
   Integer $ssh_port = 22,
