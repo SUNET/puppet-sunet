@@ -3,6 +3,10 @@
 cd /etc/dehydrated
 test -e private || ln -s certs private
 
+if [ ! -d certs ]; then
+   mkdir certs
+fi
+
 cd certs
 find . -xtype l -exec rm -f \{\} \;
 for domain in *; do
