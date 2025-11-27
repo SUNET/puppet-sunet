@@ -67,6 +67,10 @@ class sunet::dehydrated(
       content => template('sunet/dehydrated/hook.sh.erb'),
       mode    => '0755',
       ;
+    '/etc/dehydrated/scriptherder_template.ini':
+      ensure  => 'file',
+      content => template('sunet/dehydrated/scriptherder_template.ini.erb')
+      ;
   }
   $cmd = '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh'
   exec { 'dehydrated-runonce':
