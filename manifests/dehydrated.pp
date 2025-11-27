@@ -13,7 +13,7 @@ class sunet::dehydrated(
   if $conf !~ Hash {
     fail("Hiera key 'dehydrated' is not a hash")
   }
-  if ! has_key($conf, 'domains') {
+  if ! 'domains' in $conf {
     fail("Hiera hash 'dehydrated' does not contain 'domains'")
     # Old default domains hash if none was set:
     # [{$::fqdn => {"names" => [$::fqdn]}}]
