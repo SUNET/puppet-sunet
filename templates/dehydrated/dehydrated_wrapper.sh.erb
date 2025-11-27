@@ -19,10 +19,6 @@ SCRIPTHERDER_TEMPLATE="/etc/scriptherder/check/dehydrated_per_domain.ini"
 DEHYDRATED="/usr/sbin/dehydrated"
 DEHYDRATED_OPTIONS="--no-lock -c --hook ${HOOKFILE} --config ${CONFIGFILE} "
 
-# Find and delete all check ini-files since they are recreated below (easiest way to make sure 
-# that we're not generating Nagios alerts for domains that have been removed from Lets Encrypt.
-find /etc/scriptherder/check -regex '.+/dehydrated_.+' | egrep -v per_domain | xargs rm
-
 /bin/cat ${DOMAINFILE} | while read line
 do
   echo $line > ${SINGLEDOMAIN}
