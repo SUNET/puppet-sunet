@@ -59,11 +59,13 @@ class sunet::dehydrated(
       ;
     '/etc/dehydrated/dehydrated_wrapper.sh':
       ensure  => 'file',
-      content => template('sunet/dehydrated/dehydrated_wrapper.sh.erb')
+      content => template('sunet/dehydrated/dehydrated_wrapper.sh.erb'),
+      mode    => '0755',
       ;
     '/etc/dehydrated/hook.sh':
       ensure  => 'file',
-      content => template('sunet/dehydrated/hook.sh.erb')
+      content => template('sunet/dehydrated/hook.sh.erb'),
+      mode    => '0755',
       ;
   }
   $cmd = '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh'
@@ -90,7 +92,7 @@ class sunet::dehydrated(
     server_port   => $server_port,
   }
 
-  if has_key($conf, 'clients') {
+  if 'clients' in $conf {
     $clients = $conf['clients']
   } else {
     $clients = false
@@ -104,7 +106,7 @@ class sunet::dehydrated(
       #          $info = {names => [foo.sunet.se],
       #                   clients => [frontend1.sunet.se, frontend2.sunet.se]
       #                  }
-      if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
+      if 'ssh_key_type' in $info and 'ssh_key' in $info {
         sunet::rrsync { "/etc/dehydrated/certs/${domain}":
           ssh_key_type       => $info['ssh_key_type'],
           ssh_key            => $info['ssh_key'],
@@ -119,7 +121,7 @@ class sunet::dehydrated(
       # Make a list of all the domains that list this client in their 'clients' list
       $domain_list1 = $thedomains.map |$domain_hash| {
         $domain_hash.map |$domain, $info| {
-          if has_key($info, 'clients') {
+          if 'clients' in $info {
             if ($client in $info['clients']) {
               $domain
             }
@@ -147,4 +149,3 @@ class sunet::dehydrated(
     port => $ssh_port,
   }
 }
-
