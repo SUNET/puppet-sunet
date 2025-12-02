@@ -66,6 +66,13 @@ class sunet::dehydrated(
       content => template('sunet/dehydrated/scriptherder_template.ini.erb')
       ;
   }
+
+  $encoded_url = base64('encode', 'https://acme-v02.api.letsencrypt.org/directory')
+  exec {
+    cmd => 'dehydrated --register --accept-terms'
+    creates => "/etc/dehydrated/accounts/${encoded_url}/registration_info.json"
+  }
+
   $cmd = '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh'
   exec { 'dehydrated-runonce':
     # Run dehydrated once every time domains.txt changes;
