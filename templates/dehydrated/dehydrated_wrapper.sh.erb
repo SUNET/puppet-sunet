@@ -4,8 +4,7 @@
 # mess up ALL configured domains. It will also, through scriptherder, hopefully highlight problems
 # with domains that are either misconfigured or have any other kind of issues.
 #
-# This is sadly dependent upon /etc/dehydrated/config2 to work. DOMAINS_TXT variable could not be set
-# outside of the configfile and I didn't want to break backwards comp by fiddling with domains.txt.
+# To workaround limits in dehydrated we create a temporary config for each domain.
 #
 # Scriptherder was not meant to be run dynamically, must cheat to create check/ini-files...
 
