@@ -33,6 +33,10 @@ done
 
 <% if @cleanup %>
   JOBNAME="dehydrated_cleanup"
+  JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
+  if [ ! -f "$JOBFILE" ]; then
+    /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
+  fi
   DEHYDRATED_VERB="--cleanup"
   ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} ${DEHYDRATED_OPTIONS} && /usr/bin/le-ssl-compat.sh
 <% end %>
