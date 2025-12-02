@@ -63,7 +63,11 @@ class sunet::dehydrated(
       ;
     '/etc/dehydrated/scriptherder_template.ini':
       ensure  => 'file',
-      content => template('sunet/dehydrated/scriptherder_template.ini.erb')
+      content => template('sunet/dehydrated/scriptherder_template.ini.erb'),
+      ;
+    '/etc/dehydrated/config':
+      ensure  => 'file',
+      content => '# Intentionally left blank for dehydrated',
       ;
   }
 
