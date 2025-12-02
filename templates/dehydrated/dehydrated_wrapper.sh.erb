@@ -21,7 +21,7 @@ DEHYDRATED_VERB="--cron"
 
 /bin/cat ${DOMAINFILE} | while read line
 do
-  SINGLEDOMAIN=$(mktmp)
+  SINGLEDOMAIN=$(mktemp)
   echo $line > ${SINGLEDOMAIN}
   CONFIG_SINGLEDOMAIN="/etc/dehydrated/config-singledomain"
   echo "DOMAINS_TXT=\"${SINGLEDOMAIN}\"" > ${CONFIG_SINGLEDOMAIN} 
