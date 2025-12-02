@@ -6,7 +6,7 @@ class sunet::dehydrated(
   Array   $allow_clients = [],
   Integer $server_port = 80,
   Integer $ssh_port = 22,
-  String $version, 
+  String $version,
 ) {
   $conf = lookup('dehydrated', undef, undef, undef)
   if $conf !~ Hash {
@@ -27,11 +27,6 @@ class sunet::dehydrated(
   sunet::remote_file { '/usr/sbin/dehydrated':
     remote_location => $src_url,
     mode            => '0755'
-  }
-
-  $cleanupstring = $cleanup ? {
-    false => '',
-    true  => '--cleanup'
   }
 
   file {

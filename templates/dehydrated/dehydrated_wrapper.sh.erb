@@ -12,22 +12,29 @@
 SINGLEDOMAIN="/etc/dehydrated/one-domain.txt"
 DOMAINFILE="/etc/dehydrated/domains.txt"
 HOOKFILE="/etc/dehydrated/hook.sh"
-CONFIGFILE="/etc/dehydrated/config2"
+CONFIGFILE="/etc/dehydrated/config"
 SCRIPTHERDER="/usr/local/bin/scriptherder"
 SCRIPTHERDER_OPTIONS="--mode wrap --syslog --name "
 SCRIPTHERDER_TEMPLATE="/etc/dehydrated/scriptherder_template.ini"
 DEHYDRATED="/usr/sbin/dehydrated"
-DEHYDRATED_OPTIONS="--no-lock -c --hook ${HOOKFILE} --config ${CONFIGFILE} "
+DEHYDRATED_OPTIONS="--no-lock --hook ${HOOKFILE} --config ${CONFIGFILE} "
+DEHYDRATED_VERB="--cron"
 
 /bin/cat ${DOMAINFILE} | while read line
 do
   echo $line > ${SINGLEDOMAIN}
   JOBNAME="dehydrated_`awk '{ print $1 }' ${SINGLEDOMAIN}`"
-  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_OPTIONS} <%= @cleanupstring %> && /usr/bin/le-ssl-compat.sh
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} ${DEHYDRATED_OPTIONS} && /usr/bin/le-ssl-compat.sh
   JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
   if [ ! -f "$JOBFILE" ]; then
     /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
   fi
 done
+
+<% if @cleanup %>
+  JOBNAME="dehydrated_cleanup"
+  DEHYDRATED_VERB="--cleanup"
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} ${DEHYDRATED_OPTIONS} && /usr/bin/le-ssl-compat.sh
+<% end %>
 
 exit 0
