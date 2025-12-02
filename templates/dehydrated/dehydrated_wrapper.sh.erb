@@ -9,7 +9,6 @@
 #
 # Scriptherder was not meant to be run dynamically, must cheat to create check/ini-files...
 
-SINGLEDOMAIN="/etc/dehydrated/one-domain.txt"
 DOMAINFILE="/etc/dehydrated/domains.txt"
 HOOKFILE="/etc/dehydrated/hook.sh"
 CONFIGFILE="/etc/dehydrated/config"
@@ -22,13 +21,18 @@ DEHYDRATED_VERB="--cron"
 
 /bin/cat ${DOMAINFILE} | while read line
 do
+  SINGLEDOMAIN=$(mktmp)
   echo $line > ${SINGLEDOMAIN}
+  CONFIG_SINGLEDOMAIN="/etc/dehydrated/config-singledomain"
+  echo "DOMAINS_TXT=\"${SINGLEDOMAIN}\"" > ${CONFIG_SINGLEDOMAIN} 
   JOBNAME="dehydrated_`awk '{ print $1 }' ${SINGLEDOMAIN}`"
   ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} ${DEHYDRATED_OPTIONS} && /usr/bin/le-ssl-compat.sh
   JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
   if [ ! -f "$JOBFILE" ]; then
     /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
   fi
+  rm ${SINGLEDOMAIN}
+  rm ${CONFIG_SINGLEDOMAIN}
 done
 
 <% if @cleanup %>
