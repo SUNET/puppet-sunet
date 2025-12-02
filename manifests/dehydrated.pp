@@ -68,7 +68,7 @@ class sunet::dehydrated(
   }
 
   $encoded_url = base64('encode', 'https://acme-v02.api.letsencrypt.org/directory')
-  exec {
+  exec { 'dehydrated-registration':
     command => 'dehydrated --register --accept-terms',
     creates => "/etc/dehydrated/accounts/${encoded_url}/registration_info.json"
   }
