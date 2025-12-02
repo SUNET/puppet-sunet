@@ -72,7 +72,7 @@ class sunet::dehydrated(
     creates => "/etc/dehydrated/accounts/${encoded_url}/registration_info.json"
   }
 
-  $cmd = '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh'
+  $cmd = '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /etc/dehydrated/dehydrated_wrapper.sh'
   exec { 'dehydrated-runonce':
     # Run dehydrated once every time domains.txt changes;
     # UPDATE 2018-02, since we're using the wrapper now Nagios stuff will break if we run the old command
@@ -84,7 +84,7 @@ class sunet::dehydrated(
 
   if ($cron) {
     sunet::scriptherder::cronjob { 'dehydrated':
-      cmd           => $cmd,
+      cmd           => '/etc/dehydrated/dehydrated_wrapper.sh',
       special       => 'daily',
       ok_criteria   => ['exit_status=0','max_age=4d'],
       warn_criteria => ['exit_status=1','max_age=8d'],
