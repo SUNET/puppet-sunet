@@ -21,8 +21,6 @@ class sunet::dehydrated(
   if $thedomains !~ Array[Hash] {
     fail("Unknown format of 'domains' - bailing out (why it should be a list of hashes instead of just a hash I do not know)")
   }
-
-  $ca = 'https://acme-v02.api.letsencrypt.org/directory'
   
   ensure_resource('package','openssl',{ensure=>'latest'})
   $src_url = "https://raw.githubusercontent.com/dehydrated-io/dehydrated/refs/tags/${version}/dehydrated"
@@ -47,10 +45,6 @@ class sunet::dehydrated(
     '/etc/dehydrated':
       ensure => 'directory',
       mode   => '0600',
-      ;
-    '/etc/dehydrated/config':
-      ensure  => 'file',
-      content => template('sunet/dehydrated/config.erb')
       ;
     '/etc/dehydrated/domains.txt':
       ensure  => 'file',
