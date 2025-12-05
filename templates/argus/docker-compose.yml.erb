@@ -15,7 +15,7 @@ services:
       - TIME_ZONE=Europe/Oslo
       - DJANGO_SETTINGS_MODULE=argus.site.settings.localsettings
       - DATABASE_URL=postgresql://argus:<%= scope.call_function('safe_hiera',['argus_db_password']) %>@postgres/argus
-      - ARGUS_FRONTEND_URL=<%= @url%>
+      - ARGUS_FRONTEND_URL=https://<%= @url%>
       - EMAIL_HOST=<%= scope.call_function('safe_hiera',['argus_email_host']) %>
       - EMAIL_HOST_USER=<%= scope.call_function('safe_hiera',['argus_email_user']) %>
       - EMAIL_HOST_PASSWORD=<%= scope.call_function('safe_hiera',['argus_email_password']) %>
