@@ -48,7 +48,7 @@ class sunet::argus::server (
     }
 
     if $argus_clients != '' {
-        $argus_allow_networks = hiera_array($argus_clients,[])
+        $argus_allow_networks = lookup($argus_clients, undef, undef, [])
         $argus_interface = safe_hiera('argus_interface',$facts['interface_default'])
         sunet::nftables::docker_expose { 'allow_https' :
             allow_clients   => $argus_allow_networks,
