@@ -61,6 +61,9 @@ if [[ "${bootstrap}" == 0 ]]; then
 	rm -vrf "${targetdir}"
 fi
 
+# Don't expand the glob to itself if no matching hooks
+# Not all services do need hooks
+shopt -s nullglob
 for cert in "${certs_to_deploy[@]}"; do
 	for hook in "$hookdir"/*; do
 		echo "Running deploy hook ${hook} for ${cert}."
