@@ -26,6 +26,17 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
   $edusign_idp_entityid = hiera('edusign_idp_entityid', '')
   $edusign_metadata_file = hiera('edusign_metadata_file', '')
 
+  $env_sp = ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
+             "SP_HOSTNAME=${_host}",
+             'BACKEND_HOST=edusign-app.docker',
+             'MAX_FILE_SIZE=20M',
+             'ACMEPROXY=acme-c.sunet.se',
+             'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
+             "MULTISIGN_BUTTONS=${invites}",
+             'MDQ_BASE_URL=https://mds.swamid.se/',
+             'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt'
+  ]
+
   if ($edusign_idp_entityid == '') {
     sunet::docker_run{'edusign-sp':
       ensure   => $ensure,
@@ -33,15 +44,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
       volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
-      env      => ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
-                    "SP_HOSTNAME=${_host}",
-                    'BACKEND_HOST=edusign-app.docker',
-                    'MAX_FILE_SIZE=20M',
-                    'ACMEPROXY=acme-c.sunet.se',
-                    'DISCO_URL=https://service.seamlessaccess.org/ds',
-                    "MULTISIGN_BUTTONS=${invites}",
-                    'MDQ_BASE_URL=https://mds.swamid.se/',
-                    'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt'],
+      env      => $env_sp
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
     }
@@ -53,15 +56,7 @@ class sunet::edusign::app($version='latest', $profile='edusign-test', $host=unde
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
       volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
-      env      => ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
-                    "SP_HOSTNAME=${_host}",
-                    'BACKEND_HOST=edusign-app.docker',
-                    'MAX_FILE_SIZE=20M',
-                    'ACMEPROXY=acme-c.sunet.se',
-                    'DISCO_URL=https://service.seamlessaccess.org/ds',
-                    "MULTISIGN_BUTTONS=${invites}",
-                    'MDQ_BASE_URL=https://mds.swamid.se/',
-                    'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt'],
+      env      => $env_sp
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
     }
