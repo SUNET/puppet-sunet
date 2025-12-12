@@ -9,7 +9,7 @@ services:
 <% end -%>
     ports:
       - 1812:1812/udp
-    command: -X
+    command: -f -l stdout
     volumes:
       - "/opt/geteduroam/cert:/etc/freeradius/certs:ro"
       - "/opt/geteduroam/config/radiusd.conf:/etc/freeradius/radiusd.conf:ro"
