@@ -34,6 +34,10 @@ class sunet::geteduroam::radius(
     content => template('sunet/geteduroam/eap.conf.erb'),
     mode    => '0755',
   }
+  file { '/opt/geteduroam/config/spoof-check.conf':
+    content => file('sunet/geteduroam/spoof-check.conf.erb'),
+    mode    => '0755',
+  }
 
   sunet::docker_compose { 'geteduroam':
     content          => template('sunet/geteduroam/docker-compose-radius.yml.erb'),

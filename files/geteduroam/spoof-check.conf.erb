@@ -1,0 +1,18 @@
+server check-eap-tls {
+  authorize {
+
+    # Make sure that the domain/realm Common Name matches the outer realm in order to prevent realm spoofing
+    if (&TLS-Client-Cert-Common-Name =~ /\@(.*)$/) {
+      if (&Stripped-User-Domain == "%{1}") {
+        update config {
+          Auth-Type = Accept
+        }
+      }
+      else {
+        update config {
+          Auth-Type = Reject
+        }
+      }
+    }
+  }
+}
