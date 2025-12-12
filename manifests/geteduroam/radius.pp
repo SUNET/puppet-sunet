@@ -40,11 +40,11 @@ class sunet::geteduroam::radius(
     mode    => '0755',
   }
   file { '/opt/geteduroam/config/spoof-check.conf':
-    content => file('sunet/geteduroam/spoof-check.conf.erb'),
+    content => file('sunet/geteduroam/spoof-check.conf'),
     mode    => '0755',
   }
   file { '/opt/geteduroam/config/geteduroam.conf':
-    content => file('sunet/geteduroam/geteduroam.conf.erb'),
+    content => file('sunet/geteduroam/geteduroam.conf'),
     mode    => '0755',
   }
 
