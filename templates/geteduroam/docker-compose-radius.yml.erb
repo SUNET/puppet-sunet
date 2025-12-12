@@ -15,6 +15,7 @@ services:
       - "/opt/geteduroam/config/clients.conf:/etc/raddb/clients.conf:ro"
       - "/opt/geteduroam/config/eap.conf:/etc/raddb/mods-enabled/eap:ro"
       - "/opt/geteduroam/config/spoof-check.conf:/etc/raddb/sites-enabled/spoof-check:ro"
+      - "/opt/geteduroam/config/geteduroam.conf:/etc/raddb/sites-enabled/geteduroam:ro"
 
 <% if @ocsp %>
   ocsp:
