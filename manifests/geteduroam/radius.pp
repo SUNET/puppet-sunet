@@ -24,6 +24,11 @@ class sunet::geteduroam::radius(
     content => file('sunet/geteduroam/certbot-renewal-hook'),
   }
 
+  file { '/opt/geteduroam/config/radiusd.conf':
+    content => file('sunet/geteduroam/radiusd.conf'),
+    mode    => '0755',
+  }
+
   $shared_secret = lookup('shared_secret', undef, undef, undef)
   file { '/opt/geteduroam/config/clients.conf':
     content => template('sunet/geteduroam/clients.conf.erb'),
