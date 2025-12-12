@@ -30,12 +30,9 @@ class sunet::geteduroam::radius(
     mode    => '0755',
   }
 
-  if $ocsp {
-      file { '/opt/geteduroam/config/eap.conf':
-        content => template('sunet/geteduroam/eap.conf.erb'),
-        mode    => '0755',
-        }
-
+  file { '/opt/geteduroam/config/eap.conf':
+    content => template('sunet/geteduroam/eap.conf.erb'),
+    mode    => '0755',
   }
 
   sunet::docker_compose { 'geteduroam':

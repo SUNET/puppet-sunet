@@ -13,9 +13,7 @@ services:
     volumes:
       - "/opt/geteduroam/cert:/etc/raddb/certs:ro"
       - "/opt/geteduroam/config/clients.conf:/etc/raddb/clients.conf:ro"
-<% if @ocsp %>
-      - "/opt/geteduroam/config/eap.conf:/etc/raddb/mods-enabled/eap-eduroam:ro"
-<% end %>
+      - "/opt/geteduroam/config/eap.conf:/etc/raddb/mods-enabled/eap:ro"
 
 <% if @ocsp %>
   ocsp:
