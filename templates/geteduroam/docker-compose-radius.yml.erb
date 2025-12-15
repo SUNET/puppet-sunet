@@ -9,13 +9,14 @@ services:
 <% end -%>
     ports:
       - 1812:1812/udp
-    command: -X
+    command: -f -l stdout
     volumes:
-      - "/opt/geteduroam/cert:/etc/raddb/certs:ro"
-      - "/opt/geteduroam/config/clients.conf:/etc/raddb/clients.conf:ro"
-<% if @ocsp %>
-      - "/opt/geteduroam/config/eap.conf:/etc/raddb/mods-enabled/eap-eduroam:ro"
-<% end %>
+      - "/opt/geteduroam/cert:/etc/freeradius/certs:ro"
+      - "/opt/geteduroam/config/radiusd.conf:/etc/freeradius/radiusd.conf:ro"
+      - "/opt/geteduroam/config/clients.conf:/etc/freeradius/clients.conf:ro"
+      - "/opt/geteduroam/config/eap.conf:/etc/freeradius/mods-enabled/eap:ro"
+      - "/opt/geteduroam/config/spoof-check.conf:/etc/freeradius/sites-enabled/spoof-check:ro"
+      - "/opt/geteduroam/config/geteduroam.conf:/etc/freeradius/sites-enabled/geteduroam:ro"
 
 <% if @ocsp %>
   ocsp:
