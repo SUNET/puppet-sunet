@@ -24,18 +24,28 @@ class sunet::geteduroam::radius(
     content => file('sunet/geteduroam/certbot-renewal-hook'),
   }
 
+  file { '/opt/geteduroam/config/radiusd.conf':
+    content => file('sunet/geteduroam/radiusd.conf'),
+    mode    => '0755',
+  }
+
   $shared_secret = lookup('shared_secret', undef, undef, undef)
   file { '/opt/geteduroam/config/clients.conf':
     content => template('sunet/geteduroam/clients.conf.erb'),
     mode    => '0755',
   }
 
-  if $ocsp {
-      file { '/opt/geteduroam/config/eap.conf':
-        content => template('sunet/geteduroam/eap.conf.erb'),
-        mode    => '0755',
-        }
-
+  file { '/opt/geteduroam/config/eap.conf':
+    content => template('sunet/geteduroam/eap.conf.erb'),
+    mode    => '0755',
+  }
+  file { '/opt/geteduroam/config/spoof-check.conf':
+    content => file('sunet/geteduroam/spoof-check.conf'),
+    mode    => '0755',
+  }
+  file { '/opt/geteduroam/config/geteduroam.conf':
+    content => file('sunet/geteduroam/geteduroam.conf'),
+    mode    => '0755',
   }
 
   sunet::docker_compose { 'geteduroam':
