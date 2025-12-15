@@ -49,7 +49,8 @@ class sunet::edusign::app(
       image    => 'docker.sunet.se/edusign-sp',
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
+      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
+                    '/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => $env_sp,
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
@@ -61,7 +62,8 @@ class sunet::edusign::app(
       image    => 'docker.sunet.se/edusign-sp',
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro','/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
+      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
+                    '/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => $env_sp,
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
@@ -123,7 +125,8 @@ class sunet::edusign::app(
     env      => $env_app_final
   }
 
-  if $facts['sunet_nftables_opt_in'] == 'yes' or ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
+  if $facts['sunet_nftables_opt_in'] == 'yes' or
+    ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
     sunet::nftables::docker_expose { 'signapp' :
       allow_clients => $loadbalancers,
       port          => '443',

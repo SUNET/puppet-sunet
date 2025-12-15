@@ -4,6 +4,10 @@ class sunet::mariadb::backup(
   Array[String] $dns = [],
   Boolean $backup_to_baas = true,
   Boolean $nrpe = true,
+  String  $backup_hour = '06',
+  String  $backup_minute = '10',
+  Integer $backup_max_age = 24,
+  Integer $local_retension = 31,
 ) {
 
   sunet::mariadb { 'sunet_mariadb_simple':
@@ -41,9 +45,9 @@ class sunet::mariadb::backup(
 
     sunet::scriptherder::cronjob { 'backup2baas':
       cmd           => '/usr/local/bin/backup2baas',
-      hour          => '6',
-      minute        => '10',
-      ok_criteria   => ['exit_status=0', 'max_age=24h'],
+      hour          => $backup_hour,
+      minute        => $backup_minute,
+      ok_criteria   => ['exit_status=0', "max_age=${backup_max_age}h"],
       warn_criteria => ['exit_status=1'],
     }
   }
