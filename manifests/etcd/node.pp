@@ -28,7 +28,7 @@ class sunet::etcd::node(
 {
   include stdlib
 
-  $hostname = $facts['networking']['fqdn']
+  $hostname = $facts['networking']['hostname']
 
   if $infra_cert_from_this_class {
     sunet::ici_ca::rp { 'infra': }
