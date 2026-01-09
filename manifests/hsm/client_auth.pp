@@ -3,6 +3,18 @@ define sunet::hsm::client_auth (
   String $mode = '0750',
 ) {
 
+  file { '/usr/safenet/':
+    ensure => 'directory',
+    mode   => $mode,
+  }
+  file { '/usr/safenet/lunaclient/':
+    ensure => 'directory',
+    mode   => $mode,
+  }
+  file { '/usr/safenet/lunaclient/cert/':
+    ensure => 'directory',
+    mode   => $mode,
+  }
   file { '/usr/safenet/lunaclient/cert/client/':
     ensure => 'directory',
     mode   => $mode,
