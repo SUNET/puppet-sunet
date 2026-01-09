@@ -25,4 +25,14 @@ define sunet::hsm::client_auth (
     key_file  => "/usr/safenet/lunaclient/cert/client/${me}Key.pem",
     cert_file => "/usr/safenet/lunaclient/cert/client/${me}.pem"
   }
+
+  file { "/usr/safenet/lunaclient/cert/client/${server_fqdn}.pem":
+    ensure => file,
+    mode   => $mode,
+  }
+
+  file { "/usr/safenet/lunaclient/cert/client/${server_fqdn}Key.pem":
+    ensure => file,
+    mode   => $mode,
+  }
 }

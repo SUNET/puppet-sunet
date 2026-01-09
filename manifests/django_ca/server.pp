@@ -71,16 +71,6 @@ class sunet::django_ca::server (
       hsm_servers => $hsm_servers,
   }
 
-  file { "/usr/safenet/lunaclient/cert/client/${server_fqdn}.pem":
-    ensure => file,
-    mode   => '0755',
-  }
-
-  file { "/usr/safenet/lunaclient/cert/client/${server_fqdn}Key.pem":
-    ensure => file,
-    mode   => '0755',
-  }
-
   # Wrapper to easier access django-ca
   file { '/usr/local/bin/django-ca':
     ensure  => file,
