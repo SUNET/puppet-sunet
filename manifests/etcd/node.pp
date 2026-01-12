@@ -28,6 +28,8 @@ class sunet::etcd::node(
 {
   include stdlib
 
+  $hostname = $facts['networking']['hostname']
+
   if $infra_cert_from_this_class {
     sunet::ici_ca::rp { 'infra': }
   }
@@ -45,11 +47,11 @@ class sunet::etcd::node(
 
   # Use infra-cert per default if cert/key/ca file not supplied
   $cert_file = $tls_cert_file ? {
-    undef => $facts['tls_certificates'][$::fqdn]['infra_cert'],
+    undef => $facts['tls_certificates'][$facts['networking']['fqdn']]['infra_cert'],
     default => $tls_cert_file,
   }
   $key_file = $tls_key_file ? {
-    undef => $facts['tls_certificates'][$::fqdn]['infra_key'],
+    undef => $facts['tls_certificates'][$facts['networking']['fqdn']]['infra_key'],
     default => $tls_key_file,
   }
   $trusted_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
