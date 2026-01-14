@@ -13,7 +13,7 @@ class sunet::mariadb::backup(
 
   sunet::mariadb { 'sunet_mariadb_simple':
     mariadb_version => $mariadb_version,
-    mariadb_version => $mariadb_image,
+    mariadb_image   => $mariadb_image,
     ports           => [3306],
     dns             => $dns,
     galera          => false,
