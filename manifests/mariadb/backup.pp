@@ -1,6 +1,7 @@
 # This is a asyncronous replica of the Maria DB Cluster for SUNET
 class sunet::mariadb::backup(
   String $mariadb_version=latest,
+  String $mariadb_image='docker.sunet.se/drive/mariadb',
   Array[String] $dns = [],
   Boolean $backup_to_baas = true,
   Boolean $nrpe = true,
@@ -12,6 +13,7 @@ class sunet::mariadb::backup(
 
   sunet::mariadb { 'sunet_mariadb_simple':
     mariadb_version => $mariadb_version,
+    mariadb_version => $mariadb_image,
     ports           => [3306],
     dns             => $dns,
     galera          => false,
