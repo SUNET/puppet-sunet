@@ -112,6 +112,13 @@ class sunet::etcd::node(
     owner   => 'root',
     content => file('sunet/etcd/check-etcd-status.py')
   }
+  # sudo exceptions
+  file { '/etc/sudoers.d/sudoers-etcd':
+    ensure  => 'file',
+    mode    => '0440',
+    owner   => 'root',
+    content => file('sunet/etcd/sudoers-etcd')
+  }
   # NRPE commands file
   file { '/etc/nagios/nrpe.d/nrpe-etcd.cfg':
     ensure  => 'file',
