@@ -8,7 +8,7 @@ args="$common_args                 \
   --cert <%= @cert_file %>"
 
 
-exec docker exec -it etcd \
-  /usr/local/bin/etcdctl  \
-  $args                   \
+exec docker exec etcd    \
+  /usr/local/bin/etcdctl \
+  $args                  \
   $*
