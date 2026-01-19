@@ -71,7 +71,7 @@ class sunet::etcd::node(
     '/usr/local/bin/etcdctl':
       owner   => 'root',
       group   => 'root',
-      mode    => '0750',
+      mode    => '0755',
       content => template('sunet/etcd/etcdctl.erb'),
       ;
   }
