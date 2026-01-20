@@ -119,6 +119,13 @@ class sunet::django_ca::server (
     owner   => 'root',
     content => file('sunet/django-ca/nrpe-djangoca.cfg')
   }
+  # sudo exceptions
+  file { '/etc/sudoers.d/sudoers-djangoca':
+    ensure  => 'file',
+    mode    => '0440',
+    owner   => 'root',
+    content => file('sunet/django-ca/sudoers-djangoca')
+  }
   # Custom monitoring scripts
   file { '/usr/local/sbin/check-djangoca-status':
     ensure  => 'file',
