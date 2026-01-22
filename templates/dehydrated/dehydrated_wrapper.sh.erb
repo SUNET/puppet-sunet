@@ -18,7 +18,14 @@ DEHYDRATED="/usr/sbin/dehydrated"
 DEHYDRATED_OPTIONS="--no-lock --hook ${HOOKFILE} --config ${CONFIGFILE} "
 DEHYDRATED_VERB="--cron"
 
-/bin/cat ${DOMAINFILE} | while read line
+DOMAINFILE_TEMP="$(mktemp)" 
+if [[ -n "$1" ]]; then
+  grep "^$1" "${DOMAINFILE}" > "${DOMAINFILE_TEMP}"
+else
+  cp "${DOMAINFILE}" "${DOMAINFILE_TEMP}"
+fi
+
+/bin/cat "${DOMAINFILE_TEMP}" | while read line
 do
   SINGLEDOMAIN=$(mktemp)
   echo $line > ${SINGLEDOMAIN}
@@ -33,6 +40,7 @@ do
   rm ${SINGLEDOMAIN}
   rm ${CONFIG_SINGLEDOMAIN}
 done
+rm "${DOMAINFILE_TEMP}"
 
 <% if @cleanup %>
   JOBNAME="dehydrated_cleanup"
