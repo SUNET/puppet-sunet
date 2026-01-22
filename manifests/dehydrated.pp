@@ -1,12 +1,12 @@
 # dehydrated
 class sunet::dehydrated(
+  String $version,
   Boolean $staging = false,
   Boolean $cron = true,
   Boolean $cleanup = true,
   Array   $allow_clients = [],
   Integer $server_port = 80,
   Integer $ssh_port = 22,
-  String $version,
 ) {
   $conf = lookup('dehydrated', undef, undef, undef)
   if $conf !~ Hash {
@@ -21,7 +21,7 @@ class sunet::dehydrated(
   if $thedomains !~ Array[Hash] {
     fail("Unknown format of 'domains' - bailing out (why it should be a list of hashes instead of just a hash I do not know)")
   }
-  
+
   ensure_resource('package','openssl',{ensure=>'latest'})
   $src_url = "https://raw.githubusercontent.com/dehydrated-io/dehydrated/refs/tags/${version}/dehydrated"
   sunet::remote_file { '/usr/sbin/dehydrated':
