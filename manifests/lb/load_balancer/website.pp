@@ -224,8 +224,8 @@ define sunet::lb::load_balancer::website(
       $saddr_v4 = sunet::format_nft_set('saddr', filter($config['allow_ips']) | $this | { is_ipaddr($this, 4) })
       $saddr_v6 = sunet::format_nft_set('saddr', filter($config['allow_ips']) | $this | { is_ipaddr($this, 6) })
     } elsif $config['allow_prefixes_by_tag'] {
-      $saddr_v4 = sunet::format_nft_set('saddr', sunet_prefixes({tags => [$config['allow_nets_by_tag']], family=>'ip'}))
-      $saddr_v6 = sunet::format_nft_set('saddr', sunet_prefixes({tags => [$config['allow_nets_by_tag']], family=>'ip6'}))
+      $saddr_v4 = sunet::format_nft_set('saddr', sunet_prefixes({tags => $config['allow_nets_by_tag'], family=>'ip'}))
+      $saddr_v6 = sunet::format_nft_set('saddr', sunet_prefixes({tags => $config['allow_nets_by_tag'], family=>'ip6'}))
     } else {
       $saddr = sunet::format_nft_set('saddr', 'any')
     }
