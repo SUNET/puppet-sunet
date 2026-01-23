@@ -71,16 +71,6 @@ class sunet::django_ca::server (
       hsm_servers => $hsm_servers,
   }
 
-  file { "/usr/safenet/lunaclient/cert/client/${server_fqdn}.pem":
-    ensure => file,
-    mode   => '0755',
-  }
-
-  file { "/usr/safenet/lunaclient/cert/client/${server_fqdn}Key.pem":
-    ensure => file,
-    mode   => '0755',
-  }
-
   # Wrapper to easier access django-ca
   file { '/usr/local/bin/django-ca':
     ensure  => file,
@@ -128,6 +118,13 @@ class sunet::django_ca::server (
     mode    => '0644',
     owner   => 'root',
     content => file('sunet/django-ca/nrpe-djangoca.cfg')
+  }
+  # sudo exceptions
+  file { '/etc/sudoers.d/sudoers-djangoca':
+    ensure  => 'file',
+    mode    => '0440',
+    owner   => 'root',
+    content => file('sunet/django-ca/sudoers-djangoca')
   }
   # Custom monitoring scripts
   file { '/usr/local/sbin/check-djangoca-status':

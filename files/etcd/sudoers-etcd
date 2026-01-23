@@ -1,0 +1,2 @@
+# Allow nagios user to sudo when executing check-etcd-status
+nagios   ALL = NOPASSWD:/usr/local/sbin/check-etcd-status.py
