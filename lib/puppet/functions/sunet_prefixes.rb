@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-Puppet::Functions.create_function(:sunet_servers) do
+Puppet::Functions.create_function(:sunet_prefixes) do
   dispatch :sunet_servers do
     optional_param 'Struct[{
       Optional[tags] => Array[Enum["knubbis","infraca"]],
