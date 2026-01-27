@@ -1,0 +1,13 @@
+[patroni]
+pg1-path=/home/postgres/data/patroni-postgres
+archive-async=y
+spool-path=/var/spool/pgbackrest
+archive-push-queue-max=46MB
+
+[global]
+log-level-file=detail
+repo1-host=<%= @backup_host %>
+repo1-host-config=/etc/pgbackrest/pgbackrest.conf
+
+[global:archive-push]
+process-max=2
