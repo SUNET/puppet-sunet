@@ -52,6 +52,6 @@ postgresql:
     unix_socket_directories: '..'  # parent directory of data_dir
 <% if @pgbackrest == true %>
     archive_mode: on
-    archive_command = 'pgbackrest --stanza=patroni archive-push %p'
-    archive_timeout = 300
+    archive_command: 'pgbackrest --stanza=patroni archive-push %p'
+    archive_timeout: 300
 <% end %>
