@@ -5,6 +5,7 @@ class sunet::patroni::node(
   Integer $postgres_port = 5432,
   String $patroni_imagetag = '4.1.0',
   Boolean $pgbackrest = false,
+  String $backup_host = '127.0.0.1',
 ) {
 
   $myself = $facts['networking']['fqdn'] # Use with connect_addr
@@ -74,6 +75,14 @@ class sunet::patroni::node(
     owner   => 'root',
     content => file('sunet/patroni/nrpe-patroni.cfg')
   }
+
+  if ($pgbackrest) {
+    file { '/opt/patroni/config/pgbackrest.conf':
+      content => template('sunet/patroni/pgbackrest.conf.erb'),
+      mode    => '0755',
+    }
+  }
+
 
   sunet::docker_compose { 'patroni':
     content          => template('sunet/patroni/docker-compose-patroni-node.yml.erb'),

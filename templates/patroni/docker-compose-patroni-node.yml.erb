@@ -12,5 +12,9 @@ services:
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
       - '/opt/patroni/data:/home/postgres/data:rw'
       - '/opt/patroni/certs:/opt/patroni/certs:ro'
+      <% if @pgbackrest == true %>
+      - '/opt/patroni/config/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro'
+      <% end %>
+
     entrypoint: /usr/bin/python3
     command: /patroni.py patroni.yml
