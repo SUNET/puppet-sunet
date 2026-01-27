@@ -101,4 +101,16 @@ class sunet::server (
   if $facts['dmi']['product']['name'] =~ /OpenStack\s(Compute|Nova)/ {
     class { 'sunet::iaas::server': }
   }
+
+  file { '/etc/default/grub.d/99-sunet-grub-menu.cfg':
+    ensure  => present,
+    content => file('sunet/server/99-sunet-grub-menu.cfg'),
+    notify  => Exec['sunet_server_update_grub'],
+
+  }
+  exec { 'sunet_server_update_grub':
+    command     => '/usr/sbin/update-grub',
+    refreshonly => true,
+  }
+
 }
