@@ -1,6 +1,7 @@
 # acmed - automatated
 class sunet::certbot::acmed(
   String $server = 'https://acme-d.sunet.se',
+  String $ca_url = 'https://acme-v02.api.letsencrypt.org/directory',
 ){
 
   include sunet::packages::certbot
@@ -20,7 +21,7 @@ class sunet::certbot::acmed(
   $domain_arg = join($acmed_clients.keys, ' -d ')
 
   exec {'certbot_issuing':
-    command     => "certbot certonly --no-eff-email --agree-tos -m noc@sunet.se --manual --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py --preferred-challenges dns -d ${domain_arg}",
+    command     => "certbot certonly --server ${ca_url} --no-eff-email --agree-tos -m noc@sunet.se --manual --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py --preferred-challenges dns -d ${domain_arg}",
     refreshonly => true,
   }
 }
