@@ -28,16 +28,17 @@ class sunet::patroni::node(
   }
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
 
-  ensure_resource('sunet::misc::create_dir', '/opt/patroni/data/', { owner   => '999', group => 'root', mode => '0750'})
-  ensure_resource('sunet::misc::create_dir', '/opt/patroni/certs/', { owner  => '999', group => 'root', mode => '0750'})
+  ensure_resource('sunet::misc::create_dir', '/opt/patroni/certs/', { owner  => 'root', group => 'root', mode => '0755'})
 
   # The patroni image is hardcorded to use a user which we cant override or set correct permissions for.
   if (find_file($infra_cert)) {
     file { $postgres_cert:
         ensure => 'file',
         source => $infra_cert,
-        owner  => 999,
-        group  => 999,
+        owner  => 'root',
+        group  => 'root',
+        mode   => '0755',
+
     }
   }
 
