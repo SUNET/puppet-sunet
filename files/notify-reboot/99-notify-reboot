@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+# Don't notify if triggered by hand.
+if ! tty -s; then
+	exit 0
+fi
+
+# Notification intended for reboot by cosmos only
+if [[ ${MOLLYGUARD_CMD} != "reboot" ]]; then
+	exit 0
+fi
+
+CONF="/etc/sunet-notify-reboot"
+
+if [[ ! -f "${CONF}" ]]; then
+	# No config - no notifications
+	exit 0
+else
+	# shellcheck source=/dev/null
+	. "${CONF}"
+fi
+
+if [[ -z "${SLACK_URL}" ]]; then
+	# No url - no notifications
+	exit 0
+fi
+
+fqdn=$(hostname -f)
+recover_notifier="/etc/sunet-machine-healthy/health-checks.d/99-notify-unlock.check"
+notify_file="/etc/sunet-notify-reboot-unlock"
+recover_message=""
+
+if [ -f "${recover_notifier}" ]; then
+	touch "${notify_file}"
+	recover_message=" Will report back when the machine is healthy again."
+fi
+curl --max-time 30 -X POST -H 'Content-type: application/json' --data "{'text':\"${fqdn} is about to reboot.${recover_message}\"}" "${SLACK_URL}" || true
+
+# Don't prevent reboot if something when bad above.
+exit 0
