@@ -16,7 +16,7 @@ if [[ -f "${notify_file}" ]]; then
 	fi
 	fqdn=$(hostname -f)
 
-	curl --max-time 30 -X POST -H 'Content-type: application/json' --data "{'text':\"${fqdn} is healthy and again.\"}" "${SLACK_URL}" || true
+	curl --max-time 30 -X POST -H 'Content-type: application/json' --data "{'text':\"${fqdn} is healthy and running again.\"}" "${SLACK_URL}" || true
 
 fi
 
