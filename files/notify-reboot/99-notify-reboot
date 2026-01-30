@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 # Don't notify if triggered by hand.
-if ! tty -s; then
+# "-t 1" == check for stdout
+if [[ -t 1 ]]; then
 	exit 0
 fi
 
