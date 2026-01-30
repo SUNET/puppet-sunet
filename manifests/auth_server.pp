@@ -10,6 +10,7 @@ define sunet::auth_server(
     String $base_dir         = '/opt/sunet',
     Boolean $saml_sp         = false,
     String $pysaml2_base_url = "https://$::fqdn/saml2/sp",
+    String $pyff_version     = '2.0.0',
 ) {
 
     ensure_resource('sunet::system_user', $username, {
