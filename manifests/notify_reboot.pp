@@ -10,7 +10,7 @@ class sunet::notify_reboot(
         content => file('sunet/notify-reboot/99-notify-reboot'),
     }
 
-    $slack_url = lookup('notity_reboot_slack_url', String, undef, undef)
+    $slack_url = lookup('notity_reboot_slack_url', String, undef, '')
 
     if ($slack_url) {
       file { '/etc/sunet-notify-reboot':
