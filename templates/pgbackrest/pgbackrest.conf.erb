@@ -4,7 +4,7 @@ repo1-retention-full-type=time
 repo1-retention-full=<%= @retention_full_days %>
 
 [patroni]
-<% @counter = 0 %>
+<% @counter = 1 %>
 <% @db_nodes.each do |node | -%>
 pg<%= @counter %>-host=<%= node %>
 pg<%= @counter %>-path=/var/lib/postgresql/data
