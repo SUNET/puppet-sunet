@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Don't notify if triggered by hand.
-# "-t 1" == check for stdout
+# -t FD  file descriptor FD is opened on a terminal
 if [[ -t 1 ]]; then
 	exit 0
 fi
