@@ -86,7 +86,7 @@ class sunet::pgbackrest::repo (
       sunet::scriptherder::cronjob { 'pgbackrest_diff_backup':
         cmd         => "pgbackrest --stanza=${pg_stanza} --type=diff backup",
         minute      => '10',
-        hour        => '0,1,2,3,5-23',
+        hour        => '0,1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23',
         ok_criteria => ['exit_status=0', 'max_age=1d'],
       }
     }
