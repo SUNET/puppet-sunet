@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+notify_file="/etc/sunet-notify-reboot-unlock"
+if [[ -f "${notify_file}" ]]; then
+	# Prevent spam and only try one even if we fail further down.
+	rm "${notify_file}"
+
+	CONF="/etc/sunet-notify-reboot"
+
+	if [[ ! -f "${CONF}" ]]; then
+		# No config - no notifications
+		exit 0
+	else
+		# shellcheck source=/dev/null
+		. "${CONF}"
+	fi
+	fqdn=$(hostname -f)
+
+	curl --max-time 30 -X POST -H 'Content-type: application/json' --data "{'text':\"${fqdn} is healthy and again.\"}" "${SLACK_URL}" || true
+
+fi
+
+exit 0

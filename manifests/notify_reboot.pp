@@ -10,6 +10,28 @@ class sunet::notify_reboot(
         content => file('sunet/notify-reboot/99-notify-reboot'),
     }
 
+    if (lookup('cosmos_fleetlock_config', Variant[Hash, Undef], undef, undef)) {
+
+      ensure_resource(
+        'sunet::misc::create_dir',
+        '/etc/sunet-machine-healthy/health-checks.d',
+        {
+          owner => 'root',
+          group => 'root',
+          mode  => '0750',
+        }
+      )
+
+      file { '/etc/sunet-machine-healthy/health-checks.d/99-notify-unlock.check':
+          ensure  => file,
+          mode    => '0755',
+          owner   => 'root',
+          group   => 'root',
+          content => file('sunet/notify-reboot/99-notify-unlock.check'),
+      }
+
+    }
+
     $slack_url = lookup('notity_reboot_slack_url', Variant[String, Undef], undef, undef)
 
     if ($slack_url) {
@@ -24,5 +46,4 @@ class sunet::notify_reboot(
     } else {
       warning('"notity_reboot_slack_url" not configured - no notifications will be sent!')
     }
-
 }
