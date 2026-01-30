@@ -9,7 +9,7 @@ class sunet::pgbackrest::repo (
   String                $pg_stanza,
   Integer               $retention_full_days=14,
   String                $pg_user="postgres",
-  String                $pg_command="/usr/local/bin/pgbackrest-docker"
+  String                $pg_command="/usr/local/bin/pgbackrest-docker",
   Enum['daily','none']  $schedule_full='daily',
   Enum['hourly','none'] $schedule_incr='none',
   Enum['hourly','none'] $schedule_diff='none',
