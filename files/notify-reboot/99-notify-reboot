@@ -37,5 +37,5 @@ if [ -f "${recover_notifier}" ]; then
 fi
 curl --max-time 30 -X POST -H 'Content-type: application/json' --data "{'text':\"${fqdn} is about to reboot.${recover_message}\"}" "${SLACK_URL}" || true
 
-# Don't prevent reboot if something when bad above.
+# Don't prevent reboot if something went bad above.
 exit 0
