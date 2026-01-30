@@ -19,7 +19,7 @@ class sunet::pgbackrest::repo (
   include sunet::packages::pgbackrest
 
   # Get the db node information from parameter or hiera
-  $db_nodes = lookup('db_nodes', hash, undef, {})
+  $db_nodes = lookup('db_nodes', Hash, undef, {})
 
   $db_nodes.each | $db_node, $value| {
     # Allow inbound SSH used by DB nodes to send backups
