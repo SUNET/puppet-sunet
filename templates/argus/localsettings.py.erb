@@ -41,6 +41,7 @@ EMAIL_USE_TLS = get_bool_env("EMAIL_USE_TLS", default=True)
 <% if @argus_sso -%>
     <% case @argus_sso_type
         when "keycloak" -%>
+
 AUTHENTICATION_BACKENDS = [
     "social_core.backends.keycloak.KeycloakOAuth2",
     "django.contrib.auth.backends.ModelBackend",
@@ -61,7 +62,7 @@ SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = \
   '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>/protocol/openid-connect/auth'
 SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = \
   '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>/protocol/openid-connect/token'
-SOCIAL_AUTH_KEYCLOAK_AUTH_EXTRA_ARGUMENTS = {'kc_idp_hint': ''<%= scope.call_function('safe_hiera',["argus_sso_keycloak.kc_idp_hint"]) %>'}
+SOCIAL_AUTH_KEYCLOAK_AUTH_EXTRA_ARGUMENTS = {'kc_idp_hint': '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.kc_idp_hint"]) %>'}
     <% else -%>
 
     <% end -%>
