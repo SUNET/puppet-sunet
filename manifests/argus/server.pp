@@ -7,6 +7,8 @@ class sunet::argus::server (
   String  $docker_image     = "docker.sunet.se/sunet/argus-api",
   String  $docker_tag       = "v2.5.0_sunetbuild",
   String  $url              = $facts['networking']['hostname'],
+  Boolean $argus_sso        = False,
+  String  $argus_sso_type   = '',
   String  $argus_clients    = ''
 ){
 

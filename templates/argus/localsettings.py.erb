@@ -36,3 +36,33 @@ SMS_GATEWAY_ADDRESS=get_str_env("SMS_GATEWAY_ADDRESS", required=False)
 INTERNAL_IPS = []  # Don't alter me, please
 EMAIL_PORT = get_int_env("EMAIL_PORT", 587)
 EMAIL_USE_TLS = get_bool_env("EMAIL_USE_TLS", default=True)
+
+
+<% if @argus_sso -%>
+    <% case @argus_sso_type
+        when "keycloak" -%>
+AUTHENTICATION_BACKENDS = [
+    "social_core.backends.keycloak.KeycloakOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+SOCIAL_AUTH_KEYCLOAK_KEY = <%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_key"]) %>
+SOCIAL_AUTH_KEYCLOAK_SECRET = <%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_secret"]) %>
+#SOCIAL_AUTH_KEYCLOAK_BASE_URL= <%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>
+
+# Remote authentication support
+REMOTE_AUTH_ENABLED = True
+REMOTE_AUTH_BACKEND = 'social_core.backends.keycloak.KeycloakOAuth2'
+
+REMOTE_AUTH_HEADER = get_str_env('REMOTE_AUTH_HEADER', 'HTTP_REMOTE_USER')
+REMOTE_AUTH_AUTO_CREATE_USER = get_bool_env('REMOTE_AUTH_AUTO_CREATE_USER', default=False)
+
+SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = \
+  '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>/protocol/openid-connect/auth'
+SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = \
+  '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>/protocol/openid-connect/token'
+SOCIAL_AUTH_KEYCLOAK_AUTH_EXTRA_ARGUMENTS = {'kc_idp_hint': ''<%= scope.call_function('safe_hiera',["argus_sso_keycloak.kc_idp_hint"]) %>'}
+    <% else -%>
+
+    <% end -%>
+<% end -%>
