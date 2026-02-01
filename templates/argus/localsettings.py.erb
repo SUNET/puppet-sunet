@@ -56,9 +56,13 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
+
+SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = \
+  '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_public_key"]) %>'
+
 SOCIAL_AUTH_KEYCLOAK_KEY = '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_key"]) %>'
 SOCIAL_AUTH_KEYCLOAK_SECRET = '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_secret"]) %>'
-#SOCIAL_AUTH_KEYCLOAK_BASE_URL= '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>'
+SOCIAL_AUTH_KEYCLOAK_BASE_URL= '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>'
 
 # Remote authentication support
 REMOTE_AUTH_ENABLED = True
