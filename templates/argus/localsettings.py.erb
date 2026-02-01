@@ -2,6 +2,15 @@ from django.core.exceptions import ImproperlyConfigured
 
 from argus.htmx.settings import *
 
+<% if @argus_debug  -%>
+
+from . import get_bool_env, get_str_env  # noqa: E402
+
+DEBUG = get_bool_env("DEBUG", True)
+TEMPLATES[0]["OPTIONS"]["debug"] = get_bool_env("TEMPLATE_DEBUG", True)  # noqa: F405
+
+<% end -%>
+
 if not FRONTEND_URL:
     raise ImproperlyConfigured('"FRONTEND_URL" has not been set in production!')
 
@@ -67,3 +76,32 @@ SOCIAL_AUTH_KEYCLOAK_AUTH_EXTRA_ARGUMENTS = {'kc_idp_hint': '<%= scope.call_func
 
     <% end -%>
 <% end -%>
+
+<% if @argus_debug  -%>
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'social': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
+
+LOGGING_CONFIG = None
+if not LOGGING_MODULE:  # noqa: F405
+    LOGGING_MODULE = "argus.site.logging.DEV"
+    DEV_LOGGING = setup_logging(LOGGING_MODULE)  # noqa: F405
+
+DEBUG=True
+
+<% end -%>
+

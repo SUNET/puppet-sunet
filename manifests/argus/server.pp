@@ -9,6 +9,7 @@ class sunet::argus::server (
   String  $url              = $facts['networking']['hostname'],
   Boolean $argus_sso        = False,
   String  $argus_sso_type   = '',
+  Boolean $argus_debug      = False,
   String  $argus_clients    = ''
 ){
 
