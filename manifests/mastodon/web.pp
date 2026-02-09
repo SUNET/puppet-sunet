@@ -150,7 +150,7 @@ class sunet::mastodon::web(
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
-    content => file('sunet/mastodon/web/thinning.sh'),
+    content => file('sunet/mastodon/www/thinning.sh'),
   }
   sunet::scriptherder::cronjob { 'thinning':
     cmd         => '/opt/mastodon_web/libexec/thinning.sh',
