@@ -142,6 +142,23 @@ class sunet::mastodon::web(
     }
   }
 
+  file { '/opt/mastodon_web/libexec/':
+    ensure  => 'directory',
+  }
+  file { '/opt/mastodon_web/libexec/thinning.sh':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    content => file('sunet/mastodon/web/thinning.sh'),
+  }
+  sunet::scriptherder::cronjob { 'thinning':
+    cmd         => '/opt/mastodon_web/libexec/thinning.sh',
+    hour        => '03',
+    minute      => '20',
+    ok_criteria => ['exit_status=0', 'max_age=28h'],
+  }
+
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'web_http_port' :
       iif           => $interface,
