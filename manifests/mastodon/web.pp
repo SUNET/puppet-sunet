@@ -143,7 +143,7 @@ class sunet::mastodon::web(
   }
 
   file { '/opt/mastodon_web/libexec/':
-    ensure  => 'directory',
+    ensure => 'directory',
   }
   file { '/opt/mastodon_web/libexec/thinning.sh':
     ensure  => file,
