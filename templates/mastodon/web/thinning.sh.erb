@@ -2,8 +2,8 @@
 
 set -e
 
-/usr/local/bin/tootctl media remove --days <%= @thinning_days_media %>          --verbose
-/usr/local/bin/tootctl media remove --days <%= @thinning_days_profiles %>       --verbose --prune-profiles
-/usr/local/bin/tootctl media remove --days <%= @thinning_days_headers %>        --verbose --remove-headers
+/usr/local/bin/tootctl media remove --verbose --days <%= @thinning_days_media %>
+/usr/local/bin/tootctl media remove --verbose --days <%= @thinning_days_profiles %> --prune-profiles
+/usr/local/bin/tootctl media remove --verbose --days <%= @thinning_days_headers %> --remove-headers
 
-/usr/local/bin/tootctl preview_cards remove --days <%= @thinning_days_pcards %> --verbose
+/usr/local/bin/tootctl preview_cards remove --verbose --days <%= @thinning_days_pcards %>
