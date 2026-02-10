@@ -169,8 +169,6 @@ class sunet::bankidp(
       mode   => '0711',
     }
 
-    package { ['redis-tools']:
-      ensure => installed,
-    }
+    include sunet::packages::redis_tools
   }
 }
