@@ -144,6 +144,9 @@ class sunet::mastodon::web(
 
   file { '/opt/mastodon_web/libexec/':
     ensure => 'directory',
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0751',
   }
   file { '/opt/mastodon_web/libexec/thinning.sh':
     ensure  => file,
