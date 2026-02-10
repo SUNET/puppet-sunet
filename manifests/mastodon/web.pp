@@ -23,6 +23,11 @@ class sunet::mastodon::web(
   String $streaming_image          = 'ghcr.io/mastodon/mastodon-streaming',
   String $streaming_version        = 'latest',
   String $vhost                    = 'social.sunet.se',
+  Integer $thinning_days_media     = 7,
+  Integer $thinning_days_profiles  = 7,
+  Integer $thinning_days_headers   = 7,
+  Integer $thinning_days_pcards    = 30,
+
 ) {
 
   include sunet::packages::rclone
