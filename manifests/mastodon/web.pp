@@ -23,6 +23,11 @@ class sunet::mastodon::web(
   String $streaming_image          = 'ghcr.io/mastodon/mastodon-streaming',
   String $streaming_version        = 'latest',
   String $vhost                    = 'social.sunet.se',
+  Integer $thinning_days_media     = 7,
+  Integer $thinning_days_profiles  = 7,
+  Integer $thinning_days_headers   = 7,
+  Integer $thinning_days_pcards    = 30,
+
 ) {
 
   include sunet::packages::rclone
@@ -140,6 +145,26 @@ class sunet::mastodon::web(
       group  => 'root',
       mode   => '0751',
     }
+  }
+
+  file { '/opt/mastodon_web/libexec/':
+    ensure => 'directory',
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0751',
+  }
+  file { '/opt/mastodon_web/libexec/thinning.sh':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    content => template('sunet/mastodon/web/thinning.sh.erb'),
+  }
+  sunet::scriptherder::cronjob { 'thinning':
+    cmd         => '/opt/mastodon_web/libexec/thinning.sh',
+    hour        => '03',
+    minute      => '20',
+    ok_criteria => ['exit_status=0', 'max_age=28h'],
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
