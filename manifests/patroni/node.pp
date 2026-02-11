@@ -18,6 +18,7 @@ class sunet::patroni::node(
   $superuser_password = lookup('postgres_superuser_password', undef, undef, 'NOT_SET_IN_HIERA')
   $rewind_password = lookup('postgres_rewind_password', undef, undef, 'NOT_SET_IN_HIERA')
   $loadbalancer_ips = lookup('loadbalancer_ips', undef, undef, [])
+  $pgbackrest_backup_host_ips = lookup('pgbackrest_backup_host_ips', undef, undef, [])
 
   sunet::nftables::allow { 'allow-lbs':
     from => $loadbalancer_ips,
@@ -39,7 +40,6 @@ class sunet::patroni::node(
         owner  => 'root',
         group  => 'root',
         mode   => '0755',
-
     }
   }
 
@@ -74,9 +74,15 @@ class sunet::patroni::node(
   }
 
   if ($pgbackrest) {
+    # Write the pgbackrest config
     file { '/opt/patroni/config/pgbackrest.conf':
       content => template('sunet/patroni/pgbackrest.conf.erb'),
       mode    => '0755',
+    }
+    # Allow inbound SSH from backup repo host
+    sunet::nftables::allow { "allow-ssh-pgbackrest-host":
+      from => $pgbackrest_backup_host_ips,
+      port => "22",
     }
   }
 
