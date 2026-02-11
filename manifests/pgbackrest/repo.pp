@@ -1,7 +1,9 @@
 # This puppet manifest is used to configure a pgBackRest repo/backup server
 
+# @param pg_stanza                     The name of the stanza https://pgbackrest.org/command.html#command-stanza-create
 # @param retention_full_days           The number of days to save full backups
 # @param pg_user                       The user that the repo/backup server uses towards the DB nodes
+# @param pg_command                    The command to be executed on the remote db host
 # @param schedule_full                 How often should we run full backups
 # @param schedule_incr                 How often should we run incremental backups
 # @param schedule_diff                 How often should we run differential backups
