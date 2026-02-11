@@ -13,7 +13,7 @@ class sunet::patroni::node(
   $infra_cert = "/etc/ssl/private/${myself}_infra.pem"
   $postgres_cert = "/opt/patroni/certs/${myself}.pem"
   $etcd_nodes = lookup('etcd_nodes', undef, undef, [])
-  $postgres_nodes = lookup('postgres_nodes', undef, undef, [])
+  $postgres_node_ips = lookup('postgres_nodes', undef, undef, [])
   $replicator_password = lookup('postgres_replicator_password', undef, undef, 'NOT_SET_IN_HIERA')
   $superuser_password = lookup('postgres_superuser_password', undef, undef, 'NOT_SET_IN_HIERA')
   $rewind_password = lookup('postgres_rewind_password', undef, undef, 'NOT_SET_IN_HIERA')
@@ -24,7 +24,7 @@ class sunet::patroni::node(
     port => [$postgres_port, $patroni_rest_api_port],
   }
   sunet::nftables::allow { 'allow-postgres-peers':
-    from => $postgres_nodes,
+    from => $postgres_node_ips,
     port => [$postgres_port,$patroni_rest_api_port],
   }
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
@@ -79,7 +79,6 @@ class sunet::patroni::node(
       mode    => '0755',
     }
   }
-
 
   sunet::docker_compose { 'patroni':
     content          => template('sunet/patroni/docker-compose-patroni-node.yml.erb'),
