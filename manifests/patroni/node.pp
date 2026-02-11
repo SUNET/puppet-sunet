@@ -86,6 +86,11 @@ class sunet::patroni::node(
     }
     # Accept hostkey so SSH towards the repo host does not hang
     sunet::ssh_keyscan::host {"${pgbackrest_backup_host}": }
+    # Accept SSH-key for pgbackrest host
+    sunet::ssh_keys { 'pgbackrest_hosts':
+      config => safe_hiera('pggbackrest_host_ssh_keys', {}),
+      key_database_name => 'pgbackrest_hosts_db',
+    }
     # Generate SSH-key used to access backup repo host
     $key_path = '/root/.ssh/id_ed25519'
     if lookup('pgbackrest_ssh_key', undef, undef, undef) { # Key is in secrets, write it to host
