@@ -5,7 +5,8 @@ class sunet::patroni::node(
   Integer $postgres_port = 5432,
   String $patroni_imagetag = '4.1.0',
   Boolean $pgbackrest = false,
-  String $backup_host = '127.0.0.1',
+  String $pgbackrest_backup_host = '',
+  String $pgbackrest_user = 'root',
 ) {
 
   $myself = $facts['networking']['fqdn'] # Use with connect_addr
