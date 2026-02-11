@@ -13,7 +13,7 @@ class sunet::patroni::node(
   $infra_cert = "/etc/ssl/private/${myself}_infra.pem"
   $postgres_cert = "/opt/patroni/certs/${myself}.pem"
   $etcd_nodes = lookup('etcd_nodes', undef, undef, [])
-  $postgres_node_ips = lookup('postgres_nodes', undef, undef, [])
+  $postgres_node_ips = lookup('postgres_node_ips', undef, undef, [])
   $replicator_password = lookup('postgres_replicator_password', undef, undef, 'NOT_SET_IN_HIERA')
   $superuser_password = lookup('postgres_superuser_password', undef, undef, 'NOT_SET_IN_HIERA')
   $rewind_password = lookup('postgres_rewind_password', undef, undef, 'NOT_SET_IN_HIERA')
