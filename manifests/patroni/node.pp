@@ -86,6 +86,17 @@ class sunet::patroni::node(
     }
     # Accept hostkey so SSH towards the repo host does not hang
     sunet::ssh_keyscan::host {"${pgbackrest_backup_host}": }
+    # Generate SSH-key used to access backup repo host
+    $key_path = '/root/.ssh/id_ed25519'
+    if lookup('pgbackrest_ssh_key', undef, undef, undef) { # Key is in secrets, write it to host
+      ensure_resource('sunet::snippets::secret_file', $key_path, {
+      hiera_key => 'pgbackrest_ssh_key',
+    })
+    } else {
+      if (!find_file($key_path)){
+        sunet::snippets::ssh_keygen{$key_path:} # This will not overwrite an existing key
+      }
+    }
   }
 
   sunet::docker_compose { 'patroni':
