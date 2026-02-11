@@ -66,10 +66,12 @@ Puppet::Functions.create_function(:sunet_prefixes) do
       { "net": "2001:6b0:40::/48",      "family": "ip6", "comment": "Safespring STO3", "resource_type": "safespring", "tags": [
         "knubbis",
         "infraca",
+        "acmec",
       ]},
       { "net": "94.176.224.0/24",     "family": "ip",  "comment": "SwedenConnect TUG", "resource_type": "SUNET", "tags": [
         "knubbis",
         "infraca",
+        "acme",
       ]},
       { "net": "89.47.190.0/23",     "family": "ip",  "comment": "Safespring DCO", "resource_type": "safespring", "tags": [
         "knubbis",
