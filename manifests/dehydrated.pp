@@ -150,7 +150,7 @@ class sunet::dehydrated(
   }
 
   if $allow_prefixes_by_tag != undef {
-    $allow_clients_ssh = sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip'})
+    $allow_clients_ssh = sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip'}) + sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip6'})
   } else {
     $allow_clients_ssh = $allow_clients
   }
