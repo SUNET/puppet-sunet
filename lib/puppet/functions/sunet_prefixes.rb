@@ -3,7 +3,7 @@
 Puppet::Functions.create_function(:sunet_prefixes) do
   dispatch :sunet_servers do
     optional_param 'Struct[{
-      Optional[tags] => Array[Enum["knubbis","infraca"]],
+      Optional[tags] => Array[Enum["knubbis","infraca","acmec"]],
       Optional[family] => Enum["ip", "ip6", "inet"],
 
     }]', :options

@@ -7,6 +7,7 @@ class sunet::dehydrated(
   Array   $allow_clients = [],
   Integer $server_port = 80,
   Integer $ssh_port = 22,
+  Array   $allow_prefixes_by_tag = undef,
 ) {
   $conf = lookup('dehydrated', undef, undef, undef)
   if $conf !~ Hash {
@@ -148,8 +149,14 @@ class sunet::dehydrated(
     warning("Unknown format of 'clients' - ignoring")
   }
 
+  if $allow_prefixes_by_tag != undef {
+    $allow_clients_ssh = $allow_prefixes_by_tag
+  } else {
+    $allow_clients_ssh = $allow_clients
+  }
+
   sunet::nftables::allow { 'allow-dehydrated-ssh':
-    from => $allow_clients,
+    from => $allow_clients_ssh,
     port => $ssh_port,
   }
 }
