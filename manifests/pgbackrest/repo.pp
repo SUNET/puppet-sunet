@@ -39,7 +39,7 @@ class sunet::pgbackrest::repo (
   }
 
   # Generate SSH-key used to access DB nodes
-  $key_path = '/root/.ssh/id_id_ed25519'
+  $key_path = '/root/.ssh/id_ed25519'
   if lookup('pgbackrest_ssh_key', undef, undef, undef) { # Key is in secrets, write it to host
     ensure_resource('sunet::snippets::secret_file', $key_path, {
     hiera_key => 'pgbackrest_ssh_key',
