@@ -6,12 +6,14 @@ services:
     image: docker.sunet.se/patroni:<%= @patroni_imagetag %>
     volumes:
       - '/etc/ssl:/etc/ssl:ro'
-      - '/etc/passwd:/etc/passwd:ro'
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
       - '/opt/patroni/certs:/opt/patroni/certs:ro'
       - postgres_data:/var/lib/postgresql
       <% if @pgbackrest == true %>
-      - '/opt/patroni/config/pgbackrest.conf:/etc/pgbackrest/pgbackrest.conf:ro'
+      - '/usr/bin/pgbackrest:/usr/bin/pgbackrest'
+      - '/opt/patroni/config/pgbackrest.conf:/etc/pgbackrest.conf:ro'
+      - '/root/.ssh/id_ed25519:/home/postgres/.ssh/id_ed25519:ro'
+      - '/root/.ssh/known_hosts:/home/postgres/.ssh/known_hosts:ro'
       <% end %>
 
     entrypoint: /usr/bin/python3
