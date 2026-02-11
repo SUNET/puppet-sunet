@@ -1,9 +1,25 @@
 #!/bin/bash
 
-if [ -f /var/run/reboot-required ]; then
-	# fleetlock lock
-	. /etc/run-cosmos-fleetlock-conf
-	/usr/local/bin/sunet-fleetlock --lock-group $fleetlock_group --lock || exit 1
-	# drain kube and reboot
-	/snap/bin/kubectl drain $(hostname) --ignore-daemonsets && /usr/bin/systemctl reboot
+set -euo pipefail
+
+RANDSLEEP=false
+MAX_SLEEP=300
+
+if [[ "${1:-}" == "randsleep" ]]; then
+    RANDSLEEP=true
 fi
+
+if [[ ! -f /var/run/reboot-required ]]; then
+    exit 0
+fi
+
+if $RANDSLEEP; then
+    sleep_time=$(( RANDOM % (MAX_SLEEP + 1) ))
+    sleep "$sleep_time"
+fi
+
+# fleetlock lock
+. /etc/run-cosmos-fleetlock-conf
+/usr/local/bin/sunet-fleetlock --lock-group $fleetlock_group --lock || exit 1
+# drain kube and reboot
+/snap/bin/kubectl drain $(hostname) --ignore-daemonsets && /usr/bin/systemctl reboot

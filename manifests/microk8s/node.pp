@@ -171,9 +171,10 @@ class sunet::microk8s::node(
       }
       sunet::scriptherder::cronjob { 'drain_and_reboot':
           ensure => present,
-          cmd    => '/usr/local/bin/drainreboot',
+          cmd    => '/usr/local/bin/drainreboot randsleep',
           user   => 'root',
           minute => '*/15',
+          hour   => '17-23',
       }
     }
 }
