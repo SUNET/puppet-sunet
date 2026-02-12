@@ -53,6 +53,6 @@ postgresql:
 <% if @pgbackrest == true %>
     archive_mode: on
     archive_command: 'pgbackrest --stanza=patroni archive-push %p'
-    archive_command: 'pgbackrest --stanza=patroni archive-get %f \"%p\"'
+    restore_command: 'pgbackrest --stanza=patroni archive-get %f %p'
     archive_timeout: 300
 <% end %>
