@@ -1,14 +1,34 @@
 # @summary class to Argus Server
-# @param docker_image    Specific Argus image
-# @param docker_tag      Specific Argus image tag
-# @param url             Specific hostname where Argus will be running
-# @param argus_clients   Hiera Variable that contains list of prefixes allowed to reach Argus
+# @param docker_image     Specific Argus image
+# @param docker_tag       Specific Argus image tag
+# @param url              Specific url where Argus will be running
+# @param argus_clients    Hiera Variable that contains list of prefixes allowed to reach Argus
+# @param argus_debug      Boolean variable to enable DJANGO debug on the server.
+# @param argus_auth_type  Boolean variable to enable one type of SSO inlogging local or keycloak.
+#
+# Hiera variables to define on the target host:
+# argus_email_host
+# argus_email_user
+# argus_email_from
+# argus_sms_gateway
+# django_secret_key
+# argus_db_password
+# argus_clients - (ex: argus_front_clients:  [ 10.1.11.0/24, 10.1.0.0/24 ] )
+#
+# If auth type keycloak is selected then:
+# argus_sso_keycloak hashmap with
+#   auth_keycloak_public_key (from https://norpan-keycloak1.cnaas.sunet.se/realms/norpan)
+#   auth_keycloak_key (client-id)
+#   auth_keycloak_secret (client secret)
+#   auth_keycloak_base_url (https://<url>/realms/<realm>)
+#   kc_idp_hint (idp hint towards swamid SAML flow if present)
+#
+#####
 class sunet::argus::server (
   String  $docker_image     = "docker.sunet.se/sunet/argus-api",
   String  $docker_tag       = "v2.5.0_sunetbuild",
   String  $url              = $facts['networking']['hostname'],
-  Boolean $argus_sso        = false,
-  String  $argus_sso_type   = '',
+  String  $argus_auth_type   = 'local',
   Boolean $argus_debug      = false,
   String  $argus_clients    = ''
 ){
