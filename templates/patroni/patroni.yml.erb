@@ -54,6 +54,6 @@ postgresql:
     archive_mode: on
     archive_command: 'pgbackrest --stanza=patroni archive-push %p'
     restore_command: 'pgbackrest --stanza=patroni archive-get %f %p'
-    recovery_target_timeline = 'latest'
+    recovery_target_timeline: 'latest'
     archive_timeout: 300
 <% end %>
