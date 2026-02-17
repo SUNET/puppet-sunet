@@ -164,7 +164,7 @@ def main() -> None:
     max_age = timedelta(hours=args.max_age_hours)
 
     # ---- Run pgbackrest info (JSON only) ----
-    info_cmd = ["pgbackrest", f"--stanza={stanza}", "info", "--output=json"]
+    info_cmd = ["sudo", "pgbackrest", f"--stanza={stanza}", "info", "--output=json"]
     code, stdout, stderr, timed_out = run_cmd(info_cmd, info_timeout)
 
     if timed_out:
@@ -203,7 +203,7 @@ def main() -> None:
         sys.exit(CRITICAL)
 
     # ---- Run pgbackrest check ----
-    check_cmd = ["pgbackrest", f"--stanza={stanza}", "check"]
+    check_cmd = ["sudo", "pgbackrest", f"--stanza={stanza}", "check"]
     code, stdout2, stderr2, timed_out = run_cmd(check_cmd, check_timeout)
 
     if timed_out:
