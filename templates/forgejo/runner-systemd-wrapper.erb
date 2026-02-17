@@ -15,6 +15,7 @@ if [ ! -f "/home/$(whoami)/.runner" ]; then
 fi
 
 podman machine rm -f
+podman machine reset -y
 
 while true; do
 
