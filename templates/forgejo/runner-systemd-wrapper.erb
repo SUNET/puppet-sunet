@@ -14,8 +14,8 @@ if [ ! -f "/home/$(whoami)/.runner" ]; then
   /opt/forgejo-runner/bin/forgejo-runner --config "/home/$(whoami)/runner.config" register --no-interactive --instance "https://<%= @forgejo_instance %>" --token "<%= @registration_token %>" --name "$(hostname -f):$(whoami)"
 fi
 
+podman machine reset -f
 podman machine rm -f
-podman machine reset -y
 
 while true; do
 
