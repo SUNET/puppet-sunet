@@ -194,7 +194,7 @@ def main() -> None:
     if age > max_age:
         msg = (
             f"CRITICAL: last backup too old — "
-            f"stop={fmt_utc(last_stop_utc)} age={format_age(age)} "
+            f"Last backup={fmt_utc(last_stop_utc)} age={format_age(age)} "
             f"(max {args.max_age_hours}h)"
         )
         if args.debug and label:
