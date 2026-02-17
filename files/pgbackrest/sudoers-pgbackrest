@@ -1,0 +1,2 @@
+# Allow nagios user to sudo when executing check-pgbackrest-status
+nagios   ALL = NOPASSWD:/usr/local/sbin/check-pgbackrest-status

@@ -107,5 +107,12 @@ class sunet::pgbackrest::repo (
     owner   => 'root',
     content => file('sunet/pgbackrest/nrpe-pgbackrest.cfg')
   }
+  # sudo exceptions
+  file { '/etc/sudoers.d/sudoers-pgbackrest':
+    ensure  => 'file',
+    mode    => '0440',
+    owner   => 'root',
+    content => file('sunet/pgbackrest/sudoers-pgbackrest')
+  }
 
 }
