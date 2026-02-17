@@ -105,7 +105,7 @@ class sunet::pgbackrest::repo (
     ensure  => 'file',
     mode    => '0644',
     owner   => 'root',
-    content => file('sunet/patroni/nrpe-pgbackrest.cfg')
+    content => file('sunet/pgbackrest/nrpe-pgbackrest.cfg')
   }
 
 }
