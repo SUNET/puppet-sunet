@@ -61,6 +61,7 @@ class sunet::pgbackrest::repo (
     content => template('sunet/pgbackrest/pgbackrest.conf.erb'),
   }
 
+  # Schedules
   case $schedule_full {
     'daily': {
       sunet::scriptherder::cronjob { 'pgbackrest_full_backup':
@@ -90,6 +91,21 @@ class sunet::pgbackrest::repo (
         ok_criteria => ['exit_status=0', 'max_age=1d'],
       }
     }
+  }
+
+  # Monitoring
+  file { '/usr/local/sbin/check-pgbackrest-status':
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    content => file('sunet/pgbackrest/check-pgbackrest-status.py')
+  }
+  # NRPE commands file
+  file { '/etc/nagios/nrpe.d/nrpe-pgbackrest.cfg':
+    ensure  => 'file',
+    mode    => '0644',
+    owner   => 'root',
+    content => file('sunet/patroni/nrpe-pgbackrest.cfg')
   }
 
 }
