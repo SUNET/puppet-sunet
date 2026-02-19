@@ -74,9 +74,9 @@ class sunet::argus::server (
         $argus_allow_networks = lookup($argus_clients, undef, undef, [])
         $argus_interface = safe_hiera('argus_interface',$facts['interface_default'])
         sunet::nftables::docker_expose { 'allow_https' :
-          allow_clients   => $argus_allow_networks,
-          port            => '443',
-          iif             => $argus_interface,
+          allow_clients => $argus_allow_networks,
+          port          => '443',
+          iif           => $argus_interface,
         }
     } else  {
         warning('No configured Client IPs for argus. Not allowing HTTPS access for anyone.')
