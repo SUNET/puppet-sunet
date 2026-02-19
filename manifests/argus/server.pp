@@ -25,10 +25,10 @@
 #
 #####
 class sunet::argus::server (
-  String  $docker_image     = "docker.sunet.se/sunet/argus-api",
-  String  $docker_tag       = "v2.5.0_sunetbuild",
+  String  $docker_image     = 'docker.sunet.se/sunet/argus-api',
+  String  $docker_tag       = 'v2.5.0_sunetbuild',
   String  $url              = $facts['networking']['hostname'],
-  String  $argus_auth_type   = 'local',
+  String  $argus_auth_type  = 'local',
   Boolean $argus_debug      = false,
   String  $argus_clients    = ''
 ){
@@ -74,9 +74,9 @@ class sunet::argus::server (
         $argus_allow_networks = lookup($argus_clients, undef, undef, [])
         $argus_interface = safe_hiera('argus_interface',$facts['interface_default'])
         sunet::nftables::docker_expose { 'allow_https' :
-            allow_clients   => $argus_allow_networks,
-            port            => '443',
-            iif             => $argus_interface,
+          allow_clients   => $argus_allow_networks,
+          port            => '443',
+          iif             => $argus_interface,
         }
     } else  {
         warning('No configured Client IPs for argus. Not allowing HTTPS access for anyone.')
