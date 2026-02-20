@@ -119,16 +119,8 @@ class sunet::dockerhost2(
   }
 
   file {
-    '/etc/logrotate.d':
-      ensure => 'directory',
-      mode   => '0755',
-      ;
     '/etc/logrotate.d/docker-containers':
-      ensure  => file,
-      path    => '/etc/logrotate.d/docker-containers',
-      mode    => '0644',
-      content => template('sunet/dockerhost/logrotate_docker-containers.erb'),
-      ;
+      ensure  => absent,
     }
 
     file { '/usr/local/bin/docker-upgrade':
