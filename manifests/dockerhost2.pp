@@ -120,7 +120,7 @@ class sunet::dockerhost2(
 
   file {
     '/etc/logrotate.d/docker-containers':
-      ensure  => absent,
+      ensure => absent,
     }
 
     file { '/usr/local/bin/docker-upgrade':
