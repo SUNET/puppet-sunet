@@ -1,7 +1,7 @@
 # This class sets up a rsyslog server that listens for UDP messages on the specified port
 # - incoming messages are stored in with fromhost template in /var/log/rsyslog/ directory
 # - if graylog_servers is provided, incoming messages are also forwarded to the specified servers.
-class sunet::rsyslog::server(
+class sunet::rsyslog_server(
   $udp_port,
   $graylog_servers = [],
   $gelf_tag = undef,
