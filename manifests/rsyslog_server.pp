@@ -6,18 +6,7 @@ class sunet::rsyslog_server(
   $graylog_servers = [],
   $gelf_tag = undef,
 ) {
-  include stdlib
-
-  ensure_resource('package', 'rsyslog', {
-    ensure => 'installed',
-  })
-
-  file { '/var/log/rsyslog':
-    ensure => directory,
-    owner  => 'root',
-    group  => 'adm',
-    mode   => '0755',
-  }
+  include sunet::rsyslog
 
   file { '/etc/rsyslog.d/05-templates.conf':
     ensure  => file,
@@ -35,22 +24,22 @@ class sunet::rsyslog_server(
     notify  => Service['rsyslog'],
   }
 
-  sunet::misc::ufw_allow { "allow-syslog-udp-${udp_port}":
-    from  => 'any',
-    proto => 'udp',
-    port  => $udp_port,
+  file { '/var/log/rsyslog':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'adm',
+    mode   => '0755',
   }
-
-  ensure_resource('service', 'rsyslog', {
-    ensure => 'running',
-    enable => true,
-  })
-
-  # logrotate
 
   file { '/etc/logrotate.d/rsyslog-server':
     ensure  => file,
     mode    => '0644',
     content => template('sunet/rsyslog/rsyslog-server.logrotate.erb'),
+  }
+
+  sunet::misc::ufw_allow { "allow-syslog-udp-${udp_port}":
+    from  => 'any',
+    proto => 'udp',
+    port  => $udp_port,
   }
 }
