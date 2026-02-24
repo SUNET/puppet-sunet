@@ -10,8 +10,8 @@
 class sunet::pgbackrest::repo (
   String                $pg_stanza,
   Integer               $retention_full_days=14,
-  String                $pg_user="postgres",
-  String                $pg_command="/usr/local/bin/pgbackrest-docker",
+  String                $pg_user='postgres',
+  String                $pg_command='/usr/local/bin/pgbackrest-docker',
   Enum['daily','none']  $schedule_full='daily',
   Enum['hourly','none'] $schedule_incr='none',
   Enum['hourly','none'] $schedule_diff='none',
@@ -27,17 +27,17 @@ class sunet::pgbackrest::repo (
     # Allow inbound SSH used by DB nodes to send backups
     sunet::nftables::allow { "allow-ssh-${db_node}":
       from => $value['prefixes'],
-      port => "22",
+      port => '22',
     }
 
     # Accept hostkeys so SSH towards the db nodes does not hang
-    sunet::ssh_keyscan::host {"${db_node}": }
+    sunet::ssh_keyscan::host {${db_node}: }
   }
 
   # Accept SSH-keys for DB nodes
   sunet::ssh_keys { 'pg_db_nodes':
-    config => safe_hiera('pg_db_nodes_ssh_keys', {}),
-	  key_database_name => 'pg_db_nodes_db',
+    config            => safe_hiera('pg_db_nodes_ssh_keys', {}),
+    key_database_name => 'pg_db_nodes_db',
   }
 
   # Generate SSH-key used to access DB nodes
