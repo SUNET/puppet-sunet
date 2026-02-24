@@ -31,7 +31,7 @@ class sunet::pgbackrest::repo (
     }
 
     # Accept hostkeys so SSH towards the db nodes does not hang
-    sunet::ssh_keyscan::host {"${db_node}": }
+    sunet::ssh_keyscan::host {$db_node : }
   }
 
   # Accept SSH-keys for DB nodes
