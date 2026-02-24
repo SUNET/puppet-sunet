@@ -1,4 +1,2 @@
 # Allow nagios user to sudo when executing check-etcd-status
-nagios   ALL=(root) NOPASSWD:/usr/local/sbin/check-etcd-status.py
-nagios   ALL=(root) NOPASSWD: /usr/bin/pgbackrest --stanza=patroni info --output=json
-nagios   ALL=(root) NOPASSWD: /usr/bin/pgbackrest --stanza=patroni check
+nagios   ALL = NOPASSWD:/usr/local/sbin/check-etcd-status.py
