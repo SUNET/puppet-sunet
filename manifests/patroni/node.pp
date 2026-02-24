@@ -82,7 +82,7 @@ class sunet::patroni::node(
     # Allow inbound SSH from backup repo host
     sunet::nftables::allow { 'allow-ssh-pgbackrest-host':
       from => $pgbackrest_backup_host_ips,
-      port => "22",
+      port => '22',
     }
     # Accept hostkey so SSH towards the repo host does not hang
     sunet::ssh_keyscan::host {${pgbackrest_backup_host}: }
