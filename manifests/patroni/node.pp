@@ -74,6 +74,8 @@ class sunet::patroni::node(
   }
 
   if ($pgbackrest) {
+    # Install pgBackRest
+    include sunet::packages::pgbackrest
     # Write the pgbackrest config
     file { '/opt/patroni/config/pgbackrest.conf':
       content => template('sunet/patroni/pgbackrest.conf.erb'),
