@@ -85,7 +85,7 @@ class sunet::patroni::node(
       port => '22',
     }
     # Accept hostkey so SSH towards the repo host does not hang
-    sunet::ssh_keyscan::host {${pgbackrest_backup_host}: }
+    sunet::ssh_keyscan::host { $pgbackrest_backup_host : }
     # Accept SSH-key for pgbackrest host
     sunet::ssh_keys { 'pgbackrest_hosts':
       config            => safe_hiera('pggbackrest_host_ssh_keys', {}),
