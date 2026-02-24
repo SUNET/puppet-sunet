@@ -224,7 +224,7 @@ Puppet::Functions.create_function(:sunet_prefixes) do
         "infraca",
         "acmec",
       ]},
-      { "net": "130.242.126.192/28",     "family": "ip",  "comment": "LB servers", "resource_type": "sunetfrontend", "tags": [
+      { "net": "130.242.126.192/28",     "family": "ip",  "comment": "Sunet LB servers", "resource_type": "sunetfrontend", "tags": [
         "knubbis",
         "infraca",
         "acmec",

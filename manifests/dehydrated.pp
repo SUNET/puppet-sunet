@@ -1,6 +1,6 @@
 # dehydrated
 class sunet::dehydrated(
-  String $version,
+  String  $version,
   Boolean $staging = false,
   Boolean $cron = true,
   Boolean $cleanup = true,
