@@ -26,6 +26,7 @@ bootstrap:
       - host replication replicator ::/0 md5
       - host all all 0.0.0.0/0 md5
       - host all all ::/0 md5
+      - local all all trust
 
   # some desired options for 'initdb'
   initdb:  # Note: It needs to be a list (some options need values, others are switches)
@@ -36,7 +37,7 @@ postgresql:
   listen: "*:<%= @postgres_port %>"
   connect_address: "<%= @myself %>:<%= @postgres_port %>"
 
-  data_dir: data/patroni-postgres
+  data_dir: /var/lib/postgresql/data
   pgpass: /tmp/pgpass0
   authentication:
     replication:
@@ -50,3 +51,10 @@ postgresql:
       password: <%= @rewind_password %>
   parameters:
     unix_socket_directories: '..'  # parent directory of data_dir
+<% if @pgbackrest == true %>
+    archive_mode: on
+    archive_command: 'pgbackrest --stanza=patroni archive-push %p'
+    restore_command: 'pgbackrest --stanza=patroni archive-get %f %p'
+    recovery_target_timeline: 'latest'
+    archive_timeout: 300
+<% end %>
