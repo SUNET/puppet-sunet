@@ -6,7 +6,7 @@ define sunet::apt::repo_grafana (
   $distro = $facts['os']['distro']['id']
   $release = $facts['os']['distro']['release']['major']
 
-  if ($distro == 'Debian' and versioncmp($release, '12') <= 0) or ($distro == 'Ubunutu' and versioncmp($release, '22.04') <= 0) {
+  if ($distro == 'Debian' and versioncmp($release, '12') <= 0) or ($distro == 'Ubuntu' and versioncmp($release, '22.04') <= 0) {
 
     apt::source { 'grafana':
         location => 'https://apt.grafana.com',

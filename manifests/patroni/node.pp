@@ -20,6 +20,10 @@ class sunet::patroni::node(
     from => $loadbalancer_ips,
     port => [$postgres_port, $patroni_rest_api_port],
   }
+  sunet::nftables::allow { 'allow-postgres-peers':
+    from => $postgres_nodes,
+    port => [$postgres_port],
+  }
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/config/', { owner => 'root', group => 'root', mode => '0750'})
 
   user {'patroni-postgres':
@@ -53,6 +57,21 @@ class sunet::patroni::node(
   file { '/usr/local/bin/psql':
     content => template('sunet/patroni/psql.erb'),
     mode    => '0755',
+  }
+
+  # Monitoring script that can be executed with NRPE
+  file { '/usr/local/sbin/check-patroni-status.py':
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    content => file('sunet/patroni/check-patroni-status.py')
+  }
+  # NRPE commands file
+  file { '/etc/nagios/nrpe.d/nrpe-patroni.cfg':
+    ensure  => 'file',
+    mode    => '0644',
+    owner   => 'root',
+    content => file('sunet/patroni/nrpe-patroni.cfg')
   }
 
   sunet::docker_compose { 'patroni':

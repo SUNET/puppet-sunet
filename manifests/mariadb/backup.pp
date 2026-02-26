@@ -1,13 +1,19 @@
 # This is a asyncronous replica of the Maria DB Cluster for SUNET
 class sunet::mariadb::backup(
   String $mariadb_version=latest,
+  String $mariadb_image='docker.sunet.se/drive/mariadb',
   Array[String] $dns = [],
   Boolean $backup_to_baas = true,
   Boolean $nrpe = true,
+  String  $backup_hour = '06',
+  String  $backup_minute = '10',
+  Integer $backup_max_age = 24,
+  Integer $local_retension = 31,
 ) {
 
   sunet::mariadb { 'sunet_mariadb_simple':
     mariadb_version => $mariadb_version,
+    mariadb_image   => $mariadb_image,
     ports           => [3306],
     dns             => $dns,
     galera          => false,
@@ -41,9 +47,9 @@ class sunet::mariadb::backup(
 
     sunet::scriptherder::cronjob { 'backup2baas':
       cmd           => '/usr/local/bin/backup2baas',
-      hour          => '6',
-      minute        => '10',
-      ok_criteria   => ['exit_status=0', 'max_age=24h'],
+      hour          => $backup_hour,
+      minute        => $backup_minute,
+      ok_criteria   => ['exit_status=0', "max_age=${backup_max_age}h"],
       warn_criteria => ['exit_status=1'],
     }
   }

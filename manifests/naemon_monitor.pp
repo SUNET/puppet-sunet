@@ -21,12 +21,18 @@ class sunet::naemon_monitor (
   String $nagflux_tag = 'latest',
   String $grafana_tag = '12.1.1',
   String $grafana_default_role = 'Viewer',
-  String $loki_tag = '3.4.5',
-  String $mimir_tag = '2.16.1',
-  String $tempo_tag = '2.8.2',
-  String $alloy_tag = 'v1.10.2',
+  String $loki_tag = '3.5.7',
+  String $mimir_tag = '2.17.1',
+  String $tempo_tag = '2.9.0',
+  String $alloy_tag = 'v1.11.2',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
+  Hash $regexp_based_groups = {
+        'prod' => '.*-prod-.*',
+        'test' => '.*-test-.*',
+        'lab' => '.*-lab-.*',
+        'qa' => '.*-qa-.*',
+  },
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
   Array $exclude_hosts = [],
@@ -35,6 +41,7 @@ class sunet::naemon_monitor (
   Array[Optional[String]] $optout_checks = [],
   Optional[Boolean] $receive_otel = false,
   String $otel_retention = '2232h',
+  Boolean $nsca          = false,
 ) {
   include sunet::systemd_reload
 
@@ -101,7 +108,11 @@ class sunet::naemon_monitor (
   }
 
   if lookup('shib_key', undef, undef, undef) != undef {
-    sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
+    sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem':
+      hiera_key => 'shib_key',
+      owner     => 100,
+      group     => 101,
+    }
     # assume cert is in cosmos repo (overlay)
   }
 
@@ -129,6 +140,18 @@ class sunet::naemon_monitor (
     content => template('sunet/naemon_monitor/service-override.conf.erb'),
     require => File['/etc/systemd/system/sunet-naemon_monitor.service.d/'],
     notify  => Class['sunet::systemd_reload'],
+  }
+
+  # Make sure that a user with the name "naemon" is created in the database, with the same password as in Hiera.
+  # E.g `CREATE USER naemon IDENTIFIED BY '<something secret>';`
+  $check_mariadb_password = lookup('check_mariadb_password', String, undef, 'NOT_SET_IN_HIERA')
+  if $check_mariadb_password != 'NOT_SET_IN_HIERA' {
+    file { '/opt/naemon_monitor/check_mariadb.cnf':
+      ensure  => 'file',
+      mode    => '0700',
+      owner   => 'root',
+      content => inline_template("[client]\nuser=naemon\npassword=<%= @check_mariadb_password %>\n"),
+    }
   }
 
   sunet::docker_compose { 'naemon_monitor':
@@ -313,6 +336,40 @@ class sunet::naemon_monitor (
     })
   }
 
+  if $nsca {
+    $nsca_encryption_method = lookup('nsca_encryption_method', Integer, undef, 14)
+    $nsca_password = lookup('nsca_password', String, undef, 'NOT_SET_IN_HIERA')
+    # Default to nagios.nordu.net (109.105.111.111)
+    $nsca_server = lookup('nsca_server', String, undef, '109.105.111.111')
+    ensure_resource('file','/etc/naemon/conf.d/nsca/', {
+        ensure => directory,
+        mode   => '0644',
+        group  => 'root',
+        owner  => 'root',
+    })
+    file { '/etc/naemon/conf.d/nsca/nsca_commands.cfg':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/nsca_commands.cfg.erb'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/send_nsca.cfg':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/send_nsca.cfg.erb'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/obsessive-commands.cfg':
+      ensure  => file,
+      content => file('sunet/naemon_monitor/obsessive-commands.cfg'),
+        mode  => '0644',
+        group => 'root',
+        owner => 'root',
+    }
+  }
+
   nagioscfg::contactgroup { 'alerts': }
 
   unless 'load' in $optout_checks {
@@ -371,6 +428,7 @@ class sunet::naemon_monitor (
   }
   unless 'reboot' in $optout_checks {
     nagioscfg::service { 'check_reboot':
+      use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_reboot',
       description    => 'Reboot Needed',
@@ -407,6 +465,7 @@ class sunet::naemon_monitor (
   }
   unless 'scriptherder' in $optout_checks {
     nagioscfg::service { 'check_scriptherder':
+      use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_scriptherder',
       description    => 'Scriptherder Status',
@@ -426,6 +485,7 @@ class sunet::naemon_monitor (
 
   require sunet::nagios::nrpe_check_cosmos_keys
   nagioscfg::service {'check_cosmos_keys':
+    use            => 'naemon-service',
     hostgroup_name => ['sunet::naemon_monitor'],
     check_command  => 'check_nrpe!check_cosmos_keys',
     description    => 'Cosmos GPG keys',
@@ -487,6 +547,7 @@ class sunet::naemon_monitor (
       single_ip           => true,
       require             => File['/etc/naemon/conf.d/nagioscfg/'],
       exclude_hosts       => $exclude_hosts,
+      regexp_based_groups => $regexp_based_groups,
     }
   }
   else {

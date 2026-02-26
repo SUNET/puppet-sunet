@@ -3,6 +3,8 @@ class sunet::mastodon::backend(
   String $db_name                        = 'postgres',
   String $db_user                        = 'postgres',
   String $interface                      = 'ens3',
+  String $postgres_image                 = 'postgres:14-alpine',
+  String $redis_image                    = 'redis:6-alpine',
   Variant[String, Undef] $baas2_nodename = undef,
 ) {
   # Must set in hiera eyaml
