@@ -14,6 +14,8 @@ class sunet::bankidp(
   Boolean $infra_cert_from_this_class = true,
   String $bankid_home = '/opt/bankidp',
   String $imagetag='latest',
+  String $imagename='bankid-idp',
+  String $imageregistry='docker.sunet.se',
   String $interface = 'ens3',
   String $service_name = 'bankidp.qa.swamid.se',
   String $service_path = '/bankid/idp',
