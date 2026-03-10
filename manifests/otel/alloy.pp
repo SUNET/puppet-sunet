@@ -35,6 +35,13 @@ class sunet::otel::alloy (
       group   => 'root',
       content => template( 'sunet/otel/example.yaml' ),
     }
+    file { '/etc/default/alloy' :
+      ensure  => 'file',
+      notify  => Service['alloy'],
+      mode    => '0644',
+      group   => 'root',
+      content => template( 'sunet/otel/defaults-alloy' ),
+    }
     file { '/etc/alloy/config.alloy' :
       ensure  => 'file',
       notify  => Service['alloy'],
