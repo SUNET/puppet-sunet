@@ -4,6 +4,7 @@
 class sunet::otel::alloy (
   String  $otel_receiver    = undef,
   Boolean $enabled=true,
+  String  $version='1.14.0-1'
 ) {
 
   if $enabled {
@@ -14,7 +15,7 @@ class sunet::otel::alloy (
       unless  => 'dpkg -l alloy',
     }
     package { 'alloy':
-      ensure => 'installed',
+      ensure => $version,
     }
     file { '/etc/alloy' :
       ensure => 'directory',
