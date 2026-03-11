@@ -229,13 +229,40 @@ Puppet::Functions.create_function(:sunet_prefixes) do
         "infraca",
         "acmec",
       ]},
-      { "net": "2001:948:4:6::111/128",     "family": "ip6",  "comment": "nagios.nordu.net", "resource_type": "nagiosxi", "tags": [
+      { "net": "109.105.111.0/24",     "family": "ip",  "comment": "nagios.nordu.net", "resource_type": "nagiosxi", "tags": [
         "knubbis",
         "infraca",
+        "acmec",
       ]},
-      { "net": "109.105.111.111",     "family": "ip",  "comment": "nagios.nordu.net", "resource_type": "nagiosxi", "tags": [
+      { "net": "52.48.169.118/32", "family": "ip", "comment": "stats2.inacademia.org", "resource_type": "acmec", "tags": [
         "knubbis",
         "infraca",
+        "acmec",
+      ]},
+      { "net": "109.105.116.119/32", "family": "ip", "comment": "md-publisher-bal.inacademia.org", "resource_type": "acmec", "tags": [
+        "knubbis",
+        "infraca",
+        "acmec",
+      ]},
+      { "net": "3.121.211.200/32", "family": "ip", "comment": "md-publisher-fra.inacademia.org", "resource_type": "acmec", "tags": [
+        "knubbis",
+        "infraca",
+        "acmec",
+      ]},
+      { "net": "193.140.63.114/32", "family": "ip", "comment": "md-publisher-ank.inacademia.org", "resource_type": "acmec", "tags": [
+        "knubbis",
+        "infraca",
+        "acmec",
+      ]},
+      { "net": "192.121.209.31/32", "family": "ip", "comment": "e-com.test.inacademia.org", "resource_type": "acmec", "tags": [
+        "knubbis",
+        "infraca",
+        "acmec",
+      ]},
+      { "net": "52.210.104.234/32", "family": "ip", "comment": "rp.test.inacademia.org", "resource_type": "acmec", "tags": [
+        "knubbis",
+        "infraca",
+        "acmec",
       ]},
     ]
   end
