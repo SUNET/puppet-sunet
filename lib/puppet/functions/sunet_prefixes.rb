@@ -234,32 +234,32 @@ Puppet::Functions.create_function(:sunet_prefixes) do
         "infraca",
         "acmec",
       ]},
-      { "net": "52.48.169.118/32", "family": "ip", "comment": "stats2.inacademia.org", "resource_type": "acmec", "tags": [
+      { "net": "52.48.169.118/32", "family": "ip", "comment": "stats2.inacademia.org", "resource_type": "inacademia", "tags": [
         "knubbis",
         "infraca",
         "acmec",
       ]},
-      { "net": "109.105.116.119/32", "family": "ip", "comment": "md-publisher-bal.inacademia.org", "resource_type": "acmec", "tags": [
+      { "net": "109.105.116.119/32", "family": "ip", "comment": "md-publisher-bal.inacademia.org", "resource_type": "inacademia", "tags": [
         "knubbis",
         "infraca",
         "acmec",
       ]},
-      { "net": "3.121.211.200/32", "family": "ip", "comment": "md-publisher-fra.inacademia.org", "resource_type": "acmec", "tags": [
+      { "net": "3.121.211.200/32", "family": "ip", "comment": "md-publisher-fra.inacademia.org", "resource_type": "inacademia", "tags": [
         "knubbis",
         "infraca",
         "acmec",
       ]},
-      { "net": "193.140.63.114/32", "family": "ip", "comment": "md-publisher-ank.inacademia.org", "resource_type": "acmec", "tags": [
+      { "net": "193.140.63.114/32", "family": "ip", "comment": "md-publisher-ank.inacademia.org", "resource_type": "inacademia", "tags": [
         "knubbis",
         "infraca",
         "acmec",
       ]},
-      { "net": "192.121.209.31/32", "family": "ip", "comment": "e-com.test.inacademia.org", "resource_type": "acmec", "tags": [
+      { "net": "192.121.209.31/32", "family": "ip", "comment": "e-com.test.inacademia.org", "resource_type": "inacademia", "tags": [
         "knubbis",
         "infraca",
         "acmec",
       ]},
-      { "net": "52.210.104.234/32", "family": "ip", "comment": "rp.test.inacademia.org", "resource_type": "acmec", "tags": [
+      { "net": "52.210.104.234/32", "family": "ip", "comment": "rp.test.inacademia.org", "resource_type": "inacademia", "tags": [
         "knubbis",
         "infraca",
         "acmec",
