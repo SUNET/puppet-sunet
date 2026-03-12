@@ -4,6 +4,8 @@ class sunet::forgejo::runner (
   String $version_sha256sum = 'fe83c5d5fffbbb81f2f8d93f4638d098ad9c08b77aa6b5035856ae9643d25684',
   String $machine_image     = 'quay.io/podman/machine-os:6.0',
   Integer $runners = 4,
+  Integer $cpu_per_runner = 4,
+  Integer $memory_per_runner = 16384,
   String $forgejo_instance  =  'platform.sunet.se',
 ) {
 

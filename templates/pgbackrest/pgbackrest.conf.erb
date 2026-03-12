@@ -1,0 +1,16 @@
+[global]
+repo1-path=/var/lib/pgbackrest
+repo1-retention-full-type=time
+repo1-retention-full=<%= @retention_full_days %>
+
+[patroni]
+<% @counter = 1 %>
+<% @db_nodes.each_key do |node| -%>
+pg<%= @counter %>-host=<%= node %>
+pg<%= @counter %>-path=/var/lib/postgresql/data
+pg<%= @counter %>-host-user=root
+pg<%= @counter %>-host-cmd=<%= @pg_command %>
+pg<%= @counter %>-socket-path=/var/lib/postgresql
+pg<%= @counter %>-user=<%= @pg_user %>
+<% @counter += 1 %>
+<% end -%>
