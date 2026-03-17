@@ -1,4 +1,6 @@
 # rsyslog
+
+# @param max_message_size          Configures the $MaxMessageSize to allow for larger log messages
 class sunet::rsyslog(
   $daily_rotation = true,
   $syslog_servers = lookup(syslog_servers, undef, undef, []),
@@ -9,6 +11,7 @@ class sunet::rsyslog(
   $udp_client = lookup('udp_client', undef, undef, 'any'),
   $tcp_port = lookup(tcp_port, undef, undef, undef),
   $tcp_client = lookup('tcp_client', undef, undef, 'any'),
+  $max_message_size = lookup(max_message_size, undef, undef, undef),
   $traditional_file_format = false,
 ) {
   include stdlib

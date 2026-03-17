@@ -10,6 +10,7 @@ class sunet::rediscluster(
   Optional[String] $tag = '7-bookworm',
 )
 {
+  include sunet::packages::redis_tools
 
   # Allow the user to either specify the variable in cosmos-rules or in hiera
   if $cluster_announce_ip == '' {

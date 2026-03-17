@@ -10,6 +10,7 @@ class sunet::microk8s::node(
   Optional[Array[String]] $csr_conf_template = [],
 ) {
   include sunet::packages::snapd
+  include sunet::packages::sudo
 
   $hiera_peers =  lookup('microk8s_peers', undef, undef, [])
   if $facts['microk8s_role'] == 'worker' {
