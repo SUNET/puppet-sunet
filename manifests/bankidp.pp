@@ -42,13 +42,13 @@ class sunet::bankidp(
 
     file { '/usr/lib/nagios/plugins/check_user_cert_expire':
       ensure  => file,
-      mode    => '755',
+      mode    => '0755',
       content => file ('sunet/bankidp/check_user_cert_expire.sh')
     }
 
     file { '/usr/lib/nagios/plugins/check_app_cert_expire':
       ensure  => file,
-      mode    => '755',
+      mode    => '0755',
       content => file ('sunet/bankidp/check_app_cert_expire.sh')
     }
 
@@ -71,7 +71,7 @@ class sunet::bankidp(
         command_line => "/usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
       }
       sunet::nagios::nrpe_command {"check_cert_expire_${name}":
-         command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
+          command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
       }
     }
 
