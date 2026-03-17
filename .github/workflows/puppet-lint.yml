@@ -12,10 +12,10 @@ name: puppet-lint
 
 on:
   push:
-    branches: [ "main", "testing" ]
+    branches: [ "testing" ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main", "testing" ]
+    branches: [ "testing" ]
 
 permissions:
   contents: read
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.7
+          ruby-version: 3.1
           bundler-cache: true
 
       - name: Install puppet-lint

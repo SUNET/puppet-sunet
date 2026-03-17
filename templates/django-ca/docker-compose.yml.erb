@@ -1,0 +1,41 @@
+---
+services:
+  app:
+    container_name: django-ca-app
+    image: docker.sunet.se/django-ca:<%= @django_ca_tag %>
+    volumes:
+      - <%= @config_dir %>/django-ca.yaml:/usr/src/django-ca/ca/conf/compose/99-django-ca.yaml
+      - static:/usr/share/django-ca/static/
+      - /usr/safenet/lunaclient/cert/client/:/usr/safenet/lunaclient/cert/client/
+      - /usr/safenet/lunaclient/cert/server/:/usr/safenet/lunaclient/cert/server/
+      - /etc/Chrystoki.conf:/etc/Chrystoki.conf:ro
+
+    environment:
+      GUNICORN_CMD_ARGS: '--bind=[::]'
+      DJANGO_CA_SETTINGS: ${DJANGO_CA_SETTINGS:-conf/:conf/compose}
+      DJANGO_CA_SECRET_KEY: <%= @django_ca_secret_key %>
+      DJANGO_CA_STARTUP_COLLECTSTATIC: 1
+      DJANGO_CA_STARTUP_MIGRATE: 1
+      DJANGO_CA_STARTUP_CHECK: 1
+    restart: unless-stopped
+    healthcheck:
+        test: ["CMD", "nc", "-w", "1", "-z", "127.0.0.1", "8000"]
+        timeout: 1s
+        start_period: 20s
+        start_interval: 1s
+        interval: 1s
+    stop_signal: SIGINT
+
+  nginx:
+    container_name: django-ca-nginx
+    image: nginx:<%= @nginx_tag %>
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - <%= @config_dir %>/nginx.conf:/etc/nginx/conf.d/ca.conf:ro
+      - /etc/ssl:/etc/ssl:ro
+      - static:/usr/share/nginx/html/static/:ro
+
+volumes:
+  static:

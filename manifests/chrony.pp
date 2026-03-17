@@ -23,6 +23,15 @@ class sunet::chrony(
   Array[String] $ntsserverkeys = [],
 ) {
 
+  $distro = $facts['os']['distro']['id']
+  $release = $facts['os']['distro']['release']['major']
+
+  if $distro == 'Ubuntu' or ($distro == 'Debian' and versioncmp($release, '12') <= 0) {
+    $use_leapseclist = false
+  } else {
+    $use_leapseclist = true
+  }
+
   ### BEGIN sunet::ntp cleanup
   # Cleanup potential remains from previous usage of sunet::ntp
   package { 'ntp': ensure => 'purged' }

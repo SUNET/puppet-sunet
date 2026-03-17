@@ -35,25 +35,14 @@ class sunet::hsm::client (
     line     => 'export PATH=$PATH:/usr/safenet/lunaclient/bin',
   }
 
-  $hsm_servers.each  | $hsm | {
-
-    file { "/usr/safenet/lunaclient/cert/server/${hsm}Cert.pem":
-      ensure  => 'file',
-      mode    => '0750',
-      owner   => 'root',
-      content => file("sunet/hsm/servers/${hsm}Cert.pem")
-    }
+  sunet::hsm::client_trust { 'hsms':
+      hsm_servers => $hsm_servers,
   }
 
-  file { '/opt/hsmclient/libexec/configure-luna':
-    ensure  => 'file',
-    mode    => '0755',
-    owner   => 'root',
-    content => file('sunet/hsm/configure-luna')
-  }
+  sunet::hsm::client_auth {'client_cert': }
 
-  exec { '/opt/hsmclient/libexec/configure-luna':
-    onlyif =>  'test `grep  sunet.se /etc/Chrystoki.conf |wc -l` -eq 0',
+  sunet::hsm::client_chrystoki {'/etc/Chrystoki.conf':
+      hsm_servers => $hsm_servers,
   }
 
   if ($allow_remote_ped_from) {

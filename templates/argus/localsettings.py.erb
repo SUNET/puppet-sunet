@@ -1,0 +1,114 @@
+from django.core.exceptions import ImproperlyConfigured
+
+from argus.htmx.settings import *
+
+<% if @argus_debug  -%>
+
+from . import get_bool_env, get_str_env  # noqa: E402
+
+DEBUG = get_bool_env("DEBUG", True)
+TEMPLATES[0]["OPTIONS"]["debug"] = get_bool_env("TEMPLATE_DEBUG", True)  # noqa: F405
+
+<% end -%>
+
+if not FRONTEND_URL:
+    raise ImproperlyConfigured('"FRONTEND_URL" has not been set in production!')
+
+# You must set this: ip-addresses, hostnames and domain names allowed
+# ALLOWED_HOSTS = [
+#     "127.0.0.1",
+#     "localhost",
+# ]
+
+ALLOWED_HOSTS = ["*"]
+
+SECRET_KEY = get_str_env("SECRET_KEY", required=True)
+STATIC_ROOT = get_str_env("STATIC_ROOT", required=True)
+STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = get_str_env("EMAIL_HOST", required=True)
+DEFAULT_FROM_EMAIL = get_str_env("DEFAULT_FROM_EMAIL", required=True)
+
+SEND_NOTIFICATIONS = get_bool_env("ARGUS_SEND_NOTIFICATIONS", default=True)
+
+# Paths to plugins
+MEDIA_PLUGINS = [
+    "argus.notificationprofile.media.email.EmailNotification",
+    "argus.notificationprofile.media.sms_as_email.SMSNotification",
+]
+
+DEFAULT_SMS_MEDIA="argus.notificationprofile.media.sms_as_email.SMSNotification"
+SMS_GATEWAY_ADDRESS=get_str_env("SMS_GATEWAY_ADDRESS", required=False)
+
+# Beware: setting this to something else in production has security implications
+INTERNAL_IPS = []  # Don't alter me, please
+EMAIL_PORT = get_int_env("EMAIL_PORT", 587)
+EMAIL_USE_TLS = get_bool_env("EMAIL_USE_TLS", default=True)
+
+
+<% case @argus_auth_type
+    when "keycloak" -%>
+
+AUTHENTICATION_BACKENDS = [
+    "social_core.backends.keycloak.KeycloakOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
+
+SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY = \
+  '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_public_key"]) %>'
+
+SOCIAL_AUTH_KEYCLOAK_KEY = '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_key"]) %>'
+SOCIAL_AUTH_KEYCLOAK_SECRET = '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_secret"]) %>'
+SOCIAL_AUTH_KEYCLOAK_BASE_URL= '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>'
+
+# Remote authentication support
+REMOTE_AUTH_ENABLED = True
+REMOTE_AUTH_BACKEND = 'social_core.backends.keycloak.KeycloakOAuth2'
+
+REMOTE_AUTH_HEADER = get_str_env('REMOTE_AUTH_HEADER', 'HTTP_REMOTE_USER')
+REMOTE_AUTH_AUTO_CREATE_USER = get_bool_env('REMOTE_AUTH_AUTO_CREATE_USER', default=False)
+
+SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL = \
+  '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>/protocol/openid-connect/auth'
+SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL = \
+  '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.auth_keycloak_base_url"]) %>/protocol/openid-connect/token'
+SOCIAL_AUTH_KEYCLOAK_AUTH_EXTRA_ARGUMENTS = {'kc_idp_hint': '<%= scope.call_function('safe_hiera',["argus_sso_keycloak.kc_idp_hint"]) %>'}
+
+<% when "local" -%>
+
+
+<% when "satosa-oidc" -%>
+
+
+<% end -%>
+
+<% if @argus_debug  -%>
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'social': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+
+
+LOGGING_CONFIG = None
+if not LOGGING_MODULE:  # noqa: F405
+    LOGGING_MODULE = "argus.site.logging.DEV"
+    DEV_LOGGING = setup_logging(LOGGING_MODULE)  # noqa: F405
+
+DEBUG=True
+
+<% end -%>
+

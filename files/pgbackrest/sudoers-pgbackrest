@@ -1,0 +1,4 @@
+# Allow nagios user to sudo when executing check-pgbackrest-status
+nagios   ALL=(root) NOPASSWD: /usr/local/sbin/check-pgbackrest-status
+nagios   ALL=(root) NOPASSWD: /usr/bin/pgbackrest --stanza=patroni info --output=json
+nagios   ALL=(root) NOPASSWD: /usr/bin/pgbackrest --stanza=patroni check
