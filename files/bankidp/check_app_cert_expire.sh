@@ -10,32 +10,31 @@ ok=1209600
 crit=604800
 
 usage() {
-        echo "Usage: $0 <certfile>" >&2
-        exit 3
+	echo "Usage: $0 <certfile>" >&2
+	exit 3
 }
 
 if [ "$#" != 1 ]; then
-        usage
+	usage
 fi
 
 cert="$1"
 
-if ! [ -f "$cert" ] ; then
-        echo "Infra cert file ($cert) does not exist" >&2
-        exit 0
+if ! [ -f "$cert" ]; then
+	echo "Infra cert file ($cert) does not exist" >&2
+	exit 0
 fi
 
-expires=`openssl x509 -enddate -noout -passin pass:qwerty123 < "$cert"`
+expires=$(openssl x509 -enddate -noout -passin pass:qwerty123 <"$cert")
 
-if openssl x509 -checkend "$ok" -noout -passin pass:qwerty123 < "$cert"  >/dev/null; then
-        echo "OK: $expires"
-        exit 0
+if openssl x509 -checkend "$ok" -noout -passin pass:qwerty123 <"$cert" >/dev/null; then
+	echo "OK: $expires"
+	exit 0
 fi
 
-
-if openssl x509 -checkend "$crit" -noout -passin pass:qwerty123 < "$cert"  >/dev/null; then
-        echo "CRITICAL: $expires"
-        exit 2
+if openssl x509 -checkend "$crit" -noout -passin pass:qwerty123 <"$cert" >/dev/null; then
+	echo "CRITICAL: $expires"
+	exit 2
 fi
 echo "CRITICAL: $expires"
 exit 2
