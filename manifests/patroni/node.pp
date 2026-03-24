@@ -74,8 +74,10 @@ class sunet::patroni::node(
   }
 
   if ($pgbackrest) {
-    # Install pgBackRest
-    include sunet::packages::pgbackrest
+    file { '/usr/local/bin/pgbackrest-docker':
+      content => file('sunet/patroni/pkbackrest-docker'),
+      mode    => '0755',
+    }
     # Write the pgbackrest config
     file { '/opt/patroni/config/pgbackrest.conf':
       content => template('sunet/patroni/pgbackrest.conf.erb'),
