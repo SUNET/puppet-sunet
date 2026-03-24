@@ -13,7 +13,7 @@ services:
       - '/usr/bin/pgbackrest:/usr/bin/pgbackrest'
       - '/opt/patroni/config/pgbackrest.conf:/etc/pgbackrest.conf:ro'
       - '/root/.ssh/id_ed25519:/home/postgres/.ssh/id_ed25519:ro'
-      - '/root/.ssh/known_hosts:/home/postgres/.ssh/known_hosts:ro'
+      - '/etc/ssh/ssh_known_hosts:/etc/ssh/ssh_known_hosts:ro'
       <% end %>
 
     entrypoint: /usr/bin/python3
