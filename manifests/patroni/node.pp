@@ -106,6 +106,10 @@ class sunet::patroni::node(
         sunet::snippets::ssh_keygen{$key_path:} # This will not overwrite an existing key
       }
     }
+    file { $key_path:
+      ensure =>  file,
+      mode   => '0644',
+    }
   }
 
   sunet::docker_compose { 'patroni':
