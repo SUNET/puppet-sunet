@@ -75,7 +75,7 @@ class sunet::patroni::node(
 
   if ($pgbackrest) {
     file { '/usr/local/bin/pgbackrest-docker':
-      content => file('sunet/patroni/pkbackrest-docker'),
+      content => file('sunet/patroni/pgbackrest-docker'),
       mode    => '0755',
     }
     # Write the pgbackrest config
