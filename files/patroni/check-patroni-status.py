@@ -8,8 +8,10 @@ This is a script the checks the health of patroni and exits with NRPE exit codes
 import json
 import sys
 from typing import Dict, Any
-
 import requests
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def print_status_info(
@@ -43,18 +45,18 @@ def main() -> None:
     """The starting point of the program"""
 
     # Paths
-    patroni_status_url = "http://localhost:8008/patroni"
-    patroni_cluster_url = "http://localhost:8008/cluster"
+    patroni_status_url = "https://localhost:8008/patroni"
+    patroni_cluster_url = "https://localhost:8008/cluster"
 
     try:
 
         # Get the info from the /patroni endpoint
-        response = requests.get(patroni_status_url, timeout=10)
+        response = requests.get(patroni_status_url, timeout=10, verify=False)
         response.raise_for_status()
         patroni_status = response.json()
 
         # Get the info from the /cluster endpoint
-        response = requests.get(patroni_cluster_url, timeout=10)
+        response = requests.get(patroni_cluster_url, timeout=10, verify=False)
         response.raise_for_status()
         patroni_cluster_info = response.json()
 
