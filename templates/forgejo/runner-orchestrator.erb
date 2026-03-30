@@ -8,5 +8,6 @@ docker run --rm platform.sunet.se/platform/dirigenten:latest \
 --ssh-key id_ed25519
 --ssh-host $(hostname -f) \
 --scp wrapper:/home/ubuntu/wrapper \
+--scp /opt/forgejo-runner-orchestrator/config/runner.config:/home/ubuntu/.runner.config \
 --scp forgejo-runner: \
 /home/ubuntu/wrapper "$(hostname -f):<%= @forgejo_prefix %>-${INT}" \
