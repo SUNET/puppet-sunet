@@ -24,7 +24,7 @@ class sunet::forgejo::runner::orchestrator (
     ensure => 'directory',
   }
 
-  file { "/opt/forgejo-runner-orchestrator/config/runner.config":
+  file { '/opt/forgejo-runner-orchestrator/config/runner.config':
     ensure  => 'file',
     content => file('sunet/forgejo/runner-2.0.config'),
   }
