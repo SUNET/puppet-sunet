@@ -8,7 +8,7 @@ docker run --rm \
 platform.sunet.se/platform/dirigenten:latest \
 --network external \
 --prefix <%= @forgejo_prefix %>-${INT} \
---key-name dirigenten \
+--key-name <%= @openstack_key_name %> \
 --ssh-key id_ed25519 \
 --ssh-host $(hostname -f) \
 --scp /wrapper:/home/ubuntu/wrapper \
