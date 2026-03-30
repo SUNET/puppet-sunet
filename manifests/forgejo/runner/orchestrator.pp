@@ -4,7 +4,7 @@ class sunet::forgejo::runner::orchestrator (
   String $version_sha256sum = 'fe83c5d5fffbbb81f2f8d93f4638d098ad9c08b77aa6b5035856ae9643d25684',
   Integer $runners = 4,
   String $forgejo_instance  =  'platform.sunet.se',
-  String $prefix            = 'runner',
+  String $forgejo_prefix            = 'runner',
 ) {
 
   $forgejo_registration_token = lookup('forgejo_registration_token', undef, undef, 'NOT_SET_IN_HIERA');
