@@ -1,0 +1,16 @@
+[Unit]
+Description=forgejo-runner as %i
+After=network.target
+
+[Service]
+Type=simple
+TimeoutStartSec=0
+TimeoutStopSec=30
+Restart=always
+RestartSec=10
+Environment="INT=%i"
+ExecStart=/opt/forgejo-runner/libexec/runner-systemd-wrapper
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
