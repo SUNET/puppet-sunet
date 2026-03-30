@@ -6,7 +6,7 @@ docker run --rm \
  -v /opt/forgejo-runner-orchestrator/libexec/runner-wrapper:/wrapper:ro \
  -v /opt/forgejo-runner-orchestrator/config/clouds.yaml:/etc/openstack/clouds.yaml:ro \
  -v /opt/forgejo-runner-orchestrator/config/id_ed25519:/id_ed25519:ro \
- -v /opt/forgejo-runner-orchestrator/bin/forgejo-runner:/forgejo-runner:ro \
+ -v $(realpath /opt/forgejo-runner-orchestrator/bin/forgejo-runner):/forgejo-runner:ro \
 platform.sunet.se/platform/dirigenten:latest \
 --network <%= @openstack_network %> \
 --prefix <%= @forgejo_prefix %>-${INT} \
