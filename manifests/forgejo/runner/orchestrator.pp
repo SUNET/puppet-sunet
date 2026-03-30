@@ -25,6 +25,18 @@ class sunet::forgejo::runner::orchestrator (
     ensure => 'directory',
   }
 
+  # Generate SSH-key used to access DB nodes
+  $key_path = '/opt/forgejo-runner-orchestrator/config/id_ed25519'
+  if lookup('forgejo_runner_ssh_key', undef, undef, undef) {
+    ensure_resource('sunet::snippets::secret_file', $key_path, {
+    hiera_key => 'forgejo_runner_ssh_key',
+  })
+  } else {
+    if (!find_file($key_path)){
+      sunet::snippets::ssh_keygen{$key_path:} # This will not overwrite an existing key
+    }
+  }
+
   file { '/opt/forgejo-runner-orchestrator/config/runner.config':
     ensure  => 'file',
     content => file('sunet/forgejo/runner-2.0.config'),
