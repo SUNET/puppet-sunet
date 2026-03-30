@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+
+docker run --rm platform.sunet.se/platform/dirigenten:latest \
+--network external \
+--prefix jocarftw \
+--key-name dirigenten
+--ssh-key id_ed25519
+--ssh-host $(hostname -f) \
+--scp wrapper:/home/ubuntu/wrapper \
+--scp forgejo-runner: \
+/home/ubuntu/wrapper jocarftw-1 \
