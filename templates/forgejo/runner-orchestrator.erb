@@ -7,7 +7,7 @@ docker run --rm \
  -v /opt/forgejo-runner-orchestrator/config/clouds.yaml:/etc/openstack/clouds.yaml:ro \
  -v /opt/forgejo-runner-orchestrator/config/id_ed25519:/id_ed25519:ro \
 platform.sunet.se/platform/dirigenten:latest \
---network external \
+--network <%= @openstack_network %> \
 --prefix <%= @forgejo_prefix %>-${INT} \
 --key-name <%= @openstack_key_name %> \
 --ssh-key /id_ed25519 \

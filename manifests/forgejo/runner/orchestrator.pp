@@ -6,6 +6,7 @@ class sunet::forgejo::runner::orchestrator (
   String $forgejo_instance  =  'platform.sunet.se',
   String $forgejo_prefix            = 'runner',
   String $openstack_key_name        = 'dirigenten',
+  String $openstack_network         =  'public',
 ) {
 
   $forgejo_registration_token = lookup('forgejo_registration_token', undef, undef, 'NOT_SET_IN_HIERA');
