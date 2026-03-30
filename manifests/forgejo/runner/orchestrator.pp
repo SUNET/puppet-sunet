@@ -59,7 +59,7 @@ class sunet::forgejo::runner::orchestrator (
   }
   file { '/opt/forgejo-runner-orchestrator/bin/forgejo-runner':
     ensure => link,
-    target => "/opt/forgejo-runner/bin/forgejo-runner-${version}",
+    target => "/opt/forgejo-runner-orchestrator/bin/forgejo-runner-${version}",
   }
 
   file { '/opt/forgejo-runner-orchestrator/libexec/runner-orchestrator':
