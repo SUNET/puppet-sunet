@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
 
-docker run --rm platform.sunet.se/platform/dirigenten:latest \
+docker run --rm \
+ -v /opt/forgejo-runner-orchestrator/config/runner.config:/runner.config:ro \
+ -v /opt/forgejo-runner-orchestrator/libexec/runner-wrapper:/wrapper:ro \
+ -v /opt/forgejo-runner-orchestrator/config/clouds.yaml:/etc/openstack/clouds.yaml:ro \
+platform.sunet.se/platform/dirigenten:latest \
 --network external \
 --prefix <%= @forgejo_prefix %> \
 --key-name dirigenten \
 --ssh-key id_ed25519 \
 --ssh-host $(hostname -f) \
---scp /opt/forgejo-runner-orchestrator/libexec/runner-wrapper:/home/ubuntu/wrapper \
---scp /opt/forgejo-runner-orchestrator/config/runner.config:/home/ubuntu/runner.config \
+--scp /wrapper:/home/ubuntu/wrapper \
+--scp /runner.config:/home/ubuntu/runner.config \
 --scp forgejo-runner: \
 /home/ubuntu/wrapper "$(hostname -f):<%= @forgejo_prefix %>-${INT}"
