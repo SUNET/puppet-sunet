@@ -20,6 +20,16 @@ class sunet::forgejo::runner::orchestrator (
     ensure => 'directory',
   }
 
+  file {'/opt/forgejo-runner-orchestrator/config':
+    ensure => 'directory',
+  }
+
+  file { "/opt/forgejo-runner-orchestrator/config/runner.config":
+    ensure  => 'file',
+    content => file('sunet/forgejo/runner-2.0.config'),
+  }
+
+
   file { "/opt/forgejo-runner-orchestrator/bin/forgejo-runner-${version}":
     ensure         => 'file',
     source         => "https://code.forgejo.org/forgejo/runner/releases/download/v${version}/forgejo-runner-${version}-linux-amd64",
