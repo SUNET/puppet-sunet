@@ -6,7 +6,7 @@ class sunet::forgejo::runner::orchestrator (
   String $forgejo_instance  =  'platform.sunet.se',
 ) {
 
-  $registration_token = lookup('forgejo_registration_token', undef, undef, 'NOT_SET_IN_HIERA');
+  $forgejo_registration_token = lookup('forgejo_registration_token', undef, undef, 'NOT_SET_IN_HIERA');
 
   file {'/opt/forgejo-runner-orchestrator':
     ensure => 'directory',
