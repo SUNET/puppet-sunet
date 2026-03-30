@@ -6,6 +6,7 @@ docker run --rm \
  -v /opt/forgejo-runner-orchestrator/libexec/runner-wrapper:/wrapper:ro \
  -v /opt/forgejo-runner-orchestrator/config/clouds.yaml:/etc/openstack/clouds.yaml:ro \
  -v /opt/forgejo-runner-orchestrator/config/id_ed25519:/id_ed25519:ro \
+ -v /opt/forgejo-runner-orchestrator/bin/forgejo-runner:/forgejo-runner \
 platform.sunet.se/platform/dirigenten:latest \
 --network <%= @openstack_network %> \
 --prefix <%= @forgejo_prefix %>-${INT} \
@@ -14,5 +15,5 @@ platform.sunet.se/platform/dirigenten:latest \
 --ssh-host $(hostname -f) \
 --scp /wrapper:/home/ubuntu/wrapper \
 --scp /runner.config:/home/ubuntu/runner.config \
---scp forgejo-runner: \
+--scp /forgejo-runner: \
 /home/ubuntu/wrapper "$(hostname -f):<%= @forgejo_prefix %>-${INT}"
