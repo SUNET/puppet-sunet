@@ -29,6 +29,12 @@ class sunet::forgejo::runner::orchestrator (
     content => file('sunet/forgejo/runner-2.0.config'),
   }
 
+  $clouds = lookup('clouds', undef, undef, {})
+  file { '/opt/forgejo-runner-orchestrator/config/clouds.yaml':
+    ensure  => file,
+    content => to_yaml({'clouds' => $clouds}),
+  }
+
 
   file { "/opt/forgejo-runner-orchestrator/bin/forgejo-runner-${version}":
     ensure         => 'file',
