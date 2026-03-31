@@ -29,8 +29,14 @@ class sunet::edusign::app(
   }
   sunet::metadata::trust::swamid {'required_title':}
 
+  # SP pre v1.5 vars
   $edusign_idp_entityid = hiera('edusign_idp_entityid', '')
   $edusign_metadata_file = hiera('edusign_metadata_file', '')
+
+  # SP post v1.5 vars for bankid
+  $bankid_md_path = hiera('bankid_md_path')
+  $bankid_entity_id = hiera('bankid_entity_id')
+
   $env_sp = ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
             "SP_HOSTNAME=${_host}",
             'BACKEND_HOST=edusign-app.docker',
@@ -39,7 +45,9 @@ class sunet::edusign::app(
             'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
             "MULTISIGN_BUTTONS=${invites}",
             'MDQ_BASE_URL=https://mds.swamid.se/',
-            'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt'
+            'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt',
+            "BANKID_MD_PATH=${bankid_md_path}",
+            "BANKID_ENTITY_ID=${bankid_entity_id}"
             ]
 
   if ($edusign_idp_entityid == '') {
@@ -69,6 +77,7 @@ class sunet::edusign::app(
     }
   }
 
+  # APP pre 1.5 vars
   $secret_key = hiera('edusign_secret_key')
   $edusign_api_base_url = hiera('edusign_api_base_url','https://api.edusign.sunet.se/v1/')
   $edusign_api_username = hiera('edusign_api_username')
@@ -82,6 +91,12 @@ class sunet::edusign::app(
   $scope_whitelist = hiera('edusign_whitelist')
   $edusign_app_polling = hiera('edusign_app_polling', 'inviter')
   $edusign_app_extra_variables = hiera('edusign_app_extra_variables', [])
+
+  # APP post 1.5 vars for bankid
+  $edusign_api_profile_bankid = hiera('edusign_api_profile_bankid')
+  $edusign_api_username_bankid = hiera('edusign_api_username_bankid')
+  $edusign_api_password_bankid = hiera('edusign_api_password_bankid')
+  $bankid_idp = hiera('bankid_idp')
 
   $env_app = [ "SP_HOSTNAME=${_host}",
               "SERVER_NAME=${host}",
@@ -110,7 +125,12 @@ class sunet::edusign::app(
               "SESSION_COOKIE_NAME=${profile}",
               'LOCAL_STORAGE_BASE_DIR=/etc/edusign/data',
               'SQLITE_MD_DB_PATH=/etc/edusign/data/edusign.db',
-              "POLLING=${edusign_app_polling}"
+              "POLLING=${edusign_app_polling}",
+              'USE_BANKID=True',
+              "EDUSIGN_API_PROFILE_BANKID=${edusign_api_profile_bankid}",
+              "EDUSIGN_API_USERNAME_BANKID=${edusign_api_username_bankid}",
+              "EDUSIGN_API_PASSWORD_BANKID=${edusign_api_password_bankid}",
+              "BANKID_IDP=${bankid_idp}"
   ]
 
   $env_app_final = $env_app + $edusign_app_extra_variables
