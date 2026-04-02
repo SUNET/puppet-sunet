@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-RUNNER=/home/ubuntu/forgejo-runner
-NAME="${1}"
-${RUNNER} --config /home/ubuntu/runner.config register --no-interactive --instance https://"<%= @forgejo_instance %>" --token "<%= @forgejo_registration_token %>" --name "${NAME}"
-
 export RUNNER_TOOL_CACHE=/opt/hostedtoolcache
 
 while true; do
