@@ -41,17 +41,17 @@ class sunet::bankidp(
       port          => 443,
     }
 
-    file { '/usr/lib/nagios/plugins/check_user_cert_expire':
-      ensure  => file,
-      mode    => '0755',
-      content => file ('sunet/bankidp/check_user_cert_expire.sh')
-    }
+#    file { '/usr/lib/nagios/plugins/check_user_cert_expire':
+#      ensure  => file,
+#      mode    => '0755',
+#      content => file ('sunet/bankidp/check_user_cert_expire.sh')
+#    }
 
-    file { '/usr/lib/nagios/plugins/check_app_cert_expire':
-      ensure  => file,
-      mode    => '0755',
-      content => file ('sunet/bankidp/check_app_cert_expire.sh')
-    }
+#    file { '/usr/lib/nagios/plugins/check_app_cert_expire':
+#      ensure  => file,
+#      mode    => '0755',
+#      content => file ('sunet/bankidp/check_app_cert_expire.sh')
+#    }
 
     $credsdir = "${bankid_home}/credentials"
     # Unwanted password - but hey Java!
