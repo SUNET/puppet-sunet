@@ -2,6 +2,7 @@
 
 export RUNNER_TOOL_CACHE=/opt/hostedtoolcache
 
+RUNNER=/home/ubuntu/forgejo-runner
 while true; do
   ${RUNNER} --config ./runner.config one-job 2>&1 | sed '/^Error: could not fetch task/,$b;$q1'
 
