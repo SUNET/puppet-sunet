@@ -21,6 +21,7 @@ class sunet::bankidp(
   String $service_path = '/bankid/idp',
   String $spring_config_import = '/config/bankidp.yml',
   String $tz = 'Europe/Stockholm',
+  String $server_root_certificate_path = 'classpath:bankid-trust-prod.crt',
 ) {
 
   $apps = $facts['bankid_cluster_info']['apps']
