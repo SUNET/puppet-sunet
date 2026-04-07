@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    echo "Usage: $0 ssh PREFIX"
+    exit 1
+}
+
+COMMAND="${1:-}"
+
+case "$COMMAND" in
+    ssh)
+        PREFIX="${2:-}"
+        [[ -z "$PREFIX" ]] && usage
+	IP=$(docker run  -v /opt/forgejo-runner-orchestrator/config/clouds.yaml:/etc/openstack/clouds.yaml:ro --rm  --entrypoint "uv" platform.sunet.se/platform/dirigenten:latest run /dirigenten/ssh-runner --prefix runner-"$PREFIX" --list-ip)
+        if [[ -z "$IP" ]]; then
+            echo "Error: no IP found for runner-'$PREFIX'." >&2
+            exit 1
+        fi
+        exec ssh -o StrictHostKeyChecking=no -i /opt/forgejo-runner-orchestrator/config/id_ed25519 -l ubuntu "$IP"
+        ;;
+    *)
+        usage
+        ;;
+esac
+

@@ -75,6 +75,12 @@ class sunet::forgejo::runner::orchestrator (
     mode    => '0755',
   }
 
+  file { '/usr/local/bin/runnerctl':
+    ensure  => 'file',
+    content => template('sunet/forgejo/runnerctl.erb'),
+    mode    => '0755',
+  }
+
   file { '/etc/systemd/system/sunet-forgejo-runner-orchestrator@.service':
     ensure  => 'file',
     content => file('sunet/forgejo/forgejo-runner-2.0.service'),
