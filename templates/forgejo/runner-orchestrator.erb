@@ -27,7 +27,7 @@ docker run --rm \
  -v /opt/forgejo-runner-orchestrator/config/id_ed25519:/id_ed25519:ro \
  -v /opt/forgejo-runner-orchestrator/config/dot-runner-${INT}:/.runner:ro \
  -v $(realpath /opt/forgejo-runner-orchestrator/bin/forgejo-runner):/forgejo-runner:ro \
-platform.sunet.se/platform/dirigenten:latest \
+platform.sunet.se/platform/dirigenten:<%= @dirigenten_version %> \
 --network <%= @openstack_network %> \
 --prefix <%= @forgejo_prefix %>-${INT} \
 --key-name <%= @openstack_key_name %> \

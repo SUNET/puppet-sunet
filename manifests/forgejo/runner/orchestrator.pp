@@ -7,6 +7,7 @@ class sunet::forgejo::runner::orchestrator (
   String $forgejo_prefix            = 'runner',
   String $openstack_key_name        = 'dirigenten',
   String $openstack_network         =  'public',
+  String $dirigenten_version        = 'latest',
   Optional[String] $runner_image = undef,
 ) {
 
