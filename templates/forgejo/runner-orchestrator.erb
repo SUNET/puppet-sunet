@@ -37,4 +37,5 @@ platform.sunet.se/platform/dirigenten:latest \
 --scp /runner.config:/home/ubuntu/runner.config \
 --scp /forgejo-runner:/home/ubuntu/forgejo-runner \
 --scp /.runner:/home/ubuntu/.runner \
+<% if @runner_image -%>--image <%= @runner_image %> \<%- end -%>
 /home/ubuntu/wrapper
