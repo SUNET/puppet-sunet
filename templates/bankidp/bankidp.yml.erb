@@ -54,7 +54,7 @@ bankid:
       - http://id.elegnamnden.se/ec/1.0/loa3-pnr
 
 <% if @prod == true %>
-  server-root-certificate: classpath:bankid-trust-prod.crt
+  server-root-certificate: <%= @server_root_certificate_path %>
   service-url: https://appapi2.bankid.com/rp/v6.0
 <% else %>
   server-root-certificate: classpath:bankid-trust-test.crt
