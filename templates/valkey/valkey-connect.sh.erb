@@ -2,9 +2,9 @@
 
 VALKEY_PORT=6379
 FQDN=$(hostname --fqdn)
-INFRA_CERT_PATH="/etc/ssl/certs/${FQDN}_infra.crt"
-INFRA_KEY_PATH="/etc/ssl/private/${FQDN}_infra.key"
-CA_CERT_PATH="/etc/ssl/certs/infra.crt"
+INFRA_CERT_PATH="/opt/valkey/cert/cert.pem"
+INFRA_KEY_PATH="/opt/valkey/cert/privkey.pem"
+CA_CERT_PATH=<%= @ca_cert_path %>
 
 
 # Function to display usage
