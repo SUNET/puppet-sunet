@@ -18,6 +18,7 @@ services:
       - /opt/valkey/node-<%= i %>:/data
 <% if @tls == true -%>
       - /etc/ssl:/etc/ssl
+      - /opt/valkey/cert:/cert:ro
 <% end %>
     command: valkey-server /data/server.conf
     restart: always

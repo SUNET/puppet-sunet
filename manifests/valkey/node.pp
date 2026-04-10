@@ -88,6 +88,12 @@ class sunet::valkey::node(
     }
   }
 
+  file { '/etc/letsencrypt/renewal-hooks/deploy/valkey':
+    ensure  => file,
+    mode    => '0700',
+    content => file('sunet/valkey/certbot-renewal-hook'),
+  }
+
   range(0, $numnodes - 1).each |$i|{
     $clusterportnum = 16379 + $i
     $valkeyportnum = 6379 + $i

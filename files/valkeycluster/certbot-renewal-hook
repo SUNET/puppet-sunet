@@ -1,0 +1,15 @@
+#!/bin/sh -eu
+# vim: ai ts=4 sts=4 et sw=4
+
+if ! [ -d '/opt/valkey/cert' ]; then
+    mkdir -p /opt/valkey/cert
+fi
+
+install -m 644 ${RENEWED_LINEAGE}/cert.pem \
+    /opt/valkey/cert/cert.pem
+# group 101 is freerad inside the container
+install -m 640 -g 1000 \
+    ${RENEWED_LINEAGE}/privkey.pem \
+    /opt/valkey/cert/privkey.pem
+
+valkey-cli CONFIG REWRITE

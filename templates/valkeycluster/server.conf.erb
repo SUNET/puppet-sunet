@@ -17,9 +17,9 @@ tls-replication yes
 <% if @cluster %>
 tls-cluster yes
 <% end %>
-tls-cert-file /etc/ssl/certs/<%= @fqdn %>_infra.crt
-tls-key-file /etc/ssl/private/<%= @fqdn %>_infra.key
-tls-ca-cert-file /etc/ssl/certs/infra.crt
+tls-cert-file /cert/cert.pem
+tls-key-file /cert/privkey.pem
+tls-ca-cert-file /etc/ssl/certs/infra-2-test.crt
 <% else %>
 port <%= @valkeyportnum %>
 <% end %>
