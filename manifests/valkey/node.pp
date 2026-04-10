@@ -17,6 +17,7 @@ class sunet::valkey::node(
   Optional[String]  $tag = '9-alpine',
   Optional[String]  $maxmemory = undef,
   String            $maxmemory_policy = 'noeviction',
+  String            $ca_cert_path = '/etc/ssl/certs/infra-2-prod.crt',
   Array[String]     $allow_clients = [],
   Array[String]     $allow_peers = [],
 )

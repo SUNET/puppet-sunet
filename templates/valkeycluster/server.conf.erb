@@ -19,7 +19,7 @@ tls-cluster yes
 <% end %>
 tls-cert-file /cert/cert.pem
 tls-key-file /cert/privkey.pem
-tls-ca-cert-file /etc/ssl/certs/infra-2-test.crt
+tls-ca-cert-file <%= @ca_cert_path %>
 <% else %>
 port <%= @valkeyportnum %>
 <% end %>
