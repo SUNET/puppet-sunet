@@ -3,6 +3,7 @@
 
 # @param cluster_nodes        A list of all valkey cluster member FQDN's. Used when bootstrapping the cluster.
 # @param cluster_ports        Default ports to use in the cluster, override if needed.
+# @param ca_cert_path         Path to CA root cert, override if you use a different CA
 class sunet::valkey::node(
   Integer           $numnodes = 3,
   Boolean           $hostmode = true,
