@@ -45,7 +45,7 @@ class sunet::valkey::node(
   }
 
   sunet::docker_compose { 'valkeycluster_compose':
-    content          => template('sunet/valkeycluster/docker-compose.yml.erb'),
+    content          => template('sunet/valkey/docker-compose.yml.erb'),
     service_name     => 'valkey',
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
@@ -53,22 +53,22 @@ class sunet::valkey::node(
   }
   file {'/etc/sysctl.d/55-vm-overcommit.conf':
     ensure  => present,
-    content => template('sunet/valkeycluster/55-vm-overcommit.conf.erb'),
+    content => template('sunet/valkey/55-vm-overcommit.conf.erb'),
   }
   file {'/opt/valkey/valkey-rectify.sh':
     ensure  => present,
     mode    => '0755',
-    content => template('sunet/valkeycluster/valkey-rectify.sh.erb'),
+    content => template('sunet/valkey/valkey-rectify.sh.erb'),
   }
   file {'/opt/valkey/bootstrap-valkey.sh':
     ensure  => present,
     mode    => '0755',
-    content => template('sunet/valkeycluster/bootstrap-valkey.sh.erb'),
+    content => template('sunet/valkey/bootstrap-valkey.sh.erb'),
   }
   file {'/usr/local/bin/valkey-connect':
     ensure  => present,
     mode    => '0755',
-    content => file('sunet/valkeycluster/valkey-connect'),
+    content => file('sunet/valkey/valkey-connect'),
   }
   if $automatic_rectify {
     sunet::scriptherder::cronjob { 'valkey-rectify':
@@ -85,7 +85,7 @@ class sunet::valkey::node(
     file {'/etc/molly-guard/run.d/11-valkeycluster':
       ensure  => present,
       mode    => '0755',
-      content => template('sunet/valkeycluster/11-valkeycluster.erb'),
+      content => template('sunet/valkey/11-valkeycluster.erb'),
     }
   }
 
@@ -106,7 +106,7 @@ class sunet::valkey::node(
     }
     -> file { "/opt/valkey/node-${i}/server.conf":
       ensure  => present,
-      content => template('sunet/valkeycluster/server.conf.erb'),
+      content => template('sunet/valkey/server.conf.erb'),
     }
     sunet::nftables::allow { "valkey_port_${i}":
       from => [$allow_clients,$allow_peers],
