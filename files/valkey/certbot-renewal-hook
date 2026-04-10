@@ -12,4 +12,5 @@ install -m 640 -g 1000 \
     ${RENEWED_LINEAGE}/privkey.pem \
     /opt/valkey/cert/privkey.pem
 
-valkey-cli CONFIG REWRITE
+# Rewrite the config after new cert is in place
+valkey-connect --config-rewrite

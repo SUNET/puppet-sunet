@@ -9,7 +9,7 @@ CA_CERT_PATH=<%= @ca_cert_path %>
 
 # Function to display usage
 function usage() {
-  echo "Usage: $0 --connect | --ping | --server-info | --client-info | --cluster-nodes | --cluster-info | --list-keys | --stats | --latency"
+  echo "Usage: $0 --connect | --ping | --server-info | --client-info | --cluster-nodes | --cluster-info | --list-keys | --stats | --latency | --config-rewrite"
   exit 1
 }
 
@@ -70,13 +70,13 @@ function latency() {
   redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" LATENCY DOCTOR
 }
 
-function _test() {
+function config_rewrite() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO MEMORY
+  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CONFIG REWRITE
 }
 
 # Parse the options
-OPTIONS=$(getopt -o '' --long connect,ping,server-info,client-info,cluster-nodes,cluster-info,list-keys,stats,memory-info,latency,test -- "$@")
+OPTIONS=$(getopt -o '' --long connect,ping,server-info,client-info,cluster-nodes,cluster-info,list-keys,stats,memory-info,latency,config-rewrite -- "$@")
 if [ $? -ne 0 ]; then
   usage
 fi
@@ -140,8 +140,8 @@ while true; do
       shift
       break
       ;;
-    --test)
-      _test
+    --config-rewrite)
+      config_rewrite
       shift
       break
       ;;
