@@ -6,7 +6,7 @@ services:
 <% joinport = 16379 + i %>
   valkey-node-<%= i %>:
     container_name: valkey-node-<%= i %>
-    image: <%= @image %>:<%= @tag %>
+    image: <%= @image %>:<%= @image_tag %>
 <% if @hostmode == true %>
     network_mode: host
 <% else %>

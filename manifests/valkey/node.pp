@@ -14,7 +14,7 @@ class sunet::valkey::node(
   Optional[Boolean] $automatic_rectify = true,
   Optional[Boolean] $prevent_reboot = true,
   Optional[String]  $image = 'valkey/valkey',
-  Optional[String]  $tag = '9-alpine',
+  Optional[String]  $image_tag = '9-alpine',
   Optional[String]  $maxmemory = undef,
   String            $maxmemory_policy = 'noeviction',
   String            $ca_cert_path = '/etc/ssl/certs/infra-2-prod.crt',
