@@ -108,9 +108,13 @@ class sunet::valkey::node(
       ensure  => present,
       content => template('sunet/valkey/server.conf.erb'),
     }
-    sunet::nftables::allow { "valkey_port_${i}":
-      from => [$allow_clients,$allow_peers],
+    sunet::nftables::allow { "valkey_cluster_ports_${i}":
+      from => [$allow_peers],
       port => [$valkeyportnum,$clusterportnum],
+    }
+    sunet::nftables::allow { "valkey_client_port_${i}":
+      from => [$allow_clients],
+      port => [$valkeyportnum],
     }
   }
 }

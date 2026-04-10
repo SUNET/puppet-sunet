@@ -13,9 +13,9 @@ case $1 in
 esac
 
 fqdn=$(hostname -f)
-cert="/etc/ssl/certs/${fqdn}_infra.crt"
-key="/etc/ssl/private/${fqdn}_infra.key"
-ca="/etc/ssl/certs/infra.crt"
+cert="/opt/valkey/cert/cert.pem"
+key="/opt/valkey/cert/privkey.pem"
+ca=<%= @ca_cert_path %>
 password=$(puppet lookup --render-as s valkey_password 2> /dev/null)
 clusterid=$(redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER MYID 2> /dev/null)
 if (redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER NODES 2> /dev/null| grep -e "^${clusterid}"| grep -q slave); then
