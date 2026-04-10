@@ -68,7 +68,7 @@ class sunet::valkey::node(
   file {'/usr/local/bin/valkey-connect':
     ensure  => present,
     mode    => '0755',
-    content => file('sunet/valkey/valkey-connect'),
+    content => template('sunet/valkey/valkey-connect.sh.erb'),
   }
   if $automatic_rectify {
     sunet::scriptherder::cronjob { 'valkey-rectify':
