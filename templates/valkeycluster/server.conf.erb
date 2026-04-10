@@ -12,7 +12,7 @@ cluster-require-full-coverage no
 loglevel warning
 <% if @tls%>
 port 0
-tls-port <%= @redictportnum %>
+tls-port <%= @valkeyportnum %>
 tls-replication yes
 <% if @cluster %>
 tls-cluster yes
@@ -21,14 +21,14 @@ tls-cert-file /etc/ssl/certs/<%= @fqdn %>_infra.crt
 tls-key-file /etc/ssl/private/<%= @fqdn %>_infra.key
 tls-ca-cert-file /etc/ssl/certs/infra.crt
 <% else %>
-port <%= @redictportnum %>
+port <%= @valkeyportnum %>
 <% end %>
 <% if @maxmemory %>
 maxmemory <%= @maxmemory %>
 maxmemory-policy <%= @maxmemory_policy %>
 <% end %>
-requirepass "<%= @redict_password %>"
-masterauth "<%= @redict_password %>"
+requirepass "<%= @valkey_password %>"
+masterauth "<%= @valkey_password %>"
 <% if @cluster and @_cluster_announce_ip != ''%>
 cluster-announce-ip <%= @_cluster_announce_ip %>
 <% end %>
