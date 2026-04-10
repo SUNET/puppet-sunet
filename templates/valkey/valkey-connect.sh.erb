@@ -9,7 +9,7 @@ CA_CERT_PATH=<%= @ca_cert_path %>
 
 # Function to display usage
 function usage() {
-  echo "Usage: $0 --connect | --ping | --server-info | --client-info | --cluster-nodes | --cluster-info | --list-keys | --stats | --latency | --config-rewrite"
+  echo "Usage: $0 --connect | --ping | --server-info | --client-info | --cluster-nodes | --cluster-info | --list-keys | --stats | --latency | --config-rewrite | --custom-command"
   exit 1
 }
 
@@ -75,14 +75,26 @@ function config_rewrite() {
   redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CONFIG REWRITE
 }
 
+function custom_command() {
+  local command="$1"
+  local valkey_password=$(get_valkey_password)
+
+  redis-cli -a "$valkey_password" \
+    --no-auth-warning \
+    -h "$FQDN" \
+    --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" \
+    -p "$VALKEY_PORT" \
+    $command
+}
+
 # Parse the options
-OPTIONS=$(getopt -o '' --long connect,ping,server-info,client-info,cluster-nodes,cluster-info,list-keys,stats,memory-info,latency,config-rewrite -- "$@")
+OPTIONS=$(getopt -o '' --long connect,ping,server-info,client-info,cluster-nodes,cluster-info,list-keys,stats,memory-info,latency,config-rewrite,custom-command: -- "$@")
 if [ $? -ne 0 ]; then
   usage
 fi
 
-# Check if exactly one option was provided
-if [ $# -ne 1 ]; then
+# Ensure at least one option was provided
+if [ $# -eq 0 ]; then
   usage
 fi
 
@@ -143,6 +155,11 @@ while true; do
     --config-rewrite)
       config_rewrite
       shift
+      break
+      ;;
+    --custom-command)
+      custom_command "$2"
+      shift 2
       break
       ;;
     --)

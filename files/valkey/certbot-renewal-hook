@@ -12,5 +12,6 @@ install -m 640 -g 1000 \
     ${RENEWED_LINEAGE}/privkey.pem \
     /opt/valkey/cert/privkey.pem
 
-# Rewrite the config after new cert is in place
-valkey-connect --config-rewrite
+# Touch the cert config to allow for the certificate to be re-read.
+valkey-connect --custom-command "CONFIG SET tls-cert-file /cert/privkey.pem"
+valkey-connect --custom-command "CONFIG SET tls-key-file /cert/privkey.pem"
