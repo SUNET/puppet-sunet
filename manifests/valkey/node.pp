@@ -17,7 +17,7 @@ class sunet::valkey::node(
   Optional[String]  $cluster_announce_ip = '',
   Array[String]     $cluster_nodes = [$facts['networking']['fqdn']],
   Array[Integer]    $cluster_ports = [6379,6380,6381],
-  Optional[String]  $cluster_node_timeout = 5000,
+  Optional[Integer] $cluster_node_timeout = 5000,
   Optional[Boolean] $automatic_rectify = true,
   Optional[Boolean] $prevent_reboot = true,
   Optional[String]  $image = 'valkey/valkey',
