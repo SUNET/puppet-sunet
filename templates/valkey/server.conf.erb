@@ -9,7 +9,7 @@ cluster-slave-validity-factor 0
 cluster-allow-reads-when-down yes
 cluster-require-full-coverage no
 <% end %>
-loglevel warning
+loglevel <%= @valkey_loglevel %>
 <% if @tls%>
 port 0
 tls-port <%= @valkeyportnum %>
