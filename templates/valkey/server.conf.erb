@@ -27,6 +27,14 @@ port <%= @valkeyportnum %>
 maxmemory <%= @maxmemory %>
 maxmemory-policy <%= @maxmemory_policy %>
 <% end %>
+# Slow execution (microseconds, 10000 = 10ms)
+commandlog-execution-slower-than 10000
+commandlog-slow-execution-max-len 128
+
+# Large requests (bytes, 1048576 = 1mb)
+commandlog-request-larger-than 1048576
+commandlog-large-request-max-len 128
+
 requirepass "<%= @valkey_password %>"
 masterauth "<%= @valkey_password %>"
 <% if @cluster and @_cluster_announce_ip != ''%>
