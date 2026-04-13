@@ -82,7 +82,7 @@ class sunet::valkey::node(
     sunet::scriptherder::cronjob { 'valkey-rectify':
       cmd           => '/opt/valkey/valkey-rectify.sh',
       hour          => '*',
-      minute        => '*/10',
+      minute        => '*/5',
       ok_criteria   => ['exit_status=0','max_age=2d'],
       warn_criteria => ['exit_status=1','max_age=3d'],
     }
