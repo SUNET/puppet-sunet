@@ -125,4 +125,20 @@ class sunet::valkey::node(
       port => [$valkeyportnum],
     }
   }
+
+  # Monitoring script that can be executed with NRPE
+  file { '/usr/local/sbin/check-valkey-status':
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    content => file('sunet/valkey/check-valkey-status.py')
+  }
+  # NRPE commands file
+  file { '/etc/nagios/nrpe.d/nrpe-valkey.cfg':
+    ensure  => 'file',
+    mode    => '0644',
+    owner   => 'root',
+    content => file('sunet/valkey/nrpe-valkey.cfg')
+  }
+
 }
