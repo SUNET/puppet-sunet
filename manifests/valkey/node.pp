@@ -133,6 +133,13 @@ class sunet::valkey::node(
     owner   => 'root',
     content => file('sunet/valkey/check-valkey-status.py')
   }
+  # sudo exceptions (needed to read cert files)
+  file { '/etc/sudoers.d/sudoers-valkey':
+    ensure  => 'file',
+    mode    => '0440',
+    owner   => 'root',
+    content => file('sunet/valkey/sudoers-valkey')
+  }
   # NRPE commands file
   file { '/etc/nagios/nrpe.d/nrpe-valkey.cfg':
     ensure  => 'file',
