@@ -3,7 +3,7 @@ bind * -::*
 <% if @cluster %>
 cluster-config-file nodes.conf
 cluster-enabled yes
-cluster-node-timeout 5000
+cluster-node-timeout <%= @cluster_node_timeout %>
 cluster-port <%= @clusterportnum %>
 cluster-slave-validity-factor 0
 cluster-allow-reads-when-down yes

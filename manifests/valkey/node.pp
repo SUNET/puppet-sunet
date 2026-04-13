@@ -3,6 +3,7 @@
 
 # @param cluster_nodes        A list of all valkey cluster member FQDN's. Used when bootstrapping the cluster.
 # @param cluster_ports        Default ports to use in the cluster, override if needed.
+# @param cluster_node_timeout The maximum amount of time a Valkey Cluster node can be unavailable, without it being considered as failing.
 # @param ca_cert_path         Path to CA root cert, override if you use a different CA
 # @param valkey_loglevel      Configure the loglevel for valkey
 # @param allow_clients        This is a list of client prefixes that should be allowed to talk to valkey
@@ -16,6 +17,7 @@ class sunet::valkey::node(
   Optional[String]  $cluster_announce_ip = '',
   Array[String]     $cluster_nodes = [$facts['networking']['fqdn']],
   Array[Integer]    $cluster_ports = [6379,6380,6381],
+  Optional[String]  $cluster_node_timeout = 5000
   Optional[Boolean] $automatic_rectify = true,
   Optional[Boolean] $prevent_reboot = true,
   Optional[String]  $image = 'valkey/valkey',
