@@ -36,11 +36,11 @@ class sunet::valkey::node(
   if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') > 0)
     or ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['major'], '13') > 0) {
     include sunet::packages::valkey_tools
-    $cli_client = "valkey-cli"
+    $cli_client = 'valkey-cli'
   }
   else {
     include sunet::packages::redis_tools
-    $cli_client = "redis-cli"
+    $cli_client = 'redis-cli'
   }
 
   # Allow the user to either specify the variable in cosmos-rules or in hiera
