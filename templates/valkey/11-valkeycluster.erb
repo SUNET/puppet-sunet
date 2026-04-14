@@ -10,7 +10,7 @@ CA_CERT=<%= @ca_cert_path %>
 HOSTNAME="$(hostname -f)"
 
 echo "Checking valkey cluster status, please standby..."
-cluster_status=$(redis-cli -a "${VALKEY_PASSWORD}" --tls --cert "${TLS_CERT}" --key "${TLS_KEY}" --cacert "${CA_CERT}" -h "${HOSTNAME}" cluster nodes 2>/dev/null)
+cluster_status=$(<%= @cli_client %> -a "${VALKEY_PASSWORD}" --tls --cert "${TLS_CERT}" --key "${TLS_KEY}" --cacert "${CA_CERT}" -h "${HOSTNAME}" cluster nodes 2>/dev/null)
 
 my_ip=$(echo "${cluster_status}" | grep myself, | awk '{print $2}' | cut -d : -f 1)
 

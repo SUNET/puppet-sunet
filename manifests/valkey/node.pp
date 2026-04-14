@@ -34,8 +34,16 @@ class sunet::valkey::node(
   $fqdn = $facts['networking']['fqdn']
   $valkey_password = safe_hiera('valkey_password')
 
-  # valkey-tools is not available, but redis-tools is compatible with valkey
-  include sunet::packages::redis_tools
+  # valkey-tools is not available on older OS'es, but redis-tools is compatible with valkey
+  if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') > 0)
+    or ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['major'], '13') > 0) {
+    include sunet::packages::valkey_tools
+    $cli_client = "valkey-cli"
+  }
+  else {
+    include sunet::packages::redis_tools
+    $cli_client = "redis-cli"
+  }
 
   # Allow the user to either specify the variable in cosmos-rules or in hiera
   if $cluster_announce_ip == '' {

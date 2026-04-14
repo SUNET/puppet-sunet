@@ -21,65 +21,65 @@ function get_valkey_password() {
 
 function connect() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT"
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT"
 }
 
 function ping() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" PING
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" PING
 }
 
 function server_info() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO SERVER
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO SERVER
 }
 
 function cluster_nodes() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CLUSTER NODES
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CLUSTER NODES
 }
 
 function cluster_info() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CLUSTER INFO
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CLUSTER INFO
 }
 
 function list_keys() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" SCAN 0
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" SCAN 0
 }
 
 function stats() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO STATS
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO STATS
 }
 
 function client_info() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO CLIENTS
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO CLIENTS
 }
 
 function memory_info() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO MEMORY
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO MEMORY
 }
 
 function latency() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" LATENCY LATEST
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" LATENCY DOCTOR
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" LATENCY LATEST
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" LATENCY DOCTOR
 }
 
 function config_rewrite() {
   local valkey_password=$(get_valkey_password)
-  redis-cli -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CONFIG REWRITE
+  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CONFIG REWRITE
 }
 
 function custom_command() {
   local command="$1"
   local valkey_password=$(get_valkey_password)
 
-  redis-cli -a "$valkey_password" \
+  <%= @cli_client %> -a "$valkey_password" \
     --no-auth-warning \
     -h "$FQDN" \
     --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" \
