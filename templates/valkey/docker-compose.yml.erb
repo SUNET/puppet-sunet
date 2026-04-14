@@ -1,0 +1,25 @@
+services:
+<% numnodesmone = @numnodes - 1 -%>
+<% for i in 0..numnodesmone -%>
+<% clusterport = 7000 + i %>
+<% valkeytport = 6379 + i %>
+<% joinport = 16379 + i %>
+  valkey-node-<%= i %>:
+    container_name: valkey-node-<%= i %>
+    image: <%= @image %>:<%= @image_tag %>
+<% if @hostmode == true %>
+    network_mode: host
+<% else %>
+    ports:
+      - "<%= valkeyport %>:<%= valkeyport %>"
+      - "<%= joinport %>:<%= joinport %>"
+<% end %>
+    volumes:
+      - /opt/valkey/node-<%= i %>:/data
+<% if @tls == true -%>
+      - /etc/ssl:/etc/ssl
+      - /opt/valkey/cert:/cert:ro
+<% end %>
+    command: valkey-server /data/server.conf
+    restart: always
+<% end %>
