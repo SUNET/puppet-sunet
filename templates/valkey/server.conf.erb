@@ -1,0 +1,42 @@
+appendonly yes
+bind * -::*
+<% if @cluster %>
+cluster-config-file nodes.conf
+cluster-enabled yes
+cluster-node-timeout <%= @cluster_node_timeout %>
+cluster-port <%= @clusterportnum %>
+cluster-slave-validity-factor 0
+cluster-allow-reads-when-down yes
+cluster-require-full-coverage no
+<% end %>
+loglevel <%= @valkey_loglevel %>
+<% if @tls%>
+port 0
+tls-port <%= @valkeyportnum %>
+tls-replication yes
+<% if @cluster %>
+tls-cluster yes
+<% end %>
+tls-cert-file /cert/cert.pem
+tls-key-file /cert/privkey.pem
+tls-ca-cert-file <%= @ca_cert_path %>
+<% else %>
+port <%= @valkeyportnum %>
+<% end %>
+<% if @maxmemory %>
+maxmemory <%= @maxmemory %>
+maxmemory-policy <%= @maxmemory_policy %>
+<% end %>
+# Slow execution (microseconds, 10000 = 10ms)
+commandlog-execution-slower-than 10000
+commandlog-slow-execution-max-len 128
+
+# Large requests (bytes, 1048576 = 1mb)
+commandlog-request-larger-than 1048576
+commandlog-large-request-max-len 128
+
+requirepass "<%= @valkey_password %>"
+masterauth "<%= @valkey_password %>"
+<% if @cluster and @_cluster_announce_ip != ''%>
+cluster-announce-ip <%= @_cluster_announce_ip %>
+<% end %>
