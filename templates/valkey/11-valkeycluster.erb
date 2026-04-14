@@ -2,8 +2,15 @@
 
 set -e
 
+# Configuration variables
+VALKEY_PASSWORD=$(eyaml decrypt -f /etc/hiera/data/local.eyaml --pkcs7-private-key=/etc/hiera/eyaml/private_key.pkcs7.pem --pkcs7-public-key=/etc/hiera/eyaml/public_certkey.pkcs7.pem | awk '/^valkey_password: /{print $2}')
+TLS_CERT="/opt/valkey/cert/cert.pem"
+TLS_KEY="/opt/valkey/cert/privkey.pem"
+CA_CERT=<%= @ca_cert_path %>
+HOSTNAME="$(hostname -f)"
+
 echo "Checking valkey cluster status, please standby..."
-cluster_status=$(redis-cli -a "$(puppet lookup --render-as s valkey_password 2>/dev/null)" --tls --cert /opt/valkey/cert/cert.pem --key /opt/valkey/cert/privkey.pem --cacert <%= @ca_cert_path %> -h $(hostname -f) cluster nodes 2> /dev/null)
+cluster_status=$(redis-cli -a "${VALKEY_PASSWORD}" --tls --cert "${TLS_CERT}" --key "${TLS_KEY}" --cacert "${CA_CERT}" -h "${HOSTNAME}" cluster nodes 2>/dev/null)
 
 my_ip=$(echo "${cluster_status}" | grep myself, | awk '{print $2}' | cut -d : -f 1)
 
