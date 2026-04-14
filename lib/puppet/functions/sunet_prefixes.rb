@@ -48,6 +48,7 @@ Puppet::Functions.create_function(:sunet_prefixes) do
       { "net": "54.177.34.135/32",     "family": "ip",  "comment": "ec2-54-177-34-135.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
       { "net": "54.193.162.123/32",    "family": "ip",  "comment": "ec2-54-193-162-123.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
       { "net": "54.219.108.181/32",    "family": "ip",  "comment": "ec2-54-219-108-181.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
+      { "net": "86.105.116.0/22",      "family": "ip",  "comment": "SUNET Secured services and applications", "resource_type": "SUNET", "tags": ["knubbis", "infraca"] },
       { "net": "89.45.236.0/22",       "family": "ip",  "comment": "Safespring STO3", "resource_type": "safespring", "tags": ["knubbis", "infraca"] },
       { "net": "89.46.20.0/22",        "family": "ip",  "comment": "Safespring STO4", "resource_type": "safespring", "tags": ["knubbis", "infraca"] },
       { "net": "89.47.184.0/23",       "family": "ip",  "comment": "Safespring STO1", "resource_type": "safespring", "tags": ["knubbis", "infraca"] },
