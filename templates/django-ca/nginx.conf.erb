@@ -48,6 +48,14 @@ server {
     location /django_ca/ocsp/ {
         try_files "" @django_ca;
     }
+<% if @django_ca_cmc -%>
+    location /cmc01 {
+        try_files "" @django_ca;
+    }
+    location /cmc/ {
+        try_files "" @django_ca;
+    }
+<% end -%>
     location /admin/ {
         try_files "" @django_ca;
     }
