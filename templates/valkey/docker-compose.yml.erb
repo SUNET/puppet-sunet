@@ -1,8 +1,8 @@
 services:
 <% numnodesmone = @numnodes - 1 -%>
 <% for i in 0..numnodesmone -%>
-<% clusterport = 7000 + i %>
-<% valkeyport = 6379 + i %>
+<% clusterport = 7000 + i -%>
+<% valkeyport = 6379 + i -%>
 <% joinport = 16379 + i %>
   valkey-node-<%= i %>:
     container_name: valkey-node-<%= i %>
