@@ -59,6 +59,16 @@ class sunet::django_ca::server (
     content => template('sunet/django-ca/nginx.conf.erb'),
   }
 
+  # Branding
+  file { "${config_dir}/index.html":
+    ensure  => file,
+    content => file('sunet/django-ca/index.html'),
+  }
+  file { "${config_dir}/index.png":
+    ensure  => file,
+    content => file('sunet/django-ca/index.png'),
+  }
+
   sunet::hsm::client_trust { 'hsms':
       hsm_servers => $hsm_servers,
       mode        => '0755',
