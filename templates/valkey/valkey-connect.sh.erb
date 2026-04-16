@@ -9,7 +9,21 @@ CA_CERT_PATH=<%= @ca_cert_path %>
 
 # Function to display usage
 function usage() {
-  echo "Usage: $0 --connect | --ping | --server-info | --client-info | --cluster-nodes | --cluster-info | --list-keys | --stats | --latency | --info-memory | --config-rewrite | --custom-command"
+  echo "Usage: $0 <command>"
+  echo ""
+  echo "Commands:"
+  echo "  --connect          Open an interactive Valkey CLI session"
+  echo "  --ping             Send a PING to verify connectivity"
+  echo "  --server-info      Show server information"
+  echo "  --client-info      Show connected clients information"
+  echo "  --cluster-nodes    Show all cluster nodes and their state"
+  echo "  --cluster-info     Show cluster health summary"
+  echo "  --list-keys        Scan and list keys"
+  echo "  --stats            Show server statistics"
+  echo "  --info-memory      Show memory usage information"
+  echo "  --latency          Show latency metrics and diagnostics"
+  echo "  --config-rewrite   Rewrite the server config to disk"
+  echo "  --custom-command   Run a custom Valkey command (e.g. --custom-command 'GET mykey')"
   exit 1
 }
 
