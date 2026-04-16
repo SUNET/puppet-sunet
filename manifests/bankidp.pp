@@ -14,11 +14,14 @@ class sunet::bankidp(
   Boolean $infra_cert_from_this_class = true,
   String $bankid_home = '/opt/bankidp',
   String $imagetag='latest',
+  String $imagename='bankid-idp',
+  String $imageregistry='docker.sunet.se',
   String $interface = 'ens3',
   String $service_name = 'bankidp.qa.swamid.se',
   String $service_path = '/bankid/idp',
   String $spring_config_import = '/config/bankidp.yml',
   String $tz = 'Europe/Stockholm',
+  String $server_root_certificate_path = 'classpath:bankid-trust-prod.crt',
 ) {
 
   $apps = $facts['bankid_cluster_info']['apps']
@@ -38,6 +41,18 @@ class sunet::bankidp(
       port          => 443,
     }
 
+    file { '/usr/lib/nagios/plugins/check_user_cert_expire':
+      ensure  => file,
+      mode    => '0755',
+      content => file ('sunet/bankidp/check_user_cert_expire.sh')
+    }
+
+    file { '/usr/lib/nagios/plugins/check_app_cert_expire':
+      ensure  => file,
+      mode    => '0755',
+      content => file ('sunet/bankidp/check_app_cert_expire.sh')
+    }
+
     $credsdir = "${bankid_home}/credentials"
     # Unwanted password - but hey Java!
     $pass = 'qwerty123'
@@ -51,7 +66,16 @@ class sunet::bankidp(
         command => "openssl pkcs12 -export -in '${credsdir}/${name}.pem' -inkey '${credsdir}/${name}.key' -name '${name}-bankid' -out '${credsdir}/${name}.p12' -passin pass:'${password}' -passout pass:'${pass}'",
         onlyif  => "test ! -f ${credsdir}/${name}.p12"
       }
+      sunet::sudoer {"nrpe_cert_expire_${name}":
+        user_name    => 'nagios',
+        collection   => "nrpe_cert_expire_${name}",
+        command_line => "/usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
+      }
+      sunet::nagios::nrpe_command {"check_cert_expire_${name}":
+          command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
+      }
     }
+
 
     if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
       sunet::snippets::secret_file { "${credsdir}/saml_metadata.key": hiera_key => 'bankid_saml_metadata_key' }
@@ -150,6 +174,16 @@ class sunet::bankidp(
       compose_dir      => '/opt/',
       compose_filename => 'docker-compose.yml',
       description      => 'Freja ftw',
+    }
+
+    sunet::sudoer {'nrpe_app_cert_expire':
+      user_name    => 'nagios',
+      collection   => 'nrpe_app_cert_expire',
+      command_line => "/usr/lib/nagios/plugins/check_app_cert_expire /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
+    }
+
+    sunet::nagios::nrpe_command {'check_app_cert_expire':
+      command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_app_cert_expire /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
     }
   }
   if $redis_node {
