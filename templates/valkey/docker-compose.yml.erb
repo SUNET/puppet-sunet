@@ -17,7 +17,7 @@ services:
     volumes:
       - /opt/valkey/node-<%= i %>:/data
 <% if @tls == true -%>
-      - /etc/ssl:/etc/ssl
+      - /etc/ssl:/etc/ssl:ro
       - /opt/valkey/cert:/cert:ro
 <% end %>
     command: valkey-server /data/server.conf
