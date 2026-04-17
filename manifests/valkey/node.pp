@@ -1,9 +1,10 @@
 # A valkey cluster class
 
-# @param cluster_nodes       A list of all valkey cluster member FQDN's. Used when bootstrapping the cluster.
+# @param cluster_nodes        A list of all valkey cluster member FQDN's. Used when bootstrapping the cluster.
 # @param cluster_ports        Default ports to use in the cluster, override if needed.
 # @param cluster_node_timeout The maximum amount of time a Valkey Cluster node can be unavailable, without it being considered as failing.
 # @param ca_cert_path         Path to CA root cert, override if you use a different CA
+# @param enable_redis_insight Deploy a redis-insight container accessable only via localhost
 # @param valkey_loglevel      Configure the loglevel for valkey
 # @param allow_clients        This is a list of client prefixes that should be allowed to talk to valkey
 # @param allow_peers          This is the list of valkey server prefixes that are part of the cluster (used for nftables)
@@ -18,6 +19,8 @@ class sunet::valkey::node(
   Optional[Integer] $cluster_node_timeout = 5000,
   Optional[Boolean] $automatic_rectify = true,
   Optional[Boolean] $prevent_reboot = true,
+  Optional[Boolean] $enable_redis_insight = false,
+  Optional[String]  $server_fqdn = $facts['networking']['fqdn'],
   Optional[String]  $image = 'valkey/valkey',
   Optional[String]  $image_tag = '9-alpine',
   Optional[String]  $maxmemory = undef,
