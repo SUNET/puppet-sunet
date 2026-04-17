@@ -34,12 +34,12 @@ services:
         environment:
         - RI_ACCEPT_TERMS_AND_CONDITIONS=true
         - RI_APP_HOST=127.0.0.1
-        - RI_REDIS_HOST=oidfservice-imdb-qa-sto1-1.komreg.net
+        - RI_REDIS_HOST=<%= @server_fqdn %>
         - RI_REDIS_PORT=6379
         - RI_REDIS_ALIAS=Valkey Cluster
-        - RI_REDIS_PASSWORD=<redacted>
+        - RI_REDIS_PASSWORD=<%= @valkey_password %>
         - RI_REDIS_TLS=true
-        - RI_REDIS_TLS_CA_PATH=/etc/ssl/certs/infra-2-test.crt
+        - RI_REDIS_TLS_CA_PATH=<%= @ca_cert_path %>
         - RI_REDIS_TLS_CERT_PATH=/certs/cert.pem
         - RI_REDIS_TLS_KEY_PATH=/certs/privkey.pem
         restart: unless-stopped

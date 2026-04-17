@@ -20,6 +20,7 @@ class sunet::valkey::node(
   Optional[Boolean] $automatic_rectify = true,
   Optional[Boolean] $prevent_reboot = true,
   Optional[Boolean] $enable_redis_insight = false,
+  Optional[String]  $server_fqdn = $facts['networking']['fqdn'],
   Optional[String]  $image = 'valkey/valkey',
   Optional[String]  $image_tag = '9-alpine',
   Optional[String]  $maxmemory = undef,
