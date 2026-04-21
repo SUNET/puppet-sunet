@@ -180,7 +180,7 @@ container:
   # If "-" or "", an available docker host will automatically be found.
   # If "automount", an available docker host will automatically be found and mounted in the job container (e.g. /var/run/docker.sock).
   # Otherwise the specified docker host will be used and an error will be returned if it doesn't work.
-  docker_host: "unix:///run/podman/podman.sock"
+  docker_host: "automount"
   # Pull docker image(s) even if already present
   force_pull: false
   # Rebuild local docker image(s) even if already present
