@@ -24,7 +24,7 @@ relay_log               = 'relay-log'
 
 # Innodb
 innodb_autoinc_lock_mode        = 2
-innodb_buffer_pool_size         = 4G # 60-75% of total RAM
+innodb_buffer_pool_size         = <%= @innodb_buffer_pool_size %> # 60-75% of total RAM
 innodb_file_per_table           = 1
 innodb_flush_log_at_trx_commit  = 0
 innodb_flush_method             = O_DIRECT

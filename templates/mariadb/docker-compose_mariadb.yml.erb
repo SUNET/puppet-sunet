@@ -35,9 +35,13 @@ services:
       - MYSQL_DATABASE=<%= @mariadb_database %>
 <%- end -%>
 <%- if @galera -%>
+<%- if @new_cluster -%>
+    command:  "--wsrep-new-cluster"
+    tty: true
+<% else %>
       - BOOTSTRAP=<%= @bootstrap %>
       - FORCE_BOOTSTRAP=0
     command:  "--wsrep_cluster_address=gcomm://<%= @cluster_nodes.join(',') %>"
     tty: true
 <%- end -%>
-
+<%- end -%>

@@ -1,11 +1,13 @@
 # Mariadb cluster class for SUNET
 define sunet::mariadb(
-  String $mariadb_version=latest,
-  String $mariadb_image='docker.sunet.se/drive/mariadb',
-  Integer $bootstrap=0,
-  Array[Integer] $ports = [3306, 4444, 4567, 4568],
-  Array[String] $dns = [],
-  Boolean $galera = true,
+  String $mariadb_version          = latest,
+  Integer $bootstrap               = 0, # applies to nextcloud-maridb images, https://github.com/SUNET/nextcloud-db/blob/master/mariadb/README.md
+  Boolean $new_cluster             = false, # applies to maridb images from dockerhub.io
+  Array[Integer] $ports            = [3306, 4444, 4567, 4568],
+  Array[String] $dns               = [],
+  Boolean $galera                  = true,
+  Boolean $backup                  = true,
+  String  $innodb_buffer_pool_size = '4G',
 )
 {
 
