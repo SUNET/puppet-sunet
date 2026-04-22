@@ -132,9 +132,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     required_tag = args.tag
 
-    prefixes = load_prefixes("sunet_prefixes.rb")
+    prefixes = load_prefixes("/etc/puppet/cosmos-modules/sunet/lib/puppet/functions/sunet_prefixes.rb")
 
-    acmec_clients = parse_acmec_non_clients("../../nunoc-ops/acme-c.sunet.se/overlay/etc/hiera/data/local.yaml")
+    acmec_clients = parse_acmec_non_clients("/etc/hiera/data/local.yaml")
 
     all_hosts = list(dict.fromkeys(acmec_clients))
 
