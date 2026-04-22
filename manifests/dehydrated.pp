@@ -161,7 +161,7 @@ class sunet::dehydrated(
     }
 
     sunet::nagios::nrpe_command {"check_acmec-allowed-prefixes":
-      command_line => "/etc/dehydrated/check_acmec-allowed-prefixes.py"
+      command_line => "sudo /etc/dehydrated/check_acmec-allowed-prefixes.py --tag acmec"
     }
   } else {
     $allow_clients_ssh = $allow_clients
