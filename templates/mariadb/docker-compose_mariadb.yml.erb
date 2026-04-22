@@ -39,7 +39,6 @@ services:
 <% else %>
       - BOOTSTRAP=<%= @bootstrap %>
       - FORCE_BOOTSTRAP=0
-    command:  "--wsrep_cluster_address=gcomm://<%= @cluster_nodes.join(',') %>"
     tty: true
 <%- end -%>
 <%- end -%>
