@@ -152,7 +152,7 @@ class sunet::dehydrated(
   if $allow_prefixes_by_tag != [] {
     $allow_clients_ssh = sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip'}) + sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip6'})
 
-    file { '/etc/dehydrated/check_acmec-allowed-prefixes.py':
+    file { '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes':
       ensure  => file,
       owner   => 'root',
       group   => 'root',
@@ -160,8 +160,14 @@ class sunet::dehydrated(
       content => file('sunet/dehydrated/check_acmec-allowed-prefixes.py'),
     }
 
+    sunet::sudoer {"check_acmec-allowed-prefixes":
+        user_name    => 'nagios',
+        collection   => "check_acmec-allowed-prefixes",
+        command_line => "/usr/lib/nagios/plugins/check_acmec-allowed-prefixes"
+      }
+
     sunet::nagios::nrpe_command {"check_acmec-allowed-prefixes":
-      command_line => "/usr/bin/python3 /etc/dehydrated/check_acmec-allowed-prefixes.py --tag acmec"
+      command_line => "/usr/lib/nagios/plugins/check_acmec-allowed-prefixes --tag acmec"
     }
   } else {
     $allow_clients_ssh = $allow_clients
