@@ -123,10 +123,7 @@ def check_hostnames(prefixes, hostnames, required_tag):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Check hosts against ip prefixes")
-    parser.add_argument(
-        "--tag",
-        required=True,
-        help="Tag must exist"
+    parser.add_argument("--tag", required=True, help="Tag must exist"
     )
 
     args = parser.parse_args()
@@ -143,19 +140,30 @@ if __name__ == "__main__":
     not_resolvable, missing_sunet_prefix, missing_acmec_tag = results
     
     print("\n\nNot resolvable:")
-    for h in dedupe_list(not_resolvable):
-        print(h)
+    if not not_resolvable:
+        print(None)
+    else:
+        for h in dedupe_list(not_resolvable):
+            print(h)
 
-    print("\n\nMissing from SUNET prefixes:")
-    for h, ip in dedupe_list(missing_sunet_prefix):
-        print(f"{h} -> {ip}")
+    print("\nMissing from SUNET prefixes:")
+    if not missing_sunet_prefix:
+        print(None)
+    else:
+        for h, ip in dedupe_list(missing_sunet_prefix):
+            print(f"{h} -> {ip}")
 
-    print("\n\nMissing acmec tag:")
-    for h, ip in dedupe_list(missing_acmec_tag):
-        print(f"{h} -> {ip}")
+    print("\nMissing acmec tag:")
+    if not missing_acmec_tag:
+        print(None)
+    else:
+        for h, ip in dedupe_list(missing_acmec_tag):
+            print(f"{h} -> {ip}")
 
-    # Exit codes - maybe should be adjusted
+    # Exit codes
     if missing_sunet_prefix or missing_acmec_tag:
         sys.exit(1)  # critical
+    elif not_resolvable:
+        sys.exit(2) # warning
 
     sys.exit(0)

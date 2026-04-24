@@ -86,6 +86,8 @@ Puppet::Functions.create_function(:sunet_prefixes) do
       { "net": "2001:6b0:6e::/48",      "family": "ip6", "comment": "Safespring STO4", "resource_type": "safespring", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "2001:6b0:7d:40::/64",   "family": "ip6", "comment": "Safespring DCO", "resource_type": "safespring", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "2001:948:4:6::111/128", "family": "ip6", "comment": "nagios.nordu.net", "resource_type": "nagiosxi", "tags": ["knubbis", "infraca", "acmec"] },
+      { "net": "2001:948:4::/47",       "family": "ip6", "comment": "Inacademia", "resource_type": "inacademia", "tags": ["acmec", "infraca", "knubbis"] },
+      { "net": "2001:6b0:6c::/48",      "family": "ip6", "comment": "Safespring STO4", "resource_type": "safespring", "tags": ["acmec", "infraca", "knubbis"] },
     ]
   end
 end
