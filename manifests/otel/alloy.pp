@@ -1,10 +1,10 @@
 # @summary class to setup Grafana Alloy
-# @param otel_receiver   Where should we send OpenTelemetry data?
-# @param enabled         Possibility to opt out from sending otel data (if you for example enable it globally in a repo)
+# @param otel_receiver       Where should we send OpenTelemetry data?
+# @param enabled             Possibility to opt out from sending otel data (if you for example enable it globally in a repo)
 # @param unattended_upgrade  Option to enable unattended upgrades of alloy
 class sunet::otel::alloy (
-  String  $otel_receiver    = undef,
-  Boolean $enabled=true,
+  String  $otel_receiver      = undef,
+  Boolean $enabled            = true,
   Boolean $unattended_upgrade = false,
 ) {
 
