@@ -1,0 +1,9 @@
+Unattended-Upgrade::Origins-Pattern {
+    "o=. stable,a=stable,site=apt.grafana.com";
+};
+
+Unattended-Upgrade::Package-Whitelist {
+    "alloy";
+};
+
+Unattended-Upgrade::Package-Whitelist-Strict "true";

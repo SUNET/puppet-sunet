@@ -1,9 +1,11 @@
 # @summary class to setup Grafana Alloy
 # @param otel_receiver   Where should we send OpenTelemetry data?
 # @param enabled         Possibility to opt out from sending otel data (if you for example enable it globally in a repo)
+# @param unattended_upgrade  Option to enable unattended upgrades of alloy
 class sunet::otel::alloy (
   String  $otel_receiver    = undef,
   Boolean $enabled=true,
+  Boolean $unattended_upgrade = false,
 ) {
 
   if $enabled {
@@ -54,6 +56,13 @@ class sunet::otel::alloy (
     sunet::nftables::allow { 'allow_local_opentelemetry_http':
       from => '172.16.0.0/12',
       port => '4318',
+    }
+    # Unattended upgrades
+    if $unattended_upgrade {
+      file { '/etc/apt/apt.conf.d/52unattended-upgrades-alloy':
+        content => file('sunet/otel/52unattended-upgrades-alloy'),
+        mode    => '0644',
+      }
     }
   }
 }
