@@ -3,11 +3,11 @@ define sunet::mariadb(
   String $mariadb_version          = latest,
   String $mariadb_image='docker.sunet.se/drive/mariadb',
   Boolean $new_cluster             = false, # applies to maridb images from dockerhub.io
-  Boolean $docker_healthcheck      = false, # Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb how to setup the healthcheck
+  Boolean $docker_healthcheck      = false, # Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb on how to setup the healthcheck
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
   Array[String] $dns               = [],
   Boolean $galera                  = true,
-  Boolean $nagios_monitoring       = true,
+  Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
 )
 {

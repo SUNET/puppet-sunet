@@ -8,7 +8,7 @@ class sunet::mariadb::simple(
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
   Array[String] $dns               = [],
   Boolean $galera                  = true,
-  Boolean $nagios_monitoring       = true,
+  Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
 
 ){
