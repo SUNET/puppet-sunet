@@ -7,6 +7,7 @@ define sunet::mariadb(
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
   Array[String] $dns               = [],
   Boolean $galera                  = true,
+  Boolean $nagios_monitoring       = true,
   String  $innodb_buffer_pool_size = '4G',
 )
 {
@@ -109,5 +110,24 @@ define sunet::mariadb(
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'Mariadb server',
+  }
+# Monitoring script that can be executed with NRPE
+  if $nagios_monitoring {
+    file { '/usr/lib/nagios/plugins/check_galera_cluster':
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      content => file('sunet/mariadb/check_galera_cluster')
+    }
+    # sudo exceptions
+    sunet::sudoer {"nrpe_galera_check":
+      user_name    => 'nagios',
+      collection   => "nrpe_galera_check",
+      command_line => "/usr/lib/nagios/plugins/check_galera_cluster"
+    }
+    # NRPE command confiruation
+    sunet::nagios::nrpe_command {"check_cert_expire_${name}":
+      command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_galera_cluster"
+    }
   }
 }
