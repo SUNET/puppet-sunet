@@ -120,14 +120,14 @@ define sunet::mariadb(
       content => file('sunet/mariadb/check_galera_cluster')
     }
     # sudo exceptions
-    sunet::sudoer {"nrpe_galera_check":
+    sunet::sudoer {'nrpe_galera_check':
       user_name    => 'nagios',
-      collection   => "nrpe_galera_check",
-      command_line => "/usr/lib/nagios/plugins/check_galera_cluster"
+      collection   => 'nrpe_galera_check',
+      command_line => '/usr/lib/nagios/plugins/check_galera_cluster'
     }
     # NRPE command confiruation
-    sunet::nagios::nrpe_command {"check_cert_expire_${name}":
-      command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_galera_cluster"
+    sunet::nagios::nrpe_command {'check_galera_cluster':
+      command_line => '/usr/bin/sudo /usr/lib/nagios/plugins/check_galera_cluster'
     }
   }
 }
