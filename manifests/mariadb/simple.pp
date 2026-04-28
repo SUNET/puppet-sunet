@@ -3,7 +3,6 @@
 class sunet::mariadb::simple(
   String $mariadb_version          = latest,
   String $mariadb_image            = 'docker.sunet.se/drive/mariadb',
-  Integer $bootstrap               = 0,
   Boolean $new_cluster             = false,
   Boolean $docker_healthcheck      = false,
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
@@ -17,7 +16,6 @@ class sunet::mariadb::simple(
     mariadb_image           => $mariadb_image,
     new_cluster             => $new_cluster,
     docker_healthcheck      => $docker_healthcheck,
-    bootstrap               => $bootstrap,
     ports                   => $ports,
     dns                     => $dns,
     galera                  => $galera,

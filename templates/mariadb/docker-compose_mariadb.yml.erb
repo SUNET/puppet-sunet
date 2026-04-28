@@ -37,8 +37,6 @@ services:
     command:  "--wsrep-new-cluster"
     tty: true
 <% else %>
-      - BOOTSTRAP=<%= @bootstrap %>
-      - FORCE_BOOTSTRAP=0
     tty: true
 <%- end -%>
 <%- end -%>

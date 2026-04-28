@@ -2,7 +2,6 @@
 define sunet::mariadb(
   String $mariadb_version          = latest,
   String $mariadb_image='docker.sunet.se/drive/mariadb',
-  Integer $bootstrap               = 0, # applies to nextcloud-maridb images, https://github.com/SUNET/nextcloud-db/blob/master/mariadb/README.md
   Boolean $new_cluster             = false, # applies to maridb images from dockerhub.io
   Boolean $docker_healthcheck      = false, # Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb how to setup the healthcheck
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
