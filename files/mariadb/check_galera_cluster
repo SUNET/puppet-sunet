@@ -146,7 +146,7 @@ else
     CMD="mysql"
 fi
 
-/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N  -e '\s;' >/dev/null 2>&1 || {
+/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N  -e '\s;' >/dev/null 2>&1 || {
   echo "CRITICAL: mysql connection check failed"
   exit $ST_CR
 }
@@ -172,23 +172,23 @@ fi
 #rFlowControl=$(printf "%.14f" $rFlowControl) # issue #4
 
 
-rClusterSize=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_size'")
+rClusterSize=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_size'")
 
 
-rClusterStatus=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_status'") # Primary
+rClusterStatus=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_status'") # Primary
 
 
-rReady=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_ready'") # ON
+rReady=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_ready'") # ON
 
 
-rConnected=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_connected'") # ON
+rConnected=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_connected'") # ON
 
 
-rLocalStateComment=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_local_state_comment'") # Synced
+rLocalStateComment=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_local_state_comment'") # Synced
 
 #rIncommingAddresses=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_incoming_addresses'")
 
-rSSTMethod=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_VARIABLES where VARIABLE_NAME = 'wsrep_sst_method'") # mariabackup
+rSSTMethod=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_VARIABLES where VARIABLE_NAME = 'wsrep_sst_method'") # mariabackup
 
 
 #if [ -z "$rFlowControl" ]; then
