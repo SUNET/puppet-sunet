@@ -161,7 +161,7 @@ fi
 # verify that the node is part of a cluster
 #
 
-rClusterStateUuid=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_state_uuid'")
+rClusterStateUuid=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_state_uuid'")
 
 if [ -z $rClusterStateUuid ]; then
   echo "CRITICAL: node is not part of a cluster."
