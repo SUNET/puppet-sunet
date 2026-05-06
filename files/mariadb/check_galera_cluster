@@ -3,11 +3,10 @@
 #It is a changed version of the original https://github.com/fridim/nagios-plugin-check_galera_cluster/blob/master/check_galera_cluster
 
 
-PROGNAME=`basename $0`
+PROGNAME="basename $0"
 VERSION="Version 1.1.5"
 AUTHOR="Guillaume Coré <fridim@onfi.re>, Ales Nosek <ales.nosek@gmail.com>, Staf Wagemakers <staf@wagemakers.be>, Claudio Kuenzler <claudiokuenzler.com>"
 
-ST_OK=0
 ST_WR=1
 ST_CR=2
 ST_UK=3
@@ -20,27 +19,17 @@ warnText=""
 critText=""
 
 print_version() {
-  echo "$VERSION $AUTHOR"
+  echo "$VERSION" "$AUTHOR"
 }
 
 print_help() {
-  print_version $PROGNAME $VERSION
+  print_version "$PROGNAME" "$VERSION"
   echo ""
   echo "$PROGNAME is a monitoring plugin to monitor Galera cluster status."
   echo ""
-  echo "$PROGNAME [-u USER] [-p PASSWORD] [-H HOST] [-P PORT] [-m file] [-w SIZE] [-c SIZE] [-s statefile] [-0]"
+  echo "$PROGNAME [-w SIZE] [-c SIZE] [-s statefile] [-0]"
   echo ""
   echo "Options:"
-  echo "  u)"
-  echo "    MySQL user."
-  echo "  p)"
-  echo "    MySQL password."
-  echo "  H)"
-  echo "    MySQL host."
-  echo "  P)"
-  echo "    MySQL port."
-  echo "  m)"
-  echo "    MySQL extra my.cnf configuration file."
   echo "  w)"
   echo "    Sets minimum number of nodes in the cluster when WARNING is raised. (default is same as critical)."
   echo "  c)"
@@ -73,30 +62,15 @@ check_executable() {
 check_executable docker
 check_executable bc
 
-while getopts “hvu:p:H:P:w:c:m:s:0” OPTION; do
+while getopts "hv:w:c:s:0" OPTION; do
   case $OPTION in
     h)
       print_help
-      exit $ST_UK
+      exit "$ST_UK"
       ;;
     v)
-      print_version $PROGNAME $VERSION
+      print_version "$PROGNAME" "$VERSION"
       exit $ST_UK
-      ;;
-    u)
-      mysqluser=$OPTARG
-      ;;
-    p)
-      password=$OPTARG
-      ;;
-    H)
-      mysqlhost=$OPTARG
-      ;;
-    P)
-      port=$OPTARG
-      ;;
-    m)
-      myconfig=$OPTARG
       ;;
     w)
       warn=$OPTARG
@@ -113,7 +87,7 @@ while getopts “hvu:p:H:P:w:c:m:s:0” OPTION; do
     ?)
       echo "Unknown argument: $1"
       print_help
-      exit $ST_UK
+      exit "$ST_UK"
       ;;
   esac
 done
@@ -122,20 +96,6 @@ if [ -z "$warn" ]; then
   warn=$crit
 fi
 
-create_param() {
-  if [ -n "$2" ]; then
-    echo $1$2
-  fi
-}
-
-param_mysqlhost=$(create_param -h "$mysqlhost")
-param_port=$(create_param -P "$port")
-param_mysqluser=$(create_param -u "$mysqluser")
-param_password=$(create_param -p "$password")
-param_configfile=$(create_param --defaults-extra-file= "$myconfig")
-export MYSQL_PWD=$password
-
-param_mysql="$param_mysqlhost $param_port $param_mysqluser $param_password $param_configfile"
 
 #
 # verify the database connection
@@ -163,7 +123,7 @@ fi
 
 rClusterStateUuid=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup  -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_state_uuid'")
 
-if [ -z $rClusterStateUuid ]; then
+if [ -z "$rClusterStateUuid" ]; then
   echo "CRITICAL: node is not part of a cluster."
   exit $ST_CR
 fi
@@ -202,43 +162,43 @@ rSSTMethod=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=
 #fi
 
 if [ "$primary" = 'TRUE' ]; then
-  if [ $rClusterStatus != 'Primary' ]; then
+  if [ "$rClusterStatus" != 'Primary' ]; then
     critText+="CRITICAL: node is not primary (wsrep_cluster_status). "
-    critAlerts=$(($criticalAlerts+1))
+    critAlerts=$((criticalAlerts+1))
   fi
 fi
 
-if [ $rReady != 'ON' ]; then
+if [ "$rReady" != 'ON' ]; then
   critText+="CRITICAL: node is not ready (wsrep_ready). "
-  critAlerts=$(($criticalAlerts+1))
+  critAlerts=$((criticalAlerts+1))
 fi
 
-if [ $rConnected != 'ON' ]; then
+if [ "$rConnected" != 'ON' ]; then
   critText+="CRITICAL: node is not connected (wsrep_connected). "
-  critAlerts=$(($criticalAlerts+1))
+  critAlerts=$((criticalAlerts+1))
 fi
 
-if [ $rLocalStateComment != 'Synced' ]; then
+if [ "$rLocalStateComment" != 'Synced' ]; then
    critText+="CRITICAL: node is not synced - actual state is: $rLocalStateComment (wsrep_local_state_comment). "
-   critAlerts=$(($criticalAlerts+1))
+   critAlerts=$((criticalAlerts+1))
 fi
 
-if [ $rSSTMethod != 'mariabackup' ]; then
+if [ "$rSSTMethod" != 'mariabackup' ]; then
    critText+="CRITICAL: node is not backed up - actual state is: $rSSTMethod (wsrep_sst_method). "
-   critAlerts=$(($criticalAlerts+1))
+   critAlerts=$((criticalAlerts+1))
 fi
 
-if [ $rClusterSize -gt $warn ]; then
+if [ "$rClusterSize" -gt "$warn" ]; then
   # only display the ok message if the state check not enabled
   if [ -z "$stateFile" ]; then
     echo "OK: number of NODES = $rClusterSize"
   fi
-elif [ $rClusterSize  -le $crit ]; then
+elif [ "$rClusterSize"  -le "$crit" ]; then
   critText+="CRITICAL: number of NODES = $rClusterSize. "
-  critAlerts=$(($criticalAlerts+1))
-elif [ $rClusterSize -le $warn ]; then
+  critAlerts=$((criticalAlerts+1))
+elif [ "$rClusterSize" -le "$warn" ]; then
     warnText+="WARNING: number of NODES = $rClusterSize."
-    warnAlerts=$(($warnAlerts+1))
+    warnAlerts=$((warnAlerts+1))
   else
    exit $ST_UK
 fi
@@ -247,39 +207,39 @@ fi
 # detect is the connection is lost automatically
 #
 
-if [ ! -z "$stateFile" ]; then
+if [ -n "$stateFile" ]; then
 
-  touch $stateFile
+  touch "$stateFile"
 
-  if [ $? != "0" ]; then
+  if ! touch "$stateFile" ; then
 
     echo "UNKNOWN: stateFile \"$stateFile\" is not writeable"
-    unknAlerts=$(($unknAlerts+1))
+    unknAlerts=$((unknAlerts+1))
 
   else
 
-    if [ $rConnected = "ON" ]; then
+    if [ "$rConnected" = "ON" ]; then
       # get the current connected Nodes
-      currentNodes=$(echo $rIncommingAddresses} | tr "," "\n" | sort -u)
+      currentNodes=$(echo "$rIncommingAddresses" | tr "," "\n" | sort -u)
       if [ -f "$stateFile" ]; then
         # get the nodes added to the cluster
-        newNodes=$(echo $currentNodes | tr " " "\n" | comm -2 -3 - $stateFile)
+        newNodes=$(echo "$currentNodes" | tr " " "\n" | comm -2 -3 - "$stateFile")
         # get the nodes that were removed from the cluster
-        missingNodes=$(echo $currentNodes | tr " " "\n" | comm -1 -3 - $stateFile)
-        if [ ! -z "$newNodes" ]; then
+        missingNodes=$(echo "$currentNodes" | tr " " "\n" | comm -1 -3 - "$stateFile")
+        if [ -n  "$newNodes" ]; then
           # add the new nodes to the cluster to the state file
-          echo $newNodes | tr " " "\n" >> $stateFile
+          echo "$newNodes" | tr " " "\n" >> "$stateFile"
         fi
       else
         # there is no state file yet, creating new one.
-        echo $currentNodes | tr " " "\n" > $stateFile
+        echo "$currentNodes" | tr " " "\n" > "$stateFile"
       fi # -f stateFile
       # get the numeber of nodes that were part of the cluster before
-      maxClusterSize=$(cat $stateFile | wc -l)
+      maxClusterSize=$(cat "$stateFile" | wc -l)
 
-      if [ $maxClusterSize -eq $rClusterSize ]; then
-        if [ $maxClusterSize -eq 1 ]; then
-            if [ $crit -eq 0 -a  $warn -eq 0 ]; then
+      if [ "$maxClusterSize" -eq "$rClusterSize" ]; then
+        if [ "$maxClusterSize" -eq 1 ]; then
+            if [ "$crit" -eq 0 ] &&  [ "$warn" -eq 0 ]; then
               echo "OK: running single-node database cluster"
             fi
         else
@@ -287,7 +247,7 @@ if [ ! -z "$stateFile" ]; then
         fi
       else
             echo "WARNING: redundant  $rClusterSize online / $maxClusterSize  total, missing peers: $missingNodes"
-            warnAlerts=$(($warnAlerts+1))
+            warnAlerts=$((warnAlerts+1))
       fi
 
     fi # rConnected
@@ -301,8 +261,8 @@ fi # -z stateFile
 # exit
 #
 
-[ "$critAlerts" -gt "0" ] && echo $critText && exit $ST_CR
+[ "$critAlerts" -gt "0" ] && echo "$critText" && exit $ST_CR
 [ "$unknAlerts" -gt "0" ] && exit $ST_UK
-[ "$warnAlerts" -gt "0" ] && echo $warnText && exit $ST_WR 
+[ "$warnAlerts" -gt "0" ] && echo "$warnText" && exit $ST_WR 
 
 exit 0
