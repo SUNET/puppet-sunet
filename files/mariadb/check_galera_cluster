@@ -263,6 +263,6 @@ fi # -z stateFile
 
 [ "$critAlerts" -gt "0" ] && echo "$critText" && exit $ST_CR
 [ "$unknAlerts" -gt "0" ] && exit $ST_UK
-[ "$warnAlerts" -gt "0" ] && echo "$warnText" && exit $ST_WR 
+[ "$warnAlerts" -gt "0" ] && echo "$warnText" && exit $ST_WR
 
 exit 0
