@@ -17,12 +17,3 @@ class sunet::certbot::djangoca::manual_client (
     creates => '/etc/letsencrypt/accounts/public_key.pem'
   }
 }
-
-
-
-
-
-
-
-
-}
