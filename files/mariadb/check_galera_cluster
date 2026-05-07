@@ -2,7 +2,7 @@
 
 #It is a changed version of the original https://github.com/fridim/nagios-plugin-check_galera_cluster/blob/master/check_galera_cluster
 
-PROGNAME="basename $0"
+PROGNAME=$(basename "$0")
 VERSION="Version 1.1.5"
 AUTHOR="Guillaume Coré <fridim@onfi.re>, Ales Nosek <ales.nosek@gmail.com>, Staf Wagemakers <staf@wagemakers.be>, Claudio Kuenzler <claudiokuenzler.com>"
 
