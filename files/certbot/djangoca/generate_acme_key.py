@@ -94,7 +94,7 @@ def certbot_account_id(private_key) -> str:
         encoding=serialization.Encoding.DER,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
-    return hashlib.md5(pub_der).hexdigest()
+    return hashlib.md5(pub_der).hexdigest() # NOSONAR
 
 
 def private_key_to_jwk_dict(private_key) -> dict:
