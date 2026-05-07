@@ -3,8 +3,8 @@ class sunet::certbot::djangoca::manual_client (
   String  $directory_url
 ) {
 
-  include sunet::packages::python3_python3-cryptography
-  include sunet::packages::python3_python3-josepy
+  include sunet::packages::python3_cryptography
+  include sunet::packages::python3_josepy
 
   file { '/usr/local/bin/generate_acme_key':
     ensure  => present,
