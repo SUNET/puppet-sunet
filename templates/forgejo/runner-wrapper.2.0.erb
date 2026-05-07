@@ -3,18 +3,6 @@
 export RUNNER_TOOL_CACHE=/opt/hostedtoolcache
 
 RUNNER=/home/ubuntu/forgejo-runner
-while true; do
-  ${RUNNER} --config ./runner.config one-job 2>&1 | sed '/^Error: could not fetch task/,$b;$q1'
-
-  # Match for Error: could not fetch task in sed
-  # aka no jobs to fetch
-  # Try again lateer
-  if [ "${PIPESTATUS[1]}" -eq "0" ]; then
-          sleep 5
-          continue
-  else
-          break
-  fi
-done
+${RUNNER} --config ./runner.config one-job --wait
 
 echo "Exiting to destroy VM - BOOM"
