@@ -8,7 +8,7 @@ class sunet::certbot::djangoca::manual_client (
 
   file { '/usr/local/bin/generate_acme_key':
     ensure  => present,
-    content => file('sunet/certbot/djangoca/generate_acme_key'),
+    content => file('sunet/certbot/djangoca/generate_acme_key.py'),
     mode    => '0755',
   }
 
