@@ -1,7 +1,7 @@
 # A class to install and manage Forgejo runner(s)
 class sunet::forgejo::runner::orchestrator (
-  String $version           = '12.6.4',
-  String $version_sha256sum = 'fe83c5d5fffbbb81f2f8d93f4638d098ad9c08b77aa6b5035856ae9643d25684',
+  String $version           = '12.10.1',
+  String $version_sha256sum = '9e0378b4a22b95da98b350cfcb1b3844c1929a354a961f1ca7b49122b42abcc1',
   Integer $runners = 4,
   String $forgejo_instance  =  'platform.sunet.se',
   String $forgejo_prefix            = 'runner',
