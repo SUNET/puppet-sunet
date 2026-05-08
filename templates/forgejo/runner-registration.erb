@@ -4,7 +4,7 @@ set -eu -o pipefail
 
 # Clean up if anything would be left from previous run
 for file in uuid token; do
-  file_path = "/tmp/${file}"
+  file_path="/tmp/${file}"
   if [[ -f "${file_path}" ]]; then
     rm "${file_path}"
   fi
