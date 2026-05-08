@@ -6,7 +6,7 @@ class sunet::security::cve_mitegator (
   $_excluded_cves = lookup('excluded_cves', Array, undef, $excluded_cves)
 
   # Copy Fail CVE-2026-31431
-  if  !('CVE-2026-31431' on $_excluded_cves) {
+  if !('CVE-2026-31431' in $_excluded_cves) {
     file { '/etc/modprobe.d/CVE-2026-31431.conf':
       ensure  => present,
       content => @("EOF"),
@@ -20,7 +20,7 @@ class sunet::security::cve_mitegator (
     }
 
   # Dirty Frag CVE-2026-43500
-  if  !('CVE-2026-43500' on $_excluded_cves) {
+  if !('CVE-2026-43500' in $_excluded_cves) {
     file { '/etc/modprobe.d/CVE-2026-43500.conf':
       ensure  => present,
       content => @("EOF"),
@@ -38,7 +38,7 @@ class sunet::security::cve_mitegator (
 
   # Copy Fail 2
   # No CVE yet?
-  if  !('Copy_Fail_2' on $_excluded_cves) {
+  if !('Copy_Fail_2' in $_excluded_cves) {
     file { '/etc/modprobe.d/copy_fail_2.conf':
       ensure  => present,
       content => @("EOF"),
