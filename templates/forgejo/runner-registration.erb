@@ -2,10 +2,12 @@
 
 set -eu -o pipefail
 
-apt-get update
-apt-get -y install \
-  curl \
-  jq
+if [[ ! -f /usr/bin/curl ]]; then
+  apt-get update
+  apt-get -y install \
+    curl \
+    jq
+fi
 
 # Clean up if anything would be left from previous run
 for file in uuid token; do
