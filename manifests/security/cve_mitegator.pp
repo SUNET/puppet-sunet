@@ -10,8 +10,8 @@ class sunet::security::cve_mitegator (
     file { '/etc/modprobe.d/CVE-2026-31431.conf':
       ensure  => present,
       content => @("EOF"),
-			  install algif_aead /bin/false
-        | EOF
+       install algif_aead /bin/false
+       | EOF
     }
     exec { 'CVE-2026-31431-blocked-modules':
       command     => 'rmmod algif_aead 2>/dev/null; true',
