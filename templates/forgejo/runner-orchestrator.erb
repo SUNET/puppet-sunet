@@ -6,6 +6,7 @@ RUNNER=/opt/forgejo-runner-orchestrator/bin/forgejo-runner
 ME=$(hostname -f)
 
 docker run --rm \
+ --name "dirigent-${INT}" \
  -v /opt/forgejo-runner-orchestrator/config/runner.config:/runner.config:ro \
  -v /opt/forgejo-runner-orchestrator/libexec/runner-wrapper:/wrapper:ro \
  -v /opt/forgejo-runner-orchestrator/config/clouds.yaml:/etc/openstack/clouds.yaml:ro \
