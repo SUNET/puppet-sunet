@@ -10,7 +10,7 @@ for file in uuid token; do
   fi
 done
 
-response=$(curl -X 'POST' \
+response=$(curl -f -X 'POST' \
   'https://<%= @forgejo_instance %>/api/v1/admin/actions/runners' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <%= @forgejo_registration_token %>' \
