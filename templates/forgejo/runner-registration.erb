@@ -2,6 +2,9 @@
 
 set -eu -o pipefail
 
+apt-get update
+apt-get -y curl jq
+
 # Clean up if anything would be left from previous run
 for file in uuid token; do
   file_path="/tmp/${file}"
