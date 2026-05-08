@@ -70,6 +70,12 @@ class sunet::forgejo::runner::orchestrator (
     mode    => '0755',
   }
 
+  file { '/opt/forgejo-runner-orchestrator/libexec/runner-registration':
+    ensure  => 'file',
+    content => template('sunet/forgejo/runner-registration.erb'),
+    mode    => '0755',
+  }
+
   file { '/opt/forgejo-runner-orchestrator/libexec/runner-wrapper':
     ensure  => 'file',
     content => template('sunet/forgejo/runner-wrapper.2.0.erb'),

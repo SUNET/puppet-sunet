@@ -3,6 +3,10 @@
 export RUNNER_TOOL_CACHE=/opt/hostedtoolcache
 
 RUNNER=/home/ubuntu/forgejo-runner
-${RUNNER} --config ./runner.config one-job --wait
+${RUNNER} --config ./runner.config one-job \
+  --url "https://<%= @forgejo_instance %>" \
+  --uuid "$(cat /tmp/non-secret-uuid.txt)" \
+  --token-url file:///tmp/secret-token.txt \
+  --wait
 
 echo "Exiting to destroy VM - BOOM"

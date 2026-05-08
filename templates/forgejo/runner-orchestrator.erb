@@ -5,37 +5,25 @@ set -eu
 RUNNER=/opt/forgejo-runner-orchestrator/bin/forgejo-runner
 ME=$(hostname -f)
 
-if [ ! -f /opt/forgejo-runner-orchestrator/config/dot-runner-${INT} ]; then
-	config_file=$(mktemp "/tmp/runner-config-${INT}-XXXX")
-	dot_file=$(mktemp "/tmp/dot-config-${INT}-XXXX")
-  # Must be a JSON in order for the runner to write
-	echo "{}" > "$dot_file"
-
-  # Force the runner to create the "credential" file in a unique predictable location
-	sed "s#file: /home/ubuntu/.runner#file: ${dot_file}#g" /opt/forgejo-runner-orchestrator/config/runner.config  > "${config_file}"
-  ${RUNNER} --config "${config_file}" register --no-interactive --instance "https://<%= @forgejo_instance %>" --token "<%= @forgejo_registration_token %>" --name "${ME}:<%= @forgejo_prefix %>-${INT}"
-	mv  "${dot_file}" /opt/forgejo-runner-orchestrator/config/dot-runner-${INT}
-	rm "${config_file}"
-fi
-
-
-
 docker run --rm \
  -v /opt/forgejo-runner-orchestrator/config/runner.config:/runner.config:ro \
  -v /opt/forgejo-runner-orchestrator/libexec/runner-wrapper:/wrapper:ro \
  -v /opt/forgejo-runner-orchestrator/config/clouds.yaml:/etc/openstack/clouds.yaml:ro \
  -v /opt/forgejo-runner-orchestrator/config/id_ed25519:/id_ed25519:ro \
- -v /opt/forgejo-runner-orchestrator/config/dot-runner-${INT}:/.runner:ro \
+ -v /opt/forgejo-runner-orchestrator/libexec/runner-registration:/opt/runner-registration:ro \
  -v $(realpath /opt/forgejo-runner-orchestrator/bin/forgejo-runner):/forgejo-runner:ro \
+ -e DIRIGENTEN_HOSTNAME=${ME} \
 platform.sunet.se/platform/dirigenten:<%= @dirigenten_version %> \
 --network <%= @openstack_network %> \
 --prefix <%= @forgejo_prefix %>-${INT} \
 --key-name <%= @openstack_key_name %> \
+--pre-exec /runner-registration
 --ssh-key /id_ed25519 \
 --ssh-host $(hostname -f) \
 --scp /wrapper:/home/ubuntu/wrapper \
 --scp /runner.config:/home/ubuntu/runner.config \
+--scp /tmp/uuid:/tmp/non-secret-uuid.txt \
+--scp /tmp/token:/tmp/secret-token.txt \
 --scp /forgejo-runner:/home/ubuntu/forgejo-runner \
---scp /.runner:/home/ubuntu/.runner \
 <% if @runner_image -%>--image <%= @runner_image %> \<%- end -%>
 /home/ubuntu/wrapper
