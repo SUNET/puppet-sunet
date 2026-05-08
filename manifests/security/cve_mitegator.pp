@@ -40,7 +40,7 @@ class sunet::security::cve_mitegator (
   # Copy Fail 2
   # No CVE yet?
   if !('Copy_Fail_2' in $_excluded_cves) {
-    file { '/etc/modprobe.d/copy_fail_2.conf':
+    file { '/etc/modprobe.d/copy-fail-2.conf':
       ensure  => present,
       content => @("EOF"),
        install ipcomp4 /bin/false
