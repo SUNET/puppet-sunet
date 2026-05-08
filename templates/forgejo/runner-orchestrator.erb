@@ -17,7 +17,7 @@ platform.sunet.se/platform/dirigenten:<%= @dirigenten_version %> \
 --network <%= @openstack_network %> \
 --prefix <%= @forgejo_prefix %>-${INT} \
 --key-name <%= @openstack_key_name %> \
---pre-exec /runner-registration
+--pre-exec /runner-registration \
 --ssh-key /id_ed25519 \
 --ssh-host $(hostname -f) \
 --scp /wrapper:/home/ubuntu/wrapper \
