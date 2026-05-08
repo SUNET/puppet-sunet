@@ -3,7 +3,9 @@
 set -eu -o pipefail
 
 apt-get update
-apt-get -y curl jq
+apt-get -y install \
+  curl \
+  jq
 
 # Clean up if anything would be left from previous run
 for file in uuid token; do
