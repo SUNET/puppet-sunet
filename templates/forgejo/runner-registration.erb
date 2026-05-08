@@ -15,10 +15,10 @@ response=$(curl -f -X 'POST' \
   -H 'accept: application/json' \
   -H 'Authorization: Bearer <%= @forgejo_registration_token %>' \
   -H 'Content-Type: application/json' \
-  -d '{
-  "name": "${DIRIGENTEN_HOSTNAME}-${DIRIGENTEN_PREFIX}-$(date +%s)",
-  "ephemeral": true
-}')
+  -d "{
+  \"name\": \"${DIRIGENTEN_HOSTNAME}-${DIRIGENTEN_PREFIX}-$(date +%s)\",
+  \"ephemeral\": true
+}")
 
 for key in uuid token; do
   echo "${response}" | jq -re --arg k "$key" '.[$k]' > "/tmp/${key}"
