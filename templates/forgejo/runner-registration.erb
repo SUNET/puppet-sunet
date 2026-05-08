@@ -21,5 +21,5 @@ response=$(curl -f -X 'POST' \
 }')
 
 for key in uuid token; do
-  echo "${response}" | jq -r --arg k "$key" '.[$k]' > "/tmp/${key}"
+  echo "${response}" | jq -re --arg k "$key" '.[$k]' > "/tmp/${key}"
 done
