@@ -18,6 +18,7 @@ class sunet::security::cve_mitegator (
       subscribe   => File['/etc/modprobe.d/CVE-2026-43500.conf'],
       refreshonly => true,
     }
+  }
 
   # Dirty Frag CVE-2026-43500
   if !('CVE-2026-43500' in $_excluded_cves) {
