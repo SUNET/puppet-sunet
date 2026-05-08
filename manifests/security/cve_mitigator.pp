@@ -1,5 +1,5 @@
-# Mitegate the CVEs
-class sunet::security::cve_mitegator (
+# Mitigate the CVEs
+class sunet::security::cve_mitigator (
   Array $excluded_cves = [],
 )
 {
