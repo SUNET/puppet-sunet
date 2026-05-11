@@ -38,7 +38,6 @@ from urllib.parse import urlparse
 try:
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric import rsa
-    from cryptography.hazmat.backends import default_backend
 except ImportError:
     sys.exit("Missing dependency: pip install cryptography")
 
@@ -52,7 +51,6 @@ def generate_rsa_key(key_size: int = 2048):
     return rsa.generate_private_key(
         public_exponent=65537,
         key_size=key_size,
-        backend=default_backend(),
     )
 
 
