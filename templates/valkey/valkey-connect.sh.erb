@@ -9,7 +9,21 @@ CA_CERT_PATH=<%= @ca_cert_path %>
 
 # Function to display usage
 function usage() {
-  echo "Usage: $0 --connect | --ping | --server-info | --client-info | --cluster-nodes | --cluster-info | --list-keys | --stats | --latency | --config-rewrite | --custom-command"
+  echo "Usage: $0 <command>"
+  echo ""
+  echo "Commands:"
+  echo "  --connect          Open an interactive Valkey CLI session"
+  echo "  --ping             Send a PING to verify connectivity"
+  echo "  --server-info      Show server information"
+  echo "  --client-info      Show connected clients information"
+  echo "  --cluster-nodes    Show all cluster nodes and their state"
+  echo "  --cluster-info     Show cluster health summary"
+  echo "  --list-keys        Scan and list keys"
+  echo "  --stats            Show server statistics"
+  echo "  --info-memory      Show memory usage information"
+  echo "  --latency          Show latency metrics and diagnostics"
+  echo "  --config-rewrite   Rewrite the server config to disk"
+  echo "  --custom-command   Run a custom Valkey command (e.g. --custom-command 'GET mykey')"
   exit 1
 }
 
@@ -59,7 +73,7 @@ function client_info() {
   <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO CLIENTS
 }
 
-function memory_info() {
+function info_memory() {
   local valkey_password=$(get_valkey_password)
   <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO MEMORY
 }
@@ -88,7 +102,7 @@ function custom_command() {
 }
 
 # Parse the options
-OPTIONS=$(getopt -o '' --long connect,ping,server-info,client-info,cluster-nodes,cluster-info,list-keys,stats,memory-info,latency,config-rewrite,custom-command: -- "$@")
+OPTIONS=$(getopt -o '' --long connect,ping,server-info,client-info,cluster-nodes,cluster-info,list-keys,stats,info-memory,latency,config-rewrite,custom-command: -- "$@")
 if [ $? -ne 0 ]; then
   usage
 fi
@@ -142,8 +156,8 @@ while true; do
       shift
       break
       ;;
-    --memory-info)
-      memory_info
+    --info-memory)
+      info_memory
       shift
       break
       ;;
