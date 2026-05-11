@@ -39,6 +39,7 @@ from urllib.parse import urlparse
 try:
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 except ImportError:
     sys.exit("Missing dependency: pip install cryptography")
 
@@ -48,14 +49,14 @@ except ImportError:
     sys.exit("Missing dependency: pip install josepy")
 
 
-def generate_rsa_key(key_size: int):
+def generate_rsa_key(key_size: int) -> RSAPrivateKey:
     return rsa.generate_private_key(
         public_exponent=65537,
         key_size=key_size,
     )
 
 
-def public_key_to_pem(private_key) -> str:
+def public_key_to_pem(private_key: RSAPrivateKey) -> str:
     return private_key.public_key().public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
@@ -63,7 +64,7 @@ def public_key_to_pem(private_key) -> str:
 
 
 
-def private_key_to_jwk(private_key) -> jose.JWKRSA:
+def private_key_to_jwk(private_key: RSAPrivateKey) -> jose.JWKRSA:
     return jose.JWKRSA(key=private_key)
 
 
@@ -88,7 +89,7 @@ def jwk_thumbprint(jwk: jose.JWKRSA) -> str:
     return base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
 
 
-def certbot_account_id(private_key) -> str:
+def certbot_account_id(private_key: RSAPrivateKey) -> str:
     pub_der = private_key.public_key().public_bytes(
         encoding=serialization.Encoding.DER,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
@@ -96,7 +97,7 @@ def certbot_account_id(private_key) -> str:
     return hashlib.md5(pub_der).hexdigest() # NOSONAR
 
 
-def private_key_to_jwk_dict(private_key) -> dict:
+def private_key_to_jwk_dict(private_key: RSAPrivateKey) -> dict:
     jwk = private_key_to_jwk(private_key)
     return json.loads(jwk.json_dumps())
 
