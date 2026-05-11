@@ -15,15 +15,8 @@ Requirements
 Usage
 -----
   python generate_acme_key.py \
-      --ca-serial <CA_SERIAL> \
-      --acme-url https://ca.example.com \
-      --email admin@example.com \
-      --output-dir /etc/letsencrypt/accounts \
-    | python provision_acme_account.py \
-          --ca-serial <CA_SERIAL> \
-          --acme-url https://ca.example.com \
-          --email admin@example.com \
-          --manage-py /opt/django-ca/manage.py
+      --server https://ca.example.com/django_ca/acme/directory/AB:CD:EF/ \
+    | django_ca provision_acme_account --ca-serial <CA_SERIAL>
 """
 
 import argparse
