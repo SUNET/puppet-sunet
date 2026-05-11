@@ -48,7 +48,7 @@ except ImportError:
     sys.exit("Missing dependency: pip install josepy")
 
 
-def generate_rsa_key(key_size: int = 2048):
+def generate_rsa_key(key_size: int):
     return rsa.generate_private_key(
         public_exponent=65537,
         key_size=key_size,
