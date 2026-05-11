@@ -30,6 +30,7 @@ import argparse
 import base64
 import hashlib
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -118,8 +119,11 @@ def write_certbot_files(
 
     key_dict = private_key_to_jwk_dict(private_key)
 
-    # private_key.json
-    (output_dir / "private_key.json").write_text(json.dumps(key_dict, indent=2))
+    # private_key.json — written with 0o600 so only the owner can read it
+    private_key_path = output_dir / "private_key.json"
+    fd = os.open(private_key_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(json.dumps(key_dict, indent=2))
 
     # regr.json
     pub_jwk_dict = {k: v for k, v in key_dict.items() if k in ("e", "kty", "n")}
