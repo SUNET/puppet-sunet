@@ -110,12 +110,12 @@ def build_account_uri(acme_url: str, ca_serial: str, slug: str) -> str:
 
 def write_certbot_files(
     output_dir: Path,
-    private_key,
+    private_key: RSAPrivateKey,
     account_uri: str,
     email: str,
     acme_server_url: str,
     tos_url: str = "",
-):
+) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
     key_dict = private_key_to_jwk_dict(private_key)
