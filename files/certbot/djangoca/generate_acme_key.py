@@ -166,11 +166,14 @@ def main():
                         help="Contact email for the ACME account")
     parser.add_argument("--output-dir", default="/etc/letsencrypt/accounts",
                         help="Certbot accounts directory (default: /etc/letsencrypt/accounts)")
-    parser.add_argument("--key-size", type=int, default=2048,
-                        help="RSA key size (default: 2048)")
+    parser.add_argument("--key-size", type=int, default=4096,
+                        help="RSA key size (default: 4096, minimum: 2048)")
     parser.add_argument("--tos-url", default="",
                         help="URL to the CA's Terms of Service (optional)")
     args = parser.parse_args()
+
+    if args.key_size < 2048:
+        parser.error("--key-size must be at least 2048")
 
     # Check for an existing account under --output-dir before generating a new key.
     existing = list(Path(args.output_dir).glob("**/public_key.pem"))
