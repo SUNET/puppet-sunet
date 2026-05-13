@@ -1,0 +1,2 @@
+# Allow nagios user to sudo when executing check-valkey-status
+nagios   ALL = NOPASSWD:/usr/local/sbin/check-valkey-status

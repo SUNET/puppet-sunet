@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+
+force=0
+case $1 in
+  dryrun)
+    dryrun=1
+    ;;
+  force)
+    force=1
+    ;;
+esac
+
+fqdn=$(hostname -f)
+cert="/opt/valkey/cert/cert.pem"
+key="/opt/valkey/cert/privkey.pem"
+ca=<%= @ca_cert_path %>
+password=$(eyaml decrypt -f /etc/hiera/data/local.eyaml --pkcs7-private-key=/etc/hiera/eyaml/private_key.pkcs7.pem --pkcs7-public-key=/etc/hiera/eyaml/public_certkey.pkcs7.pem | awk '/^valkey_password: /{print $2}')
+clusterid=$(<%= @cli_client %> -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER MYID 2> /dev/null)
+if (<%= @cli_client %> -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER NODES 2> /dev/null| grep -e "^${clusterid}"| grep -q slave); then
+  echo SLAVE, failing over to master
+  if [ "${dryrun}" ]; then
+    echo "No failover will happen in dryrun"
+    exit 1
+  fi
+
+  lock_file="/etc/no-automatic-cosmos"
+  if [ -f "${lock_file}" ] && [ "${force}" -ne 1 ]; then
+    echo "Host is in maintainace mode (by ${lock_file}). No failover will happen."
+  else
+    <%= @cli_client %> -a "${password}" -h "${fqdn}" --tls --cert "${cert}" --key "${key}" --cacert "${ca}" CLUSTER FAILOVER 2> /dev/null
+  fi
+else
+  echo "Node is MASTER, all is good."
+fi

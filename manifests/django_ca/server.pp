@@ -59,6 +59,16 @@ class sunet::django_ca::server (
     content => template('sunet/django-ca/nginx.conf.erb'),
   }
 
+  # Branding
+  file { "${config_dir}/index.html":
+    ensure  => file,
+    content => file('sunet/django-ca/index.html'),
+  }
+  file { "${config_dir}/index.png":
+    ensure  => file,
+    content => file('sunet/django-ca/index.png'),
+  }
+
   sunet::hsm::client_trust { 'hsms':
       hsm_servers => $hsm_servers,
       mode        => '0755',
@@ -93,13 +103,13 @@ class sunet::django_ca::server (
   # Run django-ca background tasks (since we do not use celery beat:
   # https://django-ca.readthedocs.io/en/latest/quickstart/as_app.html#setup-regular-tasks)
   if $django_ca_bg_task_runner {
-    sunet::scriptherder::cronjob { 'django-ca-regenerate_ocsp_keys':
-      cmd         => '/usr/local/bin/django-ca regenerate_ocsp_keys',
+    sunet::scriptherder::cronjob { 'django-ca-generate_ocsp_keys':
+      cmd         => '/usr/local/bin/django-ca generate_ocsp_keys',
       minute      => '20',
       ok_criteria => ['exit_status=0', 'max_age=3h'],
     }
-    sunet::scriptherder::cronjob { 'django-ca-cache_crls':
-      cmd         => '/usr/local/bin/django-ca cache_crls',
+    sunet::scriptherder::cronjob { 'django-ca-generate_crls':
+      cmd         => '/usr/local/bin/django-ca generate_crls',
       minute      => '25',
       ok_criteria => ['exit_status=0', 'max_age=3h'],
     }
