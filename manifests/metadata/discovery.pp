@@ -55,7 +55,6 @@ class sunet::metadata::discovery(
 
   if ($ds) {
 
-    if $mdq_search_url == undef { fail('mdq_search_url is required when ds feature is enabled') }
     if $base_url       == undef { fail('base_url is required when ds feature is enabled')       }
     if $context        == undef { fail('context is required when ds feature is enabled')        }
     if $domain         == undef { fail('domain is required when ds feature is enabled')         }
