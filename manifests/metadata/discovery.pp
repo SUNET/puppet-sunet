@@ -48,6 +48,7 @@ class sunet::metadata::discovery(
 
     if (!$ds) {
       sunet::nftables::allow { 'allow-incoming-mdq':
+        from => 'any',
         port => '80',
       }
     }
@@ -83,6 +84,7 @@ class sunet::metadata::discovery(
     }
 
     sunet::nftables::allow { 'allow-incoming-ds':
+      from => 'any',
       port => $ds_port,
     }
   }
