@@ -7,7 +7,7 @@ class sunet::dehydrated(
   Array   $allow_clients = [],
   Integer $server_port = 80,
   Integer $ssh_port = 22,
-  Array   $allow_prefixes_by_tag = undef,
+  Array   $allow_prefixes_by_tag = [],
 ) {
   $conf = lookup('dehydrated', undef, undef, undef)
   if $conf !~ Hash {
@@ -149,8 +149,26 @@ class sunet::dehydrated(
     warning("Unknown format of 'clients' - ignoring")
   }
 
-  if $allow_prefixes_by_tag != undef {
+  if $allow_prefixes_by_tag != [] {
     $allow_clients_ssh = sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip'}) + sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip6'})
+
+    file { '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0755',
+      content => file('sunet/dehydrated/check_acmec-allowed-prefixes.py'),
+    }
+
+    sunet::sudoer {'check_acmec-allowed-prefixes':
+        user_name    => 'nagios',
+        collection   => 'check_acmec-allowed-prefixes',
+        command_line => '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes'
+      }
+
+    sunet::nagios::nrpe_command {'check_acmec-allowed-prefixes':
+      command_line => '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes --tag acmec'
+    }
   } else {
     $allow_clients_ssh = $allow_clients
   }
