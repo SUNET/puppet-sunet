@@ -160,14 +160,14 @@ class sunet::dehydrated(
       content => file('sunet/dehydrated/check_acmec-allowed-prefixes.py'),
     }
 
-    sunet::sudoer {"check_acmec-allowed-prefixes":
+    sunet::sudoer {'check_acmec-allowed-prefixes':
         user_name    => 'nagios',
-        collection   => "check_acmec-allowed-prefixes",
-        command_line => "/usr/lib/nagios/plugins/check_acmec-allowed-prefixes"
+        collection   => 'check_acmec-allowed-prefixes',
+        command_line => '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes'
       }
 
-    sunet::nagios::nrpe_command {"check_acmec-allowed-prefixes":
-      command_line => "/usr/lib/nagios/plugins/check_acmec-allowed-prefixes --tag acmec"
+    sunet::nagios::nrpe_command {'check_acmec-allowed-prefixes':
+      command_line => '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes --tag acmec'
     }
   } else {
     $allow_clients_ssh = $allow_clients
