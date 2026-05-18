@@ -1,7 +1,7 @@
 # Set up a discovery service using docker
 class sunet::metadata::discovery(
     Array[Enum['mdq', 'discovery]']] $features = [],
-    Boolean $ds_tls = lookup('ds_tls', Boolean, undef, true)
+    Boolean $ds_tls = lookup('ds_tls', Boolean, undef, true),
     Optional[String] $base_url = lookup('base_url', String, undef, undef),
     Optional[String] $context = lookup('context', String, undef, undef),
     Optional[String] $domain = lookup('domain', String, undef, undef),
