@@ -3,10 +3,10 @@ services:
   mdq:
     image: <%= @mdq_image %>:<%= @mdq_version %>
     container_name: mdq
-    <% if !@ds -%>
+<% if !@ds -%>
     ports:
       - "80:3000"
-    <% end -%>
+<% end -%>
     volumes:
       - /opt/discovery/metadata/:/etc/thiss/:ro
     environment:
@@ -27,19 +27,19 @@ services:
       - STORAGE_DOMAIN=<%= @domain %>
       - LOGLEVEL=warn
       - DEFAULT_CONTEXT=<%= @context %>
-      <% if @mdq -%>
+<% if @mdq -%>
       - MDQ_HOSTPORT=mdq:3000
-      <% end -%>
+<% end -%>
       - COMPONENT_URL=<%= @base_url %>/cta/
       - PERSISTENCE_URL=<%= @base_url %>/ps/
       - WHITELIST=<%= @whitelist %>
       - CACHE_CONTROL=<%= @cache_control %>
-      <% if @ds_tls -%>
+<% if @ds_tls -%>
       - TLS_KEY=/cert/ds.key
       - TLS_CERT=/cert/ds.pem
     volumes:
       - /opt/discovery/cert/:/cert/:ro
-      <% end -%>
+<% end -%>
     ports:
       - <%= @ds_port %>:<%= @ds_port %>
     restart: unless-stopped
