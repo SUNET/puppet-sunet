@@ -35,7 +35,16 @@ class sunet::certbot::acmed(
   $domains_by_ca.each |String $url, Array $domains| {
     $domain_arg = join($domains, ' -d ')
     exec { "certbot_issuing_${url}":
-      command     => "certbot certonly --server ${url} --no-eff-email --agree-tos -m noc@sunet.se --manual --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py --preferred-challenges dns -d ${domain_arg}",
+      command     => @("CMD"),
+        certbot certonly --server ${url} \
+                                       --no-eff-email \
+                                       --agree-tos \
+                                       -m noc@sunet.se \
+                                       --manual \
+                                       --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py \
+                                       --preferred-challenges dns \
+                                       -d ${domain_arg}"
+        | CMD
       refreshonly => true,
     }
   }
