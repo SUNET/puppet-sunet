@@ -91,7 +91,7 @@ class sunet::metadata::discovery(
   sunet::docker_compose { 'mdq_publisher':
     content          => template('sunet/metadata/docker-compose-discovery.yml.erb'),
     service_name     => 'discovery',
-    compose_dir      => '/opt/discovery',
+    compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'Thiss.io Discovery/MDQ service',
   }
