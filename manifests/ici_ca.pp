@@ -61,6 +61,8 @@ define sunet::ici_ca::rp(
   Boolean $monitor_infra_cert = true,
 ) {
 
+  # The ssl-cert group will create the needed ssl-cert group
+  include sunet::packages::ssl_cert
   $host = $facts['networking']['fqdn']
   $ca = $name
 

@@ -231,7 +231,7 @@
             "uid": "loki"
           },
           "editorMode": "code",
-          "expr": "{job=\"loki.source.journal.read\",hostname=~\"$instance\"}",
+          "expr": "{host_name=~\"$instance\"}",
           "queryType": "range",
           "refId": "A"
         }

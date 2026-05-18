@@ -1,14 +1,16 @@
 # microk8s cluster node
 class sunet::microk8s::node(
-  String  $channel                = '1.28/stable',
-  Boolean $traefik                = false,
-  Integer $failure_domain         = 42,
-  Integer $web_nodeport           = 30080,
-  Integer $websecure_nodeport     = 30443,
-  Optional[Array[String]] $peers  = [],
-  Boolean $drain_reboot_cron      = false,
+  String  $channel                           = '1.28/stable',
+  Boolean $traefik                           = false,
+  Integer $failure_domain                    = 42,
+  Integer $web_nodeport                      = 30080,
+  Integer $websecure_nodeport                = 30443,
+  Optional[Array[String]] $peers             = [],
+  Boolean $drain_reboot_cron                 = false,
+  Optional[Array[String]] $csr_conf_template = [],
 ) {
   include sunet::packages::snapd
+  include sunet::packages::sudo
 
   $hiera_peers =  lookup('microk8s_peers', undef, undef, [])
   if $facts['microk8s_role'] == 'worker' {
@@ -153,6 +155,15 @@ class sunet::microk8s::node(
       set_microk8s_secret($namespace, $name, $secret)
     }
   }
+  if $csr_conf_template and !empty($csr_conf_template) {
+      file { '/var/snap/microk8s/current/certs/csr.conf.template':
+        ensure  => file,
+        content => template('sunet/microk8s/csr.conf.template.erb'),
+        mode    => '0660',
+        owner   => 'root',
+        group   => 'microk8s',
+      }
+    }
   if $drain_reboot_cron == true {
       file { '/usr/local/bin/drainreboot':
           content => file('sunet/microk8s/drainreboot'),

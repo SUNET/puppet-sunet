@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
   app:
-    image: docker.sunet.se/bankid-idp:<%= @imagetag %>
+    image: <%= @imageregistry %>/<%= @imagename %>:<%= @imagetag %>
 <% unless @resolvers.empty? -%>
     dns:
 <% @resolvers.each do |resolver| -%>

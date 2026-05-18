@@ -9,9 +9,6 @@ data-dir: /data
 # Path to the dedicated wal directory.
 wal-dir:
 
-# Number of committed transactions to trigger a snapshot to disk.
-snapshot-count: 10000
-
 # Time (in milliseconds) of a heartbeat interval.
 heartbeat-interval: 100
 
@@ -29,9 +26,6 @@ listen-peer-urls: <%= @listen_peer_urls.join(',') %>
 # List of comma separated URLs to listen on for client traffic.
 # e.g: http://localhost:2379
 listen-client-urls: <%= @listen_client_urls.join(',') %>
-
-# Maximum number of snapshot files to retain (0 is unlimited).
-max-snapshots: 5
 
 # Maximum number of wal files to retain (0 is unlimited).
 max-wals: 5
@@ -86,9 +80,6 @@ initial-cluster-state: 'existing'
 # Reject reconfiguration requests that would cause quorum loss.
 strict-reconfig-check: false
 
-# Accept etcd V2 client requests
-enable-v2: <%= @enable_v2 %>
-
 # Enable runtime profiling data via HTTP server
 enable-pprof: true
 
@@ -111,8 +102,6 @@ proxy-write-timeout: 5000
 proxy-read-timeout: 0
 
 client-transport-security:
-  # DEPRECATED: Path to the client server TLS CA file.
-  ca-file:
 
   # Path to the client server TLS cert file.
   cert-file: <%= @cert_file %>
@@ -130,8 +119,6 @@ client-transport-security:
   auto-tls: false
 
 peer-transport-security:
-  # DEPRECATED: Path to the peer server TLS CA file.
-  ca-file:
 
   # Path to the peer server TLS cert file.
   cert-file: <%= @cert_file %>
@@ -149,14 +136,35 @@ peer-transport-security:
   # Peer TLS using generated certificates.
   auto-tls: false
 
-# Enable debug-level logging for etcd.
-debug: false
+  # Allowed CN for inter peer authentication.
+  allowed-cn:
 
-# Specify a particular log level for each etcd package (eg: 'etcdmain=CRITICAL,etcdserver=DEBUG'.
-log-package-levels:
+  # Allowed TLS hostname for inter peer authentication.
+  allowed-hostname:
+
+# The validity period of the self-signed certificate, the unit is year.
+self-signed-cert-validity: 1
+
+# Enable debug-level logging for etcd.
+log-level: info
+
+logger: zap
 
 # Specify 'stdout' or 'stderr' to skip journald logging even when running under systemd.
-log-output: default
+log-outputs: [default]
 
 # Force to create a new one member cluster.
 force-new-cluster: false
+
+auto-compaction-mode: periodic
+auto-compaction-retention: "1"
+
+# Limit etcd to a specific set of tls cipher suites
+cipher-suites: [
+  TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+  TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+]
+
+# Limit etcd to specific TLS protocol versions
+tls-min-version: 'TLS1.2'
+tls-max-version: 'TLS1.3'

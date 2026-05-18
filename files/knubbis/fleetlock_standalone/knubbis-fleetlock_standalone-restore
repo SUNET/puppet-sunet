@@ -19,7 +19,7 @@ if ! [ -f "$disable_cosmos_file" ]; then
     exit 1
 fi
 
-container_name="knubbis-fleetlock_standalone_etcd_1"
+container_name="knubbis-fleetlock_standalone-etcd-1"
 service_name="sunet-knubbis-fleetlock_standalone.service"
 
 if docker inspect --format="{{.Id}}" $container_name > /dev/null 2>&1; then

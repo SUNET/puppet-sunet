@@ -30,17 +30,21 @@ from typing import Any, Dict, List, Union
 
 # Discovered by running "hexdump -C /etc/adsm/TSM.IDX"
 PREFIX_SIZE = 2
-INDEX_SIZE = 1
+KEY_TYPE_SIZE = 1
 SERVERNAME_MAX_SIZE = 256
 NODENAME_MAX_SIZE = 130
 LABEL_MAX_SIZE = 256
 # Each entry starts with the bytes EF 05
 PREFIX_EXPECTED_BYTES = b"\xef\x05"
 ENTRY_SIZE = (
-    PREFIX_SIZE + INDEX_SIZE + SERVERNAME_MAX_SIZE + NODENAME_MAX_SIZE + LABEL_MAX_SIZE
+    PREFIX_SIZE
+    + KEY_TYPE_SIZE
+    + SERVERNAME_MAX_SIZE
+    + NODENAME_MAX_SIZE
+    + LABEL_MAX_SIZE
 )
 
-# Struct format string based on above numbers (INDEX_SIZE is replaced by an unsigned char "B")
+# Struct format string based on above numbers (KEY_TYPE_SIZE is replaced by an unsigned char "B")
 STRUCT_FORMAT = (
     f"{PREFIX_SIZE}sB{SERVERNAME_MAX_SIZE}s{NODENAME_MAX_SIZE}s{LABEL_MAX_SIZE}s"
 )
@@ -293,7 +297,7 @@ def read_index_file(  # pylint:disable=too-many-locals
 
         (
             prefix_bytes,
-            index,
+            key_type,
             servername_bytes,
             nodename_bytes,
             label_bytes,
@@ -313,31 +317,31 @@ def read_index_file(  # pylint:disable=too-many-locals
                 "servername": servername,
                 "nodename": nodename,
                 "label": label,
-                "index": index,
+                "key_type": key_type,
             }
         )
 
         # Go to next entry
         entry_index += 1
 
-    # Create a set containing the unique index numbers we have seen, and limit
+    # Create a set containing the unique key type numbers we have seen, and limit
     # us to only looking at the current configured nodename as there may be
-    # older nodename entries with conflicting index numbers if the machine has
+    # older nodename entries with conflicting key type numbers if the machine has
     # changed nodenames over time.
-    nodename_indexes = [
-        entry["index"]
+    nodename_key_types = [
+        entry["key_type"]
         for entry in index_data["entries"]
         if entry["nodename"] == current_nodename
     ]
-    unique_indexes = set(nodename_indexes)
+    unique_key_types = set(nodename_key_types)
 
-    # Make sure the number of entries matches the number of unique index values
-    # we have seen, otherwise there are duplicate index values present and this
-    # is unexpected. Since multiple nodenames leads to duplicate index numbers
+    # Make sure the number of entries matches the number of unique key_type values
+    # we have seen, otherwise there are duplicate key_type values present and this
+    # is unexpected. Since multiple nodenames leads to duplicate key_type numbers
     # we again need to limit comparision to our current nodename.
-    if len(unique_indexes) != len(nodename_indexes):
+    if len(unique_key_types) != len(nodename_key_types):
         raise RuntimeError(
-            f"mismatch between number of unique index values we have parsed ({len(unique_indexes)}) compared to the number of entries: {len(nodename_indexes)}"  # pylint:disable=line-too-long
+            f"mismatch between number of unique key_type values we have parsed ({len(unique_key_types)}) compared to the number of entries: {len(nodename_key_types)}"  # pylint:disable=line-too-long
         )
 
     return index_data
@@ -356,7 +360,9 @@ def upper_if_ascii(string: str) -> str:
     return out_string
 
 
-def build_index_entry(index: int, servername: str, nodename: str, label: str) -> bytes:
+def build_index_entry(
+    key_type: int, servername: str, nodename: str, label: str
+) -> bytes:
     """Build a binary entry suitable for appending to the TSM.IDX file"""
 
     servername_uppercase = upper_if_ascii(servername)
@@ -381,7 +387,7 @@ def build_index_entry(index: int, servername: str, nodename: str, label: str) ->
     entry = struct.pack(
         STRUCT_FORMAT,
         PREFIX_EXPECTED_BYTES,
-        index,
+        key_type,
         servername_bytes,
         nodename_bytes,
         label_bytes,
@@ -486,14 +492,14 @@ def set_encrypt_password(  # pylint:disable=too-many-locals
         print("more than one entry already exists, nothing to add")
         sys.exit(0)
 
-    # We expect to use index 1 for the encryption secret
-    encryption_index = 1
+    # We expect to use key_type 1 for the encryption secret
+    encryption_key_type = 1
 
-    # Verify encryption index is not already present in the IDX file
+    # Verify encryption key_type is not already present in the IDX file
     for entry in nodename_entries:
-        if entry["index"] == encryption_index:
+        if entry["key_type"] == encryption_key_type:
             raise RuntimeError(
-                f"we expected to add an entry with index {encryption_index} but it's already taken, this is unexpected"  # pylint:disable=line-too-long
+                f"we expected to add an entry with key_type {encryption_key_type} but it's already taken, this is unexpected"  # pylint:disable=line-too-long
             )
 
     # Find an available label in the IDX file. In this case we have to consider
@@ -508,7 +514,10 @@ def set_encrypt_password(  # pylint:disable=too-many-locals
     add_kdb_entry(password_db, label, password)
 
     entry = build_index_entry(
-        index=encryption_index, servername=servername, nodename=nodename, label=label
+        key_type=encryption_key_type,
+        servername=servername,
+        nodename=nodename,
+        label=label,
     )
 
     updated_index_data = index_data["raw_data"] + entry
@@ -526,15 +535,20 @@ def main() -> None:
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", help="version of client to install")
-    parser.add_argument("--install", help="install backup client", action="store_true")
-    parser.add_argument(
+    exclusive_group = parser.add_mutually_exclusive_group(required=True)
+    exclusive_group.add_argument(
+        "--install", help="install backup client", action="store_true"
+    )
+    exclusive_group.add_argument(
         "--register", help="register client with backup server", action="store_true"
     )
     args = parser.parse_args()
 
     if args.install and not args.version:
-        print("--install requires that you supply --version")
-        sys.exit(1)
+        parser.error("--install requires that you supply --version")
+
+    if args.register and args.version:
+        parser.error("--register does not support --version")
 
     installed_version = get_installed_version()
 

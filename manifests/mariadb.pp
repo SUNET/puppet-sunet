@@ -1,6 +1,7 @@
 # Mariadb cluster class for SUNET
 define sunet::mariadb(
   String $mariadb_version=latest,
+  String $mariadb_image='docker.sunet.se/drive/mariadb',
   Integer $bootstrap=0,
   Array[Integer] $ports = [3306, 4444, 4567, 4568],
   Array[String] $dns = [],

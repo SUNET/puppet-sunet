@@ -11,6 +11,7 @@ class sunet::metadata::mdq_publisher(
   Optional[String] $extra_entities='',
   Optional[String] $xml_dir='md',
   Optional[String] $imagetag='latest',
+  Array[String] $allowed_https_clients = lookup('mdq_allowed_https_clients', undef, undef, ['any']),
 ) {
   if $::facts['sunet_nftables_enabled'] != 'yes' {
     notice('Enabling UFW')
@@ -23,7 +24,10 @@ class sunet::metadata::mdq_publisher(
 
   $signers = lookup('signers')
   $signers.each |$signer_name, $signer| {
-    $signer_ip = $signer['ipnumber']
+    $addresses = $signer['ipnumber'] ? {
+      undef   => $signer['addresses'],
+      default => $signer['ipnumber'],
+    }
     $ssh_key = $signer['ssh_key']
     $ssh_key_type = $signer['ssh_key_type']
     if ($ssh_key and $ssh_key_type) {
@@ -36,10 +40,10 @@ class sunet::metadata::mdq_publisher(
       }
     }
 
-    if ($signer_ip) {
-      notice("allow-ssh-from-${signer_name} -> ${signer_ip}")
+    if ($addresses) {
+      notice("allow-ssh-from-${signer_name} -> ${addresses}")
       sunet::misc::ufw_allow { "allow-ssh-from-${signer_name}":
-        from => $signer_ip,
+        from => $addresses,
         port => 22
       }
     }
@@ -120,13 +124,13 @@ class sunet::metadata::mdq_publisher(
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'expose publisher' :
-      allow_clients => 'any',
+      allow_clients => $allowed_https_clients,
       port          => 443,
       iif           => $facts['networking']['primary'],
     }
   } else {
     sunet::misc::ufw_allow { 'allow-https':
-      from => 'any',
+      from => $allowed_https_clients,
       port => '443'
     }
   }

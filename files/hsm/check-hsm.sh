@@ -7,6 +7,7 @@ SERIAL_STHB=1428350538482
 SERIAL_LLA=1429933786537
 SERIAL_DCOA=1621911929454
 SERIAL_DCOB=1620838580408
+SERIAL_TUGLAB=1428432029163
 
 ROOT_CERT=/usr/safenet/lunaclient/cert/safenet-root.pem
 CHALLANGE=1234567890
@@ -31,15 +32,18 @@ dcoa)
 dcob)
 	SERIAL=$SERIAL_DCOB
 	;;
+tuglab)
+	SERIAL=$SERIAL_TUGLAB
+	;;
 *)
-	echo "Usage: $0 <tug|shtb|lla|dcoa|dcob>"
+	echo "Usage: $0 <tug|shtb|lla|dcoa|dcob|tuglab>"
 	exit 1
 	;;
 esac
 
 SLOT=$(/usr/safenet/lunaclient/bin/vtl verify | grep "$SERIAL" | awk '{print $1}')
 
-if [ "$SLOT" -lt 0 ] || [ "$SLOT" -gt 4 ]; then
+if [ -z "${SLOT}" ] ; then
 	echo "Warning: Could not find correct SLOT - $SLOT"
 	exit 1
 fi
