@@ -15,6 +15,12 @@ class sunet::certbot::acmed(
     content => template('sunet/certbot/acme-dns-auth.py.erb'),
   }
 
+  file { '/etc/letsencrypt/issue-and-deploy.sh':
+    ensure  => file,
+    mode    => '0700',
+    content => file('sunet/certbot/issue-and-deploy.sh'),
+  }
+
   $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})
   file { '/etc/letsencrypt/acmedns.json':
     content => inline_template("<%= @acmed_clients.to_json %>\n"),
@@ -43,7 +49,8 @@ class sunet::certbot::acmed(
                                        --manual \
                                        --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py \
                                        --preferred-challenges dns \
-                                       -d ${domain_arg}"
+                                       -d ${domain_arg}" \
+        && /etc/letsencrypt/issue-and-deploy.sh ${domains[0]}
         | CMD
       refreshonly => true,
     }
