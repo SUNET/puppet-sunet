@@ -8,7 +8,7 @@ KEY_DST="${CERT_DIR}/privkey.pem"
 
 # Valkey runtime UID/GID (inside container)
 VALKEY_UID=999
-VALKEY_GID=999
+VALKEY_GID=1000
 
 VALKEY_CLI="valkey-connect"
 
