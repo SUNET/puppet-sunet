@@ -14,13 +14,13 @@ VALKEY_CLI="valkey-connect"
 
 # === Sanity checks ===
 if [ -z "${RENEWED_LINEAGE:-}" ]; then
-    echo "ERROR: RENEWED_LINEAGE not set (not running from certbot?)" >&2
-    exit 1
+	echo "ERROR: RENEWED_LINEAGE not set (not running from certbot?)" >&2
+	exit 1
 fi
 
 if ! command -v "${VALKEY_CLI}" >/dev/null 2>&1; then
-    echo "ERROR: ${VALKEY_CLI} not found" >&2
-    exit 1
+	echo "ERROR: ${VALKEY_CLI} not found" >&2
+	exit 1
 fi
 
 # === Ensure directory exists ===
@@ -28,8 +28,8 @@ install -d -m 755 "${CERT_DIR}"
 
 # === Install public certificate ===
 install -m 0644 \
-    "${RENEWED_LINEAGE}/cert.pem" \
-    "${CERT_DST}"
+	"${RENEWED_LINEAGE}/cert.pem" \
+	"${CERT_DST}"
 
 if [ -f /etc/os-release ] && grep -qi "ubuntu" /etc/os-release; then
 	# Ubuntu needs to be handled with care
@@ -53,14 +53,14 @@ KEY_UID="$(stat -c %u "${KEY_DST}")"
 KEY_MODE="$(stat -c %a "${KEY_DST}")"
 
 if [ "${KEY_UID}" -ne "${VALKEY_UID}" ] || [ "${KEY_MODE}" -ne 600 ]; then
-    echo "ERROR: Incorrect ownership or permissions on ${KEY_DST}" >&2
-    exit 1
+	echo "ERROR: Incorrect ownership or permissions on ${KEY_DST}" >&2
+	exit 1
 fi
 
 # Prevent reload when service is not fully installed.
 # Like when issuing the cert for the first time.
 if [ -n "${NO_RELOAD:-}" ]; then
-    exit 0
+	exit 0
 fi
 
 # === Reload TLS material in Valkey ===
