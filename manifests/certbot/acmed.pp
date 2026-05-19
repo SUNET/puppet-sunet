@@ -50,7 +50,7 @@ class sunet::certbot::acmed(
                                        --manual \
                                        --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py \
                                        --preferred-challenges dns \
-                                       -d ${domain_arg}" \
+                                       -d ${domain_arg} \
         && /etc/letsencrypt/issue-and-deploy.sh ${domains[0]}
         | CMD
       refreshonly => true,
