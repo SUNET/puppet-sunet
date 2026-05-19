@@ -16,10 +16,6 @@ class sunet::certbot::acmed(
   }
 
   $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})
-  file { '/etc/letsencrypt/acmedns.json':
-    content => inline_template("<%= @acmed_clients.to_json %>\n"),
-    notify  => Exec[$domains_by_ca.keys.map |$url| { "certbot_issuing_${url}" }],
-  }
 
   # Group domains by their effective CA URL (directory).
   # A per-domain directory_url inside certbot_acmed_clients
@@ -30,6 +26,11 @@ class sunet::certbot::acmed(
     $effective_url = pick($config['directory_url'], $effective_directory_url)
     $existing      = $effective_url in $acc ? { true => $acc[$effective_url], default => [] }
     $acc + { $effective_url => $existing + [$domain] }
+  }
+
+  file { '/etc/letsencrypt/acmedns.json':
+    content => inline_template("<%= @acmed_clients.to_json %>\n"),
+    notify  => Exec[$domains_by_ca.keys.map |$url| { "certbot_issuing_${url}" }],
   }
 
   $domains_by_ca.each |String $url, Array $domains| {
