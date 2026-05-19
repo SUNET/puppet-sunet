@@ -4,6 +4,10 @@ name: <%= @myself %>
 restapi:
   listen: "*:<%= @patroni_rest_api_port %>"
   connect_address: "<%= @myself %>:<%= @patroni_rest_api_port %>"
+  # The bundle contains both cert and key but must be specified twice
+  certfile: /opt/patroni/certs/<%= @myself %>.pem
+  keyfile: /opt/patroni/certs/<%= @myself %>.pem
+  cafile: /etc/ssl/certs/infra.crt
 etcd3:
   protocol: https
   cacert: /etc/ssl/certs/infra.crt
