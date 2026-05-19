@@ -48,6 +48,12 @@ if [ "${KEY_UID}" -ne "${VALKEY_UID}" ] || [ "${KEY_MODE}" -ne 600 ]; then
     exit 1
 fi
 
+# Prevent reload when service is not fully installed.
+# Like when issuing the cert for the first time.
+if [ -n "${NO_RELOAD:-}" ]; then
+    exit 0
+fi
+
 # === Reload TLS material in Valkey ===
 "${VALKEY_CLI}" --custom-command "CONFIG SET tls-cert-file /cert/cert.pem"
 "${VALKEY_CLI}" --custom-command "CONFIG SET tls-key-file /cert/privkey.pem"
