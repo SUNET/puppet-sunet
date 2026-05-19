@@ -31,13 +31,22 @@ install -m 0644 \
     "${RENEWED_LINEAGE}/cert.pem" \
     "${CERT_DST}"
 
-# === Install private key securely ===
-install -m 0600 \
-    "${RENEWED_LINEAGE}/privkey.pem" \
-    "${KEY_DST}"
+if [ -f /etc/os-release ] && grep -qi "ubuntu" /etc/os-release; then
+	# Ubuntu needs to be handled with care
+	# https://github.com/uutils/coreutils/pull/7789/changes
 
-# === Fix ownership explicitly (numeric UID/GID) ===
-chown "${VALKEY_UID}:${VALKEY_GID}" "${KEY_DST}"
+	# === Install private key securely ===
+	install -m 0600 \
+		"${RENEWED_LINEAGE}/privkey.pem" \
+		"${KEY_DST}"
+
+	# === Fix ownership explicitly (numeric UID/GID) ===
+	chown "${VALKEY_UID}:${VALKEY_GID}" "${KEY_DST}"
+else
+	install -m 0640 -g "${VALKEY_GID}" \
+		"${RENEWED_LINEAGE}/privkey.pem" \
+		/opt/valkey/cert/privkey.pem
+fi
 
 # === Defensive stat check (host-safe) ===
 KEY_UID="$(stat -c %u "${KEY_DST}")"
