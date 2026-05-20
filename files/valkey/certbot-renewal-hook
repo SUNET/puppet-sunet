@@ -43,7 +43,7 @@ if [ -f /etc/os-release ] && grep -qi "ubuntu" /etc/os-release; then
 	# === Fix ownership explicitly (numeric UID/GID) ===
 	chown "${VALKEY_UID}:${VALKEY_GID}" "${KEY_DST}"
 else
-	install -m 0640 -g "${VALKEY_GID}" \
+	install -m 0600 -g "${VALKEY_GID}" \
 		"${RENEWED_LINEAGE}/privkey.pem" \
 		/opt/valkey/cert/privkey.pem
 fi
