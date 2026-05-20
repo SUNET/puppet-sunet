@@ -15,6 +15,12 @@ class sunet::certbot::acmed(
     content => template('sunet/certbot/acme-dns-auth.py.erb'),
   }
 
+  file { '/etc/letsencrypt/issue-and-deploy.sh':
+    ensure  => file,
+    mode    => '0700',
+    content => file('sunet/certbot/issue-and-deploy.sh'),
+  }
+
   $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})
 
   # Group domains by their effective CA URL (directory).
@@ -36,7 +42,17 @@ class sunet::certbot::acmed(
   $domains_by_ca.each |String $url, Array $domains| {
     $domain_arg = join($domains, ' -d ')
     exec { "certbot_issuing_${url}":
-      command     => "certbot certonly --server ${url} --no-eff-email --agree-tos -m noc@sunet.se --manual --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py --preferred-challenges dns -d ${domain_arg}",
+      command     => @("CMD"),
+        certbot certonly --server ${url} \
+                                       --no-eff-email \
+                                       --agree-tos \
+                                       -m noc@sunet.se \
+                                       --manual \
+                                       --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py \
+                                       --preferred-challenges dns \
+                                       -d ${domain_arg} \
+        && /etc/letsencrypt/issue-and-deploy.sh ${domains[0]}
+        | CMD
       refreshonly => true,
     }
   }
