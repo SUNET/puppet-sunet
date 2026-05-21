@@ -1,12 +1,14 @@
+# This is a class that configures ipmi on supermicro servers.
+# it can setup network configuration, admin password and add nrpe checks that look for hardware issues.
 class sunet::ipmi (
   Integer                     $channel            = 1,
   Boolean                     $include_monitoring = true,
+  Integer                     $admin_user_id      = 2,
+  Integer                     $password_max_lengt = 20, # can be 16 or 20 depening on IPMI 1.5 or 2.0.
   Optional[String]            $ipaddr,
   Optional[String]            $netmask,
   Optional[String]            $gateway,
   Optional[Sensitive[String]] $admin_pass         = Sensitive(safe_hiera('ipmi_password')), # Take note of password_max_lengt
-  Integer                     $admin_user_id      = 2,
-  Integer                     $password_max_lengt = 20, # can be 16 or 20 depening on IPMI 1.5 or 2.0.
 ) {
   package { 'ipmitool':
     ensure => installed,
@@ -58,7 +60,7 @@ class sunet::ipmi (
       exec { 'set_ipmi_password':
         command => "/usr/bin/ipmitool user set password ${admin_user_id} '${admin_pass.unwrap}' ${password_max_lengt}",
         onlyif  => "test -n '${admin_pass}'",
-        unless  => "test -f /etc/ipmi_password_is_set",
+        unless  => 'test -f /etc/ipmi_password_is_set',
         path    => ['/usr/bin', '/bin'],
         notify  => File['ipmi_password_is_set'],
       }
