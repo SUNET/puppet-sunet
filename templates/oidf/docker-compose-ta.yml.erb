@@ -1,0 +1,98 @@
+---
+services:
+  ta:
+    restart: always
+    build: .
+    image: docker.sunet.se/inmor:<%= @inmor_version %>
+    networks:
+      - inmor-net
+    healthcheck:
+      test: ['CMD', 'curl', '--insecure', '--fail', '--silent', 'http://localhost:8080/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./taconfig.toml:/app/taconfig.toml:ro
+      - ./private.json:/app/private.json:ro
+      - ./publickeys:/app/publickeys:ro
+      - ./historical_keys:/app/historical_keys:ro
+      - ./templates:/app/templates:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ./inmor -c taconfig.toml
+    environment:
+      - 'RUST_LOG=info'
+  db:
+    restart: always
+    image: postgres:14-alpine
+    shm_size: 1024mb
+    networks:
+      - inmor-net
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
+  redis:
+    restart: always
+    image: redis:7-alpine
+    networks:
+      - inmor-net
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - ./redis:/data
+  admin:
+    image: docker.sunet.se/inmor-admin:<%= @inmor_version %>
+    networks:
+      - inmor-net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ta:
+        condition: service_healthy
+    command: /app/docker-entrypoint.sh
+    environment:
+      - INSIDE_CONTAINER=true
+      - PRODUCTION=true
+    volumes:
+      - ./private.json:/app/private.json:ro
+      - ./publickeys:/app/publickeys:ro
+      - ./historical_keys:/app/historical_keys:ro
+      - ./localsettings.py:/app/inmoradmin/localsettings.py:ro
+  always-https:
+    image: docker.sunet.se/always-https
+    pull_policy: always
+    environment:
+      - ACME_URL=http://acme-c.sunet.se/
+    ports:
+      - "80:80"
+  nginx:
+    image: nginx:1.21
+    networks:
+      - inmor-net
+    depends_on:
+      ta:
+        condition: service_healthy
+    volumes:
+      - /etc/dehydrated/certs/<%= @hostname %>:/etc/ssl
+      - /opt/nginx_conf:/etc/nginx/conf.d
+    ports:
+      - 443:443
+      - 8443:8443
+networks:
+  inmor-net:
+    driver: bridge
