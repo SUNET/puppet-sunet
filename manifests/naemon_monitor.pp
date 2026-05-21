@@ -108,7 +108,11 @@ class sunet::naemon_monitor (
   }
 
   if lookup('shib_key', undef, undef, undef) != undef {
-    sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
+    sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem':
+      hiera_key => 'shib_key',
+      owner     => 100,
+      group     => 101,
+    }
     # assume cert is in cosmos repo (overlay)
   }
 

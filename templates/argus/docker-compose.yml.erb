@@ -1,0 +1,99 @@
+---
+version: '3.5'
+<% old_argus_tags = %w[
+  2.7.0 2.6.0 2.5.0 2.4.0
+  v2.7.0_sunetbuild v2.6.0_sunetbuild
+  v2.5.0_sunetbuild v2.4.0_sunetbuild
+] %>
+<% if  old_argus_tags.none? { |version| @docker_tag.include?(version) }  %>
+x-api: &argus-service
+  image: <%= @docker_image %>:<%= @docker_tag %>
+  dns:
+    - 89.32.32.32
+  depends_on:
+    - postgres
+  volumes:
+    - /opt/argus_config/localsettings.py:/opt/venv/lib/python3.13/site-packages/argus/site/settings/localsettings.py
+  environment:
+    - TIME_ZONE=Europe/Oslo
+    - DJANGO_SETTINGS_MODULE=argus.site.settings.localsettings
+    - DATABASE_URL=postgresql://argus:<%= scope.call_function('safe_hiera',['argus_db_password']) %>@postgres/argus
+    - ARGUS_FRONTEND_URL=https://<%= @url%>
+    - EMAIL_HOST=<%= scope.call_function('safe_hiera',['argus_email_host']) %>
+    - EMAIL_HOST_USER=<%= scope.call_function('safe_hiera',['argus_email_user']) %>
+    - EMAIL_HOST_PASSWORD=<%= scope.call_function('safe_hiera',['argus_email_password']) %>
+    - ARGUS_SEND_NOTIFICATIONS=1
+    - DEFAULT_FROM_EMAIL=<%= scope.call_function('safe_hiera',['argus_email_from']) %>
+    - SMS_GATEWAY_ADDRESS=<%= scope.call_function('safe_hiera',['argus_sms_gateway']) %>
+    - DEFAULT_SMS_MEDIA="argus.notificationprofile.media.sms_as_email.SMSNotification"
+    - EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"´
+    - SECRET_KEY=<%= scope.call_function('safe_hiera',['django_secret_key']) %>
+    - SEND_NOTIFICATIONS=yes
+    - ADMIN_USERNAME=<%= scope.call_function('safe_hiera',['admin_username']) %>
+    - ADMIN_PASSWORD=<%= scope.call_function('safe_hiera',['admin_password']) %>
+    - ADMIN_EMAIL=<%= scope.call_function('safe_hiera',['admin_email']) %>
+  restart: always
+<% end %>
+services:
+<% if  old_argus_tags.none? { |version| @docker_tag.include?(version) }  %>
+  api:
+    <<: *argus-service
+    expose:
+      - "8000"
+
+  dbqueue:
+    <<: *argus-service
+    command: /cmd-dbqueue.sh
+<% else  %>
+  api:
+    image: <%= @docker_image %>:<%= @docker_tag %>
+    expose:
+      - "8000"
+    dns:
+      - 89.32.32.32
+    depends_on:
+      - postgres
+    volumes:
+      - /opt/argus_config/localsettings.py:/opt/venv/lib/python3.13/site-packages/argus/site/settings/localsettings.py
+    environment:
+      - TIME_ZONE=Europe/Oslo
+      - DJANGO_SETTINGS_MODULE=argus.site.settings.localsettings
+      - DATABASE_URL=postgresql://argus:<%= scope.call_function('safe_hiera',['argus_db_password']) %>@postgres/argus
+      - ARGUS_FRONTEND_URL=https://<%= @url%>
+      - EMAIL_HOST=<%= scope.call_function('safe_hiera',['argus_email_host']) %>
+      - EMAIL_HOST_USER=<%= scope.call_function('safe_hiera',['argus_email_user']) %>
+      - EMAIL_HOST_PASSWORD=<%= scope.call_function('safe_hiera',['argus_email_password']) %>
+      - ARGUS_SEND_NOTIFICATIONS=1
+      - DEFAULT_FROM_EMAIL=<%= scope.call_function('safe_hiera',['argus_email_from']) %>
+      - SMS_GATEWAY_ADDRESS=<%= scope.call_function('safe_hiera',['argus_sms_gateway']) %>
+      - DEFAULT_SMS_MEDIA="argus.notificationprofile.media.sms_as_email.SMSNotification"
+      - EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"´
+      - SECRET_KEY=<%= scope.call_function('safe_hiera',['django_secret_key']) %>
+    restart: always
+<% end %>
+
+  postgres:
+    image: "postgres:18.1"
+    volumes:
+      - postgres:/var/lib/postgresql:Z
+    restart: always
+    environment:
+      - POSTGRES_USER=argus
+      - POSTGRES_PASSWORD=<%= scope.call_function('safe_hiera',['argus_db_password']) %>
+      - POSTGRES_DB=argus
+
+  nginx_argus:
+    container_name: nginx_argus
+    image: "nginx:1.29"
+    depends_on:
+      - postgres
+      - api
+    volumes:
+      - /opt/nginx_etc/conf.d:/etc/nginx/conf.d
+      - /etc/letsencrypt:/etc/letsencrypt
+    ports:
+      - "443:443"
+
+volumes:
+  postgres:
+    driver: local

@@ -1,0 +1,28 @@
+# rsyslog templates
+
+# define tmpl_dynfile
+template(name="tmpl_dynfile" type="string"
+    string="/var/log/rsyslog/%FROMHOST%/%FROMHOST%-%$YEAR%%$MONTH%%$DAY%.log"
+)
+
+# define template tmpl_gelf
+template(name="tmpl_gelf" type="list") {
+    constant(value="{\"version\":\"1.1\",")
+    constant(value="\"host\":\"")
+    property(name="hostname" format="json")
+    constant(value="\",\"short_message\":\"")
+    property(name="msg" format="json")
+    constant(value="\",\"timestamp\":")
+    property(name="timegenerated" dateformat="unixtimestamp")
+    constant(value=",\"level\":")
+    property(name="syslogseverity")
+    constant(value=",\"facility\":\"")
+    property(name="syslogfacility-text")
+    constant(value="\",\"application_name\":\"")
+    property(name="programname" format="json")
+<% if @gelf_tag -%>
+    constant(value="\",\"_tag\":\"")
+    constant(value="<%= @gelf_tag %>")
+<% end -%>
+    constant(value="\"}")
+}

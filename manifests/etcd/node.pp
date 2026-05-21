@@ -28,6 +28,8 @@ class sunet::etcd::node(
 {
   include stdlib
 
+  $hostname = $facts['networking']['hostname']
+
   if $infra_cert_from_this_class {
     sunet::ici_ca::rp { 'infra': }
   }
@@ -45,11 +47,11 @@ class sunet::etcd::node(
 
   # Use infra-cert per default if cert/key/ca file not supplied
   $cert_file = $tls_cert_file ? {
-    undef => $facts['tls_certificates'][$::fqdn]['infra_cert'],
+    undef => $facts['tls_certificates'][$facts['networking']['fqdn']]['infra_cert'],
     default => $tls_cert_file,
   }
   $key_file = $tls_key_file ? {
-    undef => $facts['tls_certificates'][$::fqdn]['infra_key'],
+    undef => $facts['tls_certificates'][$facts['networking']['fqdn']]['infra_key'],
     default => $tls_key_file,
   }
   $trusted_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
@@ -69,7 +71,7 @@ class sunet::etcd::node(
     '/usr/local/bin/etcdctl':
       owner   => 'root',
       group   => 'root',
-      mode    => '0750',
+      mode    => '0755',
       content => template('sunet/etcd/etcdctl.erb'),
       ;
   }
@@ -109,6 +111,13 @@ class sunet::etcd::node(
     mode    => '0755',
     owner   => 'root',
     content => file('sunet/etcd/check-etcd-status.py')
+  }
+  # sudo exceptions
+  file { '/etc/sudoers.d/sudoers-etcd':
+    ensure  => 'file',
+    mode    => '0440',
+    owner   => 'root',
+    content => file('sunet/etcd/sudoers-etcd')
   }
   # NRPE commands file
   file { '/etc/nagios/nrpe.d/nrpe-etcd.cfg':
