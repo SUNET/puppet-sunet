@@ -4,11 +4,11 @@ class sunet::ipmi (
   Integer                     $channel            = 1,
   Boolean                     $include_monitoring = true,
   Integer                     $admin_user_id      = 2,
-  Integer                     $password_max_lengt = 20, # can be 16 or 20 depening on IPMI 1.5 or 2.0.
+  Integer                     $password_max_length = 20, # can be 16 or 20 depening on IPMI 1.5 or 2.0.
   Optional[String]            $ipaddr,
   Optional[String]            $netmask,
   Optional[String]            $gateway,
-  Optional[Sensitive[String]] $admin_pass         = Sensitive(safe_hiera('ipmi_password')), # Take note of password_max_lengt
+  Optional[Sensitive[String]] $admin_pass         = Sensitive(safe_hiera('ipmi_password')), # Take note of password_max_length
 ) {
   package { 'ipmitool':
     ensure => installed,
@@ -20,29 +20,29 @@ class sunet::ipmi (
       }
 
       exec { 'set_ipmi_static':
-        command => "/usr/bin/ipmitool lan set ${channel} ipsrc static",
-        unless  => "/usr/bin/ipmitool lan print ${channel} | grep -q '^IP Address Source.*Static Address'",
+        command => "ipmitool lan set ${channel} ipsrc static",
+        unless  => "ipmitool lan print ${channel} | grep -q '^IP Address Source.*Static Address'",
         path    => ['/usr/bin', '/bin'],
         require => Package['ipmitool'],
       }
 
       exec { 'set_ipmi_ip':
-        command => "/usr/bin/ipmitool lan set ${channel} ipaddr ${ipaddr}",
-        unless  => "/usr/bin/ipmitool lan print ${channel} | grep -q '${ipaddr}'",
+        command => "ipmitool lan set ${channel} ipaddr ${ipaddr}",
+        unless  => "ipmitool lan print ${channel} | grep -q '${ipaddr}'",
         path    => ['/usr/bin', '/bin'],
         require => Exec['set_ipmi_static'],
       }
 
       exec { 'set_ipmi_netmask':
-        command => "/usr/bin/ipmitool lan set ${channel} netmask ${netmask}",
-        unless  => "/usr/bin/ipmitool lan print ${channel} | grep -q '^Subnet Mask.*${netmask}\$'",
+        command => "ipmitool lan set ${channel} netmask ${netmask}",
+        unless  => "ipmitool lan print ${channel} | grep -q '^Subnet Mask.*${netmask}\$'",
         path    => ['/usr/bin', '/bin'],
         require => Exec['set_ipmi_ip'],
       }
 
       exec { 'set_ipmi_gateway':
-        command => "/usr/bin/ipmitool lan set ${channel} defgw ipaddr ${gateway}",
-        unless  => "/usr/bin/ipmitool lan print ${channel} | grep -q '^Default Gateway IP.*${gateway}\$'",
+        command => "ipmitool lan set ${channel} defgw ipaddr ${gateway}",
+        unless  => "ipmitool lan print ${channel} | grep -q '^Default Gateway IP.*${gateway}\$'",
         path    => ['/usr/bin', '/bin'],
         require => Exec['set_ipmi_netmask'],
       }
@@ -58,8 +58,7 @@ class sunet::ipmi (
       }
 
       exec { 'set_ipmi_password':
-        command => "/usr/bin/ipmitool user set password ${admin_user_id} '${admin_pass.unwrap}' ${password_max_lengt}",
-        onlyif  => "test -n '${admin_pass}'",
+        command => "ipmitool user set password ${admin_user_id} '${admin_pass.unwrap}' ${password_max_length}",
         unless  => 'test -f /etc/ipmi_password_is_set',
         path    => ['/usr/bin', '/bin'],
         notify  => File['ipmi_password_is_set'],
