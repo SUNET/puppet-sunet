@@ -58,7 +58,7 @@ class sunet::ipmi (
       }
 
       exec { 'set_ipmi_password':
-        command => "ipmitool user set password ${admin_user_id} '${admin_pass.unwrap}' ${password_max_length}",
+        command => "Sensitive("ipmitool user set password ${admin_user_id} '${admin_pass.unwrap}' ${password_max_length}"),
         unless  => 'test -f /etc/ipmi_password_is_set',
         path    => ['/usr/bin', '/bin'],
         notify  => File['ipmi_password_is_set'],
