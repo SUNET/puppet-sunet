@@ -177,4 +177,9 @@ class sunet::dehydrated(
     from => $allow_clients_ssh,
     port => $ssh_port,
   }
+
+  sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
+    allow_clients => $allow_clients_ssh,
+    server_port   => $server_port,
+  }
 }
