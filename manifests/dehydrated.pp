@@ -92,11 +92,6 @@ class sunet::dehydrated(
     }
   }
 
-  sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
-    allow_clients => $allow_clients,
-    server_port   => $server_port,
-  }
-
   if 'clients' in $conf {
     $clients = $conf['clients']
   } else {
