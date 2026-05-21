@@ -15,11 +15,13 @@ class sunet::certbot::acmed(
     content => template('sunet/certbot/acme-dns-auth.py.erb'),
   }
 
-  $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})
-  file { '/etc/letsencrypt/acmedns.json':
-    content => inline_template("<%= @acmed_clients.to_json %>\n"),
-    notify  => Exec[$domains_by_ca.keys.map |$url| { "certbot_issuing_${url}" }],
+  file { '/etc/letsencrypt/issue-and-deploy.sh':
+    ensure  => file,
+    mode    => '0700',
+    content => file('sunet/certbot/issue-and-deploy.sh'),
   }
+
+  $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})
 
   # Group domains by their effective CA URL (directory).
   # A per-domain directory_url inside certbot_acmed_clients
@@ -32,10 +34,25 @@ class sunet::certbot::acmed(
     $acc + { $effective_url => $existing + [$domain] }
   }
 
+  file { '/etc/letsencrypt/acmedns.json':
+    content => inline_template("<%= @acmed_clients.to_json %>\n"),
+    notify  => Exec[$domains_by_ca.keys.map |$url| { "certbot_issuing_${url}" }],
+  }
+
   $domains_by_ca.each |String $url, Array $domains| {
     $domain_arg = join($domains, ' -d ')
     exec { "certbot_issuing_${url}":
-      command     => "certbot certonly --server ${url} --no-eff-email --agree-tos -m noc@sunet.se --manual --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py --preferred-challenges dns -d ${domain_arg}",
+      command     => @("CMD"),
+        certbot certonly --server ${url} \
+                                       --no-eff-email \
+                                       --agree-tos \
+                                       -m noc@sunet.se \
+                                       --manual \
+                                       --manual-auth-hook /etc/letsencrypt/acme-dns-auth.py \
+                                       --preferred-challenges dns \
+                                       -d ${domain_arg} \
+        && /etc/letsencrypt/issue-and-deploy.sh ${domains[0]}
+        | CMD
       refreshonly => true,
     }
   }
