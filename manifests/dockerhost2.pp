@@ -63,7 +63,10 @@ class sunet::dockerhost2(
   $lc_distro = downcase($distro)
   $release = $facts['os']['distro']['release']['major']
 
-  if $distro == 'Ubuntu' or ($distro == 'Debian' and versioncmp($release, '12') <= 0) {
+  if (
+    ($distro == 'Ubuntu' and versioncmp($release, '26') <= 0) or
+    ($distro == 'Debian' and versioncmp($release, '12') <= 0)
+  ) {
     # Add the dockerproject repository, then force an apt-get update before
     # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
     #
@@ -119,16 +122,8 @@ class sunet::dockerhost2(
   }
 
   file {
-    '/etc/logrotate.d':
-      ensure => 'directory',
-      mode   => '0755',
-      ;
     '/etc/logrotate.d/docker-containers':
-      ensure  => file,
-      path    => '/etc/logrotate.d/docker-containers',
-      mode    => '0644',
-      content => template('sunet/dockerhost/logrotate_docker-containers.erb'),
-      ;
+      ensure => absent,
     }
 
     file { '/usr/local/bin/docker-upgrade':

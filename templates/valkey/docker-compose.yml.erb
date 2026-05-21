@@ -1,0 +1,49 @@
+services:
+<% numnodesmone = @numnodes - 1 -%>
+<% for i in 0..numnodesmone -%>
+<% clusterport = 7000 + i -%>
+<% valkeyport = 6379 + i -%>
+<% joinport = 16379 + i %>
+  valkey-node-<%= i %>:
+    container_name: valkey-node-<%= i %>
+    image: <%= @image %>:<%= @image_tag %>
+<% if @hostmode == true %>
+    network_mode: host
+<% else %>
+    ports:
+      - "<%= valkeyport %>:<%= valkeyport %>"
+      - "<%= joinport %>:<%= joinport %>"
+<% end %>
+    volumes:
+      - /opt/valkey/node-<%= i %>:/data
+<% if @tls == true -%>
+      - /etc/ssl:/etc/ssl:ro
+      - /opt/valkey/cert:/cert:ro
+<% end %>
+    command: valkey-server /data/server.conf
+    restart: always
+<% end %>
+<% if @enable_redis_insight == true -%>
+  redisinsight:
+    image: redis/redisinsight:latest
+    network_mode: host
+    volumes:
+      - redisinsight-data:/data
+      - /etc/ssl/certs:/etc/ssl/certs:ro
+      - /opt/valkey/cert:/certs:ro
+    environment:
+      - RI_ACCEPT_TERMS_AND_CONDITIONS=true
+      - RI_APP_HOST=127.0.0.1
+      - RI_REDIS_HOST=<%= @server_fqdn %>
+      - RI_REDIS_PORT=6379
+      - RI_REDIS_ALIAS=Valkey Cluster
+      - RI_REDIS_PASSWORD=<%= @valkey_password %>
+      - RI_REDIS_TLS=true
+      - RI_REDIS_TLS_CA_PATH=<%= @ca_cert_path %>
+      - RI_REDIS_TLS_CERT_PATH=/certs/cert.pem
+      - RI_REDIS_TLS_KEY_PATH=/certs/privkey.pem
+    restart: unless-stopped
+
+volumes:
+  redisinsight-data:
+<% end %>

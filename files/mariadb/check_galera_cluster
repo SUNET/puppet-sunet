@@ -1,0 +1,172 @@
+#!/bin/bash
+
+#It is a changed version of the original https://github.com/fridim/nagios-plugin-check_galera_cluster/blob/master/check_galera_cluster
+
+PROGNAME=$(basename "$0")
+VERSION="Version 1.1.5"
+AUTHOR="Guillaume Coré <fridim@onfi.re>, Ales Nosek <ales.nosek@gmail.com>, Staf Wagemakers <staf@wagemakers.be>, Claudio Kuenzler <claudiokuenzler.com>"
+
+ST_WR=1
+ST_CR=2
+ST_UK=3
+
+warnAlerts=0
+critAlerts=0
+unknAlerts=0
+
+warnText=""
+critText=""
+
+print_version() {
+	echo "$VERSION" "$AUTHOR"
+}
+
+print_help() {
+	print_version "$PROGNAME" "$VERSION"
+	echo ""
+	echo "$PROGNAME is a monitoring plugin to monitor Galera cluster status."
+	echo ""
+	echo "$PROGNAME [-w SIZE] [-c SIZE]"
+	echo ""
+	echo "Options:"
+	echo "  w)"
+	echo "    Sets minimum number of nodes in the cluster when WARNING is raised. (default is same as critical)."
+	echo "  c)"
+	echo "    Sets minimum number of nodes in the cluster when CRITICAL is raised. (default is 2)."
+	exit $ST_UK
+}
+
+# default values
+crit=2
+
+check_executable() {
+	if [ -z "$1" ]; then
+		echo "check_executable: no parameter given!"
+		exit $ST_UK
+	fi
+
+	if ! command -v "$1" &>/dev/null; then
+		echo "UNKNOWN: Cannot find $1"
+		exit $ST_UK
+	fi
+}
+
+check_executable docker
+check_executable bc
+
+while getopts "hv:w:c:0" OPTION; do
+	case $OPTION in
+	h)
+		print_help
+		exit "$ST_UK"
+		;;
+	v)
+		print_version "$PROGNAME" "$VERSION"
+		exit $ST_UK
+		;;
+	w)
+		warn=$OPTARG
+		;;
+	c)
+		crit=$OPTARG
+		;;
+	?)
+		echo "Unknown argument: $1"
+		print_help
+		exit "$ST_UK"
+		;;
+	esac
+done
+
+if [ -z "$warn" ]; then
+	warn=$crit
+fi
+
+#
+# verify the database connection
+#
+if docker exec -t mariadb-db-1 sh -c 'command -v mariadb' &>/dev/null; then
+	CMD="mariadb"
+else
+	CMD="mysql"
+fi
+
+/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e '\s;' >/dev/null 2>&1 || {
+	echo "CRITICAL: mysql connection check failed"
+	exit $ST_CR
+}
+
+#
+# retrieve the mysql status
+#
+
+#rMysqlStatus=$(/usr/bin/docker exec mariadb-db-1 mysql --defaults-group-suffix=_backup  -B -N -e "show status like 'wsrep_%';")
+
+#
+# verify that the node is part of a cluster
+#
+
+rClusterStateUuid=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_state_uuid'")
+
+if [ -z "$rClusterStateUuid" ]; then
+	echo "CRITICAL: node is not part of a cluster."
+	exit $ST_CR
+fi
+
+rClusterSize=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_size'")
+
+rClusterStatus=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_status'") # Primary
+
+rReady=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_ready'") # ON
+
+rConnected=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_connected'") # ON
+
+rLocalStateComment=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_local_state_comment'") # Synced
+
+rSSTMethod=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_VARIABLES where VARIABLE_NAME = 'wsrep_sst_method'") # mariabackup
+
+if [ "$rClusterStatus" != 'Primary' ]; then
+	critText+="CRITICAL: node is not primary (wsrep_cluster_status). "
+	critAlerts=$((criticalAlerts + 1))
+fi
+
+if [ "$rReady" != 'ON' ]; then
+	critText+="CRITICAL: node is not ready (wsrep_ready). "
+	critAlerts=$((criticalAlerts + 1))
+fi
+
+if [ "$rConnected" != 'ON' ]; then
+	critText+="CRITICAL: node is not connected (wsrep_connected). "
+	critAlerts=$((criticalAlerts + 1))
+fi
+
+if [ "$rLocalStateComment" != 'Synced' ]; then
+	critText+="CRITICAL: node is not synced - actual state is: $rLocalStateComment (wsrep_local_state_comment). "
+	critAlerts=$((criticalAlerts + 1))
+fi
+
+if [ "$rSSTMethod" != 'mariabackup' ]; then
+	critText+="CRITICAL: node is not backed up - actual state is: $rSSTMethod (wsrep_sst_method). "
+	critAlerts=$((criticalAlerts + 1))
+fi
+
+if [ "$rClusterSize" -gt "$warn" ]; then
+	# only display the ok message if the state check not enabled
+	if [ -z "$stateFile" ]; then
+		echo "OK: number of NODES = $rClusterSize"
+	fi
+elif [ "$rClusterSize" -le "$crit" ]; then
+	critText+="CRITICAL: number of NODES = $rClusterSize. "
+	critAlerts=$((criticalAlerts + 1))
+elif [ "$rClusterSize" -le "$warn" ]; then
+	warnText+="WARNING: number of NODES = $rClusterSize."
+	warnAlerts=$((warnAlerts + 1))
+else
+	exit $ST_UK
+fi
+
+[ "$critAlerts" -gt "0" ] && echo "$critText" && exit $ST_CR
+[ "$unknAlerts" -gt "0" ] && exit $ST_UK
+[ "$warnAlerts" -gt "0" ] && echo "$warnText" && exit $ST_WR
+
+exit 0
