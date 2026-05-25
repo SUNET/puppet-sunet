@@ -53,4 +53,20 @@ class sunet::security::cve_mitigator (
       refreshonly => true,
     }
   }
+
+  # ssh-keysign-pwn
+  # CVE-2026-46333
+  if !('ssh_keysign_pwn' in $_excluded_cves) {
+    file { '/etc/sysctl.d/99-ssh-keysign-pwn.conf':
+      ensure  => present,
+      content => @("EOF"),
+       kernel.yama.ptrace_scope = 3
+       | EOF
+    }
+    exec { 'ssh_keysign_pwn_sysctl_setting':
+      command     => 'sysctl -w kernel.yama.ptrace_scope=3 2>/dev/null; true',
+      subscribe   => File['/etc/sysctl.d/99-ssh-keysign-pwn.conf'],
+      refreshonly => true,
+    }
+  }
 }
