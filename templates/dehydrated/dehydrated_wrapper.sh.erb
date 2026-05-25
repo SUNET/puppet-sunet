@@ -32,7 +32,7 @@ do
   CONFIG_SINGLEDOMAIN="/etc/dehydrated/config-singledomain"
   echo "DOMAINS_TXT=\"${SINGLEDOMAIN}\"" > ${CONFIG_SINGLEDOMAIN} 
   JOBNAME="dehydrated_`awk '{ print $1 }' ${SINGLEDOMAIN}`"
-  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} ${DEHYDRATED_OPTIONS} && /usr/bin/le-ssl-compat.sh
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} --config ${CONFIG_SINGLEDOMAIN} && /usr/bin/le-ssl-compat.sh
   JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
   if [ ! -f "$JOBFILE" ]; then
     /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
