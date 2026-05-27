@@ -1,3 +1,9 @@
 #!/bin/bash
 
-docker exec mariadb-db-1 mysql -u root -p'<%= @mariadb_root_password %>' -N -B -e "show status like 'wsrep_cluster_size'"
+if docker exec -t mariadb-db-1 sh -c 'command -v mariadb' &>/dev/null; then
+    CMD="mariadb"
+else
+    CMD="mysql"
+fi
+
+docker exec mariadb-db-1 "${CMD}" -u root -p'<%= @mariadb_root_password %>' -N -B -e "show status like 'wsrep_cluster_size'"

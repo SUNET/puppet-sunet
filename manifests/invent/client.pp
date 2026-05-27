@@ -1,11 +1,11 @@
 # SUNET Inventory Service
 class sunet::invent::client(
-  String  $invent_dir            = '/opt/invent',
-  String  $export_endpoint       = '',
-  String  $facts_path             = '/etc/facter/facts.d',
-  Integer $invent_retention_days = 30,
-  String  $repo_path             = '/var/cache/invent/repo',
-  String  $repo_url              = 'https://github.com/SUNET/invent.git',
+  String                         $invent_dir            = '/opt/invent',
+  Variant[String, Array[String]] $export_endpoint       = [],
+  String                         $facts_path            = '/etc/facter/facts.d',
+  Integer                        $invent_retention_days = 30,
+  String                         $repo_path             = '/var/cache/invent/repo',
+  String                         $repo_url              = 'https://github.com/SUNET/invent.git',
 ) {
   $host_os = String($facts['os']['name'], '%d')
 
