@@ -92,11 +92,6 @@ class sunet::dehydrated(
     }
   }
 
-  sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
-    allow_clients => $allow_clients,
-    server_port   => $server_port,
-  }
-
   if 'clients' in $conf {
     $clients = $conf['clients']
   } else {
@@ -176,5 +171,10 @@ class sunet::dehydrated(
   sunet::nftables::allow { 'allow-dehydrated-ssh':
     from => $allow_clients_ssh,
     port => $ssh_port,
+  }
+
+  sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
+    allow_clients => $allow_clients_ssh,
+    server_port   => $server_port,
   }
 }
