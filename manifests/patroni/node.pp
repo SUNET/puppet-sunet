@@ -74,8 +74,10 @@ class sunet::patroni::node(
   }
 
   if ($pgbackrest) {
-    # Install pgBackRest
-    include sunet::packages::pgbackrest
+    file { '/usr/local/bin/pgbackrest-docker':
+      content => file('sunet/patroni/pgbackrest-docker'),
+      mode    => '0755',
+    }
     # Write the pgbackrest config
     file { '/opt/patroni/config/pgbackrest.conf':
       content => template('sunet/patroni/pgbackrest.conf.erb'),
@@ -103,6 +105,10 @@ class sunet::patroni::node(
       if (!find_file($key_path)){
         sunet::snippets::ssh_keygen{$key_path:} # This will not overwrite an existing key
       }
+    }
+    file { $key_path:
+      ensure =>  file,
+      mode   => '0644',
     }
   }
 

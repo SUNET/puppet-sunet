@@ -8,12 +8,13 @@ services:
       - '/etc/ssl:/etc/ssl:ro'
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
       - '/opt/patroni/certs:/opt/patroni/certs:ro'
+      - '/etc/ssl/certs/infra.crt:/etc/ssl/certs/infra.crt:ro'
       - postgres_data:/var/lib/postgresql
       <% if @pgbackrest == true %>
       - '/usr/bin/pgbackrest:/usr/bin/pgbackrest'
       - '/opt/patroni/config/pgbackrest.conf:/etc/pgbackrest.conf:ro'
       - '/root/.ssh/id_ed25519:/home/postgres/.ssh/id_ed25519:ro'
-      - '/root/.ssh/known_hosts:/home/postgres/.ssh/known_hosts:ro'
+      - '/etc/ssh/ssh_known_hosts:/etc/ssh/ssh_known_hosts:ro'
       <% end %>
 
     entrypoint: /usr/bin/python3

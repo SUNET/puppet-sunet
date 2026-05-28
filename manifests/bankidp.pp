@@ -21,6 +21,7 @@ class sunet::bankidp(
   String $service_path = '/bankid/idp',
   String $spring_config_import = '/config/bankidp.yml',
   String $tz = 'Europe/Stockholm',
+  String $server_root_certificate_path = 'classpath:bankid-trust-prod.crt',
 ) {
 
   $apps = $facts['bankid_cluster_info']['apps']
@@ -38,6 +39,18 @@ class sunet::bankidp(
       iif           => $interface,
       allow_clients => 'any',
       port          => 443,
+    }
+
+    file { '/usr/lib/nagios/plugins/check_user_cert_expire':
+      ensure  => file,
+      mode    => '0755',
+      content => file ('sunet/bankidp/check_user_cert_expire.sh')
+    }
+
+    file { '/usr/lib/nagios/plugins/check_app_cert_expire':
+      ensure  => file,
+      mode    => '0755',
+      content => file ('sunet/bankidp/check_app_cert_expire.sh')
     }
 
     $credsdir = "${bankid_home}/credentials"
@@ -59,9 +72,10 @@ class sunet::bankidp(
         command_line => "/usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
       }
       sunet::nagios::nrpe_command {"check_cert_expire_${name}":
-         command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
+          command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_user_cert_expire ${credsdir}/${name}.p12"
       }
     }
+
 
     if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
       sunet::snippets::secret_file { "${credsdir}/saml_metadata.key": hiera_key => 'bankid_saml_metadata_key' }
