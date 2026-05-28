@@ -57,7 +57,7 @@ class sunet::lb::load_balancer::services(
     sunet::nftables::docker_expose { 'frontend-api' :
       allow_clients => sunet::lb::load_balancer::get_all_backend_ips($config),
       port          => $api_port,
-      iif          => $interface,
+      iif           => $interface,
     }
   }
 

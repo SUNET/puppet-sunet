@@ -1,4 +1,4 @@
-
+# Allow haproxy to bind() to a service IP address even if it haven't actually
 define sunet::frontend::load_balancer::sysctl_ip_nonlocal_bind() {
   # Allow haproxy to bind() to a service IP address even if it haven't actually
   # been set up on an interface yet

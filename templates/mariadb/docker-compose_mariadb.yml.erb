@@ -1,9 +1,7 @@
-version: '3'
-
 services:
 
   db:
-    image:  docker.sunet.se/drive/mariadb:<%= @mariadb_version %>
+    image: <%= @mariadb_image %>:<%= @mariadb_version %>
     restart: always
     volumes:
       - /opt/mariadb/backups:/backups
@@ -11,7 +9,12 @@ services:
       - /opt/mariadb/datadir:/var/lib/mysql
       - /opt/mariadb/init:/docker-entrypoint-initdb.d
       - /opt/mariadb/scripts:/scripts
+<%- if @backup -%>
+      - /opt/mariadb_backup/start_replica_from_init.sh:/start_replica_from_init.sh
+<% end -%>
+<%- if @galera -%>
     network_mode: host
+<% end -%>
 <%- if !@dns.empty? -%>
     dns:
 <% @dns.each do |resolver| -%>
@@ -29,8 +32,19 @@ services:
 <%- if @mariadb_database -%>
       - MYSQL_DATABASE=<%= @mariadb_database %>
 <%- end -%>
-      - BOOTSTRAP=<%= @bootstrap %>
-      - FORCE_BOOTSTRAP=0
-    command:  "--wsrep_cluster_address=gcomm://<%= @cluster_nodes.join(',') %>"
+<%- if @galera -%>
+<%- if @new_cluster -%>
+    command:  "--wsrep-new-cluster"
     tty: true
-
+<% else -%>
+    tty: true
+<%- end -%>
+<%- end -%>
+<%- if @docker_healthcheck -%>
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+<%- end -%>

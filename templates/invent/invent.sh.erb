@@ -44,9 +44,8 @@ if [ $(which docker) ]; then
   # Gather structured data docker fact
   docker_fact="${fact_dir}/docker_ps.json"
   for container in $(docker ps -q); do
-    docker ps  --format '{{json . }}' --filter "id=${container}" | \
-      jq '. |= . + '{"ImageId":$(docker inspect --format '{{json .Image }}' ${container})'}'
-  done | jq --jsonargs '{"docker_ps":[inputs]}' > ${docker_fact}
+    docker ps  --format '{{json . }}' --filter "id=${container}" | jq '. |= . + '{"ImageId":$(docker inspect --format '{{json .Image }}' ${container})'}';
+  done | jq -s |jq -s  '{docker_ps: add}' > ${docker_fact}
 
 fi
 

@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#
+# This wrapper is a bit silly but it might be the best way to be SURE that one broken domain doesn't
+# mess up ALL configured domains. It will also, through scriptherder, hopefully highlight problems
+# with domains that are either misconfigured or have any other kind of issues.
+#
+# To workaround limits in dehydrated we create a temporary config for each domain.
+#
+# Scriptherder was not meant to be run dynamically, must cheat to create check/ini-files...
+
+DOMAINFILE="/etc/dehydrated/domains.txt"
+HOOKFILE="/etc/dehydrated/hook.sh"
+CONFIGFILE="/etc/dehydrated/config"
+SCRIPTHERDER="/usr/local/bin/scriptherder"
+SCRIPTHERDER_OPTIONS="--mode wrap --syslog --name "
+SCRIPTHERDER_TEMPLATE="/etc/dehydrated/scriptherder_template.ini"
+DEHYDRATED="/usr/sbin/dehydrated"
+DEHYDRATED_OPTIONS="--no-lock --hook ${HOOKFILE} --config ${CONFIGFILE} "
+DEHYDRATED_VERB="--cron"
+
+DOMAINFILE_TEMP="$(mktemp)" 
+if [[ -n "$1" ]]; then
+  grep "^$1" "${DOMAINFILE}" > "${DOMAINFILE_TEMP}"
+else
+  cp "${DOMAINFILE}" "${DOMAINFILE_TEMP}"
+fi
+
+/bin/cat "${DOMAINFILE_TEMP}" | while read line
+do
+  SINGLEDOMAIN=$(mktemp)
+  echo $line > ${SINGLEDOMAIN}
+  CONFIG_SINGLEDOMAIN="/etc/dehydrated/config-singledomain"
+  echo "DOMAINS_TXT=\"${SINGLEDOMAIN}\"" > ${CONFIG_SINGLEDOMAIN} 
+  JOBNAME="dehydrated_`awk '{ print $1 }' ${SINGLEDOMAIN}`"
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} --config ${CONFIG_SINGLEDOMAIN} && /usr/bin/le-ssl-compat.sh
+  JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
+  if [ ! -f "$JOBFILE" ]; then
+    /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
+  fi
+  rm ${SINGLEDOMAIN}
+  rm ${CONFIG_SINGLEDOMAIN}
+done
+rm "${DOMAINFILE_TEMP}"
+
+<% if @cleanup %>
+  JOBNAME="dehydrated_cleanup"
+  JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
+  if [ ! -f "$JOBFILE" ]; then
+    /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
+  fi
+  DEHYDRATED_VERB="--cleanup"
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} ${DEHYDRATED_OPTIONS} && /usr/bin/le-ssl-compat.sh
+<% end %>
+
+exit 0

@@ -1,0 +1,11 @@
+# obsessive_host_handler
+define command {
+  command_name obsessive_host_handler
+  command_line /usr/share/icinga/plugins/eventhandlers/distributed-monitoring/send_nsca_host_or_service_check_result '<%= @nsca_server %>' '/etc/send_nsca.cfg' '$HOSTNAME$' '$HOSTSTATE$' '$HOSTOUTPUT$\n$LONGHOSTOUTPUT$|$HOSTPERFDATA$'
+}
+
+# obsessive_service_handler
+define command {
+  command_name obsessive_service_handler
+  command_line /usr/share/icinga/plugins/eventhandlers/distributed-monitoring/send_nsca_host_or_service_check_result '<%= @nsca_server %>' '/etc/send_nsca.cfg' '$HOSTNAME$' '$SERVICEDESC$' '$SERVICESTATE$' '$SERVICEOUTPUT$\n$LONGSERVICEOUTPUT$|$SERVICEPERFDATA$'
+}

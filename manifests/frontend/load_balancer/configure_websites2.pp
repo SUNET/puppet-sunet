@@ -1,4 +1,4 @@
-
+# website2
 define sunet::frontend::load_balancer::configure_websites2($websites, $basedir, $confdir, $scriptdir)
 {
   each($websites) | $site, $config | {

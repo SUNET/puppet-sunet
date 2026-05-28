@@ -1,3 +1,6 @@
+# rsyslog
+
+# @param max_message_size          Configures the $MaxMessageSize to allow for larger log messages
 class sunet::rsyslog(
   $daily_rotation = true,
   $syslog_servers = lookup(syslog_servers, undef, undef, []),
@@ -8,6 +11,7 @@ class sunet::rsyslog(
   $udp_client = lookup('udp_client', undef, undef, 'any'),
   $tcp_port = lookup(tcp_port, undef, undef, undef),
   $tcp_client = lookup('tcp_client', undef, undef, 'any'),
+  $max_message_size = lookup(max_message_size, undef, undef, undef),
   $traditional_file_format = false,
 ) {
   include stdlib
@@ -17,7 +21,7 @@ class sunet::rsyslog(
 
   file { '/etc/rsyslog.conf':
     ensure  => file,
-    mode    => '644',
+    mode    => '0644',
     content => template('sunet/rsyslog/rsyslog.conf.erb'),
     require => Package['rsyslog'],
     notify  => Service['rsyslog']
@@ -30,7 +34,7 @@ class sunet::rsyslog(
   }
   file { '/etc/rsyslog.d/50-default.conf':
     ensure  => file,
-    mode    => '644',
+    mode    => '0644',
     content => template("sunet/rsyslog/${default_template}"),
     require => Package['rsyslog'],
     notify  => Service['rsyslog']
@@ -40,7 +44,7 @@ class sunet::rsyslog(
 
   file { '/etc/rsyslog.d/60-remote.conf':
     ensure  => file,
-    mode    => '644',
+    mode    => '0644',
     content => template('sunet/rsyslog/rsyslog-remote.conf.erb'),
     require => Package['rsyslog'],
   }
@@ -59,49 +63,47 @@ class sunet::rsyslog(
 
   if ($tcp_port or $udp_port) {
 
-     if ($udp_port) {
-        ufw::allow { "allow-syslog-udp-${udp_port}":
-           from  => "${udp_client}",
-           ip    => 'any',
-           proto => 'udp',
-           port  => "${udp_port}"
+    if ($udp_port) {
+        sunet::misc::ufw_allow { "allow-syslog-udp-${udp_port}":
+          from  => $udp_client,
+          proto => 'udp',
+          port  => $udp_port
         }
-     }
+    }
 
-     if ($tcp_port) {
-        ufw::allow { "allow-syslog-tcp-${tcp_port}":
-           from  => "${tcp_client}",
-           ip    => 'any',
-           proto => 'tcp',
-           port  => "${tcp_port}"
+    if ($tcp_port) {
+        sunet::misc::ufw_allow { "allow-syslog-tcp-${tcp_port}":
+          from  => $tcp_client,
+          proto => 'tcp',
+          port  => $tcp_port
         }
-     }
+    }
 
-     file { '/etc/rsyslog.d/50-local.conf':
-       ensure  => file,
-       mode    => '644',
-       content => template('sunet/rsyslog/rsyslog-local.conf.erb'),
-       require => Package['rsyslog'],
-       notify  => Service['rsyslog']
-     }
+    file { '/etc/rsyslog.d/50-local.conf':
+      ensure  => file,
+      mode    => '0644',
+      content => template('sunet/rsyslog/rsyslog-local.conf.erb'),
+      require => Package['rsyslog'],
+      notify  => Service['rsyslog']
+    }
 
   }
 
   if ($daily_rotation == true)
   {
-     file { '/etc/logrotate.d/rsyslog':
-       ensure  => file,
-       mode    => '644',
-       content => template('sunet/rsyslog/rsyslog.logrotate.erb'),
-     }
+    file { '/etc/logrotate.d/rsyslog':
+      ensure  => file,
+      mode    => '0644',
+      content => template('sunet/rsyslog/rsyslog.logrotate.erb'),
+    }
   }
   if ($single_log_file == true and $facts['fail2ban_is_enabled'] == 'yes') {
-     file { '/etc/fail2ban/jail.d/sshd-rsyslog-single-logfile.conf':
-       ensure  => file,
-       mode    => '644',
-       content => template('sunet/rsyslog/fail2ban-ssh-syslog.conf.erb'),
-       notify  => Service['fail2ban'],
-     }
+    file { '/etc/fail2ban/jail.d/sshd-rsyslog-single-logfile.conf':
+      ensure  => file,
+      mode    => '0644',
+      content => template('sunet/rsyslog/fail2ban-ssh-syslog.conf.erb'),
+      notify  => Service['fail2ban'],
+    }
 
   }
 }

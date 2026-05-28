@@ -1,0 +1,22 @@
+services:
+  etcd:
+    image: <%= @docker_image %>:<%= @docker_tag %>
+    container_name: etcd
+    volumes:
+      - <%= @base_dir %>/<%= @service_name %>/data:/data
+      - <%= @base_dir %>/<%= @service_name %>/etcd.conf.yml:<%= @base_dir %>/<%= @service_name %>/etcd.conf.yml:ro
+      - <%= @cert_file %>:<%= @cert_file %>:ro
+      - <%= @key_file %>:<%= @key_file %>:ro
+      - <%= @trusted_ca_file %>:<%= @trusted_ca_file %>:ro
+
+<% if @hostmode == true %>
+    network_mode: host
+<% else %>
+    ports:
+    <%- @ports.each do |port| -%>
+      - "<%= port %>"
+    <%- end -%>
+<% end %>
+    entrypoint: /usr/local/bin/etcd
+    command:
+      - "--config-file=<%= @base_dir %>/<%= @service_name%>/etcd.conf.yml"

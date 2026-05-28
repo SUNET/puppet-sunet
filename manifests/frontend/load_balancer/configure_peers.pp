@@ -1,3 +1,4 @@
+# configure_peers
 define sunet::frontend::load_balancer::configure_peers($router_id, $peers)
 {
   $defaults = {

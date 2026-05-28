@@ -1,0 +1,44 @@
+services:
+  xrootd:
+    image: <%= @container_image %>:<%= @container_tag %>
+    dns:
+      - 89.32.32.32
+    hostname: <%= @hostname %>
+    network_mode: host
+    extra_hosts:
+      <%- @cms_allow_hosts.each do |extra_host| -%>
+      - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
+      <%- if @managers.include?(extra_host['name']) -%>
+      - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv6'] %>"
+      <%- end -%>
+      <%- end -%>
+    volumes:
+      - /opt/xrootd/config:/etc/xrootd:ro
+      - /opt/xrootd/grid-security:/etc/grid-security:ro
+      - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
+      - /dev/log:/dev/log
+    command: ["xrootd", "-c", "/etc/xrootd/xrootd.cfg"]
+    restart: always
+  cmsd:
+    image: <%= @container_image %>:<%= @container_tag %>
+    dns:
+      - 89.32.32.32
+    hostname: <%= @hostname %>
+    network_mode: host
+    extra_hosts:
+      <%- @cms_allow_hosts.each do |extra_host| -%>
+      - "<%= extra_host['name'] %>:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name'] %>:<%= extra_host['ipv6'] %>"
+      <%- if @managers.include?(extra_host['name']) -%>
+      - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv4'] %>"
+      - "<%= extra_host['name'].split('.')[0] %>:<%= extra_host['ipv6'] %>"
+      <%- end -%>
+      <%- end -%>
+    volumes:
+      - /opt/xrootd/config:/etc/xrootd:ro
+      - /opt/xrootd/grid-security:/etc/grid-security:ro
+      - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
+      - /dev/log:/dev/log
+    command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg"]

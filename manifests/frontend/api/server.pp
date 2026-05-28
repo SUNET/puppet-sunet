@@ -29,9 +29,9 @@ define sunet::frontend::api::server(
     imagetag => $docker_tag,
     net      => 'host',
     volumes  => ["${basedir}/backends:/backends",
-                 '/dev/log:/dev/log',
-                 '/var/log/sunetfrontend-api:/var/log/sunetfrontend-api',
-                 ],
+                '/dev/log:/dev/log',
+                '/var/log/sunetfrontend-api:/var/log/sunetfrontend-api',
+                ],
     require  => [File["${basedir}/backends"]],
   }
 }

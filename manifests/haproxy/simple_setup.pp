@@ -3,17 +3,17 @@ define sunet::haproxy::simple_setup(
   String $content,
   String $cert,
   String $key,
-  String $server_name    = $::fqdn,
+  String $server_name    = $facts['networking']['fqdn'],
   String $port           = '443',
   Array  $allow_clients  = [],
 ) {
   ensure_resource(sunet::misc::system_user, 'haproxy', {group => 'haproxy' })
 
-  ensure_resource(sunet::misc::certbundle, "${::fqdn}_haproxy", {
+  ensure_resource(sunet::misc::certbundle, "${facts['networking']['fqdn']}_haproxy", {
     group     => 'haproxy',
     bundle    => ["cert=${cert}",
                   "key=${key}",
-                  "out=private/${::fqdn}_haproxy.crt",
+                  "out=private/${facts['networking']['fqdn']}_haproxy.crt",
                   ],
     })
 
@@ -29,21 +29,42 @@ define sunet::haproxy::simple_setup(
     mode  => '0640',
   }
 
-  concat::fragment { "${name}_simple_haproxy_header":
-    target  => $config,
-    order   => '10000',
-    content => template('sunet/haproxy/simple_haproxy_base.cfg.erb'),
+  if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') >= 0) {
+    concat::fragment { "${name}_simple_haproxy_header":
+      target  => $config,
+      order   => '10',
+      content => template('sunet/haproxy/simple_haproxy_base.cfg.erb'),
+    }
+
+    concat::fragment { "${name}_simple_haproxy_config":
+      target  => $config,
+      order   => '10000',
+      content => $content,
+    }
+  } else {
+    concat::fragment { "${name}_simple_haproxy_header":
+      target  => $config,
+      order   => '10000',
+      content => template('sunet/haproxy/simple_haproxy_base.cfg.erb'),
+    }
+
+    concat::fragment { "${name}_simple_haproxy_config":
+      target  => $config,
+      order   => '10',
+      content => $content,
+    }
   }
 
-  concat::fragment { "${name}_simple_haproxy_config":
-    target  => $config,
-    order   => '10',
-    content => $content,
-  }
-
-  sunet::misc::ufw_allow { "${name}_allow_clients":
-    from => $allow_clients,
-    to   => 'any',
-    port => $port,
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    sunet::nftables::docker_expose { $name :
+      allow_clients => flatten($allow_clients),
+      port          => $port,
+    }
+  } else {
+    sunet::misc::ufw_allow { "${name}_allow_clients":
+      from => $allow_clients,
+      to   => 'any',
+      port => $port,
+    }
   }
 }

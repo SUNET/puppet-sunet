@@ -56,3 +56,6 @@ smtpd_sasl_path = inet:<%= @imap_domain %>:12346
 smtpd_sasl_auth_enable = yes
 
 virtual_transport = lmtp:<%= @imap_domain %>:24
+<% if @message_size_limit -%>
+message_size_limit = <%= @message_size_limit %>
+<% end -%>

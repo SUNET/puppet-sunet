@@ -35,14 +35,14 @@ spring:
         trust:
           resource: file:/etc/ssl/certs/infra.p12
           password: qwerty123
-
 bankid:
+<% if scope.call_function('versioncmp',[@imagetag,'1.2.1']) == -1 -%>
   session:
     module: redis
   audit:
     repository: "redistimeseries"
     log-file: /opt/bankidp/logs/audit.log
-
+<% end %>
   authn:
     supported-loas:
       - http://id.swedenconnect.se/loa/1.0/uncertified-loa3
@@ -54,7 +54,7 @@ bankid:
       - http://id.elegnamnden.se/ec/1.0/loa3-pnr
 
 <% if @prod == true %>
-  server-root-certificate: classpath:bankid-trust-prod.crt
+  server-root-certificate: <%= @server_root_certificate_path %>
   service-url: https://appapi2.bankid.com/rp/v6.0
 <% else %>
   server-root-certificate: classpath:bankid-trust-test.crt
@@ -162,6 +162,13 @@ saml:
           company: "Sunet"
           email-addresses:
           - bankid-idp@sunet.se
+<% if scope.call_function('versioncmp',[@imagetag,'1.2.1']) >= 0 -%>
+    session:
+      module: "redis"
+    audit:
+      file:
+        log-file: "/opt/bankidp/logs/audit.log"
+<% end %>
 
 logging:
   level:

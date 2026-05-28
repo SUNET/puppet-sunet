@@ -35,6 +35,9 @@ class sunet::lb::load_balancer(
   ensure_resource('sunet::misc::create_dir', ['/etc/bgp', $confdir, $scriptdir],
                   { owner => 'root', group => 'root', mode => '0755' })
 
+  ensure_resource('sunet::misc::create_dir', [ "${confdir}/ssl"],
+                  { owner => 'root', group => 'haproxy', mode => '0750' })
+
   $websites = $config['load_balancer']['websites']
 
   sunet::lb::load_balancer::configure_websites { 'websites':
@@ -63,17 +66,21 @@ class sunet::lb::load_balancer(
                 ],
     group  => 'ssl-cert',
   }
-  if has_key($::tls_certificates, $::fqdn) and has_key($::tls_certificates[$::fqdn], 'infra_cert') {
-    $infra_cert = $::tls_certificates[$::fqdn]['infra_cert']
-    $infra_key = $::tls_certificates[$::fqdn]['infra_key']
+
+  $fqdn = $facts['networking']['fqdn']
+
+  if $fqdn in $facts['tls_certificates'] and 'infra_cert' in $facts['tls_certificates'][$fqdn] {
+    $infra_cert = $facts['tls_certificates'][$fqdn]['infra_cert']
+    $infra_key = $facts['tls_certificates'][$fqdn]['infra_key']
 
     # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
-    ensure_resource(sunet::misc::certbundle, "${::fqdn}_haproxy", {
+    ensure_resource(sunet::misc::certbundle, "${fqdn}_haproxy", {
       bundle => [
         "cert=${infra_cert}",
         "key=${infra_key}",
-        "out=private/infra_haproxy.crt",
+        'out=/opt/frontend/config/ssl/infra_haproxy.crt',
       ],
+      group => 'haproxy',
     })
   }
 }

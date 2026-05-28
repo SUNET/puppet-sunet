@@ -1,3 +1,4 @@
+# system user
 define sunet::misc::system_user(
   String                    $group,
   Optional[String]          $username = undef,

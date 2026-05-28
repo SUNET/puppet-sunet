@@ -8,18 +8,18 @@ define sunet::system_user(
   ) {
 
   user { $username :
-    ensure => present,
-    name => $username,
+    ensure     => present,
+    name       => $username,
     membership => minimum,
-    system => $system,
-    require => Group[ $group ],
-    shell => $shell,
+    system     => $system,
+    require    => Group[ $group ],
+    shell      => $shell,
     managehome => $managehome
   }
 
   group { $group :
     ensure => present,
-    name => $group,
+    name   => $group,
   }
 
 }

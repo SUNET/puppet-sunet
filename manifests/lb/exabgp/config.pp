@@ -1,3 +1,4 @@
+# exabgp.conf
 define sunet::lb::exabgp::config(
   String               $monitor = '/etc/bgp/monitor',
   Enum['text', 'json'] $encoder = 'text',

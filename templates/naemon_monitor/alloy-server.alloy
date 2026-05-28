@@ -26,7 +26,7 @@ otelcol.receiver.otlp "example" {
 otelcol.processor.batch "example" {
   output {
     metrics = [otelcol.exporter.prometheus.monitor_mimir.input]
-    logs    = [otelcol.exporter.loki.monitor_loki.input]
+    logs    = [otelcol.exporter.otlphttp.monitor_loki.input]
     traces  = [otelcol.exporter.otlphttp.monitor_tempo.input]
   }
 }
@@ -48,14 +48,8 @@ prometheus.remote_write "monitor_mimir" {
     }
 }
 
-otelcol.exporter.loki "monitor_loki" {
-	forward_to = [loki.write.monitor_loki.receiver]
-}
-
-loki.write "monitor_loki" {
-	endpoint {
-		url = "http://loki:3100/loki/api/v1/push"
-
-		
-	}
+otelcol.exporter.otlphttp "monitor_loki" {
+        client {
+                endpoint = "http://loki:3100/otlp"
+        }
 }

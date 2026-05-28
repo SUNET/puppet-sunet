@@ -55,7 +55,12 @@ define sunet::ssh_keys(
           default => "/home/${username}",
         }
         $ssh_fn = "${homedir}/.ssh/authorized_keys"
-        ensure_resource('file', "${homedir}/.ssh", { ensure => 'directory', })
+        ensure_resource('file', "${homedir}/.ssh", {
+          ensure => 'directory',
+          mode   => '0700',
+          owner  => $username,
+          group  => $username,
+        });
         # Clean away file used using development of this class. Can be safely removed in a day or so.
         ensure_resource('file', "${ssh_fn}.test", { ensure => 'absent', })
 

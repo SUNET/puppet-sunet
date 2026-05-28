@@ -34,8 +34,15 @@ if ! echo "${install_options}" | grep -q -- '--osinfo'; then
 		version=$(echo "${image_file}" | cut -d - -f2)
         os_info="${os_info_base} ${dist}${version}"
     else
-        # Assuming Ubuntu at this point since their images doesn't include dist name.
-        os_info="${os_info_base} ubuntu${dist}"
+        osinfo_value="ubuntu${dist}"
+        # virt-install will throw an error if the os is not in the list: "ERROR    Unknown OS name..."
+        # so instead of erroring out we set it to ubuntu-lts-latest which is always in the list
+        # (and probably the issue when running a more modern VM-OS than the KVM-OS)
+        if virt-install --osinfo list 2>/dev/null | grep -qw "${osinfo_value}"; then
+            os_info="${os_info_base}${osinfo_value}"
+        else
+            os_info="${os_info_base}ubuntu-lts-latest"
+        fi
     fi
 fi
 
@@ -119,7 +126,7 @@ virsh destroy "${hostname}" || true
 virsh undefine "${hostname}" || true
 
 # use eval to expand the $install_options properly
-eval virt-install -r "${mem}" -n "${hostname}" --vcpus="${cpus}" --autostart --memballoon virtio --boot hd \
+eval virt-install -r "${mem}" -n "${hostname}" --vcpus="${cpus}" --autostart --memballoon virtio --boot hd <% if @uefi -%>--boot uefi<% end -%> \
     --graphics none \
     --disk path="${images_dir}/${disk},format=qcow2,bus=virtio" \
     --disk path="${images_dir}/${seed},bus=virtio" \

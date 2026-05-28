@@ -3,12 +3,18 @@
 services:
   haproxy:
     image: '<%= @haproxy_image %>:<%= @haproxy_imagetag %>'
+<% if @set_fqdn == true -%>
+    hostname: <%= @networking['fqdn'] %>
+<%- end -%>
     expose:
 <% if @varnish_enabled == true -%>
       - 1080
 <%- end -%>
 <% @exposed_ports.each do |port| -%>
       - <%= port %>
+<%- end -%>
+<% if @stats_port.is_a? String and @stats_port != '' -%>
+      - <%= @stats_port %>
 <%- end -%>
     # No point in restarting the haproxy container - the systemd service ExecStartPost will not
     # execute again, so the restarted haproxy container won't get the sarimner0 interface and
@@ -124,7 +130,7 @@ services:
 <% end -%>
 <% end -%>
     environment:
-      - 'HOSTFQDN=<%= @fqdn %>'
+      - 'HOSTFQDN=<%= @networking['fqdn'] %>'
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
       - 'STATUSFN=/dev/shm/haproxy-status'  # need to be writable by user fe-monitor, and match the healthcheck

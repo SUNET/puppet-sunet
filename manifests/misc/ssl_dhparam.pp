@@ -8,10 +8,10 @@ define sunet::misc::ssl_dhparam (
   }
 
   if $ssl_dhparam_file {
-    exec {"nginx_generate_dh_group":
-      command           => "/usr/bin/openssl dhparam -out ${ssl_dhparam_file} 2048",
-      unless            => "/usr/bin/test -s ${ssl_dhparam_file}",
-      require           => Package['openssl'],
+    exec {'nginx_generate_dh_group':
+      command => "/usr/bin/openssl dhparam -out ${ssl_dhparam_file} 2048",
+      unless  => "/usr/bin/test -s ${ssl_dhparam_file}",
+      require => Package['openssl'],
     }
   }
 

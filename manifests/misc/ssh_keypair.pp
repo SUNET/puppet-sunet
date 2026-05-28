@@ -1,3 +1,4 @@
+# ssh_keypair
 define sunet::misc::ssh_keypair(
   String $public,
   String $private,

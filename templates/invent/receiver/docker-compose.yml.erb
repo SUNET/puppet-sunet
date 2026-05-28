@@ -55,8 +55,12 @@ services:
     stdin_open: true
     restart: always
     environment:
+      - INVENT_ADMIN_PASSWORD=<%= @admin_password %>
+      - INVENT_DB_DIR=/app/db
+      - INVENT_HOST_DIR=/app/hosts
+      - INVENT_IMAGE_DIR=/app/images
+      - INVENT_NETWORK_DIR=/app/network
+      - LETSENCRYPT_HOST=<%= @vhost %>
       - VIRTUAL_HOST=<%= @vhost %>
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=8000
-      - LETSENCRYPT_HOST=<%= @vhost %>
-      - INVENT_ADMIN_PASSWORD=<%= @admin_password %>

@@ -48,9 +48,9 @@ services:
     restart: unless-stopped
 
   web:
-    image: tootsuite/mastodon:<%= @mastodon_version %>
+    image: <%= @mastodon_image %>:<%= @mastodon_version %>
     container_name: web
-    restart: always
+    restart: unless-stopped
     env_file:
       - mastodon.env
     command: bash -c "rm -f /mastodon/tmp/pids/server.pid; bundle exec rails s -p 3000"
@@ -74,8 +74,8 @@ services:
 
   streaming:
     container_name: streaming
-    image: tootsuite/mastodon:<%= @mastodon_version %>
-    restart: always
+    image: <%= @streaming_image %>:<%= @streaming_version %>
+    restart: unless-stopped
     env_file: mastodon.env
     command: node ./streaming
     dns:
@@ -94,8 +94,8 @@ services:
 
   sidekiq:
     container_name: sidekiq
-    image: tootsuite/mastodon:<%= @mastodon_version %>
-    restart: always
+    image: <%= @mastodon_image %>:<%= @mastodon_version %>
+    restart: unless-stopped
     env_file: mastodon.env
     command: bundle exec sidekiq
     dns:
@@ -111,7 +111,7 @@ services:
   files:
     container_name: files
     image: nginx:latest
-    restart: always
+    restart: unless-stopped
     dns:
       - 89.32.32.32
     networks:
