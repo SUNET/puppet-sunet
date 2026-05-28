@@ -14,7 +14,6 @@ class sunet::grafana(
   sunet::system_user {'grafana': username => 'grafana', group => 'grafana' }
   $smtp_password = safe_hiera('smtp_password', 'NOT_SET')
   file { '/etc/grafana': ensure => 'directory', owner => 'grafana' }
-  file { '/etc/grafana': ensure => 'directory', owner => 'grafana' }
   file { '/var/log/grafana': ensure => 'directory', mode => '0775', owner => 'grafana' }
   file { '/var/lib/grafana': ensure => 'directory', mode => '0775', owner => 'grafana' }
   file { '/usr/share/grafana': ensure => 'directory', mode => '0775', owner => 'grafana' }
