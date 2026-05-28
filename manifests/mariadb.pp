@@ -1,10 +1,14 @@
 # Mariadb cluster class for SUNET
 define sunet::mariadb(
-  String $mariadb_version=latest,
-  Integer $bootstrap=0,
-  Array[Integer] $ports = [3306, 4444, 4567, 4568],
-  Array[String] $dns = [],
-  Boolean $galera = true,
+  String $mariadb_version          = latest,
+  String $mariadb_image='docker.sunet.se/drive/mariadb',
+  Boolean $new_cluster             = false, # applies to maridb images from dockerhub.io
+  Boolean $docker_healthcheck      = false, # Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb on how to setup the healthcheck
+  Array[Integer] $ports            = [3306, 4444, 4567, 4568],
+  Array[String] $dns               = [],
+  Boolean $galera                  = true,
+  Boolean $nagios_monitoring       = false,
+  String  $innodb_buffer_pool_size = '4G',
 )
 {
 
@@ -106,5 +110,24 @@ define sunet::mariadb(
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'Mariadb server',
+  }
+# Monitoring script that can be executed with NRPE
+  if $nagios_monitoring {
+    file { '/usr/lib/nagios/plugins/check_galera_cluster':
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      content => file('sunet/mariadb/check_galera_cluster')
+    }
+    # sudo exceptions
+    sunet::sudoer {'nrpe_galera_check':
+      user_name    => 'nagios',
+      collection   => 'nrpe_galera_check',
+      command_line => '/usr/lib/nagios/plugins/check_galera_cluster'
+    }
+    # NRPE command confiruation
+    sunet::nagios::nrpe_command {'check_galera_cluster':
+      command_line => '/usr/bin/sudo /usr/lib/nagios/plugins/check_galera_cluster'
+    }
   }
 }

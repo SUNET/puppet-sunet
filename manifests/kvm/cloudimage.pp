@@ -1,33 +1,38 @@
 # Setup an image in KVM
+
+# @param uefi                                 Set this to true when you need uefi (this is needed for debian13+)
+# @param use_deprecated_netplan_gw_syntax     Set this option to false for all modern VMs (ubuntu24+,debian13+) to use the 'routes' syntax in netplan.
 define sunet::kvm::cloudimage (
-  Array[String]            $addresses       = [],
-  String                   $apt_dir         = '/etc/cosmos/apt',
-  Variant[String, Boolean] $apt_mirror      = 'http://se.archive.ubuntu.com/ubuntu',
-  Optional[String]         $apt_proxy       = undef,
-  String                   $bridge          = 'br0',
-  String                   $cpus            = '1',
-  String                   $description     = '',
-  Boolean                  $dhcp4           = true,
-  Boolean                  $dhcp6           = false,
-  Boolean                  $disable_ec2     = true,  # set to false to enable fetching of metadata from 169.254.169.254
-  Optional[String]         $gateway         = undef,
-  Optional[String]         $gateway6        = undef,
-  String                   $image_url       = 'https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk1.img',
-  String                   $images_dir      = '/var/lib/libvirt/images',
-  String                   $install_options = '',  # for passing arbitrary parameters to virt-install
-  String                   $local_size      = '0',
-  Optional[String]         $mac             = undef,
-  String                   $memory          = '1024',
-  Optional[String]         $network         = undef,
-  String                   $pool_name       = 'default',
-  Optional[String]         $repo            = undef,
-  Optional[Array]          $resolver        = undef,
-  String                   $rng             = '/dev/random',
-  Array[String]            $search          = [],
-  Boolean                  $secure_boot     = false,
-  String                   $size            = '10G',
-  Optional[Array]          $ssh_keys        = undef,
-  Optional[String]         $tagpattern      = undef,
+  Array[String]            $addresses                        = [],
+  String                   $apt_dir                          = '/etc/cosmos/apt',
+  Variant[String, Boolean] $apt_mirror                       = 'http://se.archive.ubuntu.com/ubuntu',
+  Optional[String]         $apt_proxy                        = undef,
+  String                   $bridge                           = 'br0',
+  String                   $cpus                             = '1',
+  String                   $description                      = '',
+  Boolean                  $dhcp4                            = true,
+  Boolean                  $dhcp6                            = false,
+  Boolean                  $disable_ec2                      = true,  # set to false to enable fetching of metadata from 169.254.169.254
+  Optional[String]         $gateway                          = undef,
+  Optional[String]         $gateway6                         = undef,
+  String                   $image_url                        = 'https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk1.img',
+  String                   $images_dir                       = '/var/lib/libvirt/images',
+  String                   $install_options                  = '',  # for passing arbitrary parameters to virt-install
+  String                   $local_size                       = '0',
+  Optional[String]         $mac                              = undef,
+  String                   $memory                           = '1024',
+  Optional[String]         $network                          = undef,
+  String                   $pool_name                        = 'default',
+  Optional[String]         $repo                             = undef,
+  Optional[Array]          $resolver                         = undef,
+  String                   $rng                              = '/dev/random',
+  Array[String]            $search                           = [],
+  Boolean                  $secure_boot                      = false,
+  String                   $size                             = '10G',
+  Optional[Array]          $ssh_keys                         = undef,
+  Optional[String]         $tagpattern                       = undef,
+  Boolean                  $uefi                             = false,
+  Boolean                  $use_deprecated_netplan_gw_syntax = true,
 )
 {
 
@@ -80,7 +85,7 @@ define sunet::kvm::cloudimage (
       mode    => '0750',
       ;
     $network_config:
-      content => template('sunet/kvm/network_config-v2.erb'),
+      content => template('sunet/kvm/network_config-v2-ng.erb'),
       require => File[$script_dir],
       mode    => '0750',
       ;

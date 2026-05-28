@@ -1,6 +1,5 @@
 # signservice class
 class sunet::edusign::signservice($version='latest', $host=undef, $ensure='present') {
-  $signservice_key = safe_hiera('signservice_key')
   $_host = $host ? {
     undef    => $facts['networking']['fqdn'],
     default  => $host
@@ -17,7 +16,8 @@ class sunet::edusign::signservice($version='latest', $host=undef, $ensure='prese
                   'SPRING_CONFIG_LOCATION=/opt/edusign-signservice/config/application.yml' ]
   }
 
-  if $facts['sunet_nftables_opt_in'] == 'yes' or ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
+  if $facts['sunet_nftables_opt_in'] == 'yes' or
+    ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {
     sunet::nftables::docker_expose { 'signservice' :
       allow_clients => ['130.242.125.110/32', '130.242.125.140/32'],
       port          => '443',
@@ -29,11 +29,8 @@ class sunet::edusign::signservice($version='latest', $host=undef, $ensure='prese
       iif           => $facts['interface_default'],
     }
   }
-  file { '/etc/edusign-signservice/config/credentials/signservice.key':
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    content => $signservice_key,
+
+  sunet::snippets::secret_file { '/etc/edusign-signservice/config/credentials/signservice.key':
+    hiera_key => 'signservice_key'
   }
 }

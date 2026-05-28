@@ -62,6 +62,22 @@ services:
       - /opt/knubbis-fleetlock/conf:/conf
       - /opt/knubbis-fleetlock/cert-bootstrap-ca:/cert-bootstrap-ca
       - /opt/knubbis-fleetlock/cert-bootstrap-client-knubbis-fleetlock:/cert-bootstrap-client-knubbis-fleetlock
+    networks:
+      default:
+        ipv4_address: 172.16.1.2
+        ipv6_address: fdad:baa5:12ae::2
     depends_on:
       etcd-bootstrap:
         condition: service_completed_successfully
+
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.1.0/24
+          ip_range: 172.16.1.128/25
+          gateway: 172.16.1.1
+        - subnet: fdad:baa5:12ae::/64
+          ip_range: fdad:baa5:12ae:0:8000::/65
+          gateway: fdad:baa5:12ae::1

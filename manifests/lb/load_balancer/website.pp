@@ -147,6 +147,7 @@ define sunet::lb::load_balancer::website(
   $multinode_port         = pick_default($config['multinode_port'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
   $statsd_host            = pick($_docker_ip, $facts['networking']['ip'])
+  $set_fqdn               = pick($config['set_fqdn'], false)
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
@@ -219,10 +220,14 @@ define sunet::lb::load_balancer::website(
 
     # Variables used in template
     #
-    $saddr = sunet::format_nft_set('saddr', pick($config['allow_ips'], 'any'))
     if $config['allow_ips'] {
       $saddr_v4 = sunet::format_nft_set('saddr', filter($config['allow_ips']) | $this | { is_ipaddr($this, 4) })
       $saddr_v6 = sunet::format_nft_set('saddr', filter($config['allow_ips']) | $this | { is_ipaddr($this, 6) })
+    } elsif $config['allow_prefixes_by_tag'] {
+      $saddr_v4 = sunet::format_nft_set('saddr', sunet_prefixes({tags => $config['allow_prefixes_by_tag'], family=>'ip'}))
+      $saddr_v6 = sunet::format_nft_set('saddr', sunet_prefixes({tags => $config['allow_prefixes_by_tag'], family=>'ip6'}))
+    } else {
+      $saddr = sunet::format_nft_set('saddr', 'any')
     }
 
     $tcp_dport = sunet::format_nft_set('dport', pick($config['allow_ports'], []))
@@ -265,10 +270,13 @@ define sunet::lb::load_balancer::website(
     #   $v = {host.example.org => {ips => [192.0.2.1]}}
     if $v =~ Hash {
       each($v) | $name, $params | {
-        sunet::lb::api::instance { "api_${instance}_${k}_${name}":
-          site_name   => $site_name,
-          backend_ips => $params['ips'],
-          api_port    => $api_port,
+        # allow for other data in backends part of yaml config
+        if 'ips' in $params {
+          sunet::lb::api::instance { "api_${instance}_${k}_${name}":
+            site_name   => $site_name,
+            backend_ips => $params['ips'],
+            api_port    => $api_port,
+          }
         }
       }
     }

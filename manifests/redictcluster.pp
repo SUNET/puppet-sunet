@@ -7,6 +7,7 @@ class sunet::redictcluster(
   Integer           $numnodes = 3,
   Boolean           $hostmode = false,
   Optional[Boolean] $tls = false,
+  Optional[Boolean] $cluster = true,
   Optional[String]  $cluster_announce_ip = '',
   Array[String]     $cluster_nodes = [$facts['networking']['fqdn']],
   Array[Integer]    $cluster_ports = [6379,6380,6381],

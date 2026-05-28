@@ -1,5 +1,6 @@
 appendonly yes
 bind * -::*
+<% if @cluster %>
 cluster-config-file nodes.conf
 cluster-enabled yes
 cluster-node-timeout 5000
@@ -7,12 +8,15 @@ cluster-port <%= @clusterportnum %>
 cluster-slave-validity-factor 0
 cluster-allow-reads-when-down yes
 cluster-require-full-coverage no
+<% end %>
 loglevel warning
 <% if @tls%>
 port 0
 tls-port <%= @redictportnum %>
 tls-replication yes
+<% if @cluster %>
 tls-cluster yes
+<% end %>
 tls-cert-file /etc/ssl/certs/<%= @fqdn %>_infra.crt
 tls-key-file /etc/ssl/private/<%= @fqdn %>_infra.key
 tls-ca-cert-file /etc/ssl/certs/infra.crt
@@ -25,7 +29,6 @@ maxmemory-policy <%= @maxmemory_policy %>
 <% end %>
 requirepass "<%= @redict_password %>"
 masterauth "<%= @redict_password %>"
-<% if @_cluster_announce_ip != ''%>
+<% if @cluster and @_cluster_announce_ip != ''%>
 cluster-announce-ip <%= @_cluster_announce_ip %>
 <% end %>
-

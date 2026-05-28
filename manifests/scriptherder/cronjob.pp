@@ -9,6 +9,7 @@ define sunet::scriptherder::cronjob(
   Optional[String]          $minute        = undef,
   Optional[String]          $monthday      = undef,
   Optional[String]          $weekday       = undef,
+  Optional[String]          $month         = undef,
   Optional[String]          $special       = undef,    # e.g. 'daily'
   # scriptherder parameters
   Array[String[1]]          $ok_criteria   = ['exit_status=0'],
@@ -51,6 +52,7 @@ define sunet::scriptherder::cronjob(
     minute   => $_minute,
     monthday => $monthday,
     weekday  => $weekday,
+    month    => $month,
     special  => $_special,
   }
 

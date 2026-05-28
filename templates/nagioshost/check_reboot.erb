@@ -20,8 +20,9 @@ fi
 
 STATE=$STATE_UNKNOWN
 
-# 12 hours in seconds
-ALLOWED_COSMOS_DELAY=43200
+# 25 hours in seconds
+# With "Schedule reboot" https://github.com/SUNET/multiverse/pull/66 it might take up to 24h until machine is rebooted
+ALLOWED_COSMOS_DELAY=90000
 
 if [ -f /var/run/reboot-required.pkgs ]
 then

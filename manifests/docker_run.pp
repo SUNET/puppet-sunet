@@ -64,13 +64,6 @@ define sunet::docker_run(
       default => flatten([$depends]),
     }
 
-    # If a non-default network is used, make sure it is created before this container starts
-    $req = $net ? {
-      'host'   => [],
-      'bridge' => [],
-      default  => [Docker_network[$net]],
-    }
-
     $image_tag = "${image}:${imagetag}"
 
     if $fetch_docker_image {
@@ -86,6 +79,14 @@ define sunet::docker_run(
     }
 
     if ($docker_class == 'sunet::dockerhost') {
+
+      # If a non-default network is used, make sure it is created before this container starts
+      $req = $net ? {
+        'host'   => [],
+        'bridge' => [],
+        default  => [Docker_network[$net]],
+      }
+
       docker::run { $name :
         ensure                   => $ensure,
         volumes                  => flatten([$volumes, $_uid_gid]),
