@@ -34,7 +34,7 @@ class sunet::metadata::discovery(
         mode    => '0755'
     }
     -> sunet::scriptherder::cronjob { "${name}_fetch_metadata":
-      cmd           => '/usr/local/bin/get_metadata.sh',
+      cmd           => '/usr/local/bin/get_ds_metadata.sh',
       minute        => '*/5',
       ok_criteria   => ['exit_status=0','max_age=48h'],
       warn_criteria => ['exit_status=1','max_age=50h'],
