@@ -72,14 +72,7 @@ services:
       - ./private.json:/app/private.json:ro
       - ./publickeys:/app/publickeys:ro
       - ./historical_keys:/app/historical_keys:ro
-      - ./localsettings.py:/app/inmoradmin/localsettings.py:ro
-  always-https:
-    image: docker.sunet.se/always-https
-    pull_policy: always
-    environment:
-      - ACME_URL=http://acme-c.sunet.se/
-    ports:
-      - "80:80"
+      - ./localsettings.py:/app/inmoradmin/localsettings.py:ro      
   nginx:
     image: nginx:1.21
     networks:
@@ -87,12 +80,23 @@ services:
     depends_on:
       ta:
         condition: service_healthy
-    volumes:
-      - /etc/dehydrated/certs/<%= @hostname %>:/etc/ssl
-      - /opt/nginx_conf:/etc/nginx/conf.d
     ports:
       - 443:443
       - 8443:8443
+    volumes:
+      - /opt/nginx_conf:/etc/nginx/conf.d
+<%- if @acmed -%>
+      - /etc/letsencrypt/live/<%= @hostname %>:/etc/ssl
+<%- else -%>
+      - /etc/dehydrated/certs/<%= @hostname %>:/etc/ssl
+  always-https:
+    image: docker.sunet.se/always-https
+    pull_policy: always
+    environment:
+      - ACME_URL=http://acme-c.sunet.se/
+    ports:
+      - "80:80"
+<%- end -%>  
 networks:
   inmor-net:
     driver: bridge
