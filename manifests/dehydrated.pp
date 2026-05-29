@@ -65,6 +65,11 @@ class sunet::dehydrated(
       ensure  => 'file',
       content => '# Intentionally left blank for dehydrated',
       ;
+    '/etc/dehydrated/dehydrated_one.sh':
+      ensure  => 'file',
+      content => template('sunet/dehydrated/dehydrated_one.sh.erb'),
+      mode    => '0755',
+      ;
   }
 
   $encoded_url = base64('encode', 'https://acme-v02.api.letsencrypt.org/directory')
