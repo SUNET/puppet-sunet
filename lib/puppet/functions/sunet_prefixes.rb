@@ -46,6 +46,7 @@ Puppet::Functions.create_function(:sunet_prefixes) do
       { "net": "18.158.14.16/32",       "family": "ip",  "comment": "ec2-18-158-14-16.eu-central-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "18.158.37.246/32",      "family": "ip",  "comment": "ec2-18-158-37-246.eu-central-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "18.195.9.86/32",        "family": "ip",  "comment": "ec2-18-195-9-86.eu-central-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca", "acmec"] },
+      { "net": "52.48.169.118/32",      "family": "ip",  "comment": "stats2.inacademia.org", "resource_type": "inacademia", "tags": ["knubbis", "infraca", "acmec"]},
       { "net": "52.210.104.234/32",     "family": "ip",  "comment": "rp.test.inacademia.org", "resource_type": "inacademia", "tags": ["knubbis", "infraca", "acmec"]},
       { "net": "54.177.34.135/32",      "family": "ip",  "comment": "ec2-54-177-34-135.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "54.193.162.123/32",     "family": "ip",  "comment": "ec2-54-193-162-123.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca", "acmec"] },
@@ -85,6 +86,8 @@ Puppet::Functions.create_function(:sunet_prefixes) do
       { "net": "2001:6b0:6e::/48",      "family": "ip6", "comment": "Safespring STO4", "resource_type": "safespring", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "2001:6b0:7d:40::/64",   "family": "ip6", "comment": "Safespring DCO", "resource_type": "safespring", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "2001:948:4:6::111/128", "family": "ip6", "comment": "nagios.nordu.net", "resource_type": "nagiosxi", "tags": ["knubbis", "infraca", "acmec"] },
+      { "net": "2001:948:4::/47",       "family": "ip6", "comment": "Inacademia", "resource_type": "inacademia", "tags": ["acmec", "infraca", "knubbis"] },
+      { "net": "2001:6b0:6c::/48",      "family": "ip6", "comment": "Safespring STO4", "resource_type": "safespring", "tags": ["acmec", "infraca", "knubbis"] },
     ]
   end
 end
