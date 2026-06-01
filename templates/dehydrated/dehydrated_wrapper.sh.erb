@@ -27,6 +27,17 @@ fi
 
 /bin/cat "${DOMAINFILE_TEMP}" | while read line
 do
+  # Wait for lock before each domain
+  LOCKFILE="/etc/dehydrated/lock"
+  waited=0
+  while [ -f "${LOCKFILE}" ]; do
+      sleep 5
+      waited=$((waited + 5))
+      if [ "${waited}" -ge 300 ]; then
+          exit 1
+      fi
+  done
+
   SINGLEDOMAIN=$(mktemp)
   echo $line > ${SINGLEDOMAIN}
   CONFIG_SINGLEDOMAIN="/etc/dehydrated/config-singledomain"
