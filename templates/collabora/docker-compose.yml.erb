@@ -2,6 +2,7 @@ version: '3.2'
 services:
     code-server:
       privileged: true
+      init: true
       image: <%= @docker_image %>:<%= @docker_tag %>
       networks:
         - default

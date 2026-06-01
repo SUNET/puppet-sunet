@@ -15,7 +15,7 @@ define sunet::metadata($url=undef,
   $safe_name = regsubst($title, '[^0-9A-Za-z.\-]', '-', 'G')
   $fetch = "fetch_${safe_name}"
   sunet::scriptherder::cronjob { $fetch:
-    cmd           => "sh -c '/usr/bin/wget --no-check-certificate -q ${url} -N -O ${local}.tmp && chmod 0644 ${local}.tmp && ${verify} && mv ${local}.tmp ${local}'",
+    cmd           => "sh -c '/usr/bin/wget --timeout=60 --tries=1 --no-check-certificate -q ${url} -N -O ${local}.tmp && chmod 0644 ${local}.tmp && ${verify} && mv ${local}.tmp ${local}'",
     user          => 'root',
     minute        => '*/5',
     ok_criteria   => ['exit_status=0', 'max_age=25h'],
@@ -30,18 +30,6 @@ define sunet::metadata::swamid {
   })
   sunet::metadata { 'swamid':
       url      => 'http://mds.swamid.se/md/swamid-2.0.xml',
-      cert     => '/var/run/md-signer2.crt',
-      filename => $name
-  }
-}
-
-# SWAMID metadata class for testing
-define sunet::metadata::swamid_testing {
-  ensure_resource('file','/var/run/md-signer2.crt', {
-      content  => file('sunet/md-signer2.crt')
-  })
-  sunet::metadata { 'swamid':
-      url      => 'http://mds.swamid.se/md/swamid-testing-1.0.xml',
       cert     => '/var/run/md-signer2.crt',
       filename => $name
   }

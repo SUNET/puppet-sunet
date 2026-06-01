@@ -6,6 +6,10 @@ class sunet::nagios(
   $loadc           = '30,25,20',
   $procsw          = 150,
   $procsc          = 200,
+  $uptimew         = 30,
+  $uptimec         = 50,
+  $zprocw          = 5,
+  $zprocc          = 10,
 ) {
 
   $nagios_ip_v4 = lookup('nagios_ip_v4', undef, undef, '109.105.111.111')
@@ -76,7 +80,7 @@ class sunet::nagios(
     }
   }
   sunet::nagios::nrpe_command {'check_zombie_procs':
-    command_line => '/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z'
+    command_line => "/usr/lib/nagios/plugins/check_procs -w ${zprocw} -c ${zprocc} -s Z"
   }
   if $facts =~ Hash and 'cosmos' in $facts and ('frontend_server' in $facts['cosmos']['host_roles']) {
     # There are more processes than normal on frontend hosts
@@ -89,8 +93,9 @@ class sunet::nagios(
   sunet::nagios::nrpe_command {'check_total_procs_lax':
     command_line => "/usr/lib/nagios/plugins/check_procs -k -w ${_procw} -c ${_procc}"
   }
-  sunet::nagios::nrpe_command {'check_uptime':
-    command_line => '/usr/lib/nagios/plugins/check_uptime.pl -f'
+  sunet::nagios::nrpe_check_uptime { 'check_uptime':
+    uptimew =>  $uptimew,
+    uptimec =>  $uptimec,
   }
   sunet::nagios::nrpe_command {'check_reboot':
     command_line => '/usr/lib/nagios/plugins/check_reboot'
@@ -100,13 +105,6 @@ class sunet::nagios(
   }
   sunet::nagios::nrpe_command {'check_mailq':
     command_line => '/usr/lib/nagios/plugins/check_mailq -w 20 -c 100'
-  }
-  file { '/usr/lib/nagios/plugins/check_uptime.pl' :
-      ensure  => 'file',
-      mode    => '0751',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
-      content => template('sunet/nagioshost/check_uptime.pl.erb'),
   }
   file { '/usr/lib/nagios/plugins/check_reboot' :
       ensure  => 'file',

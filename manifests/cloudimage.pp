@@ -28,7 +28,7 @@ define sunet::cloudimage (
   String                   $pool_name   = 'default',
   String                   $local_size  = '0',
   String                   $rng         = '/dev/random',
-  Boolean                  $disable_ec2 = false,  # set to true to disable fetching of metadata from 169.254.169.254
+  Boolean                  $disable_ec2 = true,  # set to false to enable fetching of metadata from 169.254.169.254
   String                   $network_ver = '1',
   # Parameters for         network_ver 2
   Array[String]            $addresses   = [],

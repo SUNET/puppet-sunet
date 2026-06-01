@@ -13,7 +13,7 @@ class sunet::invent::scanner(
   if $install_docker_io {
     include sunet::packages::docker_io
   }
-  exec {'create_repo_path':
+  exec {'create_repo_path_scanner':
     command => "mkdir -p ${repo_path}",
     unless  =>  "test -d ${repo_path}",
   }
@@ -21,11 +21,11 @@ class sunet::invent::scanner(
     command => "mkdir -p ${image_path}",
     unless  =>  "test -d ${image_path}",
   }
-  -> exec { 'clone_invent_repo':
+  -> exec { 'clone_invent_repo_scanner':
     command => "git clone ${repo_url} ${repo_path}",
     unless  => "test -d ${repo_path}/.git"
   }
-  -> exec { 'update_invent_repo':
+  -> exec { 'update_invent_repo_scanner':
     command => "sh -c 'cd ${repo_path} && git pull'"
   }
   -> file { '/usr/local/bin/scanner':

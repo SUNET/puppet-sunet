@@ -15,13 +15,15 @@
 # @param domain                     The domain where the fleetlock server will supply its services
 # @param letsencrypt_prod           Should the server request real letsencrypt certificates
 class sunet::knubbis::fleetlock_standalone(
-  String  $knubbis_fleetlock_version='v0.0.18',
+  String  $knubbis_fleetlock_version='v0.0.28',
   String  $etcd_version='v3.5.8',
   String  $cfssl_helper_version='v0.0.1',
   String  $etcdctl_helper_version='v0.0.1',
   String  $domain='',
   Boolean $letsencrypt_prod=false,
 ) {
+
+    include sunet::nagios::nrpe
 
     # A domain must be supplied by the user
     if $domain != '' {
@@ -33,6 +35,14 @@ class sunet::knubbis::fleetlock_standalone(
             mode   => '0755',
             owner  => 'root',
             group  => 'root',
+        }
+
+        file { '/opt/knubbis-fleetlock/nrpe':
+            ensure  => directory,
+            mode    => '0750',
+            owner   => 'nagios',
+            group   => 'nagios',
+            require => Package['nagios-nrpe-server'],
         }
 
         file { '/opt/knubbis-fleetlock/cert-bootstrap':
@@ -171,10 +181,16 @@ class sunet::knubbis::fleetlock_standalone(
                 description      => 'Standalone knubbis-fleetlock server',
             }
 
-            sunet::nftables::docker_expose { 'knubbis_fleetlock_https' :
-                allow_clients => 'any',
-                port          => 443,
-                iif           => $facts['interface_default'],
+            # The reason for this DNAT is to make knubbis-fleetlock see real source IP
+            # addresses so ratelimiting work as expected instead of
+            # docker-proxy acting as source for all traffic.
+            # The 172.16.1.2 address is statically configured in the compose file so it will not change
+            sunet::nftables::rule { 'DNAT port 443 to knubbis-fleetlock':
+                rule => "add rule ip nat prerouting iifname != \"br-*\" ip daddr ${facts['networking']['ip']} tcp dport 443 counter dnat to 172.16.1.2:8443 comment \"DNAT HTTPS directly to knubbis-fleetlock\""
+            }
+
+            sunet::nftables::rule { 'allow post-DNAT traffic to knubbis-fleetlock':
+                rule => "add rule inet filter forward iifname != \"br-*\" oifname \"br-*\" ip daddr 172.16.1.2 tcp dport 8443 counter accept comment \"allow post-DNAT HTTPS to knubbis-fleetlock\""
             }
 
             file { '/usr/local/sbin/knubbis-fleetlock_standalone-backup':
@@ -197,6 +213,27 @@ class sunet::knubbis::fleetlock_standalone(
                 cmd         => '/usr/local/sbin/knubbis-fleetlock_standalone-backup',
                 minute      => '27',
                 ok_criteria => ['exit_status=0', 'max_age=3h'],
+            }
+
+            file { '/opt/knubbis-fleetlock/nrpe/check_knubbis_fl_stale_locks.ini':
+                ensure  => 'file',
+                mode    => '0640',
+                owner   => 'root',
+                group   => 'nagios',
+                content => template('sunet/knubbis/fleetlock_standalone/check_knubbis_fl_stale_locks.ini.erb'),
+            }
+
+            file { '/usr/lib/nagios/plugins/check_knubbis_fl_stale_locks':
+                ensure  => 'file',
+                mode    => '0555',
+                owner   => 'root',
+                group   => 'nagios',
+                require => Package['nagios-nrpe-server'],
+                content => file('sunet/knubbis/fleetlock_standalone/check_knubbis_fl_stale_locks'),
+            }
+
+            sunet::nagios::nrpe_command {'check_knubbis_fl_stale_locks':
+                command_line => '/usr/lib/nagios/plugins/check_knubbis_fl_stale_locks'
             }
         }
     }

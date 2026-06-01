@@ -1,9 +1,12 @@
 # @summary Run naemon with Thruk.
-# @param receive_otel Feature flag to enable the LGTM stack
-# @param otel_retention Number of hours to keep logs, metrics and traces, defaults to 3 months
+# @param receive_otel                     Feature flag to enable the LGTM stack
+# @param otel_retention                   Number of hours to keep logs, metrics and traces, defaults to 3 months
+# @param naemon_automatic_repo_hosts      Option to skip the automatic monitoring of hosts in the ops-repo where the server resides
 #
 class sunet::naemon_monitor (
   String $domain,
+  Enum['acme-c','acme-d'] $acme_protocol = 'acme-c',
+  Boolean $enable_nocsection = false,
   String $influx_password = lookup('influx_password', String, undef, ''),
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
@@ -12,24 +15,36 @@ class sunet::naemon_monitor (
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
   Array $thruk_users = [],
+  Array[String] $thruk_allow_clients = ['any'],
   String $influxdb_tag = '1.8',
   String $histou_tag = 'latest',
   String $nagflux_tag = 'latest',
-  String $grafana_tag = '11.1.4',
-  String $loki_tag = '3.1.1',
-  String $mimir_tag = '2.13.0',
-  String $tempo_tag = '2.6.0',
-  String $alloy_tag = 'v1.3.0',
+  String $grafana_tag = '12.1.1',
+  String $grafana_default_role = 'Viewer',
+  String $loki_tag = '3.5.7',
+  String $mimir_tag = '2.17.1',
+  String $tempo_tag = '2.9.0',
+  String $alloy_tag = 'v1.11.2',
   Hash $manual_hosts = {},
   Hash $additional_entities = {},
+  Hash $regexp_based_groups = {
+        'prod' => '.*-prod-.*',
+        'test' => '.*-test-.*',
+        'lab' => '.*-lab-.*',
+        'qa' => '.*-qa-.*',
+  },
   String $nrpe_group = 'nrpe',
   String $interface = 'ens3',
   Array $exclude_hosts = [],
+  Boolean $naemon_automatic_repo_hosts = true,
   Optional[String] $default_host_group = undef,
   Array[Optional[String]] $optout_checks = [],
   Optional[Boolean] $receive_otel = false,
   String $otel_retention = '2232h',
+  Boolean $nsca          = false,
 ) {
+  include sunet::systemd_reload
+
   $naemon_container = $::facts['dockerhost2'] ? {
     'yes' => 'naemon_monitor-naemon-1',
     default => 'naemon_monitor_naemon_1',
@@ -38,12 +53,12 @@ class sunet::naemon_monitor (
   if $::facts['sunet_nftables_enabled'] == 'yes' {
     sunet::nftables::docker_expose { 'allow_http' :
       iif           => $interface,
-      allow_clients => 'any',
+      allow_clients => $thruk_allow_clients,
       port          => 80,
     }
     sunet::nftables::docker_expose { 'allow_https' :
       iif           => $interface,
-      allow_clients => 'any',
+      allow_clients => $thruk_allow_clients,
       port          => 443,
     }
     if $receive_otel {
@@ -79,10 +94,25 @@ class sunet::naemon_monitor (
     }
   }
 
-  class { 'sunet::dehydrated::client': domain => $domain, ssl_links => true }
+  if $acme_protocol == 'acme-c' {
+    class { 'sunet::dehydrated::client': domain => $domain, ssl_links => true }
+  }
+  # Add automatic reload of apache on cert renewal for acme-d
+  if $acme_protocol == 'acme-d' {
+    file { '/etc/letsencrypt/renewal-hooks/deploy/certbot-acmed-renew-deploy-hook':
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      content => file('sunet/naemon_monitor/certbot-acmed-renew-deploy-hook')
+    }
+  }
 
   if lookup('shib_key', undef, undef, undef) != undef {
-    sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem': hiera_key => 'shib_key' }
+    sunet::snippets::secret_file { '/opt/naemon_monitor/shib-certs/sp-key.pem':
+      hiera_key => 'shib_key',
+      owner     => 100,
+      group     => 101,
+    }
     # assume cert is in cosmos repo (overlay)
   }
 
@@ -100,11 +130,28 @@ class sunet::naemon_monitor (
     ensure  => directory,
     recurse => true,
   }
+  file { '/opt/naemon_monitor/menu_local.conf':
+    ensure  => file,
+    content => template('sunet/naemon_monitor/menu_local.conf.erb'),
+  }
 
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf':
     ensure  => file,
     content => template('sunet/naemon_monitor/service-override.conf.erb'),
     require => File['/etc/systemd/system/sunet-naemon_monitor.service.d/'],
+    notify  => Class['sunet::systemd_reload'],
+  }
+
+  # Make sure that a user with the name "naemon" is created in the database, with the same password as in Hiera.
+  # E.g `CREATE USER naemon IDENTIFIED BY '<something secret>';`
+  $check_mariadb_password = lookup('check_mariadb_password', String, undef, 'NOT_SET_IN_HIERA')
+  if $check_mariadb_password != 'NOT_SET_IN_HIERA' {
+    file { '/opt/naemon_monitor/check_mariadb.cnf':
+      ensure  => 'file',
+      mode    => '0700',
+      owner   => 'root',
+      content => inline_template("[client]\nuser=naemon\npassword=<%= @check_mariadb_password %>\n"),
+    }
   }
 
   sunet::docker_compose { 'naemon_monitor':
@@ -116,12 +163,10 @@ class sunet::naemon_monitor (
     require          => File['/etc/systemd/system/sunet-naemon_monitor.service.d/override.conf'],
   }
 
+
+  # This section can be removed when the class is run on all machines
   file { '/opt/naemon_monitor/stop-monitor.sh':
-    ensure  => file,
-    content => template('sunet/naemon_monitor/stop-monitor.sh.erb'),
-    mode    => '0644',
-    group   => 'root',
-    owner   => 'root',
+    ensure  => absent,
   }
 
   file { '/etc/logrotate.d/naemon_monitor':
@@ -158,12 +203,6 @@ class sunet::naemon_monitor (
     group  => 'root',
     owner  => 'root',
   }
-  file { '/opt/naemon_monitor/grafana-provisioning/dashboards':
-    ensure => directory,
-    mode   => '0644',
-    group  => 'root',
-    owner  => 'root',
-  }
   file { '/opt/naemon_monitor/grafana-provisioning/datasources/influxdb.yaml':
     ensure  => file,
     content => template('sunet/naemon_monitor/grafana-provisioning/datasources/influxdb.yaml'),
@@ -178,9 +217,17 @@ class sunet::naemon_monitor (
     group  => 'root',
   }
   if $receive_otel {
-    # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone editors
-    # and admins can be manually assigned via gui. 
+    package { ['sqlite3']: ensure => 'present' }
+
+    # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone Viewers
+    # and admins will be set with the sql below.
     $allowed_users_string = join($thruk_admins + $thruk_users,' ')
+    $thruk_admins.each |$user| {
+      exec { "set-admin for ${user}":
+        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db \"update user set is_admin=1 where login='${user}';UPDATE org_user SET role = 'Admin' WHERE user_id=(SELECT id from user where login='${user}');\"",
+        onlyif  => 'test -f /opt/naemon_monitor/grafana/grafana.db'
+      }
+    }
     file { '/opt/naemon_monitor/groups.txt':
       ensure  => file,
       content => inline_template('editors:<%= @allowed_users_string-%>'),
@@ -209,23 +256,10 @@ class sunet::naemon_monitor (
       group   => 'root',
       owner   => 'root',
     }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/default.yaml':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/default.yaml'),
-      mode    => '0644',
-      group   => 'root',
-      owner   => 'root',
-    }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/overview.json':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/overview.json'),
-      mode    => '0644',
-      group   => 'root',
-      owner   => 'root',
-    }
-    file { '/opt/naemon_monitor/grafana-provisioning/dashboards/node-export-full.json':
-      ensure  => file,
-      content => template('sunet/naemon_monitor/grafana-provisioning/dashboards/node-export-full.json'),
+    file { '/opt/naemon_monitor/grafana-provisioning/dashboards':
+      ensure  => directory,
+      source  => 'puppet:///modules/sunet/naemon_monitor/grafana-provisioning/dashboards',
+      recurse => true,
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
@@ -302,6 +336,40 @@ class sunet::naemon_monitor (
     })
   }
 
+  if $nsca {
+    $nsca_encryption_method = lookup('nsca_encryption_method', Integer, undef, 14)
+    $nsca_password = lookup('nsca_password', String, undef, 'NOT_SET_IN_HIERA')
+    # Default to nagios.nordu.net (109.105.111.111)
+    $nsca_server = lookup('nsca_server', String, undef, '109.105.111.111')
+    ensure_resource('file','/etc/naemon/conf.d/nsca/', {
+        ensure => directory,
+        mode   => '0644',
+        group  => 'root',
+        owner  => 'root',
+    })
+    file { '/etc/naemon/conf.d/nsca/nsca_commands.cfg':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/nsca_commands.cfg.erb'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/send_nsca.cfg':
+      ensure  => file,
+      content => template('sunet/naemon_monitor/send_nsca.cfg.erb'),
+      mode    => '0644',
+      group   => 'root',
+      owner   => 'root',
+    }
+    file { '/opt/naemon_monitor/obsessive-commands.cfg':
+      ensure  => file,
+      content => file('sunet/naemon_monitor/obsessive-commands.cfg'),
+        mode  => '0644',
+        group => 'root',
+        owner => 'root',
+    }
+  }
+
   nagioscfg::contactgroup { 'alerts': }
 
   unless 'load' in $optout_checks {
@@ -360,6 +428,7 @@ class sunet::naemon_monitor (
   }
   unless 'reboot' in $optout_checks {
     nagioscfg::service { 'check_reboot':
+      use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_reboot',
       description    => 'Reboot Needed',
@@ -396,6 +465,7 @@ class sunet::naemon_monitor (
   }
   unless 'scriptherder' in $optout_checks {
     nagioscfg::service { 'check_scriptherder':
+      use            => 'naemon-service',
       hostgroup_name => [$nrpe_group],
       check_command  => 'check_nrpe!check_scriptherder',
       description    => 'Scriptherder Status',
@@ -415,6 +485,7 @@ class sunet::naemon_monitor (
 
   require sunet::nagios::nrpe_check_cosmos_keys
   nagioscfg::service {'check_cosmos_keys':
+    use            => 'naemon-service',
     hostgroup_name => ['sunet::naemon_monitor'],
     check_command  => 'check_nrpe!check_cosmos_keys',
     description    => 'Cosmos GPG keys',
@@ -463,17 +534,36 @@ class sunet::naemon_monitor (
     warn_criteria => ['exit_status=1', 'max_age=24h'],
   }
 
-  class { 'nagioscfg':
-    additional_entities => $additional_entities,
-    config              => 'naemon_monitor',
-    default_host_group  => $default_host_group,
-    manage_package      => false,
-    manage_service      => false,
-    cfgdir              => '/etc/naemon/conf.d/nagioscfg',
-    host_template       => 'naemon-host',
-    service             => 'sunet-naemon_monitor',
-    single_ip           => true,
-    require             => File['/etc/naemon/conf.d/nagioscfg/'],
-    exclude_hosts       => $exclude_hosts,
+  if $naemon_automatic_repo_hosts {
+    class { 'nagioscfg':
+      additional_entities => $additional_entities,
+      config              => 'naemon_monitor',
+      default_host_group  => $default_host_group,
+      manage_package      => false,
+      manage_service      => false,
+      cfgdir              => '/etc/naemon/conf.d/nagioscfg',
+      host_template       => 'naemon-host',
+      service             => 'sunet-naemon_monitor',
+      single_ip           => true,
+      require             => File['/etc/naemon/conf.d/nagioscfg/'],
+      exclude_hosts       => $exclude_hosts,
+      regexp_based_groups => $regexp_based_groups,
+    }
+  }
+  else {
+    class { 'nagioscfg':
+      additional_entities => $additional_entities,
+      config              => 'naemon_monitor',
+      default_host_group  => $default_host_group,
+      manage_package      => false,
+      manage_service      => false,
+      cfgdir              => '/etc/naemon/conf.d/nagioscfg',
+      host_template       => 'naemon-host',
+      hostgroups          => [],
+      service             => 'sunet-naemon_monitor',
+      single_ip           => true,
+      require             => File['/etc/naemon/conf.d/nagioscfg/'],
+      exclude_hosts       => $exclude_hosts,
+    }
   }
 }

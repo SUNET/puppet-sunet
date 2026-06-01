@@ -29,6 +29,7 @@ class sunet::server (
   Boolean $disable_all_local_users = false,
   Array $mgmt_addresses = [lookup('mgmt_addresses', undef, undef, [])],
   Boolean $ssh_allow_from_anywhere = false,
+  Variant[Integer, Undef] $reboot_trigger = undef,
 ) {
   if $fail2ban {
     # Configure fail2ban to lock out SSH scanners
@@ -58,8 +59,20 @@ class sunet::server (
     }
   }
 
+  if $reboot_trigger and find_file('/etc/cosmos-automatic-reboot') {
+    if $facts['system_uptime']['days'] > $reboot_trigger {
+      file { '/var/run/reboot-required':
+        ensure => present,
+      }
+    }
+  }
+
   if $ntpd_config {
-    include sunet::ntp
+    if $::facts['sunet_chrony_enabled'] == 'yes' {
+      include sunet::chrony
+    } else {
+      include sunet::ntp
+    }
   }
 
   if $scriptherder {
@@ -84,17 +97,6 @@ class sunet::server (
     class { 'sunet::security::disable_all_local_users': }
   }
 
-  # Avoid bright red error message on Ubuntu 18.04 with Puppet 5.4
-  if $::facts['operatingsystem'] == 'Ubuntu' and
-  versioncmp($::facts['operatingsystemrelease'], '18.04') >= 0 and
-  versioncmp($::facts['operatingsystemrelease'], '22.04') < 0 {
-    sunet::misc::create_dir { '/opt/puppetlabs/puppet/share/augeas':
-      owner => 'root',
-      group => 'root',
-      mode  => '0755',
-    }
-  }
-
   if $::facts['is_virtual'] == true {
     file { '/usr/local/bin/sunet-reinstall':
       ensure  => file,
@@ -113,4 +115,16 @@ class sunet::server (
   if $facts['dmi']['product']['name'] =~ /OpenStack\s(Compute|Nova)/ {
     class { 'sunet::iaas::server': }
   }
+
+  file { '/etc/default/grub.d/99-sunet-grub-menu.cfg':
+    ensure  => present,
+    content => file('sunet/server/99-sunet-grub-menu.cfg'),
+    notify  => Exec['sunet_server_update_grub'],
+
+  }
+  exec { 'sunet_server_update_grub':
+    command     => '/usr/sbin/update-grub',
+    refreshonly => true,
+  }
+
 }

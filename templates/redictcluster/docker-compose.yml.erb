@@ -8,10 +8,6 @@ services:
   redict-node-<%= i %>:
     container_name: redict-node-<%= i %>
     image: <%= @image %>:<%= @tag %>
-    dns:
-      - 89.46.20.75
-      - 89.46.21.29
-      - 89.32.32.32
 <% if @hostmode == true %>
     network_mode: host
 <% else %>

@@ -1,30 +1,56 @@
 # SUNET Inventory Service
 class sunet::invent::client(
-  String  $invent_dir            = '/opt/invent',
-  String  $export_endpoint        = '',
-  Integer $invent_retention_days = 30,
+  String                         $invent_dir            = '/opt/invent',
+  Variant[String, Array[String]] $export_endpoint       = [],
+  String                         $facts_path            = '/etc/facter/facts.d',
+  Integer                        $invent_retention_days = 30,
+  String                         $repo_path             = '/var/cache/invent/repo',
+  String                         $repo_url              = 'https://github.com/SUNET/invent.git',
 ) {
   $host_os = String($facts['os']['name'], '%d')
-  $awk = $host_os ? {
-    alpine => 'gawk',
-    default => 'awk',
-  }
-  $script_dir = "${invent_dir}/scripts"
 
-  file { $invent_dir:
-    ensure => directory,
+  include sunet::packages::curl
+  include sunet::packages::git
+  include sunet::packages::jq
+  include sunet::packages::python3_yaml
+
+  exec {'create_repo_path':
+    command => "mkdir -p ${repo_path}",
+    unless  =>  "test -d ${repo_path}",
   }
-  -> file { $script_dir:
-    ensure => directory,
+  exec { 'clone_invent_repo':
+    command => "git clone ${repo_url} ${repo_path}",
+    unless  => "test -d ${repo_path}/.git"
   }
-  -> file { "${script_dir}/invent.sh":
-    content => template('sunet/invent/invent.sh.erb'),
-    mode    => '0700',
+  exec { 'update_invent_repo':
+    command => "sh -c 'cd ${repo_path} && git pull'"
   }
-  -> sunet::scriptherder::cronjob { 'inventory':
-    cmd      => "${script_dir}/invent.sh",
+  file { '/etc/default/invent-client':
+    ensure  => 'file',
+    mode    => '0644',
+    content => template('sunet/invent/invent-client.erb'),
+  }
+  exec {'create_facts_path':
+    command => "mkdir -p ${facts_path}",
+    unless  =>  "test -d ${facts_path}",
+  }
+  exec {'link_facts_ssh':
+    command => "ln -s ${repo_path}/client/ssh.py ${facts_path}/ssh.py",
+    unless  =>  "test -f ${facts_path}/ssh.py",
+  }
+  exec {'link_facts_hiera':
+    command => "ln -s ${repo_path}/client/hiera.py ${facts_path}/hiera.py",
+    unless  =>  "test -f ${facts_path}/hiera.py",
+  }
+  sunet::scriptherder::cronjob { 'inventory':
+    cmd      => "${repo_path}/client/invent.sh",
     job_name => 'gather_inventory',
+    minute   => '*/10',
     user     => 'root',
-    minute   =>  '*/10',
+  }
+  # remove old script path to not get confused over what script is running
+  file { "${invent_dir}/scripts":
+    ensure => 'absent',
+    force  => 'true',
   }
 }

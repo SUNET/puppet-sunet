@@ -12,10 +12,10 @@ name: puppet-lint
 
 on:
   push:
-    branches: [ "main", "testing" ]
+    branches: [ "testing" ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main", "testing" ]
+    branches: [ "testing" ]
 
 permissions:
   contents: read
@@ -36,14 +36,14 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 2.7
+          ruby-version: 3.1
           bundler-cache: true
 
       - name: Install puppet-lint
         run: gem install puppet-lint
 
       - name: Run puppet-lint
-        run: puppet-lint --relative . --sarif > puppet-lint-results.sarif
+        run: puppet-lint --ignore-paths './templates/naemon_monitor/*.yaml' --relative . --sarif > puppet-lint-results.sarif
         continue-on-error: true
 
       - name: Upload analysis results to GitHub

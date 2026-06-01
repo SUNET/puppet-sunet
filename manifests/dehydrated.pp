@@ -1,20 +1,19 @@
 # dehydrated
 class sunet::dehydrated(
+  String  $version,
   Boolean $staging = false,
-  Boolean $httpd = false,
-  Boolean $apache = false,
   Boolean $cron = true,
-  Boolean $cleanup = false,
-  String  $src_url = 'https://raw.githubusercontent.com/dehydrated-io/dehydrated/master/dehydrated',
+  Boolean $cleanup = true,
   Array   $allow_clients = [],
   Integer $server_port = 80,
   Integer $ssh_port = 22,
+  Array   $allow_prefixes_by_tag = [],
 ) {
   $conf = lookup('dehydrated', undef, undef, undef)
   if $conf !~ Hash {
     fail("Hiera key 'dehydrated' is not a hash")
   }
-  if ! has_key($conf, 'domains') {
+  if ! 'domains' in $conf {
     fail("Hiera hash 'dehydrated' does not contain 'domains'")
     # Old default domains hash if none was set:
     # [{$::fqdn => {"names" => [$::fqdn]}}]
@@ -24,27 +23,14 @@ class sunet::dehydrated(
     fail("Unknown format of 'domains' - bailing out (why it should be a list of hashes instead of just a hash I do not know)")
   }
 
-  $ca = $staging ? {
-    false => 'https://acme-v02.api.letsencrypt.org/directory',
-    true  => 'https://acme-staging.api.letsencrypt.org/directory'
-  }
   ensure_resource('package','openssl',{ensure=>'latest'})
-  if $src_url =~ String[1] {
-    sunet::remote_file { '/usr/sbin/dehydrated':
-      remote_location => $src_url,
-      mode            => '0755'
-    }
-  }
-
-  exec {'rename-etc-letsencrypt.sh':
-    command => 'mv /etc/letsencrypt.sh /etc/dehydrated',
-    onlyif  => 'test -d /etc/letsencrypt.sh'
+  $src_url = "https://raw.githubusercontent.com/dehydrated-io/dehydrated/refs/tags/${version}/dehydrated"
+  sunet::remote_file { '/usr/sbin/dehydrated':
+    remote_location => $src_url,
+    mode            => '0755'
   }
 
   file {
-    '/usr/sbin/letsencrypt.sh':
-      ensure => absent
-      ;
     '/usr/bin/le-ssl-compat.sh':
       ensure  => 'file',
       owner   => 'root',
@@ -56,51 +42,57 @@ class sunet::dehydrated(
       ensure => 'directory',
       mode   => '0600',
       ;
-    '/etc/dehydrated/config':
-      ensure  => 'file',
-      content => template('sunet/dehydrated/config.erb')
-      ;
     '/etc/dehydrated/domains.txt':
       ensure  => 'file',
       content => template('sunet/dehydrated/domains.erb'),
       notify  => Exec['dehydrated-runonce']
       ;
+    '/etc/dehydrated/dehydrated_wrapper.sh':
+      ensure  => 'file',
+      content => template('sunet/dehydrated/dehydrated_wrapper.sh.erb'),
+      mode    => '0755',
+      ;
+    '/etc/dehydrated/hook.sh':
+      ensure  => 'file',
+      content => template('sunet/dehydrated/hook.sh.erb'),
+      mode    => '0755',
+      ;
+    '/etc/dehydrated/scriptherder_template.ini':
+      ensure  => 'file',
+      content => template('sunet/dehydrated/scriptherder_template.ini.erb'),
+      ;
+    '/etc/dehydrated/config':
+      ensure  => 'file',
+      content => '# Intentionally left blank for dehydrated',
+      ;
   }
+
+  $encoded_url = base64('encode', 'https://acme-v02.api.letsencrypt.org/directory')
+  exec { 'dehydrated-registration':
+    command => 'dehydrated --register --accept-terms',
+    creates => "/etc/dehydrated/accounts/${encoded_url}/registration_info.json"
+  }
+
+  $cmd = '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /etc/dehydrated/dehydrated_wrapper.sh'
   exec { 'dehydrated-runonce':
     # Run dehydrated once every time domains.txt changes;
     # UPDATE 2018-02, since we're using the wrapper now Nagios stuff will break if we run the old command
     # command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated -- /usr/sbin/dehydrated -c
     # && /usr/bin/le-ssl-compat.sh',
-    command     => '/usr/local/bin/scriptherder --mode wrap --syslog --name dehydrated_per_domain -- /etc/dehydrated/dehydrated_wrapper.sh',
+    command     => $cmd,
     refreshonly => true
   }
 
   if ($cron) {
-    if ($cleanup) {
-      $cmd = 'bash -c \'/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/sbin/dehydrated --cleanup && /usr/bin/le-ssl-compat.sh\''
-    } else {
-      $cmd = 'bash -c \'/usr/sbin/dehydrated --keep-going --no-lock -c && /usr/bin/le-ssl-compat.sh\''
-    }
     sunet::scriptherder::cronjob { 'dehydrated':
-      cmd           => $cmd,
+      cmd           => '/etc/dehydrated/dehydrated_wrapper.sh',
       special       => 'daily',
       ok_criteria   => ['exit_status=0','max_age=4d'],
       warn_criteria => ['exit_status=1','max_age=8d'],
     }
   }
-  cron {'dehydrated-cron': ensure => absent }
-  cron {'letsencrypt-cron': ensure => absent }
 
-  if ($httpd) {
-    sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
-      allow_clients => $allow_clients,
-      server_port   => $server_port,
-    }
-  }
-  if ($apache) {
-    sunet::dehydrated::apache_server { 'dehydrated_apache_server': }
-  }
-  if has_key($conf, 'clients') {
+  if 'clients' in $conf {
     $clients = $conf['clients']
   } else {
     $clients = false
@@ -114,7 +106,7 @@ class sunet::dehydrated(
       #          $info = {names => [foo.sunet.se],
       #                   clients => [frontend1.sunet.se, frontend2.sunet.se]
       #                  }
-      if (has_key($info,'ssh_key_type') and has_key($info,'ssh_key')) {
+      if 'ssh_key_type' in $info and 'ssh_key' in $info {
         sunet::rrsync { "/etc/dehydrated/certs/${domain}":
           ssh_key_type       => $info['ssh_key_type'],
           ssh_key            => $info['ssh_key'],
@@ -129,7 +121,7 @@ class sunet::dehydrated(
       # Make a list of all the domains that list this client in their 'clients' list
       $domain_list1 = $thedomains.map |$domain_hash| {
         $domain_hash.map |$domain, $info| {
-          if has_key($info, 'clients') {
+          if 'clients' in $info {
             if ($client in $info['clients']) {
               $domain
             }
@@ -152,9 +144,37 @@ class sunet::dehydrated(
     warning("Unknown format of 'clients' - ignoring")
   }
 
-  sunet::misc::ufw_allow { 'allow-dehydrated-ssh':
-    from => $allow_clients,
+  if $allow_prefixes_by_tag != [] {
+    $allow_clients_ssh = sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip'}) + sunet_prefixes({tags => $allow_prefixes_by_tag, family=>'ip6'})
+
+    file { '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0755',
+      content => file('sunet/dehydrated/check_acmec-allowed-prefixes.py'),
+    }
+
+    sunet::sudoer {'check_acmec-allowed-prefixes':
+        user_name    => 'nagios',
+        collection   => 'check_acmec-allowed-prefixes',
+        command_line => '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes'
+      }
+
+    sunet::nagios::nrpe_command {'check_acmec-allowed-prefixes':
+      command_line => '/usr/lib/nagios/plugins/check_acmec-allowed-prefixes --tag acmec'
+    }
+  } else {
+    $allow_clients_ssh = $allow_clients
+  }
+
+  sunet::nftables::allow { 'allow-dehydrated-ssh':
+    from => $allow_clients_ssh,
     port => $ssh_port,
   }
-}
 
+  sunet::dehydrated::lighttpd_server { 'dehydrated_lighttpd_server':
+    allow_clients => $allow_clients_ssh,
+    server_port   => $server_port,
+  }
+}

@@ -33,9 +33,6 @@ class sunet::forgejo (
   # GPG key
   $platform_sunet_se_gpg_key = lookup('platform_sunet_se_gpg_key', undef, undef, undef)
 
-  # White list for email domains for account creation
-  $email_domain_whitelist = lookup('email_domain_whitelist', undef, undef, undef)
-
   # Nginx stuff
   file{ '/opt/nginx':
     ensure => directory,
@@ -127,9 +124,9 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
   -> sunet::scriptherder::cronjob { 'forgejo_backup':
     cmd           => '/opt/forgejo/backup.sh',
     minute        => '20',
-    hour          => '*/2',
-    ok_criteria   => ['exit_status=0', 'max_age=3h'],
-    warn_criteria => ['exit_status=0', 'max_age=5h'],
+    hour          => '2',
+    ok_criteria   => ['exit_status=0', 'max_age=25h'],
+    warn_criteria => ['exit_status=0', 'max_age=48h'],
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {

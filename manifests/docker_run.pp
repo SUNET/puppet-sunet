@@ -64,13 +64,6 @@ define sunet::docker_run(
       default => flatten([$depends]),
     }
 
-    # If a non-default network is used, make sure it is created before this container starts
-    $req = $net ? {
-      'host'   => [],
-      'bridge' => [],
-      default  => [Docker_network[$net]],
-    }
-
     $image_tag = "${image}:${imagetag}"
 
     if $fetch_docker_image {
@@ -86,6 +79,14 @@ define sunet::docker_run(
     }
 
     if ($docker_class == 'sunet::dockerhost') {
+
+      # If a non-default network is used, make sure it is created before this container starts
+      $req = $net ? {
+        'host'   => [],
+        'bridge' => [],
+        default  => [Docker_network[$net]],
+      }
+
       docker::run { $name :
         ensure                   => $ensure,
         volumes                  => flatten([$volumes, $_uid_gid]),
@@ -122,7 +123,8 @@ define sunet::docker_run(
       # Docker DNS isn't available on the default 'bridge' interface, so another
       # bridge interface is needed for containers benefiting from the DNS resolution
       # but not running using docker-compose.
-      exec { '/usr/bin/docker network create docker':
+      exec { "network_create_docker_${name}":
+        command => '/usr/bin/docker network create docker',
         unless  => '/usr/bin/docker network inspect docker > /dev/null 2>&1',
       }
 

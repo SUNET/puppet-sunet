@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -f /var/run/reboot-required ]; then
+	# fleetlock lock
+	. /etc/run-cosmos-fleetlock-conf
+	/usr/local/bin/sunet-fleetlock --lock-group $fleetlock_group --lock || exit 1
+	# drain kube and reboot
+	/snap/bin/kubectl drain $(hostname) --ignore-daemonsets && /usr/bin/systemctl reboot
+fi

@@ -4,7 +4,7 @@
 # Verify the code with shellcheck before commiting changes.
 #
 
-if ! etcd_container_id=$(docker inspect --format="{{.Id}}" knubbis-fleetlock_standalone_etcd_1); then
+if ! etcd_container_id=$(docker inspect --format="{{.Id}}" knubbis-fleetlock_standalone-etcd-1); then
    echo "docker inspect failed"
    exit 1
 fi

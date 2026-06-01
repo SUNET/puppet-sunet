@@ -27,13 +27,13 @@ fi
 
 expires=`openssl x509 -enddate -noout < "$cert"`
 
-if openssl x509 -checkend "$ok" -noout < "$cert" ; then
+if openssl x509 -checkend "$ok" -noout < "$cert" >/dev/null; then
         echo "OK: $expires"
         exit 0
 fi
 
 
-if openssl x509 -checkend "$crit" -noout < "$cert" ; then
+if openssl x509 -checkend "$crit" -noout < "$cert" >/dev/null; then
         echo "CRITICAL: $expires"
         exit 2
 fi

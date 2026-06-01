@@ -17,10 +17,12 @@ eap {
                 # Enable if important
                 # check_cert_issuer = "/C=NO/L=Trondheim/O=Uninett AS/CN=geteduroam.no demo CA"
                 check_crl = no
+                virtual_server = check-eap-tls
 
                 verify {
                 }
                 ocsp {
+                <% if @ocsp %>
                         certdir = ${confdir}/certs
                         ca_file = ${certdir}/geteduroam-ca.pem
                         enable = yes
@@ -28,6 +30,9 @@ eap {
                         softfail = yes
                         url = http://ocsp:5000/<%= @realm %>/
                         use_nonce = yes
+                <% else %>
+                        enable = no
+                <% end %>
                 }
         }
 }

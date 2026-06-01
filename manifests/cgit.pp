@@ -1,14 +1,15 @@
 # cgit
 class sunet::cgit(
-    String $fqdn,
-    String $public_hostname,
-    String $package         = 'cgit',
-    String $cgitrepo_path   = '/home/git/repositories',
-    String $cgit_logo       = '',
-    String $root_title      = 'Default title',
-    String $root_desc       = 'Default description',
-    String $www_user        = 'www-data',
-    String $git_group       = 'git',
+    String  $fqdn,
+    String  $public_hostname,
+    String  $package         = 'cgit',
+    String  $cgitrepo_path   = '/home/git/repositories',
+    String  $cgit_logo       = '',
+    String  $root_title      = 'Default title',
+    String  $root_desc       = 'Default description',
+    String  $www_user        = 'www-data',
+    String  $git_group       = 'git',
+    Boolean $disallow_robots = true,
 ) {
     # How to configure access to repositories with cgit and gitolite:
     #
@@ -80,6 +81,12 @@ class sunet::cgit(
 
     file { '/etc/apache2/sites-available/010-cgit.conf':
         content => template('sunet/cgit/apache2-siteconf.erb'),
+    }
+
+    if $disallow_robots {
+      file { '/var/www/html/robots.txt':
+          content => file('sunet/cgit/robots.txt'),
+      }
     }
 
     exec { 'enable 010-cgit':
