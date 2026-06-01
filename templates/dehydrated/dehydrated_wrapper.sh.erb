@@ -34,7 +34,8 @@ do
       sleep 5
       waited=$((waited + 5))
       if [ "${waited}" -ge 300 ]; then
-          exit 1
+          rm -f "${LOCKFILE}"
+          break
       fi
   done
 
