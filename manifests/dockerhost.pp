@@ -59,7 +59,28 @@ class sunet::dockerhost(
     }
   }
 
-  if versioncmp($facts['os']['release']['full'], '22.04') <= 0 or $facts['os']['name'] == 'Debian' {
+  # Ubuntu 24.04+ uses a new signed key format; apt-key is no longer available.
+  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') >= 0 {
+    apt::source {'docker_official': ensure => 'absent'}
+    file { '/etc/apt/keyrings':
+      ensure => directory,
+      mode   => '0755',
+    }
+    file { '/etc/apt/keyrings/docker.asc':
+      ensure  => file,
+      mode    => '0644',
+      content => file('sunet/apt/docker.asc'),
+      require => File['/etc/apt/keyrings'],
+    }
+    apt::source { 'docker_ce':
+      location => 'https://download.docker.com/linux/ubuntu',
+      release  => $facts['os']['distro']['codename'],
+      repos    => $docker_repo,
+      keyring  => '/etc/apt/keyrings/docker.asc',
+      notify   => Exec['dockerhost_apt_get_update'],
+      require  => File['/etc/apt/keyrings/docker.asc'],
+    }
+  } elsif versioncmp($facts['os']['release']['full'], '22.04') <= 0 or $facts['os']['name'] == 'Debian' {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
       ensure => 'purged',
@@ -156,10 +177,18 @@ class sunet::dockerhost(
     $tls_key = undef
   }
 
+  # Ubuntu 26.04+ requires write_daemon_config to register the nsrunc runtime.
+  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0 and ! $write_daemon_config {
+    warning('sunet::dockerhost: forcing write_daemon_config=true on Ubuntu 26.04+ (required for nsrunc runtime registration)')
+  }
+  $_write_daemon_config = $write_daemon_config or
+    ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0)
+  $_write_nsrunc = $_write_daemon_config
+
   # This is an approximation about how to enable IPv6 in Docker, but
   # BEWARE! IPv6 is currently utterly dysfunctional in docker-compose (version 3 / 1.29.2). Sigh.
   #
-  $ipv6_parameters = ($enable_ipv6 and ! $write_daemon_config) ? {
+  $ipv6_parameters = ($enable_ipv6 and ! $_write_daemon_config) ? {
     true => ['--ipv6',
       $docker_network_v6 ? {
         true => [],
@@ -179,7 +208,19 @@ class sunet::dockerhost(
     false     => true,
   }
 
-  if $write_daemon_config {
+  # Wrapper that runs runc inside Docker's mount namespace.
+  # systemd 253+ creates a private (slave) mount namespace for Docker when
+  # PrivateNetwork=yes is set. Container rootfs overlays are only visible inside
+  # that namespace, so runc must enter it to see them.
+  if $_write_nsrunc {
+    file { '/usr/local/bin/nsrunc':
+      ensure  => file,
+      mode    => '0755',
+      content => template('sunet/dockerhost/nsrunc.erb'),
+    }
+  }
+
+  if $_write_daemon_config {
     if $docker_network =~ String[1] {
       $default_address_pools = $docker_network
     } else {
@@ -208,7 +249,7 @@ class sunet::dockerhost(
       extra_parameters            => $_extra_parameters,
       docker_command              => 'dockerd',
       daemon_subcommand           => '',
-      require                     => Package[$docker_package_name],
+      require                     => [Package[$docker_package_name], File['/usr/local/bin/nsrunc']],
     }
   } else {
     class {'docker':
@@ -262,11 +303,19 @@ class sunet::dockerhost(
       mode    => '0644',
       content => template('sunet/dockerhost/logrotate_docker-containers.erb'),
       ;
-    '/usr/local/bin/docker-compose':
+    }
+
+  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0 {
+    package { 'docker-compose-plugin':
+      ensure  => installed,
+      require => Exec['dockerhost_apt_get_update'],
+    }
+  } else {
+    file { '/usr/local/bin/docker-compose':
       mode    => '0755',
       content => template('sunet/dockerhost/docker-compose.erb'),
-      ;
     }
+  }
 
     file { '/usr/local/bin/docker-upgrade':
         ensure => 'present',
