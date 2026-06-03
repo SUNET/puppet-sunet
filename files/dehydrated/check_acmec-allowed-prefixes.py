@@ -57,8 +57,6 @@ def remove_unused_checks(all_domains):
         if fname not in all_domains and fname not in exclusions:
             print(f"Removing {filepath}")
             os.remove(filepath)
-        else:
-            pass
 
 def resolve_host(hostname):
     ips = set()
