@@ -1,28 +1,32 @@
-# Setup the hittade service (Django app + postgres + redis), fronted by Caddy
+# Setup the hittade service (Django app + postgres + redis)
 #
 # Relies on the node already being a dockerhost2 (the dockerhost2 fact); the
 # sunet::docker_compose define is dockerhost2-aware and installs the right
 # systemd unit. The config files mounted into the containers are dropped on
 # the server out-of-band under $config_dir, Puppet only creates the directories.
 #
-# @param hostname     Required. The public hostname Caddy serves / fetches a Let's Encrypt cert for
+# TLS termination and routing are handled by the nginx-proxy + acme-companion
+# stack run by sunet::invent::receiver on the same host. This service is
+# discovered via the VIRTUAL_HOST/LETSENCRYPT_HOST env vars in the compose file
+# and reached over the receiver's external compose network (receiver_default).
+# That means sunet::invent::receiver must also be declared on this node.
+#
+# @param hostname     Required. The public hostname nginx-proxy serves / fetches a Let's Encrypt cert for
 # @param image        The hittade-server image (without tag)
 # @param image_tag    The hittade-server image tag
-# @param caddy_tag    The caddy image tag
-# @param config_dir   Directory with the hand-dropped config and the managed Caddyfile
+# @param config_dir   Directory with the hand-dropped config (localsettings.py, urls.py, proxy.xml, certificates/)
 # @param compose_dir  Parent dir for the compose project (data volumes live under ${compose_dir}/hittade/)
 class sunet::hittade (
   String $hostname,
   String $image       = 'docker.sunet.se/hittade-server',
   String $image_tag   = '0.0.2',
-  String $caddy_tag   = '2.11.4',
   String $config_dir  = '/etc/hittade',
   String $compose_dir = '/opt',
 ) {
 
   # Directory for the hand-dropped config files (localsettings.py, urls.py,
-  # proxy.xml) and the Puppet-managed Caddyfile. File contents are managed by
-  # the operator, Puppet only ensures the directory exists.
+  # proxy.xml). File contents are managed by the operator, Puppet only ensures
+  # the directory exists.
   sunet::misc::create_dir { $config_dir:
     owner => 'root',
     group => 'root',
@@ -37,25 +41,8 @@ class sunet::hittade (
     mode  => '0700',
   }
 
-  # Caddy config, derived from the $hostname parameter so it is Puppet-managed.
-  file { "${config_dir}/Caddyfile":
-    ensure  => file,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    content => template('sunet/hittade/Caddyfile.erb'),
-  }
-
-  # Caddy terminates TLS and needs to be reachable from the internet for the
-  # ACME HTTP challenge (80) and to serve traffic (443).
-  sunet::nftables::allow { 'allow-http':
-    from => 'any',
-    port => 80,
-  }
-  sunet::nftables::allow { 'allow-https':
-    from => 'any',
-    port => 443,
-  }
+  # No firewall rules here: ports 80/443 are opened by sunet::invent::receiver,
+  # whose nginx-proxy fronts this service.
 
   sunet::docker_compose { 'hittade':
     content          => template('sunet/hittade/docker-compose.yml.erb'),
