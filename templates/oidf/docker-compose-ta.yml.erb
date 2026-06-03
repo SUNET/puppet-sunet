@@ -14,9 +14,9 @@ services:
       start_period: 10s
     volumes:
       - ./taconfig.toml:/app/taconfig.toml:ro
-      - ./private.json:/app/private.json:ro
-      - ./publickeys:/app/publickeys:ro
-      - ./historical_keys:/app/historical_keys:ro
+      - ./keys/private.json:/app/private.json:ro
+      - ./keys/publickeys:/app/publickeys:ro
+      - ./keys/historical_keys:/app/historical_keys:ro
       - ./templates:/app/templates:ro
     depends_on:
       redis:
@@ -69,9 +69,9 @@ services:
       - INSIDE_CONTAINER=true
       - PRODUCTION=true
     volumes:
-      - ./private.json:/app/private.json:ro
-      - ./publickeys:/app/publickeys:ro
-      - ./historical_keys:/app/historical_keys:ro
+      - ./keys/private.json:/app/private.json:ro
+      - ./keys/publickeys:/app/publickeys:ro
+      - ./keys/historical_keys:/app/historical_keys:ro
       - ./localsettings.py:/app/inmoradmin/localsettings.py:ro      
   nginx:
     image: nginx:1.21

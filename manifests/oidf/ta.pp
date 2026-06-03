@@ -18,17 +18,19 @@ class sunet::oidf::ta(
     content => template('sunet/oidf/localsettings.py.erb'),
     mode    => '0755',
     replace => false,
+  } -> file {'/opt/oidf-ta/keys/':
+    ensure => 'directory',
+    mode   => '0700',
+    owner  => '999'
   } -> if lookup('inmor_key', undef, undef, undef) != undef {
-    sunet::snippets::secret_file { '/opt/oidf-ta/private.json':
+    sunet::snippets::secret_file { '/opt/oidf-ta/keys/private.json':
       hiera_key => 'inmor_key',
       mode      => '0644',
     }
     # assume cert is in cosmos repo
   } else {
     exec { 'generate_privat_public_keys':
-      command => "mkdir -p /opt/oidf-ta/keys/publickeys; chmod -R 777 /opt/oidf-ta/keys; touch /opt/oidf-ta/keys/private.json ; docker run --rm -v /opt/oidf-ta/keys:/app/keys docker.sunet.se/inmor:${inmor_version} /app/inmor-keygeneration --type RS256 --output /app/keys --force && mv /opt/oidf-ta/keys/publickeys/* /opt/oidf-ta/publickeys && mv /opt/oidf-ta/keys/private.json /opt/oidf-ta/",
-      cwd     => '/opt/oidf-ta',
-      creates => '/opt/oidf-ta/private.json'
+      command => "docker run --rm -v /opt/oidf-ta/keys:/app/keys docker.sunet.se/inmor:${inmor_version} /app/inmor-keygeneration --type RS256 --output /app/keys --force"
     }
   }
 
