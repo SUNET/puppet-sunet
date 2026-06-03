@@ -42,19 +42,28 @@ services:
       - <%= @config_dir %>/urls.py:/app/hittade/urls.py
       - <%= @config_dir %>/proxy.xml:/app/proxy.xml
     ports:
-      # Localhost-only, for debugging. Public traffic comes in via caddy.
+      # Localhost-only, for debugging. Public traffic comes in via the
+      # nginx-proxy run by sunet::invent::receiver (see networks below).
       - "127.0.0.1:8000:8000"
+    expose:
+      - "8000"
+    environment:
+      # Picked up by the nginx-proxy + acme-companion stack from
+      # sunet::invent::receiver, which terminates TLS and routes to us.
+      - VIRTUAL_HOST=<%= @hostname %>
+      - VIRTUAL_PORT=8000
+      - VIRTUAL_PATH=/
+      - LETSENCRYPT_HOST=<%= @hostname %>
+    networks:
+      # default: reach db/redis privately.
+      - default
+      # receiver_default: the network created by the sunet::invent::receiver
+      # compose project (/opt/receiver), where its nginx-proxy lives. This is
+      # how nginx-proxy reaches this container. Requires the receiver to be
+      # deployed first so the external network exists.
+      - receiver_default
 
-  caddy:
-    restart: always
-    image: caddy:<%= @caddy_tag %>
-    depends_on:
-      - web
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - <%= @config_dir %>/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy_data:/data
-      - ./caddy_config:/config
+networks:
+  default:
+  receiver_default:
+    external: true
