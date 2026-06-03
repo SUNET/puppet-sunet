@@ -3,12 +3,14 @@ import yaml
 import sys
 import socket
 import re
+import os
 import json
 from ipaddress import ip_network, ip_address
 import argparse
 
 def parse_acmec_non_clients(yaml_path):
     result = []
+    all_domains = []
 
     with open(yaml_path, "r") as f:
         data = yaml.safe_load(f)
@@ -24,7 +26,8 @@ def parse_acmec_non_clients(yaml_path):
         if not isinstance(item, dict):
             continue
 
-        for _, props in item.items():
+        for domain, props in item.items():
+            all_domains.append(domain)
             if not isinstance(props, dict):
                 continue
 
@@ -37,7 +40,25 @@ def parse_acmec_non_clients(yaml_path):
                 result.extend(names)
 
     # normalize + dedupe
-    return list(dict.fromkeys(h.strip().lower() for h in result if h and h.strip()))
+    return list(dict.fromkeys(h.strip().lower() for h in result if h and h.strip())), list(dict.fromkeys(h.strip().lower() for h in all_domains if h and h.strip()))
+
+def remove_unused_checks(all_domains):
+    exclusions = ["gather_inventory", "dehydrated", "update_and_upgrade", "cleanup", "check_infra_cert", "cosmos"]
+
+    files = os.listdir("/etc/scriptherder/check/")
+
+    for f in files:
+        if not f.endswith(".ini"):
+            continue
+        
+        fname = f[:-4].replace("dehydrated_", "")
+        filepath = f"/etc/scriptherder/check/{f}"
+        
+        if fname not in all_domains and fname not in exclusions:
+            print(f"Removing {filepath}")
+            os.remove(filepath)
+        else:
+            pass
 
 def resolve_host(hostname):
     ips = set()
@@ -131,13 +152,18 @@ if __name__ == "__main__":
 
     prefixes = load_prefixes("/etc/puppet/cosmos-modules/sunet/lib/puppet/functions/sunet_prefixes.rb")
 
-    acmec_clients = parse_acmec_non_clients("/etc/hiera/data/local.yaml")
+    acmec_non_clients, all_acmec_domains = parse_acmec_non_clients("/etc/hiera/data/local.yaml")
+    remove_unused_checks(all_acmec_domains)
 
-    all_hosts = list(dict.fromkeys(acmec_clients))
+    all_hosts = list(dict.fromkeys(acmec_non_clients))
 
     results = check_hostnames(prefixes, all_hosts, required_tag)
 
     not_resolvable, missing_sunet_prefix, missing_acmec_tag = results
+
+    if not_resolvable and missing_sunet_prefix and missing_acmec_tag:
+        print('OK')
+        sys.exit(0)
     
     print("\n\nNot resolvable:")
     if not not_resolvable:
