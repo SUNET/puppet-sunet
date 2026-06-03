@@ -1,0 +1,60 @@
+---
+services:
+  db:
+    restart: always
+    image: postgres:14-alpine
+    shm_size: 1024mb
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
+
+  redis:
+    restart: always
+    image: redis:7-alpine
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - ./redis:/data
+
+  web:
+    image: <%= @image %>:<%= @image_tag %>
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: ./docker-entrypoint.sh
+    volumes:
+      - <%= @config_dir %>/localsettings.py:/app/hittade/localsettings.py
+      - <%= @config_dir %>/certificates:/app/certificates
+      - <%= @config_dir %>/urls.py:/app/hittade/urls.py
+      - <%= @config_dir %>/proxy.xml:/app/proxy.xml
+    ports:
+      # Localhost-only, for debugging. Public traffic comes in via caddy.
+      - "127.0.0.1:8000:8000"
+
+  caddy:
+    restart: always
+    image: caddy:<%= @caddy_tag %>
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - <%= @config_dir %>/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy_data:/data
+      - ./caddy_config:/config
