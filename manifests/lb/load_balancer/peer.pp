@@ -1,6 +1,7 @@
 # This is a helper class to create a peer entry in the load balancer
 define sunet::lb::load_balancer::peer(
   String           $as,
+  Optional[String] $local_as = undef,
   String           $remote_ip,
   Optional[String] $local_ip  = '',
   Optional[String] $router_id = '',
@@ -29,6 +30,11 @@ define sunet::lb::load_balancer::peer(
     $_local_ip = $local_ip
   }
 
+  $_local_as = $local_as ? {
+    undef   => $as,
+    default => $local_as
+  }
+
   # Hiera hash (deep) merging does not seem to work with one yaml backend and one
   # gpg backend, so we couldn't put the password in secrets.yaml and just merge it in
   $md5 = $password_hiera_key ? {
@@ -37,7 +43,7 @@ define sunet::lb::load_balancer::peer(
   }
 
   sunet::lb::exabgp::neighbor { "peer_${name}":
-    local_as      => $as,
+    local_as      => $_local_as,
     local_address => $_local_ip,
     peer_as       => $as,
     peer_address  => $remote_ip,
