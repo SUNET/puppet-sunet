@@ -41,6 +41,9 @@ services:
       - <%= @config_dir %>/certificates:/app/certificates
       - <%= @config_dir %>/urls.py:/app/hittade/urls.py
       - <%= @config_dir %>/proxy.xml:/app/proxy.xml
+      # Host data from sunet::invent::receiver (rrsync'd into /opt/receiver/hosts),
+      # mounted read-only so hittade can read/scan/import it.
+      - /opt/receiver/hosts:/hosts:ro
     ports:
       # Localhost-only, for debugging. Host port 8000 is already taken by
       # sunet::invent::receiver, so publish the debug bind on 8001 instead.
