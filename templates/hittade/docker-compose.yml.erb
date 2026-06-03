@@ -50,6 +50,7 @@ services:
     expose:
       - "8000"
     environment:
+      - PRODUCTION=true
       # Picked up by the nginx-proxy + acme-companion stack from
       # sunet::invent::receiver, which terminates TLS and routes to us.
       - VIRTUAL_HOST=<%= @hostname %>

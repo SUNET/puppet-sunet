@@ -34,11 +34,15 @@ class sunet::hittade (
   }
 
   # Directory for certificates mounted into the web container, populated
-  # out-of-band (secrets, not managed by Puppet).
-  sunet::misc::create_dir { "${config_dir}/certificates":
-    owner => 'root',
-    group => 'root',
-    mode  => '0700',
+  # out-of-band (secrets, not managed by Puppet). Owned by uid 999 so the
+  # app user inside the container can read/traverse it. Plain file resource
+  # (not create_dir) to avoid create_dir's User[$owner] dependency on uid 999.
+  file { "${config_dir}/certificates":
+    ensure  => directory,
+    owner   => '999',
+    group   => '999',
+    mode    => '0700',
+    require => Sunet::Misc::Create_dir[$config_dir],
   }
 
   # No firewall rules here: ports 80/443 are opened by sunet::invent::receiver,
