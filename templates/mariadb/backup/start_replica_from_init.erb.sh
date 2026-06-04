@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
-mysql="mysql -u root -p${MYSQL_ROOT_PASSWORD}"
+
+if command -v mariadb &>/dev/null; then
+    CMD="mariadb"
+else
+    CMD="mysql"
+fi
+
+mysql="${CMD} -u root -p${MYSQL_ROOT_PASSWORD}"
 init_file='/backups/init.sql.gz'
+
 if [[ -f ${init_file} ]]; then
 	${mysql} -e "STOP SLAVE;RESET SLAVE;"
 	master_command=$(zgrep 'CHANGE MASTER TO MASTER_LOG_FILE' ${init_file} | sed -e 's/^-- //' -e 's/;$//')

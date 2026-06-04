@@ -23,6 +23,7 @@ server {
             add_header Content-Type text/plain;
             return 200;
          }
+         root   /usr/share/nginx/html/;
     }
 }
 
@@ -48,6 +49,14 @@ server {
     location /django_ca/ocsp/ {
         try_files "" @django_ca;
     }
+<% if @django_ca_cmc -%>
+    location /cmc01 {
+        try_files "" @django_ca;
+    }
+    location /cmc/ {
+        try_files "" @django_ca;
+    }
+<% end -%>
     location /admin/ {
         try_files "" @django_ca;
     }
@@ -63,6 +72,7 @@ server {
             add_header Content-Type text/plain;
             return 200;
          }
+         root   /usr/share/nginx/html/;
     }
 
     location @django_ca {

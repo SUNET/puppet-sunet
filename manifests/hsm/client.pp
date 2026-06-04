@@ -88,8 +88,14 @@ class sunet::hsm::client (
 
     $hsm_servers.each  | $hsm | {
       $dc =  split($hsm,'-')[0]
-      sunet::nagios::nrpe_command { "check_hsm_${dc}":
-        command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_hsm ${dc}",
+      if $hsm =~ /lab/ {
+        sunet::nagios::nrpe_command { "check_hsm_${dc}lab":
+          command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_hsm ${dc}lab",
+        }
+      } else {
+        sunet::nagios::nrpe_command { "check_hsm_${dc}":
+          command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_hsm ${dc}",
+        }
       }
     }
   }
