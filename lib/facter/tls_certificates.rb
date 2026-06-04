@@ -13,7 +13,7 @@ Facter.add('tls_certificates') do
       if part == 'privkey'
         part = 'key'  # consistency with non-dehydrated certs
       end
-      if File.exists? partname
+      if File.exist? partname
         res[hostpart]['dehydrated_' + part] = partname
       else
         warn("Not found: #{partname}")
