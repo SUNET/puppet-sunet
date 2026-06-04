@@ -4,6 +4,9 @@ class sunet::oidf::ta(
   String $inmor_version         = undef,
   Optional[Boolean] $acmed      = true
 ){
+  $secret_key = lookup('inmor_secret_key', undef, undef, 'your-production-secret-key')
+  $mfa_key = lookup('inmor_mfa_key', undef, undef, 'your-production-MFA-key')
+
   sunet::docker_compose { 'oidf-ta':
     content          => template('sunet/oidf/docker-compose-ta.yml.erb'),
     service_name     => 'oidf-ta',
@@ -13,7 +16,6 @@ class sunet::oidf::ta(
   } ->  file { '/opt/oidf-ta/taconfig.toml':
     content => template('sunet/oidf/taconfig.toml.erb'),
     mode    => '0755',
-    replace => false,
   } -> file { '/opt/oidf-ta/localsettings.py':
     content => template('sunet/oidf/localsettings.py.erb'),
     mode    => '0755',

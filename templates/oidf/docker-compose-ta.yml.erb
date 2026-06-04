@@ -72,7 +72,7 @@ services:
       - ./keys/private.json:/app/private.json:ro
       - ./keys/publickeys:/app/publickeys:ro
       - ./keys/historical_keys:/app/historical_keys:ro
-      - ./localsettings.py:/app/inmoradmin/localsettings.py:ro      
+      - ./localsettings.py:/app/inmoradmin/localsettings.py:ro
   nginx:
     image: nginx:1.21
     networks:

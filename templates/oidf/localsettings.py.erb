@@ -1,7 +1,7 @@
 # Production settings override
 DEBUG = False
 ALLOWED_HOSTS = ['<%= @hostname %>']
-SECRET_KEY = 'your-production-secret-key'
+SECRET_KEY = '<%= @secret_key %>'
 
 # Use your production domain
 TA_DOMAIN = 'https://<%= @hostname %>'
@@ -31,4 +31,4 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
 # MFA encryption key
-MFA_ENCRYPTION_KEY = "your-production-MFA-key"
+MFA_ENCRYPTION_KEY = '<%= @mfa_key %>'
