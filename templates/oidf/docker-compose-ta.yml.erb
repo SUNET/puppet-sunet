@@ -17,7 +17,6 @@ services:
       - ./keys/private.json:/app/private.json:ro
       - ./keys/publickeys:/app/publickeys:ro
       - ./keys/historical_keys:/app/historical_keys:ro
-      - ./templates:/app/templates:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -86,7 +85,7 @@ services:
     volumes:
       - /opt/nginx_conf:/etc/nginx/conf.d
 <%- if @acmed -%>
-      - /etc/letsencrypt/live/<%= @hostname %>:/etc/ssl
+      - /opt/nginx_conf/cert:/etc/ssl
 <%- else -%>
       - /etc/dehydrated/certs/<%= @hostname %>:/etc/ssl
   always-https:

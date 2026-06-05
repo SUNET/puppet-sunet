@@ -70,7 +70,15 @@ class sunet::oidf::ta(
     port => 443,
   }
 
-  if (! $acmed) {
+  if ($acmed) {
+    file { '/etc/letsencrypt/renewal-hooks/deploy/ta-renewal-hook':
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      group   => 'root',
+      content => file('sunet/oidf/ta-renewal-hook')
+    }
+  } else {
     sunet::nftables::allow { 'expose-always-https':
       from => 'any',
       port => 80,
