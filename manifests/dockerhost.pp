@@ -59,28 +59,7 @@ class sunet::dockerhost(
     }
   }
 
-  # Ubuntu 24.04+ uses a new signed key format; apt-key is no longer available.
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') >= 0 {
-    apt::source {'docker_official': ensure => 'absent'}
-    file { '/etc/apt/keyrings':
-      ensure => directory,
-      mode   => '0755',
-    }
-    file { '/etc/apt/keyrings/docker.asc':
-      ensure  => file,
-      mode    => '0644',
-      content => file('sunet/apt/docker.asc'),
-      require => File['/etc/apt/keyrings'],
-    }
-    apt::source { 'docker_ce':
-      location => 'https://download.docker.com/linux/ubuntu',
-      release  => $facts['os']['distro']['codename'],
-      repos    => $docker_repo,
-      keyring  => '/etc/apt/keyrings/docker.asc',
-      notify   => Exec['dockerhost_apt_get_update'],
-      require  => File['/etc/apt/keyrings/docker.asc'],
-    }
-  } elsif versioncmp($facts['os']['release']['full'], '22.04') <= 0 or $facts['os']['name'] == 'Debian' {
+  if versioncmp($facts['os']['release']['full'], '22.04') <= 0 or $facts['os']['name'] == 'Debian' {
     # Remove old versions, if installed
     package { ['lxc-docker-1.6.2', 'lxc-docker'] :
       ensure => 'purged',
@@ -127,25 +106,27 @@ class sunet::dockerhost(
       key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
       notify   => Exec['dockerhost_apt_get_update'],
     }
-  }
 
-  apt::pin { 'Pin docker repo':
-    packages => '*',
-    priority => 1,
-    origin   => 'download.docker.com'
-  }
-  # Clean up old pinning
-  file {'/etc/apt/preferences.d/docker-ce-cli.pref':
-    ensure => 'absent',
-  }
-  file {'/etc/apt/preferences.d/docker_package.pref':
-    ensure => 'absent',
-  }
+    apt::pin { 'Pin docker repo':
+      packages => '*',
+      priority => 1,
+      origin   => 'download.docker.com'
+    }
+    # Clean up old pinning
+    file {'/etc/apt/preferences.d/docker-ce-cli.pref':
+      ensure => 'absent',
+    }
+    file {'/etc/apt/preferences.d/docker_package.pref':
+      ensure => 'absent',
+    }
 
-  exec { 'dockerhost_apt_get_update':
-    command     => '/usr/bin/apt-get update',
-    cwd         => '/tmp',
-    refreshonly => true,
+    exec { 'dockerhost_apt_get_update':
+      command     => '/usr/bin/apt-get update',
+      cwd         => '/tmp',
+      refreshonly => true,
+    }
+  } else {
+    ensure_resource('sunet::apt::repo_docker', 'sunet-dockerhost-docker-repo')
   }
 
   package { $docker_package_name :
