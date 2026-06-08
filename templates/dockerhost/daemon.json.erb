@@ -14,5 +14,9 @@
         "max-file": "3"
     },
     "storage-driver": "<%= @storage_driver -%>",
-    "userland-proxy": false
+    "userland-proxy": false,
+    "default-runtime": "nsrunc",
+    "runtimes": {
+        "nsrunc": { "path": "/usr/local/bin/nsrunc" }
+    }
 }
