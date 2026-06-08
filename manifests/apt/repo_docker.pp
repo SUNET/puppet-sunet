@@ -8,7 +8,7 @@ define sunet::apt::repo_docker (
   $release   = $facts['os']['distro']['release']['major']
 
   if ($distro == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '24.04') < 0) or
-     ($distro == 'Debian' and versioncmp($release, '13') < 0) {
+    ($distro == 'Debian' and versioncmp($release, '13') < 0) {
     sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'}
     file { '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
       ensure  => file,
