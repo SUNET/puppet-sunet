@@ -57,35 +57,6 @@ class sunet::dockerhost(
     }
   }
 
-  if versioncmp($facts['os']['release']['full'], '22.04') <= 0 or $facts['os']['name'] == 'Debian' {
-    # Remove old versions, if installed
-    package { ['lxc-docker-1.6.2', 'lxc-docker'] :
-      ensure => 'purged',
-    }
-
-    file {'/etc/apt/sources.list.d/docker.list':
-      ensure => 'absent',
-    }
-
-    if $docker_package_name != 'docker-engine' and $docker_package_name != 'docker.io' {
-      # transisition to docker-ce
-      exec { 'remove_dpkg_arch_i386':
-        command => '/usr/bin/dpkg --remove-architecture i386',
-        onlyif  => '/usr/bin/dpkg --print-foreign-architectures | grep i386',
-      }
-
-      package {'docker-engine': ensure => 'purged'}
-    }
-
-    # Clean up old pinning
-    file {'/etc/apt/preferences.d/docker-ce-cli.pref':
-      ensure => 'absent',
-    }
-    file {'/etc/apt/preferences.d/docker_package.pref':
-      ensure => 'absent',
-    }
-  }
-
   ensure_resource('sunet::apt::repo_docker', 'sunet-dockerhost-docker-repo', {'docker_repo' => $docker_repo})
 
   package { $docker_package_name :
