@@ -77,39 +77,6 @@ class sunet::dockerhost(
       package {'docker-engine': ensure => 'purged'}
     }
 
-    # Add the dockerproject repository, then force an apt-get update before
-    # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
-    #
-    sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'}
-    file {
-      '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
-        ensure  => file,
-        mode    => '0644',
-        content => file('sunet/apt/docker.asc'),
-        ;
-      }
-    apt::key { 'docker_ce':
-      id     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
-      server => 'https://does-not-exists-but-is-required.example.com',
-      source => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
-      notify => Exec['dockerhost_apt_get_update'],
-    }
-
-    $distro = downcase($facts['os']['name'])
-    # new source
-    apt::source {'docker_ce':
-      location => "https://download.docker.com/linux/${distro}",
-      release  => $facts['os']['distro']['codename'],
-      repos    => $docker_repo,
-      key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
-      notify   => Exec['dockerhost_apt_get_update'],
-    }
-
-    apt::pin { 'Pin docker repo':
-      packages => '*',
-      priority => 1,
-      origin   => 'download.docker.com'
-    }
     # Clean up old pinning
     file {'/etc/apt/preferences.d/docker-ce-cli.pref':
       ensure => 'absent',
@@ -117,15 +84,9 @@ class sunet::dockerhost(
     file {'/etc/apt/preferences.d/docker_package.pref':
       ensure => 'absent',
     }
-
-    exec { 'dockerhost_apt_get_update':
-      command     => '/usr/bin/apt-get update',
-      cwd         => '/tmp',
-      refreshonly => true,
-    }
-  } else {
-    ensure_resource('sunet::apt::repo_docker', 'sunet-dockerhost-docker-repo')
   }
+
+  ensure_resource('sunet::apt::repo_docker', 'sunet-dockerhost-docker-repo', {'docker_repo' => $docker_repo})
 
   package { $docker_package_name :
     ensure  => $docker_version,
