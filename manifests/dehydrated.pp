@@ -99,16 +99,16 @@ class sunet::dehydrated(
   if ($cron) {
     sunet::scriptherder::cronjob { 'dehydrated_cleanup':
       cmd           => 'python3 /etc/dehydrated/remove_unused_checks.py',
-      hour          => 23,
-      minute        => 0,
+      hour          => '23',
+      minute        => '0',
       ok_criteria   => ['exit_status=0','max_age=4d'],
       warn_criteria => ['exit_status=1','max_age=8d'],
     }
 
     sunet::scriptherder::cronjob { 'dehydrated':
       cmd           => '/etc/dehydrated/dehydrated_wrapper.sh',
-      hour          => 0,
-      minute        => 0,
+      hour          => '0',
+      minute        => '0',
       ok_criteria   => ['exit_status=0','max_age=4d'],
       warn_criteria => ['exit_status=1','max_age=8d'],
     }
