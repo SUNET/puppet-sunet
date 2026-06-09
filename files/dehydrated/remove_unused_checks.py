@@ -15,7 +15,6 @@ def remove_unused_checks(all_acmec_domains):
         filepath = f"/etc/scriptherder/check/{f}"
         
         if fname not in all_acmec_domains and fname not in exclusions:
-            print(f"Removing {filepath}")
             os.remove(filepath)
 
             # Build the cache prefix from the .ini filename
