@@ -16,6 +16,11 @@ tls-port <%= @valkeyportnum %>
 tls-replication yes
 <% if @cluster %>
 tls-cluster yes
+# cluster-announce-port 0 - Explicitly disables advertising a non-TLS port
+cluster-announce-port 0
+cluster-announce-tls-port <%= @valkeyportnum %>
+# advertise the hostname instead of IP, this helps to avoid SAN missmatch from the clients when validating the cert
+cluster-announce-hostname <%= server_fqdn %>
 <% end %>
 tls-cert-file /cert/cert.pem
 tls-key-file /cert/privkey.pem
