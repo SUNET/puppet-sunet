@@ -62,7 +62,7 @@ gmcast.segment=0;
 # TLS for galera replication
 socket.ssl_key=/etc/mysql/ssl/privkey.pem;
 socket.ssl_cert=/etc/mysql/ssl/cert.pem;
-socket.ssl_ca=<%= @ca_cert_path %>
+socket.ssl_ca=<%= @ca_cert_path %>;
 # Automatic TLS cert reload on file change
 socket.ssl_reload=1
 <% end -%>
