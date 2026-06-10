@@ -10,7 +10,7 @@ class sunet::mariadb::simple(
   Boolean $galera                  = true,
   Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
-
+  Boolean $use_tls                 = false,
 ){
   sunet::mariadb { 'sunet_mariadb_simple':
     mariadb_version         => $mariadb_version,
@@ -21,6 +21,7 @@ class sunet::mariadb::simple(
     dns                     => $dns,
     galera                  => $galera,
     nagios_monitoring       => $nagios_monitoring,
-    innodb_buffer_pool_size => $innodb_buffer_pool_size
+    innodb_buffer_pool_size => $innodb_buffer_pool_size,
+    use_tls                 => $use_tls
   }
 }
