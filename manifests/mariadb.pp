@@ -135,7 +135,7 @@ define sunet::mariadb(
       ensure  => 'file',
       mode    => '0755',
       owner   => 'root',
-      content => file('sunet/mariadb/check_galera_cluster')
+      content => template('sunet/mariadb/check_galera_cluster.erb')
     }
     # sudo exceptions
     sunet::sudoer {'nrpe_galera_check':
