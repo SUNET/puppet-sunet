@@ -1,15 +1,16 @@
 # Mariadb cluster class for SUNET
 define sunet::mariadb(
   String $mariadb_version          = latest,
-  String $mariadb_image='docker.sunet.se/drive/mariadb',
+  String $mariadb_image            = 'docker.sunet.se/drive/mariadb',
   Boolean $new_cluster             = false, # applies to maridb images from dockerhub.io
   Boolean $docker_healthcheck      = false, # Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb on how to setup the healthcheck
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
   Array[String] $dns               = [],
   Boolean $galera                  = true,
-  Boolean $use_tls                 = true,
+  Boolean $use_tls                 = false,
   Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
+  String  $ca_cert_path            = '/etc/ssl/certs/infra-2-prod.crt',
 )
 {
 
@@ -40,6 +41,12 @@ define sunet::mariadb(
       mode   => '0750',
       owner  => 'root',
       group  => 'root',
+    }
+    # Copy the certbot deploy hook
+    file { '/etc/letsencrypt/renewal-hooks/deploy/mariadb':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/mariadb/certbot-renewal-hook'),
     }
   }
 

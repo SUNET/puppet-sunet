@@ -10,6 +10,16 @@ max_allowed_packet      = 256M
 max_connections         = 750
 skip_external_locking   = ON
 skip_name_resolve       = ON
+<% if @use_tls -%>
+## TLS for client connections ##
+ssl-ca=<%= @ca_cert_path %>
+ssl-cert=/etc/mysql/ssl/cert.pem
+ssl-key=/etc/mysql/ssl/privkey.pem
+# Enforce encrypted connections
+require_secure_transport=ON
+# protocol hardening
+tls_version=TLSv1.2,TLSv1.3
+<% end -%>
 
 # Binary logging and replication
 expire_logs_days        = 7
@@ -48,8 +58,24 @@ wsrep_provider                  = /usr/lib/galera/libgalera_smm.so
 wsrep_provider_options="
 gcache.size=2G;
 gmcast.segment=0;
+<% if @use_tls -%>
+# TLS for galera replication
+socket.ssl_key=/etc/mysql/ssl/privkey.pem;
+socket.ssl_cert=/etc/mysql/ssl/cert.pem;
+socket.ssl_ca=<%= @ca_cert_path %>
+# Automatic TLS cert reload on file change
+socket.ssl_reload=1
+<% end -%>
 "
 wsrep_slave_threads             = 4    # CPU dependent
 wsrep_sst_method                = mariabackup
 wsrep_sync_wait                 = 1
+<% end -%>
+
+<% if @use_tls -%>
+[sst]
+encrypt=4
+ssl-ca=<%= @ca_cert_path %>
+ssl-cert=/etc/mysql/ssl/cert.pem
+ssl-key=/etc/mysql/ssl/privkey.pem
 <% end -%>
