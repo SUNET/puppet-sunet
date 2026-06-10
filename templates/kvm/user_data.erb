@@ -55,16 +55,19 @@ write_files:
 
       [Install]
       WantedBy=multi-user.target
-<% if @gateway6 -%>
-  - path: "/etc/netplan/60-disable_ra.yaml"
-    permissions: "0644"
+  - path: "/etc/netplan/60-cloud-init_user-data.yaml"
+    permissions: "0600"
     owner: "root"
     content: |
       network:
+        version: 2
         ethernets:
           eth0:
+            match:
+              macaddress: '<%= @mac %>'
+            set-name: 'eth0'
+<% if @gateway6 -%>
             accept-ra: false
-        version: 2
 <% end -%>
 <% if @local_size and @local_size != "0" -%>
 mounts:
