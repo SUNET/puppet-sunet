@@ -39,8 +39,8 @@ define sunet::mariadb(
     file { "${mariadb_dir}/cert":
       ensure => directory,
       mode   => '0750',
-      owner  => 'root',
-      group  => 'root',
+      owner  => '999',
+      group  => '999',
     }
     # Copy the certbot deploy hook
     file { '/etc/letsencrypt/renewal-hooks/deploy/mariadb':
