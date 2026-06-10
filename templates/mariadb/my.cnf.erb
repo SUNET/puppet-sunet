@@ -45,7 +45,10 @@ wsrep_gtid_mode                 = ON
 wsrep_log_conflicts             = ON
 wsrep_on                        = ON
 wsrep_provider                  = /usr/lib/galera/libgalera_smm.so
-wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0" # gmcast.segment same on all Galera nodes in the same segment
+wsrep_provider_options="
+gcache.size=2G;
+gmcast.segment=0;
+"
 wsrep_slave_threads             = 4    # CPU dependent
 wsrep_sst_method                = mariabackup
 wsrep_sync_wait                 = 1

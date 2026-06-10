@@ -7,6 +7,7 @@ define sunet::mariadb(
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
   Array[String] $dns               = [],
   Boolean $galera                  = true,
+  Boolean $use_tls                 = true,
   Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
 )
@@ -30,6 +31,16 @@ define sunet::mariadb(
   $dirs = ['datadir', 'init', 'conf', 'backups', 'scripts' ]
   $dirs.each |$dir| {
     ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, recurse => true } )
+  }
+
+  if $use_tls {
+    # Create cert dir where the TLS certs will be stored
+    file { "${mariadb_dir}/cert":
+      ensure => directory,
+      mode   => '0750',
+      owner  => 'root',
+      group  => 'root',
+    }
   }
 
   $_from = $clients + $cluster_nodes
