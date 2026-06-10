@@ -2,11 +2,12 @@
 #
 # Docs: https://cloudinit.readthedocs.io/en/latest/ (this is Data source 'No Cloud')
 #
-user: root
+users:
+  - name: root
 <% if @password -%>
-password: <%= @password %>
+    passwd: <%= @password %>
 <% end -%>
-disable_root: 0
+disable_root: false
 chpasswd:
   expire: False
 ssh_pwauth: False
@@ -53,7 +54,6 @@ apt:
         - <%= @apt_mirror %>
         - http://archive.ubuntu.com
 <% end -%>
-package_update: true
 runcmd:
    - "echo '*** debug: interfaces:'"
    - "ifconfig -a"
