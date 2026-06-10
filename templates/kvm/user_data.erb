@@ -31,6 +31,30 @@ write_files:
     content: |
       # Enable grub on serial console
       GRUB_TERMINAL=serial
+  - path: "/etc/run-cosmos-at-boot"
+    permissions: "0644"
+    owner: "root"
+    content: ""
+  - path: "/etc/systemd/system/cosmos-bootstrap.service"
+    permissions: "0644"
+    owner: "root"
+    content: |
+      [Unit]
+      Description=Bootstrap cosmos
+      After=network-online.target
+      Wants=network-online.target
+      ConditionPathExists=/etc/run-cosmos-at-boot
+
+      [Service]
+      Type=oneshot
+      ExecStart=/bin/bash -lc 'which cosmos || (cd /root && bash /root/bootstrap-cosmos.sh <%= @name %> <%= @repo %> <%= @tagpattern %>); cosmos -v update && cosmos -v apply && rm -f /etc/run-cosmos-at-boot'
+      SyslogIdentifier=cosmos-bootstrap
+      StandardOutput=journal+console
+      StandardError=journal+console
+      TimeoutStartSec=3600
+
+      [Install]
+      WantedBy=multi-user.target
 <% if @gateway6 -%>
   - path: "/etc/netplan/60-disable_ra.yaml"
     permissions: "0644"
@@ -69,5 +93,5 @@ runcmd:
    - "mount /dev/vdb /tmp/seed"
    - "cp /tmp/seed/bootstrap-cosmos.sh /tmp/seed/cosmos_*_all.deb /root"
    - "test -f /tmp/seed/sunet-reinstall.tgz && (echo 'Unpacking files from previous installation:'; cd /; tar zxvf /tmp/seed/sunet-reinstall.tgz)"
-   - "cd /root && /root/bootstrap-cosmos.sh <%= @name %> <%= @repo %> <%= @tagpattern %>"
-   - "bash -lc 'cosmos -v update && cosmos -v apply'"
+   - "systemctl enable cosmos-bootstrap.service"
+   - "reboot"
