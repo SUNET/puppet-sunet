@@ -56,7 +56,7 @@ wsrep_log_conflicts             = ON
 wsrep_on                        = ON
 wsrep_provider                  = /usr/lib/galera/libgalera_smm.so
 <% if @use_tls -%>
-wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0;socket.ssl_key=/etc/mysql/ssl/privkey.pem;socket.ssl_cert=/etc/mysql/ssl/cert.pem;socket.ssl_ca=<%= @ca_cert_path %>;socket.ssl_reload=1"
+wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0;socket.ssl=true;socket.ssl_key=/etc/mysql/ssl/privkey.pem;socket.ssl_cert=/etc/mysql/ssl/cert.pem;socket.ssl_ca=<%= @ca_cert_path %>;socket.ssl_reload=1"
 <% else -%>
 wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0"
 <% end -%>
