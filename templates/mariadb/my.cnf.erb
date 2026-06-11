@@ -1,24 +1,24 @@
 [mysqld]
 
 # General
-binlog_format           = ROW
-character_set_server    = utf8mb4
-collation_server        = utf8mb4_general_ci
-default_storage_engine  = InnoDB
-local_infile            = 0
-max_allowed_packet      = 256M
-max_connections         = 750
-skip_external_locking   = ON
-skip_name_resolve       = ON
+binlog_format            = ROW
+character_set_server     = utf8mb4
+collation_server         = utf8mb4_general_ci
+default_storage_engine   = InnoDB
+local_infile             = 0
+max_allowed_packet       = 256M
+max_connections          = 750
+skip_external_locking    = ON
+skip_name_resolve        = ON
 <% if @use_tls -%>
 ## TLS for client connections ##
-ssl-ca=<%= @ca_cert_path %>
-ssl-cert=/etc/mysql/ssl/cert.pem
-ssl-key=/etc/mysql/ssl/privkey.pem
+ssl-ca                   = <%= @ca_cert_path %>
+ssl-cert                 = /etc/mysql/ssl/cert.pem
+ssl-key                  = /etc/mysql/ssl/privkey.pem
 # Enforce encrypted connections
-require_secure_transport=ON
+require_secure_transport = ON
 # protocol hardening
-tls_version=TLSv1.2,TLSv1.3
+tls_version              = TLSv1.2,TLSv1.3
 <% end -%>
 
 # Binary logging and replication
