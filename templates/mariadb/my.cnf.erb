@@ -67,8 +67,8 @@ wsrep_sync_wait                 = 1
 
 <% if @use_tls -%>
 [sst]
-encrypt=4
-ssl-ca=<%= @ca_cert_path %>
-ssl-cert=/etc/mysql/ssl/cert.pem
-ssl-key=/etc/mysql/ssl/privkey.pem
+encrypt                         = 4
+ssl-ca                          = <%= @ca_cert_path %>
+ssl-cert                        = /etc/mysql/ssl/cert.pem
+ssl-key                         = /etc/mysql/ssl/privkey.pem
 <% end -%>
