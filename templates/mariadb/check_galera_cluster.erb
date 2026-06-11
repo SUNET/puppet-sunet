@@ -162,7 +162,7 @@ if [ "$rSSLSocket" != 'ON' ]; then
 fi
 
 if [ "$rSSL" != 'YES' ]; then
-	critText+="CRITICAL: SSLis not enabled: $rSSL (have_ssl). "
+	critText+="CRITICAL: SSL is not supported: $rSSL (have_ssl). "
 	critAlerts=$((criticalAlerts + 1))
 fi
 
