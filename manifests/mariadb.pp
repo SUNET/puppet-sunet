@@ -1,11 +1,14 @@
 # Mariadb cluster class for SUNET
 
+# @param docker_healthcheck               Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb on how to setup the healthcheck
+# @param use_tls                          Enable TLS for cluster and client traffic (requires the server to have infra certs)
+# @param ca_cert_path                     Point to the CA to use if you have enabled TLS ($use_tls)
 # @param binlog_retention_hours           The number of hours before purge-binlogs.sh removes binlog's
 define sunet::mariadb(
   String $mariadb_version          = latest,
   String $mariadb_image            = 'docker.sunet.se/drive/mariadb',
   Boolean $new_cluster             = false, # applies to maridb images from dockerhub.io
-  Boolean $docker_healthcheck      = false, # Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb on how to setup the healthcheck
+  Boolean $docker_healthcheck      = false,
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
   Array[String] $dns               = [],
   Boolean $galera                  = true,
