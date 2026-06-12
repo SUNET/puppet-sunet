@@ -1,4 +1,6 @@
 # Mariadb cluster class for SUNET
+
+# @param binlog_retention_hours           The number of hours before purge-binlogs.sh removes binlog's
 define sunet::mariadb(
   String $mariadb_version          = latest,
   String $mariadb_image            = 'docker.sunet.se/drive/mariadb',
@@ -11,6 +13,7 @@ define sunet::mariadb(
   Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
   String  $ca_cert_path            = '/etc/ssl/certs/infra-2-prod.crt',
+  Integer $binlog_retention_hours  = '6',
 )
 {
 
