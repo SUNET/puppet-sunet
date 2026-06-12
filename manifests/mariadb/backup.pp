@@ -19,6 +19,7 @@ class sunet::mariadb::backup(
     ports           => [3306],
     dns             => $dns,
     galera          => false,
+    innodb_buffer_pool_size => $innodb_buffer_pool_size,
     use_tls         => $use_tls,
   }
 
