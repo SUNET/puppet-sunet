@@ -10,6 +10,14 @@ if [ "x$1" = "x-f" ]; then
     shift
 fi
 
+# Wait up to 5 minutes for any running dehydrated cert renewal to finish
+n=30
+while [ $n -gt 0 ] && pgrep -f dehydrated >/dev/null 2>&1; do
+    echo "$0: waiting for dehydrated to finish ($n attempts left)"
+    sleep 10
+    n=$((n-1))
+done
+
 test -d /mnt/seed || mkdir /mnt/seed
 vdb_fail=0
 mount /dev/vdb /mnt/seed || vdb_fail=1
