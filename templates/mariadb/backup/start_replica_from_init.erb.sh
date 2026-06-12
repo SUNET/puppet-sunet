@@ -15,7 +15,7 @@ if [[ -f ${init_file} ]]; then
 	master_command="${master_command}, MASTER_HOST='<%= @replicate_from %>', MASTER_USER='backup'"
 	master_command="${master_command}, MASTER_PASSWORD='<%= @mariadb_backup_password%>, MASTER_SSL=1'"
 	<% if @use_tls -%>
-	master_command="${master_command}, MASTER_SSL_CA=<%= @ca_cert_path %>, MASTER_SSL_CERT=/etc/mysql/ssl/cert.pem, MASTER_SSL_KEY= /etc/mysql/ssl/client-key.pem"
+	master_command="${master_command}, MASTER_SSL_CA=<%= @ca_cert_path %>, MASTER_SSL_CERT=/etc/mysql/ssl/cert.pem, MASTER_SSL_KEY= /etc/mysql/ssl/privkey.pem"
 	<% end -%>
 	master_command="${master_command}, MASTER_CONNECT_RETRY=20"
 	zcat ${init_file} | ${mysql}
