@@ -64,7 +64,7 @@ define sunet::mariadb(
 
   file { '/usr/local/bin/purge-binlogs':
     ensure  => present,
-    content => template('sunet/mariadb/purge-binlogs.erb.sh'),
+    content => template('sunet/mariadb/purge-binlogs.sh.erb'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
