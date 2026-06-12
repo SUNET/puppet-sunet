@@ -9,6 +9,8 @@ class sunet::mariadb::backup(
   String  $backup_minute = '10',
   Integer $backup_max_age = 24,
   Integer $local_retension = 31,
+  Boolean $use_tls = false,
+  String  $ca_cert_path = '/etc/ssl/certs/infra-2-prod.crt',
 ) {
 
   sunet::mariadb { 'sunet_mariadb_simple':
@@ -17,6 +19,7 @@ class sunet::mariadb::backup(
     ports           => [3306],
     dns             => $dns,
     galera          => false,
+    use_tls         => $use_tls,
   }
 
   $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,[])
