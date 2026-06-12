@@ -11,7 +11,7 @@ class sunet::mariadb::simple(
   Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
   Boolean $use_tls                 = false,
-  Integer $binlog_retention_hours  = '6',
+  Integer $binlog_retention_hours  = 6,
 ){
   sunet::mariadb { 'sunet_mariadb_simple':
     mariadb_version         => $mariadb_version,

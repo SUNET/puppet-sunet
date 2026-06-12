@@ -16,7 +16,7 @@ define sunet::mariadb(
   Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
   String  $ca_cert_path            = '/etc/ssl/certs/infra-2-prod.crt',
-  Integer $binlog_retention_hours  = '6',
+  Integer $binlog_retention_hours  = 6,
 )
 {
 
