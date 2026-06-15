@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 if command -v mariadb &>/dev/null; then
     CMD="mariadb"
 else
