@@ -13,10 +13,12 @@ else
     DUMPCMD="mysqldump"
 fi
 
-stream_name="mariadb-stream-$(date +%Y-%m-%dT%H.%M.%S).gz"
-dump_name="mariadb-dump-$(date +%Y-%m-%dT%H.%M.%S).sql.gz"
-backup_dir="/backups/$(date +%Y/%m/%d)"
-mkdir -p "${backup_dir}"
+now="$(date +%Y-%m-%dT%H.%M.%S)"
+dir_date="$(date +%Y/%m/%d)"
+
+stream_name="mariadb-stream-${now}.gz"
+dump_name="mariadb-dump-${now}.sql.gz"
+backup_dir="/backups/${dir_date}"
 
 buopts="--slave-info --safe-slave-backup"
 dumpopts="--dump-slave"
