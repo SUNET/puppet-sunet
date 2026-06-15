@@ -12,6 +12,10 @@ if command -v mariadb-dump &>/dev/null; then
 else
     DUMPCMD="mysqldump"
 fi
+command -v mariadb-backup >/dev/null || {
+    echo "mariadb-backup not found" >&2
+    exit 1
+}
 
 now="$(date +%Y-%m-%dT%H.%M.%S)"
 dir_date="$(date +%Y/%m/%d)"
