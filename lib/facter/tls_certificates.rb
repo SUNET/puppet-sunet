@@ -25,6 +25,9 @@ Facter.add('tls_certificates') do
   filenames = Dir.glob('/etc/letsencrypt/live/*')
   filenames.each do | full_fn |
     hostpart = File.basename(full_fn)
+    if hostpart == 'README'
+      next
+    end
     res[hostpart] ||= {}
     res[hostpart]['certbot_bundle'] = full_fn
     ['cert', 'privkey', 'chain', 'fullchain'].each do | part |
