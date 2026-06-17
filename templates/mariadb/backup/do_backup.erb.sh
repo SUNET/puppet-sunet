@@ -42,6 +42,12 @@ ${DUMPCMD} \
   --events \
   --triggers \
   --quick \
+<% if @exclude_system_dbs -%>
+  --ignore-database=mysql \
+  --ignore-database=performance_schema \
+  --ignore-database=information_schema \
+  --ignore-database=sys \
+<%- end -%>
   ${dumpopts} \
   -u root -p"${MYSQL_ROOT_PASSWORD}" \
 | gzip > "${backup_dir}/${dump_name}"
