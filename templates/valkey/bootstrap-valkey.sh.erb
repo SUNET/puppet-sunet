@@ -12,4 +12,4 @@ for host in <%= @cluster_nodes.join(' ') %>; do
   done
 done
 
-redis-cli --no-auth-warning -a <%= @valkey_password %> --cluster create ${hosts} --cluster-replicas <%= @numnodes - 1 %> --tls --cert /opt/valkey/cert/cert.pem --key /opt/valkey/cert/privkey.pem --cacert <%= @ca_cert_path %>
+<%= @cli_client %> --no-auth-warning -a <%= @valkey_password %> --cluster create ${hosts} --cluster-replicas <%= @numnodes - 1 %> --tls --cert /opt/valkey/cert/cert.pem --key /opt/valkey/cert/privkey.pem --cacert <%= @ca_cert_path %>

@@ -36,8 +36,13 @@ class sunet::valkey::node(
   $valkey_password = safe_hiera('valkey_password')
 
   # valkey-tools is not available on older OS'es, but redis-tools is compatible with valkey
-  if ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') > 0)
-    or ($facts['os']['name'] == 'Debian' and versioncmp($facts['os']['release']['major'], '13') > 0) {
+  if (
+    ($facts['os']['name'] == 'Ubuntu' and
+    versioncmp($facts['os']['release']['full'], '26.04') >= 0)
+    or
+    ($facts['os']['name'] == 'Debian' and
+    versioncmp($facts['os']['release']['major'], '13') >= 0)
+  ){
     include sunet::packages::valkey_tools
     $cli_client = 'valkey-cli'
   }

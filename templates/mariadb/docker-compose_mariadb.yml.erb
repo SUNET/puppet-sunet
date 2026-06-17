@@ -1,5 +1,3 @@
-version: '3'
-
 services:
 
   db:
@@ -35,9 +33,18 @@ services:
       - MYSQL_DATABASE=<%= @mariadb_database %>
 <%- end -%>
 <%- if @galera -%>
-      - BOOTSTRAP=<%= @bootstrap %>
-      - FORCE_BOOTSTRAP=0
-    command:  "--wsrep_cluster_address=gcomm://<%= @cluster_nodes.join(',') %>"
+<%- if @new_cluster -%>
+    command:  "--wsrep-new-cluster"
+    tty: true
+<% else -%>
     tty: true
 <%- end -%>
-
+<%- end -%>
+<%- if @docker_healthcheck -%>
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+<%- end -%>

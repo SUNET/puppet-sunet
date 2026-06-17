@@ -1,17 +1,70 @@
-#!/bin/sh -eu
-# vim: ai ts=4 sts=4 et sw=4
+#!/usr/bin/env bash
+set -euo pipefail
 
-if ! [ -d '/opt/valkey/cert' ]; then
-    mkdir -p /opt/valkey/cert
+# === Configuration ===
+CERT_DIR="/opt/valkey/cert"
+CERT_DST="${CERT_DIR}/cert.pem"
+KEY_DST="${CERT_DIR}/privkey.pem"
+
+# Valkey runtime UID/GID (inside container)
+VALKEY_UID=999
+VALKEY_GID=1000
+
+VALKEY_CLI="valkey-connect"
+
+# === Sanity checks ===
+if [ -z "${RENEWED_LINEAGE:-}" ]; then
+	echo "ERROR: RENEWED_LINEAGE not set (not running from certbot?)" >&2
+	exit 1
 fi
 
-install -m 644 ${RENEWED_LINEAGE}/cert.pem \
-    /opt/valkey/cert/cert.pem
-# group 101 is freerad inside the container
-install -m 640 -g 1000 \
-    ${RENEWED_LINEAGE}/privkey.pem \
-    /opt/valkey/cert/privkey.pem
+if ! command -v "${VALKEY_CLI}" >/dev/null 2>&1; then
+	echo "ERROR: ${VALKEY_CLI} not found" >&2
+	exit 1
+fi
 
-# Touch the cert config to allow for the certificate to be re-read.
-valkey-connect --custom-command "CONFIG SET tls-cert-file /cert/cert.pem"
-valkey-connect --custom-command "CONFIG SET tls-key-file /cert/privkey.pem"
+# === Ensure directory exists ===
+install -d -m 755 "${CERT_DIR}"
+
+# === Install public certificate ===
+install -m 0644 \
+	"${RENEWED_LINEAGE}/cert.pem" \
+	"${CERT_DST}"
+
+if [ -f /etc/os-release ] && grep -qi "ubuntu" /etc/os-release; then
+	# Ubuntu needs to be handled with care
+	# https://github.com/uutils/coreutils/pull/7789/changes
+
+	# === Install private key securely ===
+	install -m 0600 \
+		"${RENEWED_LINEAGE}/privkey.pem" \
+		"${KEY_DST}"
+
+	# === Fix ownership explicitly (numeric UID/GID) ===
+	chown "${VALKEY_UID}:${VALKEY_GID}" "${KEY_DST}"
+else
+	install -m 0600 -g "${VALKEY_GID}" \
+		"${RENEWED_LINEAGE}/privkey.pem" \
+		/opt/valkey/cert/privkey.pem
+fi
+
+# === Defensive stat check (host-safe) ===
+KEY_UID="$(stat -c %u "${KEY_DST}")"
+KEY_MODE="$(stat -c %a "${KEY_DST}")"
+
+if [ "${KEY_UID}" -ne "${VALKEY_UID}" ] || [ "${KEY_MODE}" -ne 600 ]; then
+	echo "ERROR: Incorrect ownership or permissions on ${KEY_DST}" >&2
+	exit 1
+fi
+
+# Prevent reload when service is not fully installed.
+# Like when issuing the cert for the first time.
+if [ -n "${NO_RELOAD:-}" ]; then
+	exit 0
+fi
+
+# === Reload TLS material in Valkey ===
+"${VALKEY_CLI}" --custom-command "CONFIG SET tls-cert-file /cert/cert.pem"
+"${VALKEY_CLI}" --custom-command "CONFIG SET tls-key-file /cert/privkey.pem"
+
+echo "Valkey TLS certificates successfully updated"
