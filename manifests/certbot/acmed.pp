@@ -54,7 +54,8 @@ class sunet::certbot::acmed(
     exec { "certbot_issuing_${group_key}":
       command     => @("CMD"),
         certbot certonly --server ${url} \
-          ${cert_name_flag}--no-eff-email \
+          ${cert_name_flag}--expand \
+          --no-eff-email \
           --agree-tos \
           -m noc@sunet.se \
           --manual \
