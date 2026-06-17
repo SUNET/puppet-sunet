@@ -28,7 +28,7 @@ mkdir -p "${backup_dir}"
 buopts="--slave-info --safe-slave-backup"
 dumpopts="--dump-slave"
 ${CMD} -p"${MYSQL_ROOT_PASSWORD}" -e "stop slave"
-mariadmariadb-backup \
+mariadb-backup \
   --backup \
   ${buopts} \
   -u root \
