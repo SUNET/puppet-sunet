@@ -24,16 +24,16 @@ Facter.add('tls_certificates') do
   # Look for acme/certbot certs, keys and bundles
   filenames = Dir.glob('/etc/letsencrypt/live/*')
   filenames.each do | full_fn |
-    hostpart = File.basename(full_fn, '.pem')
+    hostpart = File.basename(full_fn)
     res[hostpart] ||= {}
-    res[hostpart]['dehydrated_bundle'] = full_fn
+    res[hostpart]['certbot_bundle'] = full_fn
     ['cert', 'privkey', 'chain', 'fullchain'].each do | part |
-      partname = '/etc/dehydrated/certs/' + hostpart + '/' + part + '.pem'
+      partname = '/etc/letsencrypt/live/' + hostpart + '/' + part + '.pem'
       if part == 'privkey'
         part = 'key'  # consistency with non-dehydrated certs
       end
       if File.exists? partname
-        res[hostpart]['dehydrated_' + part] = partname
+        res[hostpart]['certbot_' + part] = partname
       else
         warn("Not found: #{partname}")
       end

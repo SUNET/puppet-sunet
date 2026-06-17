@@ -30,6 +30,7 @@ define sunet::lb::load_balancer::website(
         $facts['tls_certificates'][$site_name]['infra_certkey'],
         $facts['tls_certificates'][$site_name]['bundle'],
         $facts['tls_certificates'][$site_name]['dehydrated_bundle'],
+        $facts['tls_certificates'][$site_name]['certbot_bundle'],
         'NOMATCH',
       )
       if $_tls_certificate_bundle != 'NOMATCH' {
