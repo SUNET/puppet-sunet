@@ -60,7 +60,7 @@ done
 rm "${DOMAINFILE_TEMP}"
 
 <% if @cleanup %>
-  JOBNAME="dehydrated_cleanup"
+  JOBNAME="cleanup_dehydrated"
   JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
   if [ ! -f "$JOBFILE" ]; then
     /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini

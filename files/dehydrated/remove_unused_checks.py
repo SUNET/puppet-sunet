@@ -5,37 +5,36 @@ import sys
 # Remove acmec checks and cached check data for domains not existing in local.yaml
 def remove_unused_checks(all_acmec_domains):
     has_errors = False
-    exclusions = ["gather_inventory", "dehydrated", "update_and_upgrade", "cleanup", "check_infra_cert", "cosmos"]
     
     try:
-        files = os.listdir("/etc/scriptherder/check/")
-        cfiles = os.listdir("/var/cache/scriptherder")
+        checks = os.listdir("/etc/scriptherder/check/")
+        cached_checks = os.listdir("/var/cache/scriptherder")
     except OSError as e:
         print(f"Failed to list directories: {e}")
         return True
 
-    for f in files:
-        if not f.endswith(".ini"):
+    for f in checks:
+        if not f.startswith("dehydrated_") or not f.endswith(".ini"):
             continue
         
-        fname = f[:-4].replace("dehydrated_", "").strip().lower()
-        filepath = f"/etc/scriptherder/check/{f}"
+        fn_check = f[:-4].replace("dehydrated_", "").strip().lower()
+        fp_check = f"/etc/scriptherder/check/{f}"
         
-        if fname not in all_acmec_domains and fname not in exclusions:
+        if fn_check not in all_acmec_domains:
             # Try to remove the .ini file
             try:
-                os.remove(filepath)
-                print(f"Removed unused check: {filepath}")
+                os.remove(fp_check)
+                print(f"Removed unused check: {fp_check}")
             except OSError as e:
-                print(f"Failed to remove {filepath}: {e}")
+                print(f"Failed to remove {fp_check}: {e}")
                 has_errors = True
             
             # Build the cache prefix from the .ini filename
-            cfname = f[:-4].replace(".", "_")
+            fn_cache = f[:-4].replace(".", "_")
             
             # Find and remove all cache files for this specific check
-            for cfile in cfiles:
-                if cfile.startswith(cfname + "__"):
+            for cfile in cached_checks:
+                if cfile.startswith(fn_cache + "__"):
                     cfilepath = f"/var/cache/scriptherder/{cfile}"
                     try:
                         os.remove(cfilepath)
