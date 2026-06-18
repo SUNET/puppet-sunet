@@ -76,7 +76,7 @@ class sunet::lb::load_balancer(
 
     $certbot_dir = "/etc/letsencrypt/live/${facts['networking']['fqdn']}"
 
-    ensure_resource('file', '${infra_cert}', {
+    ensure_resource('file', '$infra_cert', {
         source => "${certbot_dir}/cert.pem",
         owner  => 'root',
         group  => 'root',
@@ -87,7 +87,7 @@ class sunet::lb::load_balancer(
         source => "${certbot_dir}/privkey.pem",
         links  => 'follow',
     })
-    ensure_resource('file', '${infra_bundle}', {
+    ensure_resource('file', '$infra_bundle', {
         source => "${certbot_dir}/fullchain.pem",
         owner  => 'root',
         group  => 'root',
@@ -96,7 +96,7 @@ class sunet::lb::load_balancer(
     })
 
     # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
-    ensure_resource(sunet::misc::certbundle, '${fqdn}_haproxy', {
+    ensure_resource(sunet::misc::certbundle, "${fqdn}_haproxy", {
       bundle => [
         "cert=${infra_cert}",
         "key=${infra_key}",
