@@ -76,18 +76,18 @@ class sunet::lb::load_balancer(
 
     $certbot_dir = "/etc/letsencrypt/live/${facts['networking']['fqdn']}"
 
-    ensure_resource('file', '$infra_cert', {
+    ensure_resource('file', "${infra_cert}", {
         source => "${certbot_dir}/cert.pem",
         owner  => 'root',
         group  => 'root',
         mode   => '0644',
         links  => 'follow',
     })
-    ensure_resource('file', '$infra_key', {
+    ensure_resource('file', "${infra_key}", {
         source => "${certbot_dir}/privkey.pem",
         links  => 'follow',
     })
-    ensure_resource('file', '$infra_bundle', {
+    ensure_resource('file', "${infra_bundle}", {
         source => "${certbot_dir}/fullchain.pem",
         owner  => 'root',
         group  => 'root',
