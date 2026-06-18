@@ -106,14 +106,17 @@ class sunet::lb::load_balancer(
     })
 
     each($websites) | $site, $config | {
-      if 'infra_certificate_bundle' in $config {
-        exec { 'reload_container':
-          command     => "systemctl restart frontend-${site}.service",
-          subscribe   => File['/opt/frontend/config/ssl/infra_haproxy.crt'],
-          refreshonly => true,
+      if 'haproxy_volumes' in $config {
+        each($config['haproxy_volumes']) |$volume| {
+          if $volume =~ /infra_haproxy.crt/ {
+            exec { 'reload_container':
+              command     => "systemctl restart frontend-${site}.service",
+              subscribe   => File['/opt/frontend/config/ssl/infra_haproxy.crt'],
+              refreshonly => true,
+            }
+          }
         }
       }
     }
   }
-
 }
