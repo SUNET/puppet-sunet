@@ -73,6 +73,27 @@ class sunet::lb::load_balancer(
     $infra_cert = $facts['tls_certificates'][$fqdn]['infra_cert']
     $infra_key = $facts['tls_certificates'][$fqdn]['infra_key']
 
+    $certbot_dir = "/etc/letsencrypt/live/${facts['networking']['fqdn']}"
+
+    ensure_resource('file', "${infra_cert}", {
+        source => "${certbot_dir}/cert.pem",
+        owner  => 'root',
+        group  => 'root',
+        mode   => '0644',
+        links  => 'follow',
+    })
+    ensure_resource('file', "${infra_key}", {
+        source => "${certbot_dir}/privkey.pem",
+        links  => 'follow',
+    })
+    ensure_resource('file', "${infra_bundle}", {
+        source => "${certbot_dir}/fullchain.pem",
+        owner  => 'root',
+        group  => 'root',
+        mode   => '0644',
+        links  => 'follow',
+    })
+
     # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
     ensure_resource(sunet::misc::certbundle, "${fqdn}_haproxy", {
       bundle => [
@@ -82,5 +103,16 @@ class sunet::lb::load_balancer(
       ],
       group => 'haproxy',
     })
+
+    each($websites) | $site, $config | {
+      if 'infra_certificate_bundle' in $config {
+        exec { 'reload_container':
+          command     => "systemctl restart frontend-${site}.service",
+          subscribe   => File['/opt/frontend/config/ssl/infra_haproxy.crt'],
+          refreshonly => true,
+        }
+      }
+    }
   }
+
 }
