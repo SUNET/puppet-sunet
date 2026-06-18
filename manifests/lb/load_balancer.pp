@@ -72,6 +72,7 @@ class sunet::lb::load_balancer(
   if $fqdn in $facts['tls_certificates'] and 'infra_cert' in $facts['tls_certificates'][$fqdn] {
     $infra_cert = $facts['tls_certificates'][$fqdn]['infra_cert']
     $infra_key = $facts['tls_certificates'][$fqdn]['infra_key']
+    $infra_bundle = $facts['tls_certificates'][$fqdn]['infra_bundle']
 
     $certbot_dir = "/etc/letsencrypt/live/${facts['networking']['fqdn']}"
 
