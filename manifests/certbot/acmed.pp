@@ -55,6 +55,7 @@ class sunet::certbot::acmed(
       command     => @("CMD"),
         certbot certonly --server ${url} \
           ${cert_name_flag}--expand \
+          --force-renewal \
           --no-eff-email \
           --agree-tos \
           -m noc@sunet.se \
