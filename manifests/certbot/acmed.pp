@@ -35,9 +35,13 @@ class sunet::certbot::acmed(
     $group_key     = $cert_name ? { undef => $effective_url, default => "${effective_url}::${cert_name}" }
     $existing      = $group_key in $acc ? {
       true    => $acc[$group_key],
-      default => { 'url' => $effective_url, 'cert_name' => $cert_name, 'domains' => [] }
+      default => { 'url' => $effective_url, 'cert_name' => $cert_name, 'deploy_hook' => undef, 'domains' => [] }
     }
-    $acc + { $group_key => $existing + { 'domains' => $existing['domains'] + [$domain] } }
+    $deploy_hook   = $existing['deploy_hook'] ? {
+      undef   => $config['deploy_hook'],
+      default => $existing['deploy_hook'],
+    }
+    $acc + { $group_key => $existing + { 'deploy_hook' => $deploy_hook, 'domains' => $existing['domains'] + [$domain] } }
   }
 
   file { '/etc/letsencrypt/acmedns.json':
@@ -49,12 +53,13 @@ class sunet::certbot::acmed(
     $url           = $cert['url']
     $domains       = $cert['domains']
     $domain_arg    = join($domains, ' -d ')
-    $cert_name_flag = $cert['cert_name'] ? { undef => '', default => "--cert-name ${cert['cert_name']} " }
-    $deploy_name   = $cert['cert_name'] ? { undef => $domains[0], default => $cert['cert_name'] }
+    $cert_name_flag  = $cert['cert_name'] ? { undef => '', default => "--cert-name ${cert['cert_name']} " }
+    $deploy_hook_flag = $cert['deploy_hook'] ? { undef => '', default => "--deploy-hook ${cert['deploy_hook']} " }
+    $deploy_name     = $cert['cert_name'] ? { undef => $domains[0], default => $cert['cert_name'] }
     exec { "certbot_issuing_${group_key}":
       command     => @("CMD"),
         certbot certonly --server ${url} \
-          ${cert_name_flag}--expand \
+          ${cert_name_flag}${deploy_hook_flag}--expand \
           --force-renewal \
           --no-eff-email \
           --agree-tos \
