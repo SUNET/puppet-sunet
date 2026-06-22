@@ -87,12 +87,12 @@ class sunet::lb::load_balancer(
         source => "${certbot_dir}/privkey.pem",
         links  => 'follow',
     })
-    ensure_resource('file', $infra_bundle, {
-        source => "${certbot_dir}/fullchain.pem",
-        owner  => 'root',
-        group  => 'root',
-        mode   => '0644',
-        links  => 'follow',
+    ensure_resource(sunet::misc::certbundle, create_infra_bundle, {
+      bundle => [
+        "cert=${certbot_dir}/fullchain.pem",
+        "key=${certbot_dir}/privkey.pem",
+        "out=${infra_bundle}",
+      ],
     })
 
     # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
