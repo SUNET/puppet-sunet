@@ -83,34 +83,34 @@ class sunet::server (
     class { 'sunet::security::disable_all_local_users': }
   }
 
-  if $facts['is_virtual'] == true and $facts['dmi']['product']['name'] !~ /OpenStack\s(Compute|Nova)/ {
+  if $facts['is_virtual'] == true and (!$facts['dmi'] or $facts.dig('dmi', 'product', 'name') !~ /OpenStack\s(Compute|Nova)/) {
     file { '/usr/local/bin/sunet-reinstall':
       ensure  => file,
       mode    => '0755',
       content => template('sunet/kvm/sunet-reinstall.erb'),
     }
     sunet::scriptherder::cronjob { 'sunet_reinstall':
-      # sleep 150 to avoid running at the same time as the cronjob fetching new certificates
-      cmd           => "sh -c 'sleep 150; /usr/local/bin/sunet-reinstall -f'",
+      cmd           => '/usr/local/bin/sunet-reinstall -f',
       ok_criteria   => ['exit_status=0', 'max_age=25h'],
       warn_criteria => ['exit_status=0', 'max_age=49h'],
       special       => 'daily',
     }
   }
 
-  if $facts['dmi']['product']['name'] =~ /OpenStack\s(Compute|Nova)/ {
+  if $facts['dmi'] and $facts.dig('dmi', 'product', 'name') =~ /OpenStack\s(Compute|Nova)/ {
     class { 'sunet::iaas::server': }
   }
 
-  file { '/etc/default/grub.d/99-sunet-grub-menu.cfg':
-    ensure  => present,
-    content => file('sunet/server/99-sunet-grub-menu.cfg'),
-    notify  => Exec['sunet_server_update_grub'],
-
-  }
-  exec { 'sunet_server_update_grub':
-    command     => '/usr/sbin/update-grub',
-    refreshonly => true,
+  if $facts.dig('os', 'distro', 'id') != 'Raspbian' {
+    file { '/etc/default/grub.d/99-sunet-grub-menu.cfg':
+      ensure  => present,
+      content => file('sunet/server/99-sunet-grub-menu.cfg'),
+      notify  => Exec['sunet_server_update_grub'],
+    }
+    exec { 'sunet_server_update_grub':
+      command     => '/usr/sbin/update-grub',
+      refreshonly => true,
+    }
   }
 
 }
