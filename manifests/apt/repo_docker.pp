@@ -31,6 +31,11 @@ define sunet::apt::repo_docker (
   } else {
     # Ubuntu 24.04+ (apt 2.7+) and Debian 13+ removed apt-key support;
     # use a signed-by keyring file instead.
+
+    # Clean up old repo to avoid Signed-By conflicts
+    file { '/etc/apt/sources.list.d/docker_ce.list':
+      ensure => absent,
+    }
     file { '/etc/apt/keyrings':
       ensure => directory,
       mode   => '0755',
