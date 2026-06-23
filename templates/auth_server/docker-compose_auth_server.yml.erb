@@ -63,14 +63,30 @@ services:
     depends_on:
      - auth_server
 <% if @facts['dockerhost2'] && @facts['dockerhost2'] == 'yes' -%>
-    network_mode: host
+    networks:
+      default:
+        ipv4_address: 172.16.1.2
+        ipv6_address: fdad:baa5:12ae::2
 <% end -%>
 
 volumes:
   mongodbdata:
-
+<% if @facts['dockerhost2'] && @facts['dockerhost2'] == 'yes' -%>
+networks:
+  default:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.16.1.0/24
+          ip_range: 172.16.1.128/25
+          gateway: 172.16.1.1
+        - subnet: fdad:baa5:12ae::/64
+          ip_range: fdad:baa5:12ae:0:8000::/65
+          gateway: fdad:baa5:12ae::1
+<% else -%>
 # Provide user-friendly name of bridge interface
 networks:
   default:
     driver_opts:
       com.docker.network.bridge.name: br-<%= @service_name[0,12] %>  # bridge name can not be longer than 15 chars
+<% end -%>

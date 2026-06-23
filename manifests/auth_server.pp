@@ -14,6 +14,8 @@ define sunet::auth_server(
     Array $allow_clients     = [$facts['cosmos']['frontend_server_addrs']],
     Array $lb_hosts          = $facts['cosmos']['frontend_server_hosts'],
     String $pyff_version     = '2.0.0',
+    String $ca_file_path     = '/etc/ssl/certs/infra.crt',
+
 ) {
 
     ensure_resource('sunet::system_user', $username, {
@@ -48,6 +50,16 @@ define sunet::auth_server(
         group   => $group,
         force   => true,
         notify  => [Sunet::Docker_compose["${service_name}-docker-compose"]],
+    }
+
+    if $::facts['dockerhost2'] == 'yes' {
+      sunet::nftables::rule { 'DNAT port 443 to haproxy':
+        rule => "add rule ip nat prerouting iifname != \"br-*\" ip daddr ${facts['networking']['ip']} tcp dport 443 counter dnat to 172.16.1.2:443 comment \"DNAT HTTPS directly to container\""
+      }
+
+      sunet::nftables::rule { 'allow post-DNAT traffic to haproxy':
+        rule => "add rule inet filter forward iifname != \"br-*\" oifname \"br-*\" ip daddr 172.16.1.2 tcp dport 443 counter accept comment \"allow post-DNAT HTTPS to container\""
+      }
     }
 
     if $saml_sp {
