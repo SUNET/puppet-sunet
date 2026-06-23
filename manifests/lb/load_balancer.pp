@@ -14,6 +14,8 @@ class sunet::lb::load_balancer(
   Integer $haproxy     = $base_uidgid + 10,
   Integer $telegraf    = $base_uidgid + 11,
   Integer $varnish     = $base_uidgid + 12,
+  Enum['old_ca', 'new_ca'] $cert_source  = 'old_ca',
+
 ) {
   # Set up users for running all services as non-root
   class { 'sunet::lb::load_balancer::users':
@@ -69,37 +71,18 @@ class sunet::lb::load_balancer(
 
   $fqdn = $facts['networking']['fqdn']
 
-  if $fqdn in $facts['tls_certificates'] and 'infra_cert' in $facts['tls_certificates'][$fqdn] {
-    $infra_cert = $facts['tls_certificates'][$fqdn]['infra_cert']
-    $infra_key = $facts['tls_certificates'][$fqdn]['infra_key']
-    $infra_bundle = $facts['tls_certificates'][$fqdn]['infra_bundle']
+  $certbot_dir = "/etc/letsencrypt/live/${facts['networking']['fqdn']}"
 
-    $certbot_dir = "/etc/letsencrypt/live/${facts['networking']['fqdn']}"
+  $cert_file = "${certbot_dir}/cert.pem"
+  $key_file = "${certbot_dir}/privkey.pem"
 
-    ensure_resource('file', $infra_cert, {
-        source => "${certbot_dir}/cert.pem",
-        owner  => 'root',
-        group  => 'root',
-        mode   => '0644',
-        links  => 'follow',
-    })
-    ensure_resource('file', $infra_key, {
-        source => "${certbot_dir}/privkey.pem",
-        links  => 'follow',
-    })
-    ensure_resource(sunet::misc::certbundle, create_infra_bundle, {
-      bundle => [
-        "cert=${certbot_dir}/fullchain.pem",
-        "key=${certbot_dir}/privkey.pem",
-        "out=${infra_bundle}",
-      ],
-    })
+  if (find_file($cert_file)) and (find_file($key_file)) and $cert_source == 'new_ca' {
 
     # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
-    ensure_resource(sunet::misc::certbundle, "${fqdn}_haproxy", {
+    ensure_resource(sunet::misc::certbundle, newca_infra_bundle, {
       bundle => [
-        "cert=${infra_cert}",
-        "key=${infra_key}",
+        "cert=${cert_file}",
+        "key=${key_file}",
         'out=/opt/frontend/config/ssl/infra_haproxy.crt',
       ],
       group => 'haproxy',
@@ -118,5 +101,21 @@ class sunet::lb::load_balancer(
         }
       }
     }
+  }
+
+  if $fqdn in $facts['tls_certificates'] and 'infra_cert' in $facts['tls_certificates'][$fqdn] and $cert_source == 'old_ca'{
+    $infra_cert = $facts['tls_certificates'][$fqdn]['infra_cert']
+    $infra_key = $facts['tls_certificates'][$fqdn]['infra_key']
+    $infra_bundle = $facts['tls_certificates'][$fqdn]['infra_bundle']
+
+    # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
+    ensure_resource(sunet::misc::certbundle, oldca_infra_bundle, {
+      bundle => [
+        "cert=${infra_cert}",
+        "key=${infra_key}",
+        'out=/opt/frontend/config/ssl/infra_haproxy.crt',
+      ],
+      group => 'haproxy',
+    })
   }
 }
