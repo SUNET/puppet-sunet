@@ -106,7 +106,6 @@ class sunet::lb::load_balancer(
   if $fqdn in $facts['tls_certificates'] and 'infra_cert' in $facts['tls_certificates'][$fqdn] and $cert_source == 'old_ca'{
     $infra_cert = $facts['tls_certificates'][$fqdn]['infra_cert']
     $infra_key = $facts['tls_certificates'][$fqdn]['infra_key']
-    $infra_bundle = $facts['tls_certificates'][$fqdn]['infra_bundle']
 
     # Create a haproxy cert bundle from the infracert, to be used as client certififace when connecting to backends
     ensure_resource(sunet::misc::certbundle, oldca_infra_bundle, {
