@@ -194,6 +194,18 @@ class sunet::dockerhost(
     }
   }
 
+  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0 {
+    package { 'docker-compose-plugin':
+      ensure  => installed,
+      require => Exec['dockerhost_apt_get_update'],
+    }
+  } else {
+    file { '/usr/local/bin/docker-compose':
+      mode    => '0755',
+      content => template('sunet/dockerhost/docker-compose.erb'),
+    }
+  }
+
   file {
     '/etc/logrotate.d':
       ensure => 'directory',
@@ -207,23 +219,11 @@ class sunet::dockerhost(
       ;
     }
 
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0 {
-    package { 'docker-compose-plugin':
-      ensure  => installed,
-      require => Exec['dockerhost_apt_get_update'],
-    }
-  } else {
-    file { '/usr/local/bin/docker-compose':
-      mode    => '0755',
-      content => template('sunet/dockerhost/docker-compose.erb'),
-    }
+  file { '/usr/local/bin/docker-upgrade':
+    ensure => 'present',
+    mode   => '0755',
+    source => 'puppet:///modules/sunet/docker/docker-upgrade',
   }
-
-    file { '/usr/local/bin/docker-upgrade':
-        ensure => 'present',
-        mode   => '0755',
-        source => 'puppet:///modules/sunet/docker/docker-upgrade',
-    }
 
   if $facts['sunet_has_nrpe_d'] == 'yes' {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
