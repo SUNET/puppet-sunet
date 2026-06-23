@@ -92,7 +92,7 @@ class sunet::lb::load_balancer(
       if 'haproxy_volumes' in $config {
         each($config['haproxy_volumes']) |$volume| {
           if $volume =~ /infra_haproxy.crt/ {
-            exec { 'reload_container':
+            exec { "reload_container_${site}":
               command     => "systemctl restart frontend-${site}.service",
               subscribe   => File['/opt/frontend/config/ssl/infra_haproxy.crt'],
               refreshonly => true,
