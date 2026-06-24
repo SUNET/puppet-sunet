@@ -52,9 +52,9 @@ class sunet::certbot::acmed(
     $url           = $cert['url']
     $domains       = $cert['domains']
     $domain_arg    = join($domains, ' -d ')
-    $cert_name_flag  = $cert['cert_name'] ? { undef => '', default => "--cert-name ${cert['cert_name']} " }
-    $deploy_hook_flag = $cert['deploy_hook'] ? { undef => '', default => "--deploy-hook ${cert['deploy_hook']} " }
-    $deploy_name     = $cert['cert_name'] ? { undef => $domains[0], default => $cert['cert_name'] }
+    $cert_name_flag    = $cert['cert_name'] ? { undef => '', default => "--cert-name ${shellquote($cert['cert_name'])} " }
+    $deploy_hook_flag   = $cert['deploy_hook'] ? { undef => '', default => "--deploy-hook ${shellquote($cert['deploy_hook'])} " }
+    $deploy_name        = $cert['cert_name'] ? { undef => $domains[0], default => $cert['cert_name'] }
     exec { "certbot_issuing_${group_key}":
       command     => @("CMD"),
         certbot certonly --server ${url} \
