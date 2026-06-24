@@ -2,10 +2,7 @@
 services:
   ta:
     restart: always
-    build: .
     image: docker.sunet.se/inmor:<%= @inmor_version %>
-    networks:
-      - inmor-net
     healthcheck:
       test: ['CMD', 'curl', '--insecure', '--fail', '--silent', 'http://localhost:8080/health']
       interval: 10s
@@ -27,8 +24,6 @@ services:
     restart: always
     image: postgres:14-alpine
     shm_size: 1024mb
-    networks:
-      - inmor-net
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'postgres']
       interval: 30s
@@ -42,8 +37,6 @@ services:
   redis:
     restart: always
     image: redis:7-alpine
-    networks:
-      - inmor-net
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 30s
@@ -54,8 +47,6 @@ services:
       - ./redis:/data
   admin:
     image: docker.sunet.se/inmor-admin:<%= @inmor_version %>
-    networks:
-      - inmor-net
     depends_on:
       db:
         condition: service_healthy
@@ -74,8 +65,6 @@ services:
       - ./localsettings.py:/app/inmoradmin/localsettings.py:ro
   nginx:
     image: nginx:1.21
-    networks:
-      - inmor-net
     depends_on:
       ta:
         condition: service_healthy
@@ -96,6 +85,3 @@ services:
     ports:
       - "80:80"
 <%- end -%>  
-networks:
-  inmor-net:
-    driver: bridge
