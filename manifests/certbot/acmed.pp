@@ -41,6 +41,7 @@ class sunet::certbot::acmed(
       fail("certbot_acmed_clients deploy_hook mismatch for ${group_key}")
     }
     $deploy_hook = pick($existing['deploy_hook'], $config['deploy_hook'])
+    $acc + { $group_key => $existing + { 'deploy_hook' => $deploy_hook, 'domains' => $existing['domains'] + [$domain] } }
   }
 
   file { '/etc/letsencrypt/acmedns.json':
