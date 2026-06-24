@@ -37,11 +37,10 @@ class sunet::certbot::acmed(
       true    => $acc[$group_key],
       default => { 'url' => $effective_url, 'cert_name' => $cert_name, 'deploy_hook' => undef, 'domains' => [] }
     }
-    $deploy_hook   = $existing['deploy_hook'] ? {
-      undef   => $config['deploy_hook'],
-      default => $existing['deploy_hook'],
+    if $existing['deploy_hook'] and $config['deploy_hook'] and $existing['deploy_hook'] != $config['deploy_hook'] {
+      fail("certbot_acmed_clients deploy_hook mismatch for ${group_key}")
     }
-    $acc + { $group_key => $existing + { 'deploy_hook' => $deploy_hook, 'domains' => $existing['domains'] + [$domain] } }
+    $deploy_hook = pick($existing['deploy_hook'], $config['deploy_hook'])
   }
 
   file { '/etc/letsencrypt/acmedns.json':
