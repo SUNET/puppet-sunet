@@ -27,7 +27,7 @@ PATRONI_GID=999
 umask 077
 
 # === Ensure directory exists ===
-install -d -m 750 "${CERT_DIR}"
+install -d -m 755 "${CERT_DIR}"
 
 # === Copy certs to temp files ===
 cp "${RENEWED_LINEAGE}/fullchain.pem" "${CERT_DIR}/cert.pem.tmp"
