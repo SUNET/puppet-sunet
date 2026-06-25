@@ -29,8 +29,7 @@ Facter.add('tls_certificates') do
       next
     end
     res[hostpart] ||= {}
-    res[hostpart]['certbot_bundle'] = full_fn
-    ['cert', 'privkey', 'chain', 'fullchain'].each do | part |
+    ['cert', 'privkey', 'chain', 'fullchain', 'bundle'].each do | part |
       partname = '/etc/letsencrypt/live/' + hostpart + '/' + part + '.pem'
       if part == 'privkey'
         part = 'key'  # consistency with non-dehydrated certs
