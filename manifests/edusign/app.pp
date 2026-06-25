@@ -36,6 +36,7 @@ class sunet::edusign::app(
   # SP post v1.5 vars for bankid
   $bankid_md_path = hiera('bankid_md_path')
   $bankid_entity_id = hiera('bankid_entity_id')
+  $edusign_sp_extra_variables = hiera('edusign_sp_extra_variables', [])
 
   $env_sp = ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
             "SP_HOSTNAME=${_host}",
@@ -45,9 +46,7 @@ class sunet::edusign::app(
             'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
             "MULTISIGN_BUTTONS=${invites}",
             "BANKID_MD_PATH=${bankid_md_path}",
-            "BANKID_ENTITY_ID=${bankid_entity_id}",
-            "BANKID_IDP=${bankid_idp}",
-            "FREJA_IDP=${freja_idp}"
+            "BANKID_ENTITY_ID=${bankid_entity_id}"
             ]
 
   $env_sp_final = $env_sp + $edusign_sp_extra_variables
