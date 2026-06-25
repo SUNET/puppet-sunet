@@ -45,7 +45,9 @@ class sunet::edusign::app(
             'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
             "MULTISIGN_BUTTONS=${invites}",
             "BANKID_MD_PATH=${bankid_md_path}",
-            "BANKID_ENTITY_ID=${bankid_entity_id}"
+            "BANKID_ENTITY_ID=${bankid_entity_id}",
+            "BANKID_IDP=${bankid_idp}",
+            "FREJA_IDP=${freja_idp}"
             ]
 
   $env_sp_final = $env_sp + $edusign_sp_extra_variables
@@ -95,7 +97,11 @@ class sunet::edusign::app(
   $edusign_api_profile_bankid = hiera('edusign_api_profile_bankid')
   $edusign_api_username_bankid = hiera('edusign_api_username_bankid')
   $edusign_api_password_bankid = hiera('edusign_api_password_bankid')
+  $edusign_api_profile_freja = hiera('edusign_api_profile_freja')
+  $edusign_api_username_freja = hiera('edusign_api_username_freja')
+  $edusign_api_password_freja = hiera('edusign_api_password_freja')
   $bankid_idp = hiera('bankid_idp')
+  $freja_idp = hiera('freja_idp')
 
   $env_app = [ "SP_HOSTNAME=${_host}",
               "SERVER_NAME=${host}",
@@ -129,7 +135,11 @@ class sunet::edusign::app(
               "EDUSIGN_API_PROFILE_BANKID=${edusign_api_profile_bankid}",
               "EDUSIGN_API_USERNAME_BANKID=${edusign_api_username_bankid}",
               "EDUSIGN_API_PASSWORD_BANKID=${edusign_api_password_bankid}",
-              "BANKID_IDP=${bankid_idp}"
+              "EDUSIGN_API_PROFILE_FREJA=${edusign_api_profile_freja}",
+              "EDUSIGN_API_USERNAME_FREJA=${edusign_api_username_freja}",
+              "EDUSIGN_API_PASSWORD_FREJA=${edusign_api_password_freja}",
+              "BANKID_IDP=${bankid_idp}",
+              "FREJA_IDP=${freja_idp}"
   ]
 
   $env_app_final = $env_app + $edusign_app_extra_variables
