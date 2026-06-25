@@ -44,11 +44,11 @@ class sunet::edusign::app(
             'ACMEPROXY=acme-c.sunet.se',
             'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
             "MULTISIGN_BUTTONS=${invites}",
-            'MDQ_BASE_URL=https://mds.swamid.se/',
-            'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt',
             "BANKID_MD_PATH=${bankid_md_path}",
             "BANKID_ENTITY_ID=${bankid_entity_id}"
             ]
+
+  $env_sp_final = $env_sp + $edusign_sp_extra_variables
 
   if ($edusign_idp_entityid == '') {
     sunet::docker_run{'edusign-sp':
@@ -58,12 +58,11 @@ class sunet::edusign::app(
       hostname => $facts['networking']['fqdn'],
       volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
                     '/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
-      env      => $env_sp,
+      env      => $env_sp_final,
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
     }
   } else {
-
     sunet::docker_run{'edusign-sp':
       ensure   => $ensure,
       image    => 'docker.sunet.se/edusign-sp',
@@ -71,7 +70,7 @@ class sunet::edusign::app(
       hostname => $facts['networking']['fqdn'],
       volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
                     '/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
-      env      => $env_sp,
+      env      => $env_sp_final,
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
     }
