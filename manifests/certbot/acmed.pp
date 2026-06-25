@@ -30,7 +30,6 @@ class sunet::certbot::acmed(
     }
   }
 
-
   $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})
 
   # Group domains into certs by (effective CA URL, cert_name).
