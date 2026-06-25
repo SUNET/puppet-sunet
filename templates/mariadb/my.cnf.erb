@@ -23,7 +23,7 @@ tls_version              = TLSv1.2,TLSv1.3
 
 # Binary logging and replication
 expire_logs_days        = 7
-gtid_domain_id          = 1000
+gtid_domain_id          = <%= @server_id %>
 gtid_ignore_duplicates  = ON
 gtid_strict_mode        = ON
 log_bin                 = binlog
