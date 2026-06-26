@@ -35,20 +35,18 @@ class sunet::edusign::app(
 
   # SP post v1.5 vars for bankid
   $bankid_md_path = hiera('bankid_md_path')
-  $bankid_entity_id = hiera('bankid_entity_id')
+  $edusign_sp_extra_variables = hiera('edusign_sp_extra_variables', [])
 
   $env_sp = ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
             "SP_HOSTNAME=${_host}",
             'BACKEND_HOST=edusign-app.docker',
             'MAX_FILE_SIZE=20M',
             'ACMEPROXY=acme-c.sunet.se',
-            'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
             "MULTISIGN_BUTTONS=${invites}",
-            'MDQ_BASE_URL=https://mds.swamid.se/',
-            'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt',
-            "BANKID_MD_PATH=${bankid_md_path}",
-            "BANKID_ENTITY_ID=${bankid_entity_id}"
+            "BANKID_MD_PATH=${bankid_md_path}"
             ]
+
+  $env_sp_final = $env_sp + $edusign_sp_extra_variables
 
   if ($edusign_idp_entityid == '') {
     sunet::docker_run{'edusign-sp':
@@ -57,13 +55,12 @@ class sunet::edusign::app(
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
       volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
-                    '/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
-      env      => $env_sp,
+                    '/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/swamid-qa.crt:/etc/shibboleth/md-signer2.crt:ro'],
+      env      => $env_sp_final,
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
     }
   } else {
-
     sunet::docker_run{'edusign-sp':
       ensure   => $ensure,
       image    => 'docker.sunet.se/edusign-sp',
@@ -71,7 +68,7 @@ class sunet::edusign::app(
       hostname => $facts['networking']['fqdn'],
       volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
                     '/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
-      env      => $env_sp,
+      env      => $env_sp_final,
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
     }
@@ -96,7 +93,11 @@ class sunet::edusign::app(
   $edusign_api_profile_bankid = hiera('edusign_api_profile_bankid')
   $edusign_api_username_bankid = hiera('edusign_api_username_bankid')
   $edusign_api_password_bankid = hiera('edusign_api_password_bankid')
+  $edusign_api_profile_freja = hiera('edusign_api_profile_freja')
+  $edusign_api_username_freja = hiera('edusign_api_username_freja')
+  $edusign_api_password_freja = hiera('edusign_api_password_freja')
   $bankid_idp = hiera('bankid_idp')
+  $freja_idp = hiera('freja_idp')
 
   $env_app = [ "SP_HOSTNAME=${_host}",
               "SERVER_NAME=${host}",
@@ -130,7 +131,11 @@ class sunet::edusign::app(
               "EDUSIGN_API_PROFILE_BANKID=${edusign_api_profile_bankid}",
               "EDUSIGN_API_USERNAME_BANKID=${edusign_api_username_bankid}",
               "EDUSIGN_API_PASSWORD_BANKID=${edusign_api_password_bankid}",
-              "BANKID_IDP=${bankid_idp}"
+              "EDUSIGN_API_PROFILE_FREJA=${edusign_api_profile_freja}",
+              "EDUSIGN_API_USERNAME_FREJA=${edusign_api_username_freja}",
+              "EDUSIGN_API_PASSWORD_FREJA=${edusign_api_password_freja}",
+              "BANKID_IDP=${bankid_idp}",
+              "FREJA_IDP=${freja_idp}"
   ]
 
   $env_app_final = $env_app + $edusign_app_extra_variables
