@@ -22,15 +22,15 @@ tls_version              = TLSv1.2,TLSv1.3
 <% end -%>
 
 # Binary logging and replication
-expire_logs_days        = 7
-gtid_domain_id          = <%= @server_id %>
-gtid_ignore_duplicates  = ON
-gtid_strict_mode        = ON
-log_bin                 = binlog
-log_slave_updates       = ON
-server_id               = <%= @server_id %>
+binlog_expire_logs_seconds = 604800 # 7 days
+gtid_domain_id             = <%= @server_id %>
+gtid_ignore_duplicates     = ON
+gtid_strict_mode           = ON
+log_bin                    = binlog
+log_slave_updates          = ON
+server_id                  = <%= @server_id %>
 # Default hostname base relay_log is no good in containers
-relay_log               = 'relay-log'
+relay_log                  = 'relay-log'
 
 # Innodb
 innodb_autoinc_lock_mode        = 2
