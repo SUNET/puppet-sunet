@@ -42,7 +42,6 @@ class sunet::edusign::app(
             'BACKEND_HOST=edusign-app.docker',
             'MAX_FILE_SIZE=20M',
             'ACMEPROXY=acme-c.sunet.se',
-            'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
             "MULTISIGN_BUTTONS=${invites}",
             "BANKID_MD_PATH=${bankid_md_path}"
             ]
@@ -56,7 +55,7 @@ class sunet::edusign::app(
       imagetag => $version,
       hostname => $facts['networking']['fqdn'],
       volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
-                    '/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
+                    '/etc/edusign:/etc/edusign:ro', '/opt/metadata/trust/swamid/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro', '/opt/metadata/trust/swamid/swamid-qa.crt:/etc/shibboleth/md-signer2.crt:ro'],
       env      => $env_sp_final,
       depends  => ['edusign-app'],
       ports    => ['443:443','80:80']
