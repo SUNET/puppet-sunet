@@ -34,6 +34,14 @@ class sunet::django_ca::server (
     port => 443,
   }
 
+  if ! $legacy_ca {
+    file { '/etc/letsencrypt/renewal-hooks/deploy/djangoca':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/django-ca/certbot-renewal-hook.sh'),
+    }
+  }
+
   # Get the HSM pin from hiera
   $pkcs11_pin = safe_hiera('pkcs11_pin')
   # Get the django-ca database password
