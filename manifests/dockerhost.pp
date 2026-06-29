@@ -6,7 +6,8 @@ class sunet::dockerhost(
   $storage_driver                             = undef,
   $docker_extra_parameters                    = undef,
   Boolean $run_docker_cleanup                 = true,
-  Variant[String, Boolean] $docker_network    = lookup('dockerhost_docker_network', Variant[String, Boolean], undef, '172.18.0.0/22'),
+  Optional[Variant[String, Boolean]] $docker_network =
+    lookup('dockerhost_docker_network', Optional[Variant[String, Boolean]], undef, '172.18.0.0/22'),
   String $docker_network_v6                   = lookup('dockerhost_docker_network_v6', String, undef, 'fd0c:d0c::/64'),  # default bridge
   Variant[String, Array[String]] $docker_dns  = $facts['networking']['ip'],
   Boolean $ufw_allow_docker_dns               = true,
@@ -23,22 +24,24 @@ class sunet::dockerhost(
   include sunet::packages::python3_yaml # check_docker_containers requirement
   include stdlib
 
+  # Clean up files created by old garethr-docker-based configuration
+  file { '/etc/default/docker':
+    ensure => absent,
+  }
+
+  file { '/etc/systemd/system/docker.service.d':
+    ensure => directory,
+    before => Package[$docker_package_name],
+  }
+
   if $::facts['sunet_nftables_enabled'] == 'yes' and $advanced_network == false {
-    # Hackishly create the /etc/systemd/system/docker.service.d/ directory before the docker service is installed.
-    # If we do this using 'file', the docker class will fail because of a duplicate declaration.
-    exec { "create_${name}_service_dir":
-      command => '/bin/mkdir -p /etc/systemd/system/docker.service.d/',
-      unless  => '/usr/bin/test -d /etc/systemd/system/docker.service.d/',
-    }
-    # The nftables ns dropin file must be in place bedore the docker service is installed on a new host,
+    # The nftables ns dropin file must be in place before the docker service is installed on a new host,
     # otherwise the docker0 interface will be created and interfere until reboot.
-    #
-    file {
-      '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
-        ensure  => file,
-        mode    => '0444',
-        content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
-        ;
+    file { '/etc/systemd/system/docker.service.d/docker_nftables_ns.conf':
+      ensure  => file,
+      mode    => '0444',
+      content => template('sunet/dockerhost/systemd_dropin_nftables_ns.conf.erb'),
+      require => File['/etc/systemd/system/docker.service.d'],
     }
 
     if ! has_key($::facts['networking']['interfaces'], 'to_docker') {
@@ -146,42 +149,32 @@ class sunet::dockerhost(
         ensure  => file,
         mode    => '0644',
         content => template('sunet/dockerhost/daemon.json.erb'),
+        notify  => Service['docker'],
         ;
     }
-
-    # Docker rejects options specified both from command line and in daemon.json
-    class {'docker':
-      ip_forward                  => $iptables,
-      ip_masq                     => $iptables,
-      iptables                    => $iptables,
-      manage_package              => false,
-      manage_kernel               => false,
-      use_upstream_package_source => false,
-      extra_parameters            => $_extra_parameters,
-      docker_command              => 'dockerd',
-      daemon_subcommand           => '',
-      require                     => [Package[$docker_package_name], File['/usr/local/bin/nsrunc']],
-    }
   } else {
-    class {'docker':
-      ip_forward                  => $iptables,
-      ip_masq                     => $iptables,
-      iptables                    => $iptables,
-      storage_driver              => $storage_driver,
-      manage_package              => false,
-      manage_kernel               => false,
-      use_upstream_package_source => false,
-      dns                         => $_docker_dns,
-      extra_parameters            => $_extra_parameters,
-      docker_command              => 'dockerd',
-      daemon_subcommand           => '',
-      tcp_bind                    => $_tcp_bind,
-      tls_enable                  => $tls_enable,
-      tls_cacert                  => $tls_cacert,
-      tls_cert                    => $tls_cert,
-      tls_key                     => $tls_key,
-      require                     => Package[$docker_package_name],
+    file { '/etc/systemd/system/docker.service.d/sunet-dockerhost.conf':
+      ensure  => file,
+      mode    => '0444',
+      content => template('sunet/dockerhost/service_override.conf.erb'),
+      require => File['/etc/systemd/system/docker.service.d'],
+      notify  => [Exec['sunet_dockerhost_systemd_reload'], Service['docker']],
     }
+    exec { 'sunet_dockerhost_systemd_reload':
+      command     => '/bin/systemctl daemon-reload',
+      refreshonly => true,
+      before      => Service['docker'],
+    }
+  }
+
+  $_docker_require = $_write_nsrunc ? {
+    true  => [Package[$docker_package_name], File['/usr/local/bin/nsrunc']],
+    false => Package[$docker_package_name],
+  }
+  service { 'docker':
+    ensure  => running,
+    enable  => true,
+    require => $_docker_require,
   }
 
   if $docker_network =~ String {
@@ -190,16 +183,28 @@ class sunet::dockerhost(
     # Docker DNS isn't available on the default 'bridge' interface, so another
     # bridge interface is needed for containers benefiting from the DNS resolution
     # but not running using docker-compose.
-    docker_network { 'docker':
-      ensure  => 'present',
-      subnet  => $docker_network,
-      require => Class['docker'],
+    exec { 'create_docker_network':
+      command => '/usr/bin/docker network create --driver bridge docker',
+      unless  => '/usr/bin/docker network inspect docker',
+      require => Service['docker'],
     }
   } elsif $docker_network == true {
-    # Create a docker network, but don't specify the subnet.
-    docker_network { 'docker':
-      ensure  => 'present',
-      require => Class['docker'],
+    exec { 'create_docker_network':
+      command => '/usr/bin/docker network create --driver bridge docker',
+      unless  => '/usr/bin/docker network inspect docker',
+      require => Service['docker'],
+    }
+  }
+
+  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0 {
+    package { 'docker-compose-plugin':
+      ensure  => installed,
+      require => Exec['dockerhost_apt_get_update'],
+    }
+  } else {
+    file { '/usr/local/bin/docker-compose':
+      mode    => '0755',
+      content => template('sunet/dockerhost/docker-compose.erb'),
     }
   }
 
@@ -216,23 +221,11 @@ class sunet::dockerhost(
       ;
     }
 
-  if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0 {
-    package { 'docker-compose-plugin':
-      ensure  => installed,
-      require => Exec['dockerhost_apt_get_update'],
-    }
-  } else {
-    file { '/usr/local/bin/docker-compose':
-      mode    => '0755',
-      content => template('sunet/dockerhost/docker-compose.erb'),
-    }
+  file { '/usr/local/bin/docker-upgrade':
+    ensure => 'present',
+    mode   => '0755',
+    source => 'puppet:///modules/sunet/docker/docker-upgrade',
   }
-
-    file { '/usr/local/bin/docker-upgrade':
-        ensure => 'present',
-        mode   => '0755',
-        source => 'puppet:///modules/sunet/docker/docker-upgrade',
-    }
 
   if $facts['sunet_has_nrpe_d'] == 'yes' {
     # variables used in etc_sudoers.d_nrpe_dockerhost_checks.erb / nagios_nrpe_checks.erb
