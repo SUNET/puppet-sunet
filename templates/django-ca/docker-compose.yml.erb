@@ -38,7 +38,7 @@ services:
       - /etc/ssl:/etc/ssl:ro
 <% else -%>
       - /opt/djangoca/certs:/certs:ro
-<% else -%>
+<% end -%>
       - <%= @config_dir %>/index.html:/usr/share/nginx/html/index.html:ro
       - <%= @config_dir %>/index.png:/usr/share/nginx/html/index.png:ro
       - static:/usr/share/nginx/html/static/:ro
