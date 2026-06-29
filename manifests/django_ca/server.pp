@@ -25,7 +25,7 @@ class sunet::django_ca::server (
   String                    $server_fqdn = $facts['networking']['fqdn'],
 ) {
 
-  $allowed_https_hosts = lookup('djangoca_allowed_https_hosts', Array, Undef, [])
+  $allowed_https_hosts = lookup('djangoca_allowed_https_hosts', Array, undef, [])
   sunet::nftables::allow { 'djangoca_allowed_https_hosts':
     from => $allowed_https_hosts,
     port => 443,
