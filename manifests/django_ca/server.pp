@@ -23,8 +23,8 @@ class sunet::django_ca::server (
   String                    $django_ca_tag = 'latest',
   String                    $nginx_tag = '1.29-bookworm',
   String                    $server_fqdn = $facts['networking']['fqdn'],
-  String                    $djangoca_db_user = 'djangoca',
-  String                    $djangoca_db_name = 'djangoca',
+  String                    $django_ca_db_user = 'djangoca',
+  String                    $django_ca_db_name = 'djangoca',
 ) {
 
   $allowed_https_hosts = lookup('djangoca_allowed_https_hosts', Array, undef, [])
