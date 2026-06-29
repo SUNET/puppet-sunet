@@ -1,6 +1,5 @@
 # This puppet manifest is used to configure the sunet implementation of django-ca
 
-# @param environment                        The environment, test, prod ... (used for nft fw opening)
 # @param django_ca_servicename              The service name (fqdn) of the django-ca instance
 # @param hsm_partition                      The name of the HSM partition where the django-ca root keys reside
 # @param hsm_servers                        List of HSM servers used by the CA
@@ -13,7 +12,6 @@
 # @param nginx_tag                          The version of nginx to run
 # @param server_fqdn                        The fqdn of the server, used in nginx.conf
 class sunet::django_ca::server (
-  Enum['test', 'prod']      $environment,
   String                    $django_ca_servicename,
   String                    $hsm_partition,
   Array                     $hsm_servers,
@@ -27,10 +25,9 @@ class sunet::django_ca::server (
   String                    $server_fqdn = $facts['networking']['fqdn'],
 ) {
 
-  # Allow HTTPS from load balancer servers
-  $lb_ips = hiera_array("lb_${environment}_servers",[])
-  sunet::nftables::allow { 'allow-https-from-lbs':
-    from => $lb_ips,
+  $allowed_https_hosts = lookup('djangoca_allowed_https_hosts', Array, Undef, [])
+  sunet::nftables::allow { 'djangoca_allowed_https_hosts':
+    from => $allowed_https_hosts,
     port => 443,
   }
 
