@@ -7,8 +7,8 @@ DATABASES:
     ENGINE: django.db.backends.postgresql
     HOST: <%= @django_ca_db_servicename %>
     PORT: 5432
-    NAME: djangoca
-    USER: djangoca
+    NAME: <%= @djangoca_db_name %>
+    USER: <%= @djangoca_db_user %>
     PASSWORD: <%= @djangoca_db_password %>
 
 
