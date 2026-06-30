@@ -39,6 +39,12 @@ services:
       - <%= single_env %>
 <% end -%>
 <% end -%>
+<% if @run_user -%>
+    user: "<%= @run_user %>"
+<% end -%>
+<% if @net == 'host' or @net == 'bridge' -%>
+    network_mode: "<%= @net %>"
+<% else -%>
     networks:
       - <%= @net %>
 <% if @command -%>
