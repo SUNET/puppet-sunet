@@ -120,12 +120,13 @@ class sunet::frontend::load_balancer(
       run_user   => "${fe_api}:${fe_api}",
     }
 
+    $_statsd_addr = pick($facts.dig('networking', 'interfaces', 'docker0', 'ip'), '')
     sunet::frontend::telegraf { 'frontend_telegraf':
       docker_image          => pick($config['load_balancer']['telegraf_image'], 'docker.sunet.se/eduid/telegraf'),
       docker_imagetag       => pick($config['load_balancer']['telegraf_imagetag'], 'stable'),
       docker_volumes        => pick($config['load_balancer']['telegraf_volumes'], []),
       forward_url           => $config['load_balancer']['telegraf_forward_url'],
-      statsd_listen_address => pick($facts['networking']['interfaces']['docker0']['ip'], 'no-address-provided'),
+      statsd_listen_address => $_statsd_addr,
     }
 
     sunet::misc::ufw_allow { 'always-https-allow-http':

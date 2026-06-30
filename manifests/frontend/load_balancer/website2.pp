@@ -115,7 +115,7 @@ define sunet::frontend::load_balancer::website2(
   $multinode_port         = pick_default($config['multinode_port'], false)
   $set_fqdn               = pick($config['set_fqdn'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
-  $statsd_host            = pick($facts['networking']['interfaces']['docker0']['ip'], $facts['networking']['ip'])
+  $statsd_host            = pick($facts.dig('networking', 'interfaces', 'docker0', 'ip'), $facts['networking']['ip'])
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
@@ -191,8 +191,17 @@ define sunet::frontend::load_balancer::website2(
       }
     }
   }
-  exec { "workaround_allow_forwarding_to_${instance}":
-    command => "/usr/sbin/ufw route allow out on br-${instance}",
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    file { "/etc/nftables/conf.d/600-frontend_forward-${instance}.nft":
+      ensure  => file,
+      mode    => '0400',
+      content => "add rule inet filter forward oifname \"to_${instance}\" accept comment \"frontend forward to ${instance}\"\n",
+      notify  => Service['nftables'],
+    }
+  } else {
+    exec { "workaround_allow_forwarding_to_${instance}":
+      command => "/usr/sbin/ufw route allow out on br-${instance}",
+    }
   }
 
   if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $facts['networking']['fqdn'] {
