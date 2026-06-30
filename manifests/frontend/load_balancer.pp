@@ -94,6 +94,7 @@ class sunet::frontend::load_balancer(
         basedir   => $basedir,
         confdir   => $confdir,
         scriptdir => $scriptdir,
+        api_group => 'fe-api',
       }
     }
 
@@ -114,6 +115,9 @@ class sunet::frontend::load_balancer(
     sunet::frontend::api::server { 'sunetfrontend':
       basedir    => $apidir,
       docker_tag => pick($config['load_balancer']['api_imagetag'], 'latest'),
+      username   => 'fe-api',
+      group      => 'fe-api',
+      run_user   => "${fe_api}:${fe_api}",
     }
 
     sunet::frontend::telegraf { 'frontend_telegraf':

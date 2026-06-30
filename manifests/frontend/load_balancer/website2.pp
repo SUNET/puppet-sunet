@@ -5,6 +5,7 @@ define sunet::frontend::load_balancer::website2(
   String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
+  String  $api_group = 'sunetfrontend',
 ) {
   $instance  = $name
   if length($instance) > 12 {
@@ -95,7 +96,7 @@ define sunet::frontend::load_balancer::website2(
   file {
     "${confdir}/${instance}/config.yml":
       ensure  => 'file',
-      group   => 'sunetfrontend',
+      group   => $api_group,
       mode    => '0640',
       force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
@@ -214,6 +215,7 @@ define sunet::frontend::load_balancer::website2(
           site_name   => $site_name,
           backend_ips => $params['ips'],
           api_port    => $api_port,
+          group       => $api_group,
         }
       }
     }

@@ -40,6 +40,7 @@ class sunet::frontend::load_balancer::users(
         'exabgp'     => undef,
         'fe-config'  => ['haproxy'],
         'fe-monitor' => ['haproxy'],
+        'fe-api'     => ['frontend', 'sunetfrontend'],
         default      => ['frontend'],
       }
     ensure_resource ( 'sunet::misc::system_user', $username, {

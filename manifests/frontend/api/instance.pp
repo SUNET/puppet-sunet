@@ -4,6 +4,7 @@ define sunet::frontend::api::instance(
   Integer       $api_port = 8080,
   Array[String] $backend_ips = [],
   String        $basedir = '/opt/frontend/api',
+  String        $group = 'sunetfrontend',
 ) {
 
   if $::facts['sunet_nftables_enabled'] != 'yes' {
@@ -17,7 +18,7 @@ define sunet::frontend::api::instance(
   # accept register requests from the servers
   ensure_resource('file', "${basedir}/backends/${site_name}", {
       ensure => 'directory',
-      group  => 'sunetfrontend',
+      group  => $group,
       mode   => '0770',
   })
 }
