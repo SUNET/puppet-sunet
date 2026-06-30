@@ -17,6 +17,11 @@ SCRIPTHERDER_TEMPLATE="/etc/dehydrated/scriptherder_template.ini"
 DEHYDRATED="/usr/sbin/dehydrated"
 DEHYDRATED_OPTIONS="--no-lock --hook ${HOOKFILE} --config ${CONFIGFILE} "
 DEHYDRATED_VERB="--cron"
+ORDER_TIMEOUT=300
+VALIDATION_TIMEOUT=120
+
+# Remove unused checks before renewal
+python3 /etc/dehydrated/remove_unused_checks.py
 
 DOMAINFILE_TEMP="$(mktemp)" 
 if [[ -n "$1" ]]; then
@@ -27,12 +32,24 @@ fi
 
 /bin/cat "${DOMAINFILE_TEMP}" | while read line
 do
+  # Wait for lock before each domain
+  LOCKFILE="/etc/dehydrated/lock"
+  waited=0
+  while [ -f "${LOCKFILE}" ]; do
+      sleep 5
+      waited=$((waited + 5))
+      if [ "${waited}" -ge 300 ]; then
+          rm -f "${LOCKFILE}"
+          break
+      fi
+  done
+
   SINGLEDOMAIN=$(mktemp)
   echo $line > ${SINGLEDOMAIN}
   CONFIG_SINGLEDOMAIN="/etc/dehydrated/config-singledomain"
   echo "DOMAINS_TXT=\"${SINGLEDOMAIN}\"" > ${CONFIG_SINGLEDOMAIN} 
   JOBNAME="dehydrated_`awk '{ print $1 }' ${SINGLEDOMAIN}`"
-  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} --config ${CONFIG_SINGLEDOMAIN} && /usr/bin/le-ssl-compat.sh
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} --config ${CONFIG_SINGLEDOMAIN} --order-timeout ${ORDER_TIMEOUT} --validation-timeout ${VALIDATION_TIMEOUT}  && /usr/bin/le-ssl-compat.sh
   JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
   if [ ! -f "$JOBFILE" ]; then
     /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
@@ -43,7 +60,7 @@ done
 rm "${DOMAINFILE_TEMP}"
 
 <% if @cleanup %>
-  JOBNAME="dehydrated_cleanup"
+  JOBNAME="cleanup_dehydrated"
   JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
   if [ ! -f "$JOBFILE" ]; then
     /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini

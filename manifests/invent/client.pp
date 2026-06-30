@@ -12,6 +12,7 @@ class sunet::invent::client(
   include sunet::packages::curl
   include sunet::packages::git
   include sunet::packages::jq
+  include sunet::packages::python3_yaml
 
   exec {'create_repo_path':
     command => "mkdir -p ${repo_path}",
@@ -36,6 +37,10 @@ class sunet::invent::client(
   exec {'link_facts_ssh':
     command => "ln -s ${repo_path}/client/ssh.py ${facts_path}/ssh.py",
     unless  =>  "test -f ${facts_path}/ssh.py",
+  }
+  exec {'link_facts_hiera':
+    command => "ln -s ${repo_path}/client/hiera.py ${facts_path}/hiera.py",
+    unless  =>  "test -f ${facts_path}/hiera.py",
   }
   sunet::scriptherder::cronjob { 'inventory':
     cmd      => "${repo_path}/client/invent.sh",

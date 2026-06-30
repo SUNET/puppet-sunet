@@ -4,14 +4,26 @@ name: <%= @myself %>
 restapi:
   listen: "*:<%= @patroni_rest_api_port %>"
   connect_address: "<%= @myself %>:<%= @patroni_rest_api_port %>"
+<% if @legacy_ca == true %>
   # The bundle contains both cert and key but must be specified twice
   certfile: /opt/patroni/certs/<%= @myself %>.pem
   keyfile: /opt/patroni/certs/<%= @myself %>.pem
   cafile: /etc/ssl/certs/infra.crt
+<% else %>
+  certfile: <%= @cert_file %>
+  keyfile: <%= @key_file %>
+  cafile: <%= @trusted_ca_file %>
+<% end %>
 etcd3:
   protocol: https
+<% if @legacy_ca == true %>
   cacert: /etc/ssl/certs/infra.crt
   cert: /opt/patroni/certs/<%= @myself %>.pem
+<% else %>
+  cert: <%= @cert_file %>
+  key: <%= @key_file %>
+  cacert: <%= @trusted_ca_file %>
+<% end %>
   hosts:
 <% @etcd_nodes.each do | node | -%>
     - <%= node %>:2379

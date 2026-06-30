@@ -16,6 +16,7 @@ class sunet::etcd::node(
   Optional[String] $tls_key_file               = undef,
   Optional[String] $tls_ca_file                = undef,
   Optional[String] $tls_cert_file              = undef,
+  Boolean          $legacy_ca                  = false,
   Boolean          $expose_ports               = true,
   String           $expose_port_pre            = '',   # string prepended to ports (e.g. "127.0.0.1:")
   Array[String]    $allow_clients              = [],
@@ -30,8 +31,35 @@ class sunet::etcd::node(
 
   $hostname = $facts['networking']['hostname']
 
-  if $infra_cert_from_this_class {
-    sunet::ici_ca::rp { 'infra': }
+  if $legacy_ca {
+    if $infra_cert_from_this_class {
+      sunet::ici_ca::rp { 'infra': }
+    }
+    # Use infra-cert per default if cert/key/ca file not supplied
+    $cert_file = $tls_cert_file ? {
+      undef => $facts['tls_certificates'][$facts['networking']['fqdn']]['infra_cert'],
+      default => $tls_cert_file,
+    }
+    $key_file = $tls_key_file ? {
+      undef => $facts['tls_certificates'][$facts['networking']['fqdn']]['infra_key'],
+      default => $tls_key_file,
+    }
+    $trusted_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
+  } else {
+    sunet::misc::create_dir { "${base_dir}/${service_name}/cert":
+        owner => 'root',
+        group => 'root',
+        mode  => '0700',
+    }
+    $cert_file = '/cert/cert.pem'
+    $key_file = '/cert/privkey.pem'
+    $trusted_ca_file = '/cert/chain.pem'
+
+    file { '/etc/letsencrypt/renewal-hooks/deploy/etcd':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/etcd/certbot-renewal-hook.sh'),
+    }
   }
 
   # Add brackets to bare IPv6 IP.
@@ -44,17 +72,6 @@ class sunet::etcd::node(
     false => $c2s_ip_or_host,
   }
   $listen_ip = enclose_ipv6([$etcd_listen_ip])[0]
-
-  # Use infra-cert per default if cert/key/ca file not supplied
-  $cert_file = $tls_cert_file ? {
-    undef => $facts['tls_certificates'][$facts['networking']['fqdn']]['infra_cert'],
-    default => $tls_cert_file,
-  }
-  $key_file = $tls_key_file ? {
-    undef => $facts['tls_certificates'][$facts['networking']['fqdn']]['infra_key'],
-    default => $tls_key_file,
-  }
-  $trusted_ca_file = pick($tls_ca_file, '/etc/ssl/certs/infra.crt')
 
   # variables used in etcd.conf.yml.erb and ectdctl.erb
   $listen_peer_urls = ["https://${listen_ip}:2380"]
