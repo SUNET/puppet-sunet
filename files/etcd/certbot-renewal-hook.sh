@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # === Sanity checks ===
-if [ -z "${RENEWED_LINEAGE:-}" ]; then
+if [[ -z "${RENEWED_LINEAGE:-}" ]]; then
 	echo "ERROR: RENEWED_LINEAGE not set (not running from certbot?)" >&2
 	exit 1
 fi
