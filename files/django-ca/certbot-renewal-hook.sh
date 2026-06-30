@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # === Sanity checks ===
-if [ -z "${RENEWED_LINEAGE:-}" ]; then
+if [[ -z "${RENEWED_LINEAGE:-}" ]]; then
 	echo "ERROR: RENEWED_LINEAGE not set (not running from certbot?)" >&2
 	exit 1
 fi
@@ -39,7 +39,7 @@ mv "${CERT_DIR}/fullchain.pem.tmp" "${FULLCHAIN_DST}"
 KEY_UID="$(stat -c %u "${KEY_DST}")"
 KEY_MODE="$(stat -c %a "${KEY_DST}")"
 
-if [ "${KEY_UID}" -ne "${NGINX_UID}" ] || [ "${KEY_MODE}" != 600 ]; then
+if [[ "${KEY_UID}" -ne "${NGINX_UID}" ]] || [[ "${KEY_MODE}" != 600 ]]; then
 	echo "ERROR: Incorrect ownership or permissions on ${KEY_DST}" >&2
 	exit 1
 fi
