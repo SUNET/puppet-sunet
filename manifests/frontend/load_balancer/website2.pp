@@ -138,6 +138,11 @@ define sunet::frontend::load_balancer::website2(
     content => template('sunet/frontend/frontend-config.erb'),
   })
 
+  $_compose_bin_arg = ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0) ? {
+    true    => '--compose_bin /usr/bin/docker',
+    default => '',
+  }
+
   sunet::docker_compose { "frontend-${instance}":
     content          => template('sunet/frontend/docker-compose_template.erb'),
     service_prefix   => 'frontend',
@@ -145,7 +150,8 @@ define sunet::frontend::load_balancer::website2(
     compose_dir      => $confdir,
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
-    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
+    start_command    => "/usr/local/bin/start-frontend ${_compose_bin_arg} ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
+    mode             => '0755',
   }
 
   if has_key($config, 'allow_ports') {
