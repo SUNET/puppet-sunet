@@ -12,16 +12,18 @@ class sunet::frontend::load_balancer::users(
   Integer $haproxy,
   Integer $telegraf,
   Integer $varnish,
+  Integer $exabgp,
 ) {
   # uid/gids looked up from compose files
   $user2uid = {
-    'frontend' => $frontend,
-    'fe-api' => $fe_api,
+    'frontend'   => $frontend,
+    'fe-api'     => $fe_api,
     'fe-monitor' => $fe_monitor,
-    'fe-config' => $fe_config,
-    'haproxy' => $haproxy,
-    'telegraf' => $telegraf,
-    'varnish' => $varnish,
+    'fe-config'  => $fe_config,
+    'haproxy'    => $haproxy,
+    'telegraf'   => $telegraf,
+    'varnish'    => $varnish,
+    'exabgp'     => $exabgp,
   }
 
   # Ensure this group is present before trying to add users fe-config and fe-monitor to it
@@ -35,6 +37,7 @@ class sunet::frontend::load_balancer::users(
     $groups = $username ? {
         'frontend'   => undef,
         'telegraf'   => undef,
+        'exabgp'     => undef,
         'fe-config'  => ['haproxy'],
         'fe-monitor' => ['haproxy'],
         default      => ['frontend'],

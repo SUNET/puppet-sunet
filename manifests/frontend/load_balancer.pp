@@ -13,7 +13,20 @@ class sunet::frontend::load_balancer(
   Integer $haproxy     = $base_uidgid + 10,
   Integer $telegraf    = $base_uidgid + 11,
   Integer $varnish     = $base_uidgid + 12,
+  Integer $exabgp      = $base_uidgid + 20,
 ) {
+  # Set up users for running all services as non-root
+  class { 'sunet::frontend::load_balancer::users':
+    frontend   => $frontend,
+    fe_api     => $fe_api,
+    fe_monitor => $fe_monitor,
+    fe_config  => $fe_config,
+    haproxy    => $haproxy,
+    telegraf   => $telegraf,
+    varnish    => $varnish,
+    exabgp     => $exabgp,
+  }
+
   $config = lookup('sunet_frontend', undef, undef, undef)
   if $config =~ Hash[String, Hash] {
     $confdir = "${basedir}/config"
@@ -41,8 +54,37 @@ class sunet::frontend::load_balancer(
       file { '/etc/bgp/monitor':
         ensure  => file,
         mode    => '0755',
-        content => template('sunet/frontend/websites2_monitor.py.erb'),
+        content => template('sunet/frontend/exabgp_monitor.erb'),
         notify  => Sunet::Exabgp['load_balancer'],
+      }
+
+      ensure_resource('file', '/var/run/frontend-exabgp', { ensure => 'directory', owner => 'root', group => 'exabgp', mode => '0770' })
+      # /var/run is tmpfs — recreate with correct ownership before services start
+      file { '/etc/tmpfiles.d/frontend-exabgp.conf':
+        ensure  => file,
+        mode    => '0644',
+        content => "d /var/run/frontend-exabgp 0770 root exabgp - -\n",
+      }
+
+      file { '/usr/local/bin/frontend-route-adjust':
+        ensure  => file,
+        mode    => '0755',
+        content => template('sunet/frontend/frontend-route-adjust.erb'),
+      }
+      file { '/etc/systemd/system/frontend-route-adjust@.service':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/frontend/frontend-route-adjust.service.erb'),
+      }
+      file { '/etc/systemd/system/frontend-route-adjust-stop@.service':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/frontend/frontend-route-adjust-stop@.service.erb'),
+      }
+      file { '/etc/systemd/system/frontend-route-adjust@.path':
+        ensure  => file,
+        mode    => '0644',
+        content => template('sunet/frontend/frontend-route-adjust.path.erb'),
       }
 
       sunet::frontend::load_balancer::configure_peers { 'peers': router_id => $router_id, peers => $config['load_balancer']['peers'] }
@@ -62,9 +104,11 @@ class sunet::frontend::load_balancer(
     sunet::exabgp { 'load_balancer':
       docker_volumes => ["${basedir}/haproxy/scripts:${basedir}/haproxy/scripts:ro",
         '/opt/frontend/monitor:/opt/frontend/monitor:ro',
+        '/var/run/frontend-exabgp:/var/run/frontend-exabgp:rw',
         '/dev/log:/dev/log',
         ],
       version        => $exabgp_imagetag,
+      run_user       => "${exabgp}:${exabgp}",
     }
 
     sunet::frontend::api::server { 'sunetfrontend':
@@ -100,4 +144,3 @@ class sunet::frontend::load_balancer(
     fail('No/bad SUNET frontend load balancer config found in hiera')
   }
 }
-
