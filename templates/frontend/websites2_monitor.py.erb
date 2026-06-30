@@ -52,6 +52,7 @@ import argparse
 
 import logging.handlers
 import inotify.adapters
+import inotify.calls
 from inotify.constants import IN_MOVED_TO, IN_CREATE, IN_DELETE
 
 
@@ -211,25 +212,50 @@ class InstanceDir(object):
                 self._logger.warning('{}: Scheduled poll detected unexpected changes'.format(self))
 
 
+def _try_add_watch(i, path, mask, logger):
+    """Add an inotify watch, returning False on failure (e.g. broken inotify on newer kernels)."""
+    try:
+        i.add_watch(path, mask=mask)
+        return True
+    except inotify.calls.InotifyError as e:
+        logger.warning('inotify add_watch failed for {}: {} - falling back to poll-only'.format(path, e))
+        return False
+
+
 def main(args, logger):
     i = inotify.adapters.Inotify()
     dirs = {}
+    inotify_ok = True
 
     mask = (IN_MOVED_TO | IN_CREATE | IN_DELETE)
 
     # Monitor the top level directory to detect added/removed instances
-    i.add_watch(args.monitor_dir, mask=mask)
+    if not _try_add_watch(i, args.monitor_dir, mask, logger):
+        inotify_ok = False
 
     # Add a monitor for each instance in the top level directory
     for this in os.listdir(args.monitor_dir):
         dir = os.path.join(args.monitor_dir, this)
         if os.path.isdir(dir):
-            i.add_watch(dir, mask=mask)
+            if inotify_ok:
+                _try_add_watch(i, dir, mask, logger)
             _timeout = args.timeout + (random.random() * 5) - 2.5  # spread polling intervals
             dirs[dir] = InstanceDir(dir,  _timeout, logger)
             logger.debug('Startup added instance {!s}'.format(dirs[dir]))
 
-    logger.info('Waiting for inotify events under {}'.format(args.monitor_dir))
+    if inotify_ok:
+        logger.info('Waiting for inotify events under {}'.format(args.monitor_dir))
+    else:
+        logger.warning('inotify unavailable, running in poll-only mode (timeout={}s)'.format(args.timeout))
+
+    if not inotify_ok:
+        # inotify broken - pure polling loop
+        while True:
+            now = time.time()
+            for dir in dirs.values():
+                dir.poll(now)
+            time.sleep(5)
+        return True
 
     for event in i.event_gen(yield_nones = True):
         if event is None:
@@ -250,7 +276,7 @@ def main(args, logger):
             instance_dir = os.path.join(path, filename)
             if os.path.isdir(instance_dir):
                 # Instance added
-                i.add_watch(instance_dir, mask=mask)
+                _try_add_watch(i, instance_dir, mask, logger)
                 _timeout = args.timeout + (random.random() * 5) - 2.5  # spread polling intervals
                 dirs[instance_dir] = InstanceDir(instance_dir, _timeout, logger)
             elif instance_dir in dirs:
