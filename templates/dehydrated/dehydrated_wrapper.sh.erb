@@ -18,7 +18,6 @@ DEHYDRATED="/usr/sbin/dehydrated"
 DEHYDRATED_OPTIONS="--no-lock --hook ${HOOKFILE} --config ${CONFIGFILE} "
 DEHYDRATED_VERB="--cron"
 ORDER_TIMEOUT=300
-VALIDATION_TIMEOUT=120
 
 # Remove unused checks before renewal
 python3 /etc/dehydrated/remove_unused_checks.py
@@ -49,7 +48,7 @@ do
   CONFIG_SINGLEDOMAIN="/etc/dehydrated/config-singledomain"
   echo "DOMAINS_TXT=\"${SINGLEDOMAIN}\"" > ${CONFIG_SINGLEDOMAIN} 
   JOBNAME="dehydrated_`awk '{ print $1 }' ${SINGLEDOMAIN}`"
-  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} --config ${CONFIG_SINGLEDOMAIN} --order-timeout ${ORDER_TIMEOUT} --validation-timeout ${VALIDATION_TIMEOUT}  && /usr/bin/le-ssl-compat.sh
+  ${SCRIPTHERDER} ${SCRIPTHERDER_OPTIONS} ${JOBNAME} -- ${DEHYDRATED} ${DEHYDRATED_VERB} --config ${CONFIG_SINGLEDOMAIN} --order-timeout ${ORDER_TIMEOUT}  && /usr/bin/le-ssl-compat.sh
   JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini" 
   if [ ! -f "$JOBFILE" ]; then
     /bin/cp $SCRIPTHERDER_TEMPLATE /etc/scriptherder/check/${JOBNAME}.ini
