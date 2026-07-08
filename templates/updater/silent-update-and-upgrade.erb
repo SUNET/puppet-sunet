@@ -3,6 +3,12 @@
 # Script created by Puppet (sunet::updater)
 #
 
+# ---------- NOTE ----------
+# Due to a bug in apt's scheduler, we run apt-get with timeout
+# to avoid it from hanging forever.
+# This fix is only needed for apt versions before 3.1.3
+# ---------- END NOTE ----------
+
 export PATH='/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
 
 # Max time to allow a single apt-get upgrade attempt to run before
