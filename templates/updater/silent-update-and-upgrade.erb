@@ -31,10 +31,10 @@ handle_error() {
     if [[ $1 -eq 0 ]]; then return; fi
 
     if [[ $1 -ge 124 ]]; then
-        logger -p local0.err -i -t silent-update-and-upgrade "apt-get hung and was killed (exit ${rc}), recovering"
+        logger -p local0.err -i -t silent-update-and-upgrade "apt-get hung and was killed (exit ${1}), recovering"
         recover_apt_state
     else
-        logger -p local0.err -i -t silent-update-and-upgrade "apt failed (exit ${rc})"
+        logger -p local0.err -i -t silent-update-and-upgrade "apt failed (exit ${1})"
     fi
 }
 
