@@ -32,7 +32,7 @@ class sunet::edusign::app(
   $edusign_idp_entityid = hiera('edusign_idp_entityid', '')
   $edusign_metadata_file = hiera('edusign_metadata_file', '')
   $edusign_sp_extra_variables = hiera('edusign_sp_extra_variables', [])
-  
+
   $env_sp = ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
             "SP_HOSTNAME=${_host}",
             'BACKEND_HOST=edusign-app.docker',
