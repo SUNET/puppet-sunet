@@ -31,16 +31,18 @@ class sunet::edusign::app(
 
   $edusign_idp_entityid = hiera('edusign_idp_entityid', '')
   $edusign_metadata_file = hiera('edusign_metadata_file', '')
+  $edusign_sp_extra_variables = hiera('edusign_sp_extra_variables', [])
   $env_sp = ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
             "SP_HOSTNAME=${_host}",
             'BACKEND_HOST=edusign-app.docker',
-            'MAX_FILE_SIZE=20M',
             'ACMEPROXY=acme-c.sunet.se',
             'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
             "MULTISIGN_BUTTONS=${invites}",
             'MDQ_BASE_URL=https://mds.swamid.se/',
             'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt'
             ]
+            
+  $env_sp_final = $env_sp + $edusign_sp_extra_variables
 
   if ($edusign_idp_entityid == '') {
     sunet::docker_run{'edusign-sp':
