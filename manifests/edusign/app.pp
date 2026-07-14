@@ -37,7 +37,6 @@ class sunet::edusign::app(
             "SP_HOSTNAME=${_host}",
             'BACKEND_HOST=edusign-app.docker',
             'ACMEPROXY=acme-c.sunet.se',
-            'DISCO_URL=https://service.seamlessaccess.org/ds/?trustProfile=edugain',
             "MULTISIGN_BUTTONS=${invites}",
             'MDQ_BASE_URL=https://mds.swamid.se/',
             'MDQ_SIGNER_CERT=/etc/shibboleth/md-signer2.crt'
