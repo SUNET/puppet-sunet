@@ -40,7 +40,6 @@ class sunet::edusign::app(
   $env_sp = ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
             "SP_HOSTNAME=${_host}",
             'BACKEND_HOST=edusign-app.docker',
-            'MAX_FILE_SIZE=20M',
             'ACMEPROXY=acme-c.sunet.se',
             "MULTISIGN_BUTTONS=${invites}",
             "BANKID_MD_PATH=${bankid_md_path}"

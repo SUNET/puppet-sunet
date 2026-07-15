@@ -23,6 +23,7 @@ class sunet::edusign::api(
     volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/localtime:/etc/localtime:ro','/etc/signservice-rest:/etc/signservice-rest'],
     hostname => $facts['networking']['fqdn'],
     env      => ['SPRING_CONFIG_ADDITIONAL_LOCATION=/etc/signservice-rest/',
+                  "SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE=30MB",
                   "SIGNSERVICE_CREDENTIAL_PASSWORD=${cp}",
                   "SIGNSERVICE_CREDENTIAL_KEY_PASSWORD=${cp}",
                   "SIGNSERVICE_CREDENTIAL_PASSWORD_GEANT=${cp_geant}",
