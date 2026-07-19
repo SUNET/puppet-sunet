@@ -94,6 +94,16 @@ class sunet::metadata::mdq_publisher(
     "PUBLISHER_CERT=${effective_publisher_cert}",
     "PUBLISHER_KEY=${effective_publisher_key}",
   ]
+  if ($acme) {
+    file { '/etc/letsencrypt/renewal-hooks/deploy/mdq_publisher-renewal-hook':
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      group   => 'root',
+      content => file('sunet/metadata/certbot-renewal-hook.sh')
+      before  => Class['sunet::certbot::acmed']
+    }
+  }
 
   if $docker_compose {
     service { 'docker-swamid-mdq-publisher':
