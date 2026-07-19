@@ -71,5 +71,6 @@ class sunet::certbot::sync::server(
     ensure  => file,
     mode    => '0700',
     content => file('sunet/certbot-sync/certbot-sync-export.sh'),
+    before  => Class['sunet::certbot::acmed']
   }
 }
