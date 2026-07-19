@@ -66,8 +66,7 @@ class sunet::certbot::sync::server(
 
   # certbot deploy hook: on each renewal, export the cert iff its domain is
   # marked exportable in acmedns.json.
-  ensure_resource('file', '/etc/letsencrypt/renewal-hooks', { ensure => directory })
-  ensure_resource('file', '/etc/letsencrypt/renewal-hooks/deploy', { ensure => directory })
+  include sunet::packages::certbot
   file { '/etc/letsencrypt/renewal-hooks/deploy/certbot-sync-export':
     ensure  => file,
     mode    => '0700',
