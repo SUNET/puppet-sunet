@@ -100,7 +100,7 @@ class sunet::metadata::mdq_publisher(
       mode    => '0755',
       owner   => 'root',
       group   => 'root',
-      content => file('sunet/metadata/certbot-renewal-hook.sh')
+      content => file('sunet/metadata/certbot-renewal-hook.sh'),
       before  => Class['sunet::certbot::acmed']
     }
   }
