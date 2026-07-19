@@ -42,7 +42,7 @@ mv "${CERT_DIR}/privkey.pem.tmp" "${KEY_DST}"
 
 # Prevent reload when service is not fully installed.
 # Like when issuing the cert for the first time.
-if [ -n "${NO_RELOAD:-}" ]; then
+if [[ -n "${NO_RELOAD:-}" ]]; then
 	exit 0
 fi
 
