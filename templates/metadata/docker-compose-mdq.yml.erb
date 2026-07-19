@@ -5,9 +5,13 @@ services:
     hostname: <%= @hostname %>
     image: docker.sunet.se/swamid/mdq-publisher:<%= @imagetag %>
     volumes:
+<% if @acme -%>
+      - '/opt/mdq_publisher/certs:/certs:ro'
+<% else -%>
       - '/etc/dehydrated:/etc/dehydrated'
       - '/etc/ssl:/etc/ssl'
       - '/var/www/html:/var/www/html'
+<% end -%>
     environment:
 <%- @env.each do |env| -%>
       - "<%= env %>"
