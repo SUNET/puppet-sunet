@@ -95,11 +95,9 @@ class sunet::metadata::mdq_publisher(
     "PUBLISHER_KEY=${effective_publisher_key}",
   ]
   if ($acme) {
-    # Mimic what the certbot package creates
-    ensure_resource('sunet::misc::create_dir',
-      ['/etc/letsencrypt/renewal-hooks/deploy'],
-      { owner => 'root', group => 'root', mode => '0755' }
-    )
+    # The certbot package creates the hooks dir
+    include sunet::packages::certbot
+
     file { '/etc/letsencrypt/renewal-hooks/deploy/mdq_publisher-renewal-hook':
       ensure  => 'file',
       mode    => '0755',
