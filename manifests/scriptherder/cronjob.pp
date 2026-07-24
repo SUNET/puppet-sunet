@@ -15,6 +15,7 @@ define sunet::scriptherder::cronjob(
   Array[String[1]]          $ok_criteria   = ['exit_status=0'],
   Array[String[1]]          $warn_criteria = ['exit_status=0'],
   Boolean                   $purge_results = false,    # set to 'true' to remove job metadata files
+  Optional[Integer]         $random_sleep  = undef,
 ) {
   $safe_name = regsubst(pick($job_name, $title), '[^0-9A-Za-z._\-]', '_', 'G')
 
@@ -44,9 +45,13 @@ define sunet::scriptherder::cronjob(
     $_minute  = $minute
   }
 
+  $_command = $random_sleep ? {
+    undef   => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${safe_name} -- ${cmd}",
+    default => "/usr/local/bin/scriptherder --mode wrap --syslog --random-sleep ${random_sleep} --name ${safe_name} -- ${cmd}",
+  }
   cron { $safe_name:
     ensure   => $ensure,
-    command  => "/usr/local/bin/scriptherder --mode wrap --syslog --name ${safe_name} -- ${cmd}",
+    command  => $_command,
     user     => $user,
     hour     => $_hour,
     minute   => $_minute,
