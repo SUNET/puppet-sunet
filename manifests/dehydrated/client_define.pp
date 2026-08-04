@@ -9,6 +9,8 @@ define sunet::dehydrated::client_define(
   Boolean $manage_ssh_key=true,
   Optional[String] $ssh_id=undef,  # Leave undef to use $domain, set to e.g. 'acme-c' to use the same SSH key for more than one cert
   Boolean $single_domain=true,
+  Boolean $cleanup=false,
+  String  $dehydrated_version='v0.7.2',
 ) {
   $home = $user ? {
     'root'  => '/root',
@@ -96,4 +98,29 @@ define sunet::dehydrated::client_define(
       warn_criteria => ['exit_status=1','max_age=1d'],
     }
   }
+
+  if $cleanup{
+
+    $basedir = '/etc/dehydrated',
+    $src_url = "https://raw.githubusercontent.com/dehydrated-io/dehydrated/refs/tags/${dehydrated_version}/dehydrated"
+
+    sunet::remote_file { '/usr/sbin/dehydrated':
+      remote_location => $src_url,
+      mode            => '0755'
+    }
+
+    $gc_conf = "${basedir}/dehydrated-cleanup.conf"
+
+    file { $gc_conf :
+      owner   => 'root',
+      mode    => '0640',
+      content => "BASEDIR=${basedir}\nWELLKNOWN=/var/tmp\n",
+    }
+
+    sunet::scriptherder::cronjob { 'dehydrated_cleanup':
+      cmd           => "sh -c 'test -x /usr/local/sbin/dehydrated && /usr/local/sbin/dehydrated --cleanup --config ${gc_conf}'",
+      special       => 'daily',
+      ok_criteria   => ['exit_status=0', 'max_age=50h'],
+      warn_criteria => ['exit_status=0', 'max_age=72h'],
+    }
 }

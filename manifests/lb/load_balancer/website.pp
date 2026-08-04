@@ -6,7 +6,6 @@ define sunet::lb::load_balancer::website(
   Hash    $config,
   String  $interface = 'eth0',
   Integer $api_port = 8080,
-  String  $dehydrated_version = 'v0.7.2',
 ) {
   $instance  = $name
   if length($instance) > 12 {
@@ -262,9 +261,7 @@ define sunet::lb::load_balancer::website(
       check_cert    => false,
       ssh_id        => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
       single_domain => false,
-    }
-    class { 'sunet::dehydrated::client_cleanup':
-      version       => $dehydrated_version,
+      cleanup       => true,
     }
   }
 
