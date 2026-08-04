@@ -23,11 +23,15 @@ define sunet::redis::server(
   }
 
   # Configure all nodes as slaveof $master_ip, unless this node actually has $master_ip on eth0/bond0
+  # Use dig() so a missing interface (e.g. no bond0) yields undef instead of raising
+  # "Operator '[]' is not applicable to an Undef Value" from deep-indexing a structured fact.
+  $eth0_ip  = $facts.dig('networking', 'interfaces', 'eth0', 'ip')
+  $bond0_ip = $facts.dig('networking', 'interfaces', 'bond0', 'ip')
   $slave_node = $master_ip ? {
-    $facts['networking']['interfaces']['eth0']['ip']    => 'no',
-    $facts['networking']['interfaces']['bond0']['ip']   => 'no',
+    $eth0_ip                   => 'no',
+    $bond0_ip                  => 'no',
     $facts['networking']['ip'] => 'no',
-    default              => 'yes',
+    default                    => 'yes',
   }
 
   if $slave_node == 'yes' {
