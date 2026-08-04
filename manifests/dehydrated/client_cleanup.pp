@@ -19,7 +19,7 @@ class sunet::dehydrated::client_cleanup(
   }
 
   sunet::scriptherder::cronjob { 'dehydrated_cleanup':
-    cmd           => "sh -c 'test -x /usr/local/sbin/dehydrated && /usr/local/sbin/dehydrated --cleanup --config ${gc_conf}'",
+    cmd           => "sh -c 'test -x /usr/sbin/dehydrated && /usr/sbin/dehydrated --cleanup --config ${gc_conf}'",
     special       => 'daily',
     ok_criteria   => ['exit_status=0', 'max_age=50h'],
     warn_criteria => ['exit_status=0', 'max_age=72h'],
