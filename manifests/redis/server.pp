@@ -97,7 +97,7 @@ define sunet::redis::server(
       sunet::docker_compose { $name:
         content      => template('sunet/redis/docker-compose.yml.erb'),
         service_name => $name,
-        compose_dir  => dirname($basedir),  # sunet::docker_compose appends /${service_name}
+        compose_dir  => $basedir,  # sunet::docker_compose appends /${service_name}; keep it under basedir
         description  => "Redis ${name}",
       }
     } else {
