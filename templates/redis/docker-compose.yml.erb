@@ -5,6 +5,10 @@ services:
     # network_mode, NOT a `networks:` entry -- `host` is a reserved network mode
     # and referencing it under `networks:` yields "undefined network host".
     network_mode: host
+    # dockerhost2 enables userns-remap; opt this container out (compose equivalent
+    # of the legacy docker_run `--userns=host`) so the bind-mounted, host-owned
+    # redis:redis data dir stays accessible. Without this: "Can't chdir to '/data'".
+    userns_mode: host
     volumes:
       - <%= @basedir %>/etc/redis.conf:/etc/redis/redis.conf
       - <%= @basedir %>/data:/data
