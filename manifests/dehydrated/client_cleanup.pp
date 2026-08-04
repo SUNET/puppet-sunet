@@ -1,3 +1,4 @@
+#Move unused certs to /etc/dehydrated/archive
 class sunet::dehydrated::client_cleanup(
   String  $version,
   String $basedir = '/etc/dehydrated',
