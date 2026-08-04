@@ -91,15 +91,27 @@ define sunet::redis::server(
   }
 
   if $docker_image =~ String[1] {
-    sunet::docker_run { $name:
-      image    => $docker_image,
-      imagetag => $docker_tag,
-      net      => 'host',  # Required for Redis clustering/HA
-      volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
-                  "${basedir}/data:/data",
-                  '/dev/log:/dev/log',
-                  ],
-      env      => flatten($env),
+    if $facts['dockerhost2'] == 'yes' {
+      # Native docker compose (dockerhost2). Renders network_mode: host correctly.
+      $flat_env = flatten($env)
+      sunet::docker_compose { $name:
+        content      => template('sunet/redis/docker-compose.yml.erb'),
+        service_name => $name,
+        compose_dir  => dirname($basedir),  # sunet::docker_compose appends /${service_name}
+        description  => "Redis ${name}",
+      }
+    } else {
+      # Legacy dockerhost / docker_run path
+      sunet::docker_run { $name:
+        image    => $docker_image,
+        imagetag => $docker_tag,
+        net      => 'host',  # Required for Redis clustering/HA
+        volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
+                    "${basedir}/data:/data",
+                    '/dev/log:/dev/log',
+                    ],
+        env      => flatten($env),
+      }
     }
   }
 }

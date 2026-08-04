@@ -1,0 +1,19 @@
+services:
+  <%= @name %>:
+    container_name: '<%= @name %>'
+    # Host networking is required for Redis clustering/HA. In compose this is
+    # network_mode, NOT a `networks:` entry -- `host` is a reserved network mode
+    # and referencing it under `networks:` yields "undefined network host".
+    network_mode: host
+    volumes:
+      - <%= @basedir %>/etc/redis.conf:/etc/redis/redis.conf
+      - <%= @basedir %>/data:/data
+      - /dev/log:/dev/log
+<% unless @flat_env.empty? -%>
+    environment:
+<% @flat_env.each do |single_env| -%>
+      - <%= single_env %>
+<% end -%>
+<% end -%>
+    image: <%= @docker_image %>:<%= @docker_tag %>
+    pull_policy: always
