@@ -263,7 +263,7 @@ define sunet::lb::load_balancer::website(
       ssh_id        => 'acme_c',  # use shared key for all certs (Hiera key acme_c_ssh_key)
       single_domain => false,
     }
-    sunet::dehydrated::client_cleanup { 'client_cleanup' :
+    class { 'sunet::dehydrated::client_cleanup':
       version       => $dehydrated_version,
     }
   }
