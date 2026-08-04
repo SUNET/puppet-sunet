@@ -9,10 +9,12 @@ services:
     # of the legacy docker_run `--userns=host`) so the bind-mounted, host-owned
     # redis:redis data dir stays accessible. Without this: "Can't chdir to '/data'".
     userns_mode: host
+<% unless @volumes.empty? -%>
     volumes:
-      - <%= @basedir %>/etc/redis.conf:/etc/redis/redis.conf
-      - <%= @basedir %>/data:/data
-      - /dev/log:/dev/log
+<% @volumes.each do |volume| -%>
+      - <%= volume %>
+<% end -%>
+<% end -%>
 <% unless @flat_env.empty? -%>
     environment:
 <% @flat_env.each do |single_env| -%>

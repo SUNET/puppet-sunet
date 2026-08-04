@@ -91,9 +91,18 @@ define sunet::redis::server(
   }
 
   if $docker_image =~ String[1] {
+    $volumes = ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
+                "${basedir}/data:/data",
+                '/dev/log:/dev/log',
+                # Map the container's redis user to the host's redis uid/gid so the
+                # host-owned (root:redis 0770) /data bind mount stays accessible.
+                # Without these: "Can't chdir to '/data': Permission denied".
+                '/etc/passwd:/etc/passwd:ro',
+                '/etc/group:/etc/group:ro',
+                ]
+    $flat_env = flatten($env)
     if $facts['dockerhost2'] == 'yes' {
-      # Native docker compose (dockerhost2). Renders network_mode: host correctly.
-      $flat_env = flatten($env)
+      # Native docker compose (dockerhost2). Renders network_mode/userns_mode host.
       sunet::docker_compose { $name:
         content      => template('sunet/redis/docker-compose.yml.erb'),
         service_name => $name,
@@ -106,11 +115,8 @@ define sunet::redis::server(
         image    => $docker_image,
         imagetag => $docker_tag,
         net      => 'host',  # Required for Redis clustering/HA
-        volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
-                    "${basedir}/data:/data",
-                    '/dev/log:/dev/log',
-                    ],
-        env      => flatten($env),
+        volumes  => $volumes,
+        env      => $flat_env,
       }
     }
   }
