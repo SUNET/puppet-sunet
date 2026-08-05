@@ -29,11 +29,7 @@ class sunet::edusign::app(
   }
   sunet::metadata::trust::swamid {'required_title':}
 
-  # SP pre v1.5 vars
-  $edusign_idp_entityid = hiera('edusign_idp_entityid', '')
   $edusign_metadata_file = hiera('edusign_metadata_file', '')
-
-  # SP post v1.5 vars for bankid
   $bankid_md_path = hiera('bankid_md_path')
   $edusign_sp_extra_variables = hiera('edusign_sp_extra_variables', [])
 
@@ -48,33 +44,18 @@ class sunet::edusign::app(
 
   $env_sp_final = $env_sp + $edusign_sp_extra_variables
 
-  if ($edusign_idp_entityid == '') {
-    sunet::docker_run{'edusign-sp':
-      ensure   => $ensure,
-      image    => 'docker.sunet.se/edusign-sp',
-      imagetag => $version,
-      hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
-                    '/etc/edusign:/etc/edusign:ro'],
-      env      => $env_sp_final,
-      depends  => ['edusign-app'],
-      ports    => ['443:443','80:80']
-    }
-  } else {
-    sunet::docker_run{'edusign-sp':
-      ensure   => $ensure,
-      image    => 'docker.sunet.se/edusign-sp',
-      imagetag => $version,
-      hostname => $facts['networking']['fqdn'],
-      volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
-                    '/etc/edusign:/etc/edusign:ro', '/var/run/md-signer2.crt:/etc/shibboleth/md-signer2.crt:ro'],
-      env      => $env_sp_final,
-      depends  => ['edusign-app'],
-      ports    => ['443:443','80:80']
-    }
+  sunet::docker_run{'edusign-sp':
+    ensure   => $ensure,
+    image    => 'docker.sunet.se/edusign-sp',
+    imagetag => $version,
+    hostname => $facts['networking']['fqdn'],
+    volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
+                  '/etc/edusign:/etc/edusign:ro'],
+    env      => $env_sp_final,
+    depends  => ['edusign-app'],
+    ports    => ['443:443','80:80']
   }
 
-  # APP pre 1.5 vars
   $secret_key = hiera('edusign_secret_key')
   $edusign_api_base_url = hiera('edusign_api_base_url','https://api.edusign.sunet.se/v1/')
   $edusign_api_username = hiera('edusign_api_username')
@@ -89,7 +70,6 @@ class sunet::edusign::app(
   $edusign_app_polling = hiera('edusign_app_polling', 'inviter')
   $edusign_app_extra_variables = hiera('edusign_app_extra_variables', [])
 
-  # APP post 1.5 vars for bankid
   $edusign_api_profile_bankid = hiera('edusign_api_profile_bankid')
   $edusign_api_username_bankid = hiera('edusign_api_username_bankid')
   $edusign_api_password_bankid = hiera('edusign_api_password_bankid')
