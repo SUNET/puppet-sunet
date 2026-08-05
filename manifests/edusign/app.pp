@@ -36,7 +36,7 @@ class sunet::edusign::app(
   $env_sp = ['METADATA_FILE=/etc/metadata/swamid-idp-transitive.xml',
             "SP_HOSTNAME=${_host}",
             'BACKEND_HOST=edusign-app.docker',
-            'MAX_FILE_SIZE=30M',
+            'MAX_FILE_SIZE=20M',
             'ACMEPROXY=acme-c.sunet.se',
             "MULTISIGN_BUTTONS=${invites}",
             "BANKID_MD_PATH=${bankid_md_path}"
@@ -76,8 +76,6 @@ class sunet::edusign::app(
   $edusign_api_profile_freja = hiera('edusign_api_profile_freja')
   $edusign_api_username_freja = hiera('edusign_api_username_freja')
   $edusign_api_password_freja = hiera('edusign_api_password_freja')
-  $bankid_idp = hiera('bankid_idp')
-  $freja_idp = hiera('freja_idp')
 
   $env_app = [ "SP_HOSTNAME=${_host}",
               "SERVER_NAME=${host}",
@@ -95,8 +93,6 @@ class sunet::edusign::app(
               "SIGN_REQUESTER_ID=${sign_requester_id}",
               "SCOPE_WHITELIST=${scope_whitelist}",
               "DEBUG=${debug}",
-              "MAX_FILE_SIZE_FRONT=30000000",
-              "MAX_FILE_SIZE=30000000",
               'MAIL_SERVER=smtp.sunet.se',
               'MAIL_PORT=25',
               'MAIL_DEBUG=True',
@@ -109,15 +105,12 @@ class sunet::edusign::app(
               'LOCAL_STORAGE_BASE_DIR=/etc/edusign/data',
               'SQLITE_MD_DB_PATH=/etc/edusign/data/edusign.db',
               "POLLING=${edusign_app_polling}",
-              'USE_BANKID=True',
               "EDUSIGN_API_PROFILE_BANKID=${edusign_api_profile_bankid}",
               "EDUSIGN_API_USERNAME_BANKID=${edusign_api_username_bankid}",
               "EDUSIGN_API_PASSWORD_BANKID=${edusign_api_password_bankid}",
               "EDUSIGN_API_PROFILE_FREJA=${edusign_api_profile_freja}",
               "EDUSIGN_API_USERNAME_FREJA=${edusign_api_username_freja}",
               "EDUSIGN_API_PASSWORD_FREJA=${edusign_api_password_freja}",
-              "BANKID_IDP=${bankid_idp}",
-              "FREJA_IDP=${freja_idp}"
   ]
 
   $env_app_final = $env_app + $edusign_app_extra_variables
