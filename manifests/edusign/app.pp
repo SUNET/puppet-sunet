@@ -49,7 +49,7 @@ class sunet::edusign::app(
     imagetag => $version,
     hostname => $facts['networking']['fqdn'],
     volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
-                  '/etc/edusign:/etc/edusign:ro'],
+                  '/etc/edusign:/etc/edusign:ro', '/etc/views.py:/opt/edusign/venv/lib/python3.12/site-packages/edusign_webapp/views.py'],
     env      => $env_sp_final,
     depends  => ['edusign-app'],
     ports    => ['443:443','80:80']
