@@ -3,6 +3,7 @@ class sunet::certbot::acmed(
   String $server           = 'https://acme-d.sunet.se',
   String $directory_url    = 'https://acme-v02.api.letsencrypt.org/directory',
   Optional[String] $ca_url = undef,  # deprecated alias for $directory_url
+  Boolean $create_bundle   = false,
 ){
   $effective_directory_url = pick($ca_url, $directory_url)
 
@@ -19,6 +20,14 @@ class sunet::certbot::acmed(
     ensure  => file,
     mode    => '0700',
     content => file('sunet/certbot/issue-and-deploy.sh'),
+  }
+
+  if $create_bundle {
+    file { '/etc/letsencrypt/renewal-hooks/deploy/create-bundle.sh':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/certbot/create-bundle.sh'),
+    }
   }
 
   $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})

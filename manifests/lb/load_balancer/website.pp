@@ -30,6 +30,7 @@ define sunet::lb::load_balancer::website(
         $facts['tls_certificates'][$site_name]['infra_certkey'],
         $facts['tls_certificates'][$site_name]['bundle'],
         $facts['tls_certificates'][$site_name]['dehydrated_bundle'],
+        $facts['tls_certificates'][$site_name]['certbot_sync_bundle'],
         'NOMATCH',
       )
       if $_tls_certificate_bundle != 'NOMATCH' {
@@ -38,7 +39,7 @@ define sunet::lb::load_balancer::website(
         $_site_certs = $facts['tls_certificates'][$site_name]
         notice(join([
           "None of the certificates for site ${site_name} matched my list ",
-          "(haproxy, certkey, infra_certkey, bundle, dehydrated_bundle): ${_site_certs}"
+          "(haproxy, certkey, infra_certkey, bundle, dehydrated_bundle, certbot_sync_bundle): ${_site_certs}"
         ], ''))
         if $snakeoil {
           $tls_certificate_bundle = $snakeoil

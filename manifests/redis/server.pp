@@ -23,11 +23,15 @@ define sunet::redis::server(
   }
 
   # Configure all nodes as slaveof $master_ip, unless this node actually has $master_ip on eth0/bond0
+  # Use dig() so a missing interface (e.g. no bond0) yields undef instead of raising
+  # "Operator '[]' is not applicable to an Undef Value" from deep-indexing a structured fact.
+  $eth0_ip  = $facts.dig('networking', 'interfaces', 'eth0', 'ip')
+  $bond0_ip = $facts.dig('networking', 'interfaces', 'bond0', 'ip')
   $slave_node = $master_ip ? {
-    $facts['networking']['interfaces']['eth0']['ip']    => 'no',
-    $facts['networking']['interfaces']['bond0']['ip']   => 'no',
+    $eth0_ip                   => 'no',
+    $bond0_ip                  => 'no',
     $facts['networking']['ip'] => 'no',
-    default              => 'yes',
+    default                    => 'yes',
   }
 
   if $slave_node == 'yes' {
@@ -87,15 +91,33 @@ define sunet::redis::server(
   }
 
   if $docker_image =~ String[1] {
-    sunet::docker_run { $name:
-      image    => $docker_image,
-      imagetag => $docker_tag,
-      net      => 'host',  # Required for Redis clustering/HA
-      volumes  => ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
-                  "${basedir}/data:/data",
-                  '/dev/log:/dev/log',
-                  ],
-      env      => flatten($env),
+    $volumes = ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
+                "${basedir}/data:/data",
+                '/dev/log:/dev/log',
+                # Map the container's redis user to the host's redis uid/gid so the
+                # host-owned (root:redis 0770) /data bind mount stays accessible.
+                # Without these: "Can't chdir to '/data': Permission denied".
+                '/etc/passwd:/etc/passwd:ro',
+                '/etc/group:/etc/group:ro',
+                ]
+    $flat_env = flatten($env)
+    if $facts['dockerhost2'] == 'yes' {
+      # Native docker compose (dockerhost2). Renders network_mode/userns_mode host.
+      sunet::docker_compose { $name:
+        content      => template('sunet/redis/docker-compose.yml.erb'),
+        service_name => $name,
+        compose_dir  => $basedir,  # sunet::docker_compose appends /${service_name}; keep it under basedir
+        description  => "Redis ${name}",
+      }
+    } else {
+      # Legacy dockerhost / docker_run path
+      sunet::docker_run { $name:
+        image    => $docker_image,
+        imagetag => $docker_tag,
+        net      => 'host',  # Required for Redis clustering/HA
+        volumes  => $volumes,
+        env      => $flat_env,
+      }
     }
   }
 }
