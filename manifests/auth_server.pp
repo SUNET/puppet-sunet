@@ -53,12 +53,15 @@ define sunet::auth_server(
     }
 
     if $::facts['dockerhost2'] == 'yes' {
-      sunet::nftables::rule { 'DNAT port 443 to haproxy':
-        rule => "add rule ip nat prerouting iifname != \"br-*\" ip daddr ${facts['networking']['ip']} tcp dport 443 counter dnat to 172.16.1.2:443 comment \"DNAT HTTPS directly to container\""
+      $auth_server_allow_v4 = filter(flatten($allow_clients)) |$this| { is_ipaddr($this, 4) or $this == 'any' }
+      $auth_server_saddr    = sunet::format_nft_set('ip saddr', $auth_server_allow_v4)
+
+      sunet::nftables::rule { "DNAT port ${port} to haproxy":
+        rule => "add rule ip nat prerouting iifname != \"br-*\" ${auth_server_saddr} ip daddr ${facts['networking']['ip']} tcp dport ${port} counter dnat to 172.16.1.2:443 comment \"DNAT HTTPS directly to container\""
       }
 
-      sunet::nftables::rule { 'allow post-DNAT traffic to haproxy':
-        rule => "add rule inet filter forward iifname != \"br-*\" oifname \"br-*\" ip daddr 172.16.1.2 tcp dport 443 counter accept comment \"allow post-DNAT HTTPS to container\""
+      sunet::nftables::rule { "allow post-DNAT traffic to haproxy on ${port}":
+        rule => "add rule inet filter forward iifname != \"br-*\" oifname \"br-*\" ${auth_server_saddr} ip daddr 172.16.1.2 tcp dport 443 counter accept comment \"allow post-DNAT HTTPS to container\""
       }
     }
 
