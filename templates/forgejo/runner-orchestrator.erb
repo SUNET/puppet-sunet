@@ -26,5 +26,4 @@ platform.sunet.se/platform/dirigenten:<%= @dirigenten_version %> \
 --scp /tmp/uuid:/tmp/non-secret-uuid.txt \
 --scp /tmp/token:/tmp/secret-token.txt \
 --scp /forgejo-runner:/home/ubuntu/forgejo-runner \
-<% if @runner_image -%>--image <%= @runner_image %> \<%- end -%>
-/home/ubuntu/wrapper
+<% if @runner_image -%>--image <%= @runner_image %> <% end -%>/home/ubuntu/wrapper

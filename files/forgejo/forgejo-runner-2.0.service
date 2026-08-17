@@ -6,7 +6,6 @@ After=network.target
 Type=simple
 TimeoutStartSec=0
 TimeoutStopSec=30
-Restart=always
 RestartSec=10
 Environment="INT=%i"
 ExecStart=/opt/forgejo-runner-orchestrator/libexec/runner-orchestrator

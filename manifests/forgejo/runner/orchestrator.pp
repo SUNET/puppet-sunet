@@ -47,8 +47,11 @@ class sunet::forgejo::runner::orchestrator (
 
   $clouds = lookup('clouds', undef, undef, {})
   file { '/opt/forgejo-runner-orchestrator/config/clouds.yaml':
-    ensure  => file,
+    ensure  => 'file',
     content => stdlib::to_yaml({'clouds' => $clouds}),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0600',
   }
 
 
@@ -73,7 +76,9 @@ class sunet::forgejo::runner::orchestrator (
   file { '/opt/forgejo-runner-orchestrator/libexec/runner-registration':
     ensure  => 'file',
     content => template('sunet/forgejo/runner-registration.erb'),
-    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0700',
   }
 
   file { '/opt/forgejo-runner-orchestrator/libexec/cleanup-runners':

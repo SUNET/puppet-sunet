@@ -2,7 +2,7 @@
 
 set -eu -o pipefail
 
-if [[ ! -f /usr/bin/curl ]]; then
+if ! command -v curl >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
   apt-get update
   apt-get -y install \
     curl \
