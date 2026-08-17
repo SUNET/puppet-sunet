@@ -82,6 +82,14 @@ class sunet::forgejo::runner::orchestrator (
     mode    => '0755',
   }
 
+  sunet::scriptherder::cronjob { 'cleanup-runners':
+    cmd           => '/opt/forgejo-runner-orchestrator/libexec/cleanup-runners',
+    minute        => '45',
+    hour          => '*/6',
+    ok_criteria   => ['exit_status=0'],
+    warn_criteria => ['exit_status=1', 'max_age=24h'],
+  }
+
 
   file { '/opt/forgejo-runner-orchestrator/libexec/runner-wrapper':
     ensure  => 'file',
