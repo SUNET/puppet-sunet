@@ -84,7 +84,7 @@ class sunet::forgejo::runner::orchestrator (
   file { '/opt/forgejo-runner-orchestrator/libexec/cleanup-runners':
     ensure  => 'file',
     content => template('sunet/forgejo/cleanup-runners.erb'),
-    mode    => '0755',
+    mode    => '0700',
   }
 
   sunet::scriptherder::cronjob { 'cleanup-runners':
