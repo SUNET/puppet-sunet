@@ -1,26 +1,36 @@
 [mysqld]
 
 # General
-binlog_format           = ROW
-character_set_server    = utf8mb4
-collation_server        = utf8mb4_general_ci
-default_storage_engine  = InnoDB
-local_infile            = 0
-max_allowed_packet      = 256M
-max_connections         = 750
-skip_external_locking   = ON
-skip_name_resolve       = ON
+binlog_format            = ROW
+character_set_server     = utf8mb4
+collation_server         = utf8mb4_general_ci
+default_storage_engine   = InnoDB
+local_infile             = 0
+max_allowed_packet       = 256M
+max_connections          = 750
+skip_external_locking    = ON
+skip_name_resolve        = ON
+<% if @use_tls -%>
+## TLS for client connections ##
+ssl-ca                   = <%= @ca_cert_path %>
+ssl-cert                 = /etc/mysql/ssl/cert.pem
+ssl-key                  = /etc/mysql/ssl/privkey.pem
+# Enforce encrypted connections
+require_secure_transport = ON
+# protocol hardening
+tls_version              = TLSv1.2,TLSv1.3
+<% end -%>
 
 # Binary logging and replication
-expire_logs_days        = 7
-gtid_domain_id          = 1000
-gtid_ignore_duplicates  = ON
-gtid_strict_mode        = ON
-log_bin                 = binlog
-log_slave_updates       = ON
-server_id               = <%= @server_id %>
+binlog_expire_logs_seconds = 604800 # 7 days
+gtid_domain_id             = <%= @server_id %>
+gtid_ignore_duplicates     = ON
+gtid_strict_mode           = ON
+log_bin                    = binlog
+log_slave_updates          = ON
+server_id                  = <%= @server_id %>
 # Default hostname base relay_log is no good in containers
-relay_log               = 'relay-log'
+relay_log                  = 'relay-log'
 
 # Innodb
 innodb_autoinc_lock_mode        = 2
@@ -45,8 +55,20 @@ wsrep_gtid_mode                 = ON
 wsrep_log_conflicts             = ON
 wsrep_on                        = ON
 wsrep_provider                  = /usr/lib/galera/libgalera_smm.so
-wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0" # gmcast.segment same on all Galera nodes in the same segment
+<% if @use_tls -%>
+wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0;socket.ssl=true;socket.ssl_key=/etc/mysql/ssl/privkey.pem;socket.ssl_cert=/etc/mysql/ssl/cert.pem;socket.ssl_ca=<%= @ca_cert_path %>;socket.ssl_reload=1"
+<% else -%>
+wsrep_provider_options          = "gcache.size=2G;gmcast.segment=0"
+<% end -%>
 wsrep_slave_threads             = 4    # CPU dependent
 wsrep_sst_method                = mariabackup
 wsrep_sync_wait                 = 1
+
+<% if @use_tls -%>
+[sst]
+encrypt                         = 4
+ssl-ca                          = <%= @ca_cert_path %>
+ssl-cert                        = /etc/mysql/ssl/cert.pem
+ssl-key                         = /etc/mysql/ssl/privkey.pem
+<% end -%>
 <% end -%>
