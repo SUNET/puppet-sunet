@@ -76,7 +76,7 @@ class sunet::forgejo::runner::orchestrator (
     mode    => '0755',
   }
 
-  file { '/opt/forgejo-runner/libexec/cleanup-runners':
+  file { '/opt/forgejo-runner-orchestrator/libexec/cleanup-runners':
     ensure  => 'file',
     content => template('sunet/forgejo/cleanup-runners.erb'),
     mode    => '0755',
