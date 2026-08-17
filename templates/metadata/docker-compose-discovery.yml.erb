@@ -1,0 +1,45 @@
+services:
+<% if @mdq -%>
+  mdq:
+    image: <%= @mdq_image %>:<%= @mdq_version %>
+    container_name: mdq
+<% if !@ds -%>
+    ports:
+      - "80:3000"
+<% end -%>
+    volumes:
+      - /opt/discovery/metadata/:/etc/thiss/:ro
+    environment:
+      - METADATA=/etc/thiss/metadata.json
+      - TRUSTINFO=/etc/thiss/metadata_sp.json
+    restart: unless-stopped
+
+<% end -%>
+<% if @ds -%>
+  ds:
+    container_name: ds
+    image: <%= @ds_image %>:<%= @ds_version %>
+    environment:
+      - BASE_URL=<%= @base_url %>/
+      - MDQ_URL=<%= @final_mdq_search_url %>
+      - SEARCH_URL=<%= @final_mdq_search_url %>
+      - STORAGE_DOMAIN=<%= @domain %>
+      - LOGLEVEL=warn
+      - DEFAULT_CONTEXT=<%= @context %>
+<% if @mdq -%>
+      - MDQ_HOSTPORT=mdq:3000
+<% end -%>
+      - COMPONENT_URL=<%= @base_url %>/cta/
+      - PERSISTENCE_URL=<%= @base_url %>/ps/
+      - WHITELIST=<%= @whitelist %>
+      - CACHE_CONTROL=<%= @cache_control %>
+<% if @ds_tls -%>
+      - TLS_KEY=/cert/ds.key
+      - TLS_CERT=/cert/ds.pem
+    volumes:
+      - /opt/discovery/cert/:/cert/:ro
+<% end -%>
+    ports:
+      - <%= @ds_port %>:<%= @ds_port %>
+    restart: unless-stopped
+<% end -%>
