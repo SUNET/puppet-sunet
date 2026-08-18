@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -eu
+
+RUNNER=/opt/forgejo-runner-orchestrator/bin/forgejo-runner
+ME=$(hostname -f)
+
+docker run --rm \
+ --name "dirigent-${INT}" \
+ -v /opt/forgejo-runner-orchestrator/config/runner.config:/runner.config:ro \
+ -v /opt/forgejo-runner-orchestrator/libexec/runner-wrapper:/wrapper:ro \
+ -v /opt/forgejo-runner-orchestrator/config/clouds.yaml:/etc/openstack/clouds.yaml:ro \
+ -v /opt/forgejo-runner-orchestrator/config/id_ed25519:/id_ed25519:ro \
+ -v /opt/forgejo-runner-orchestrator/libexec/runner-registration:/runner-registration:ro \
+ -v $(realpath /opt/forgejo-runner-orchestrator/bin/forgejo-runner):/forgejo-runner:ro \
+ -e DIRIGENTEN_HOSTNAME=${ME} \
+platform.sunet.se/platform/dirigenten:<%= @dirigenten_version %> \
+--network <%= @openstack_network %> \
+--prefix <%= @forgejo_prefix %>-${INT} \
+--key-name <%= @openstack_key_name %> \
+--pre-exec /runner-registration \
+--ssh-key /id_ed25519 \
+--ssh-host $(hostname -f) \
+--scp /wrapper:/home/ubuntu/wrapper \
+--scp /runner.config:/home/ubuntu/runner.config \
+--scp /tmp/uuid:/tmp/non-secret-uuid.txt \
+--scp /tmp/token:/tmp/secret-token.txt \
+--scp /forgejo-runner:/home/ubuntu/forgejo-runner \
+<% if @runner_image -%>--image <%= @runner_image %> <% end -%>/home/ubuntu/wrapper
