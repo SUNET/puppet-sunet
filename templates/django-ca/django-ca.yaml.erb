@@ -32,6 +32,9 @@ CA_KEY_BACKENDS:
       token: <%= @hsm_partition %>
       user_pin: <%= @pkcs11_pin %>
 
+<% if @default_ca_serial -%>
+CA_DEFAULT_CA: <%= @default_ca_serial %>
+<% end -%>
 
 <% if @django_ca_cmc %>
 EXTEND_INSTALLED_APPS:
