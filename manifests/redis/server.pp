@@ -92,7 +92,7 @@ define sunet::redis::server(
   }
 
   if $docker_image =~ String[1] {
-    $volumes = ["${basedir}/etc/redis.conf:/etc/redis/redis.conf",
+    $volumes = ["${basedir}/etc:/etc/redis",
                 "${basedir}/data:/data",
                 '/dev/log:/dev/log',
                 # Map the container's redis user to the host's redis uid/gid so the
