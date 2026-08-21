@@ -14,7 +14,8 @@ define sunet::redis::server(
   Integer           $master_port     = 6379,
   Optional[String]  $docker_image    = 'docker.sunet.se/eduid/redis',
   String            $docker_tag      = 'latest',
-  String            $basedir         = "/opt/redis/${name}"
+  String            $basedir         = "/opt/redis/${name}",
+  Bool              $unprotected     = False
   ) {
 
   $env = $sentinel_config ? {
