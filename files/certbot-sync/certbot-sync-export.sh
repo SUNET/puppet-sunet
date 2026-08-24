@@ -25,7 +25,7 @@ name="$(basename "${lineage}")"
 read -r -a renewed_domains <<<"${RENEWED_DOMAINS:-}"
 
 exportable="no"
-for key in "${name}" "${renewed_domains[@]}"; do
+for key in ${renewed_domains[@]}"; do
 	[[ -z "${key}" ]] && continue
 	if jq -e --arg k "${key}" '(.[$k].exportable // false) == true' "${acmedns}" >/dev/null 2>&1; then
 		exportable="yes"
