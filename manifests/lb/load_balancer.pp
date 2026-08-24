@@ -3,19 +3,20 @@
 # Two versions of the websites setup are supported, but they won't work simultaneously!
 #
 class sunet::lb::load_balancer(
-  String  $router_id   = $ipaddress_default,
-  String  $basedir     = '/opt/frontend',
-  Integer $base_uidgid = lookup('sunet_frontend_load_balancer_base_uidgid', undef, undef, 800),
-  String  $interface   = 'eth0',
-  Integer $frontend    = $base_uidgid + 0,
-  Integer $fe_api      = $base_uidgid + 1,
-  Integer $fe_monitor  = $base_uidgid + 2,
-  Integer $fe_config   = $base_uidgid + 3,
-  Integer $haproxy     = $base_uidgid + 10,
-  Integer $telegraf    = $base_uidgid + 11,
-  Integer $varnish     = $base_uidgid + 12,
+  String  $router_id                     = $ipaddress_default,
+  String  $basedir                       = '/opt/frontend',
+  Integer $base_uidgid                   = lookup('sunet_frontend_load_balancer_base_uidgid', undef, undef, 800),
+  String  $interface                     = 'eth0',
+  Integer $frontend                      = $base_uidgid + 0,
+  Integer $fe_api                        = $base_uidgid + 1,
+  Integer $fe_monitor                    = $base_uidgid + 2,
+  Integer $fe_config                     = $base_uidgid + 3,
+  Integer $haproxy                       = $base_uidgid + 10,
+  Integer $telegraf                      = $base_uidgid + 11,
+  Integer $varnish                       = $base_uidgid + 12,
   Enum['old_ca', 'new_ca'] $cert_source  = 'old_ca',
-
+  Integer $critical                      = 1296000, #in seconds
+  Integer $warning                       = 864000,  #in seconds
 ) {
   # Set up users for running all services as non-root
   class { 'sunet::lb::load_balancer::users':
@@ -100,6 +101,15 @@ class sunet::lb::load_balancer(
           }
         }
       }
+    }
+    sunet::sudoer {"nrpe_cert_expire":
+      user_name    => 'nagios',
+      collection   => "nrpe_cert_expire",
+      command_line => "/usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /opt/frontend/config/ssl/infra_haproxy.crt"
+    }
+
+    sunet::nagios::nrpe_command {"check_cert_expire_${name}":
+      command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /etc/ssl/private/${facts['networking']['fqdn']}_haproxy.crt"
     }
   }
 
