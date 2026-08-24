@@ -102,13 +102,13 @@ class sunet::lb::load_balancer(
         }
       }
     }
-    sunet::sudoer {"nrpe_cert_expire":
+    sunet::sudoer {'nrpe_cert_expire':
       user_name    => 'nagios',
       collection   => "nrpe_cert_expire",
       command_line => "/usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /opt/frontend/config/ssl/infra_haproxy.crt"
     }
 
-    sunet::nagios::nrpe_command {"check_haproxy_cert_expire":
+    sunet::nagios::nrpe_command {'check_haproxy_cert_expire':
       command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /opt/frontend/config/ssl/infra_haproxy.crt"
     }
   }
