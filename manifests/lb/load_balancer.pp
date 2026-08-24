@@ -108,8 +108,8 @@ class sunet::lb::load_balancer(
       command_line => "/usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /opt/frontend/config/ssl/infra_haproxy.crt"
     }
 
-    sunet::nagios::nrpe_command {"check_cert_expire_${name}":
-      command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /etc/ssl/private/${facts['networking']['fqdn']}_haproxy.crt"
+    sunet::nagios::nrpe_command {"check_haproxy_cert_expire":
+      command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /opt/frontend/config/ssl/infra_haproxy.crt"
     }
   }
 
