@@ -1,11 +1,13 @@
 # Generate the simple most common haproxy setup we use
 define sunet::haproxy::simple_setup(
-  String $content,
-  String $cert,
-  String $key,
-  String $server_name    = $facts['networking']['fqdn'],
-  String $port           = '443',
-  Array  $allow_clients  = [],
+  String  $content,
+  String  $cert,
+  String  $key,
+  String  $server_name    = $facts['networking']['fqdn'],
+  String  $port           = '443',
+  Array   $allow_clients  = [],
+  Integer $critical = 1296000, #in seconds
+  Integer $warning = 864000,  #in seconds
 ) {
   ensure_resource(sunet::misc::system_user, 'haproxy', {group => 'haproxy' })
 
@@ -20,6 +22,10 @@ define sunet::haproxy::simple_setup(
   sunet::misc::create_root_dir { ["/opt/sunet/${name}",
                                   "/opt/sunet/${name}/etc",
                                   ]:
+  }
+
+  sunet::nagios::nrpe_command {"check_cert_expire_${name}":
+    command_line => "/usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} ${facts['networking']['fqdn']}_haproxy"
   }
 
   $config = "/opt/sunet/${name}/etc/haproxy.cfg"
