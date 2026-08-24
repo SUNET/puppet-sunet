@@ -9,6 +9,10 @@ services:
       - /opt/mariadb/datadir:/var/lib/mysql
       - /opt/mariadb/init:/docker-entrypoint-initdb.d
       - /opt/mariadb/scripts:/scripts
+<%- if @use_tls -%>
+      - /opt/mariadb/cert:/etc/mysql/ssl:ro
+      - <%= @ca_cert_path %>:<%= @ca_cert_path%>:ro
+<% end -%>
 <%- if @backup -%>
       - /opt/mariadb_backup/start_replica_from_init.sh:/start_replica_from_init.sh
 <% end -%>

@@ -1,4 +1,6 @@
 # This is a asyncronous replica of the Maria DB Cluster for SUNET
+
+# @param exclude_system_dbs        # exclude these default/system tables from backups: mysql, performance_schema, information_schema, sys
 class sunet::mariadb::backup(
   String $mariadb_version=latest,
   String $mariadb_image='docker.sunet.se/drive/mariadb',
@@ -9,14 +11,20 @@ class sunet::mariadb::backup(
   String  $backup_minute = '10',
   Integer $backup_max_age = 24,
   Integer $local_retension = 31,
+  Boolean $use_tls = false,
+  Boolean $exclude_system_dbs = false,
+  String  $innodb_buffer_pool_size = '4G',
+  String  $ca_cert_path = '/etc/ssl/certs/infra-2-prod.crt',
 ) {
 
   sunet::mariadb { 'sunet_mariadb_simple':
-    mariadb_version => $mariadb_version,
-    mariadb_image   => $mariadb_image,
-    ports           => [3306],
-    dns             => $dns,
-    galera          => false,
+    mariadb_version         => $mariadb_version,
+    mariadb_image           => $mariadb_image,
+    ports                   => [3306],
+    dns                     => $dns,
+    galera                  => false,
+    innodb_buffer_pool_size => $innodb_buffer_pool_size,
+    use_tls                 => $use_tls,
   }
 
   $cluster_nodes = lookup('mariadb_cluster_nodes', undef, undef,[])

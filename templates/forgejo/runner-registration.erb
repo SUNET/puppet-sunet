@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+if ! command -v curl >/dev/null 2>&1 || ! command -v jq >/dev/null 2>&1; then
+  apt-get update
+  apt-get -y install \
+    curl \
+    jq
+fi
+
+# Clean up if anything would be left from previous run
+for file in uuid token; do
+  file_path="/tmp/${file}"
+  if [[ -f "${file_path}" ]]; then
+    rm "${file_path}"
+  fi
+done
+
+response=$(curl -f -X 'POST' \
+  'https://<%= @forgejo_instance %>/api/v1/admin/actions/runners' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <%= @forgejo_registration_token %>' \
+  -H 'Content-Type: application/json' \
+  -d "{
+  \"name\": \"${DIRIGENTEN_HOSTNAME}-${DIRIGENTEN_PREFIX}-$(date +%s)\",
+  \"ephemeral\": true
+}")
+
+for key in uuid token; do
+  echo "${response}" | jq -re --arg k "$key" '.[$k]' > "/tmp/${key}"
+done
