@@ -104,7 +104,7 @@ class sunet::lb::load_balancer(
     }
     sunet::sudoer {'nrpe_cert_expire':
       user_name    => 'nagios',
-      collection   => "nrpe_cert_expire",
+      collection   => 'nrpe_cert_expire',
       command_line => "/usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /opt/frontend/config/ssl/infra_haproxy.crt"
     }
 
