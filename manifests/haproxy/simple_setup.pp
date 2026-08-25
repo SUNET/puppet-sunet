@@ -24,14 +24,17 @@ define sunet::haproxy::simple_setup(
                                   ]:
   }
 
+  $_critical = lookup('check_cert_warning', undef, undef, $critical)
+  $_warning = lookup('check_cert_critical', undef, undef, $warning)
+
   sunet::sudoer {'nrpe_cert_expire':
     user_name    => 'nagios',
     collection   => 'nrpe_cert_expire',
-    command_line => "/usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /etc/ssl/private/${facts['networking']['fqdn']}_haproxy.crt"
+    command_line => "/usr/lib/nagios/plugins/check_cert_expire -w ${_warning} -c ${_critical} /etc/ssl/private/${facts['networking']['fqdn']}_haproxy.crt"
   }
 
   sunet::nagios::nrpe_command {'check_haproxy_cert_expire':
-    command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_cert_expire -w ${warning} -c ${critical} /etc/ssl/private/${facts['networking']['fqdn']}_haproxy.crt"
+    command_line => "/usr/bin/sudo /usr/lib/nagios/plugins/check_cert_expire -w ${_warning} -c ${_critical} /etc/ssl/private/${facts['networking']['fqdn']}_haproxy.crt"
   }
 
   $config = "/opt/sunet/${name}/etc/haproxy.cfg"
