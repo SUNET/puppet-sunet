@@ -8,7 +8,7 @@
 # clients to fetch. Certs not marked exportable are kept out of (and removed
 # from) the export dir.
 
-set -eu
+set -eux
 
 exportdir="/opt/certbot-sync/export"
 acmedns="/etc/letsencrypt/acmedns.json"
@@ -23,6 +23,14 @@ name="$(basename "${lineage}")"
 # RENEWED_DOMAINS is a space separated list; also match SAN certs whose lineage
 # name differs from the acmedns.json key.
 read -r -a renewed_domains <<<"${RENEWED_DOMAINS:-}"
+
+if [[ "${#renewed_domains[@]}" -eq 0 ]]; then
+	# A caller that leaves RENEWED_DOMAINS unset cannot tell us whether this
+	# lineage is exportable. Reading that as "not exportable" would delete a
+	# perfectly good export, so touch nothing at all.
+	echo "RENEWED_DOMAINS is not set for ${name}; leaving the export dir untouched."
+	exit 0
+fi
 
 exportable="no"
 for key in "${renewed_domains[@]}"; do
@@ -41,6 +49,7 @@ if [[ "${exportable}" != "yes" ]]; then
 	exit 0
 fi
 
+install -d -m 0700 /opt/certbot-sync
 install -d -m 0700 "${exportdir}"
 install -d -m 0700 "${exportdir}/live"
 install -d -m 0700 "${dest}"
