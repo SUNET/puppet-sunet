@@ -50,7 +50,7 @@ install -d -m 0700 "${dest}"
 # file at the destination, so clients receive plain files rather than symlinks.
 # fullchain.pem is written last since clients key their "changed?" check off it.
 for f in privkey cert chain fullchain; do
-  echo "${f}"
+	echo "install -m 0600 "${lineage}/${f}.pem" "${dest}/${f}.pem""
 	install -m 0600 "${lineage}/${f}.pem" "${dest}/${f}.pem"
 done
 
