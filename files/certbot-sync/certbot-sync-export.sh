@@ -8,7 +8,7 @@
 # clients to fetch. Certs not marked exportable are kept out of (and removed
 # from) the export dir.
 
-set -eu
+set -eux
 
 exportdir="/opt/certbot-sync/export"
 acmedns="/etc/letsencrypt/acmedns.json"
