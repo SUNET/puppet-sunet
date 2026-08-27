@@ -63,9 +63,7 @@ class sunet::metadata::discovery(
 
     if ($ds_tls) {
       $hook_dir='/etc/letsencrypt/renewal-hooks/deploy'
-      ensure_resource('file', '/etc/letsencrypt', { 'ensure' => 'directory' })
-      ensure_resource('file', '/etc/letsencrypt/renewal-hooks', { 'ensure' => 'directory' })
-      ensure_resource('file', $hook_dir, { 'ensure' => 'directory' })
+      include sunet::packages::certbot
       file { "${hook_dir}/discovery-renewal-hook":
           content => file('sunet/metadata/discovery-renewal-hook'),
           owner   => root,
