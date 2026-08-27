@@ -46,24 +46,6 @@ class sunet::certbot::sync::server(
     database => $sync_keydb,
   }
 
-  # The export dir clients rsync from. Contents are managed by the deploy hook,
-  # so we only manage the dirs themselves (no recurse/purge).
-  ensure_resource('file', '/opt/certbot-sync', {
-    ensure => directory, mode => '0700', owner => 'root', group => 'root',
-  })
-  file { '/opt/certbot-sync/export':
-    ensure => directory,
-    mode   => '0700',
-    owner  => 'root',
-    group  => 'root',
-  }
-  file { '/opt/certbot-sync/export/live':
-    ensure => directory,
-    mode   => '0700',
-    owner  => 'root',
-    group  => 'root',
-  }
-
   # certbot deploy hook: on each renewal, export the cert if its domain is
   # marked exportable in acmedns.json.
   include sunet::packages::certbot

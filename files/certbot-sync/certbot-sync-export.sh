@@ -41,6 +41,7 @@ if [[ "${exportable}" != "yes" ]]; then
 	exit 0
 fi
 
+install -d -m 0700 /opt/certbot-sync
 install -d -m 0700 "${exportdir}"
 install -d -m 0700 "${exportdir}/live"
 install -d -m 0700 "${dest}"
