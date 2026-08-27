@@ -24,6 +24,14 @@ name="$(basename "${lineage}")"
 # name differs from the acmedns.json key.
 read -r -a renewed_domains <<<"${RENEWED_DOMAINS:-}"
 
+if [[ "${#renewed_domains[@]}" -eq 0 ]]; then
+	# A caller that leaves RENEWED_DOMAINS unset cannot tell us whether this
+	# lineage is exportable. Reading that as "not exportable" would delete a
+	# perfectly good export, so touch nothing at all.
+	echo "RENEWED_DOMAINS is not set for ${name}; leaving the export dir untouched."
+	exit 0
+fi
+
 exportable="no"
 for key in "${renewed_domains[@]}"; do
 	[[ -z "${key}" ]] && continue
@@ -50,7 +58,6 @@ install -d -m 0700 "${dest}"
 # file at the destination, so clients receive plain files rather than symlinks.
 # fullchain.pem is written last since clients key their "changed?" check off it.
 for f in privkey cert chain fullchain; do
-	echo "install -m 0600 \"${lineage}/${f}.pem\" \"${dest}/${f}.pem\""
 	install -m 0600 "${lineage}/${f}.pem" "${dest}/${f}.pem"
 done
 
