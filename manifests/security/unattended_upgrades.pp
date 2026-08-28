@@ -13,6 +13,20 @@ class sunet::security::unattended_upgrades (
   }
   if $use_template {
 
+    $supported = $facts['os']['name'] ? {
+      'Debian' => versioncmp($facts['os']['release']['major'], '11')    >= 0,
+      'Ubuntu' => versioncmp($facts['os']['release']['major'], '20.04') >= 0,
+      default  => false,
+    }
+
+    file { '/etc/apt/apt.conf.d/80-lock-timeout':
+      ensure  => $supported ? { true => file, default => absent },
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      content => "// Managed by cosmos/puppet - do not edit\nDPkg::Lock::Timeout \"${timeout}\";\n",
+    }
+
     concat { '/etc/apt/apt.conf.d/51unattended-upgrades-origins':
       owner          => 'root',
       ensure_newline => true,
