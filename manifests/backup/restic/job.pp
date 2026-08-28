@@ -160,8 +160,6 @@ keep_last/keep_hourly/keep_daily/keep_weekly/keep_monthly/keep_yearly, or accept
       require => File[$job_dir],
     }
 
-    }
-
     file { $script:
       ensure  => 'file',
       owner   => 'root',
