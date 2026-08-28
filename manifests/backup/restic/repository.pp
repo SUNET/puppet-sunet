@@ -9,7 +9,15 @@
 # @param env_hiera_keys         environment variable name => Hiera key holding its
 #                               value. Merged over $env. For secrets that cannot be
 #                               written inline.
-# @param init                   run 'restic init' if the repository does not exist
+# @param init                   create the repository when restic reports that it does
+#                               not exist (exit status 10). A wrong password, missing
+#                               credentials, an unreachable endpoint or a lock are all
+#                               reported and left alone - only a genuinely absent
+#                               repository is created. Set false where creating the
+#                               repository, and for S3 possibly the bucket, should stay
+#                               a manual and audited step: a typo in 'url' would
+#                               otherwise create a new empty repository that backups
+#                               then succeed into.
 # @param keep_last              'restic forget --keep-last'
 # @param keep_hourly            'restic forget --keep-hourly'
 # @param keep_daily             'restic forget --keep-daily'
@@ -79,10 +87,11 @@ define sunet::backup::restic::repository (
   $password_file = "${repos_dir}/${safe_name}.password"
   $env_file      = "${repos_dir}/${safe_name}.env"
   $init_stamp    = "${repos_dir}/${safe_name}.initialized"
+  $init_script   = "${repos_dir}/${safe_name}-init.sh"
   $wrapper       = "/usr/local/bin/restic-${safe_name}"
 
   if $ensure == 'absent' {
-    file { [$password_file, $env_file, $init_stamp, $wrapper]:
+    file { [$password_file, $env_file, $init_stamp, $init_script, $wrapper]:
       ensure => 'absent',
     }
 
@@ -130,6 +139,7 @@ restic repository '${title}' is not set - not exporting it")
         'cache_dir'     => shellquote($cache_dir),
         'env_file'      => shellquote($env_file),
         'restic_bin'    => shellquote($restic_bin),
+        'wrapper'       => shellquote($wrapper),
       }
 
       file { $password_file:
@@ -164,17 +174,36 @@ restic repository '${title}' is not set - not exporting it")
       }
 
       if $init {
+        # Decides whether to initialise from restic's exit status rather than from
+        # "did it fail" - see the template. Kept as a script so that logic is
+        # inspectable on the host instead of being an unreadable exec one-liner.
+        file { $init_script:
+          ensure  => 'file',
+          owner   => 'root',
+          group   => 'root',
+          mode    => '0700',
+          content => template('sunet/backup/restic/repo-init.erb.sh'),
+          require => File[$repos_dir],
+        }
+
         # The stamp file means the repository is probed over the network once, on the
         # first run, instead of on every Puppet run - while a genuinely
-        # uninitialised repository on a fresh host still gets created.
+        # uninitialised repository on a fresh host still gets created. It also means a
+        # repository that later disappears shows up as failing backups rather than
+        # being silently recreated empty.
         exec { "restic_init_${safe_name}":
-          command  => "${shellquote($wrapper)} cat config > /dev/null 2>&1 || ${shellquote($wrapper)} init",
-          provider => 'shell',
-          creates  => $init_stamp,
+          command => $init_script,
+          creates => $init_stamp,
           # File[$restic_bin] is declared by sunet::backup::restic. A repository
           # without that class is meaningless - there would be no binary to run - so
           # this reference deliberately fails the run rather than papering over it.
-          require  => [File[$wrapper], File[$password_file], File[$env_file], File[$restic_bin]],
+          require => [
+            File[$init_script],
+            File[$wrapper],
+            File[$password_file],
+            File[$env_file],
+            File[$restic_bin],
+          ],
         }
         -> file { $init_stamp:
           ensure  => 'file',
