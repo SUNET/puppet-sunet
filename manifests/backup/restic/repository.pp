@@ -57,7 +57,7 @@ define sunet::backup::restic::repository (
   String                   $check_hour             = '5',
   Optional[String]         $check_minute           = undef,
   Optional[String]         $check_weekday          = '6',
-  Optional[String]         $check_read_data_subset = undef,
+  Optional[String]         $check_read_data_subset = '5%',
   Enum['present','absent'] $ensure                 = 'present',
 ) {
   # Only the directory layout, never the main class - see the header of dirs.pp for
