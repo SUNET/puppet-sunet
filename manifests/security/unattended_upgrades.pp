@@ -19,6 +19,7 @@ class sunet::security::unattended_upgrades (
       default  => false,
     }
 
+    $timeout = 300
     file { '/etc/apt/apt.conf.d/80-lock-timeout':
       ensure  => $supported ? { true => file, default => absent },
       owner   => 'root',
