@@ -18,22 +18,13 @@
 #                               a manual and audited step: a typo in 'url' would
 #                               otherwise create a new empty repository that backups
 #                               then succeed into.
-# @param keep_last              'restic forget --keep-last'
-# @param keep_hourly            'restic forget --keep-hourly'
-# @param keep_daily             'restic forget --keep-daily'
-# @param keep_weekly            'restic forget --keep-weekly'
-# @param keep_monthly           'restic forget --keep-monthly'
-# @param keep_yearly            'restic forget --keep-yearly'
-# @param prune                  schedule the repository's cleanup. With any keep_* set
-#                               this is 'restic forget <keep args> --prune', a
-#                               repo-wide retention policy. With none set it is
-#                               'restic prune' alone, which only drops unreferenced
-#                               data and can never delete a snapshot - the mode to use
-#                               when the jobs own retention themselves. Either way the
-#                               repack runs here and not in a job, because it takes an
-#                               exclusive lock on the whole repository.
-#                               'keep_daily: 7, keep_weekly: 5, keep_monthly: 12' is a
-#                               reasonable starting repo-wide policy.
+# @param prune                  schedule 'restic prune', which repacks the repository
+#                               and drops data that no snapshot references. It cannot
+#                               delete a snapshot: deciding what to keep belongs to the
+#                               job, which tags its own snapshots and scopes a 'forget'
+#                               to them. The repack lives here rather than in a job
+#                               because it takes an exclusive lock on the whole
+#                               repository, so jobs sharing one would race for it.
 # @param prune_hour             hour for the prune job
 # @param prune_minute           minute for the prune job. Defaults to a per-host
 #                               random minute, to spread load across a fleet.
@@ -57,12 +48,6 @@ define sunet::backup::restic::repository (
   Hash[String, String]     $env                    = {},
   Hash[String, String]     $env_hiera_keys         = {},
   Boolean                  $init                   = true,
-  Optional[Integer]        $keep_last              = undef,
-  Optional[Integer]        $keep_hourly            = undef,
-  Optional[Integer]        $keep_daily             = undef,
-  Optional[Integer]        $keep_weekly            = undef,
-  Optional[Integer]        $keep_monthly           = undef,
-  Optional[Integer]        $keep_yearly            = undef,
   Boolean                  $prune                  = true,
   String                   $prune_hour             = '4',
   Optional[String]         $prune_minute           = undef,
@@ -215,48 +200,19 @@ restic repository '${title}' is not set - not exporting it")
       }
 
       if $prune {
-        $keep_args = [
-          $keep_last    ? { undef => undef, default => "--keep-last ${keep_last}" },
-          $keep_hourly  ? { undef => undef, default => "--keep-hourly ${keep_hourly}" },
-          $keep_daily   ? { undef => undef, default => "--keep-daily ${keep_daily}" },
-          $keep_weekly  ? { undef => undef, default => "--keep-weekly ${keep_weekly}" },
-          $keep_monthly ? { undef => undef, default => "--keep-monthly ${keep_monthly}" },
-          $keep_yearly  ? { undef => undef, default => "--keep-yearly ${keep_yearly}" },
-        ].filter |$arg| { $arg =~ NotUndef }
-
         $_prune_max_age = pick($prune_max_age, $prune_weekday ? { undef => '25h', default => '8d' })
 
-        # Two modes, and the distinction is a safety property, not a convenience:
-        #
-        #   keep_* set   - a repo-wide 'forget' applies the policy, then prunes if it
-        #                  actually removed anything.
-        #   keep_* unset - 'prune' alone. It only drops data no snapshot references, so
-        #                  it can never delete a snapshot. This is the mode to use when
-        #                  the jobs own retention themselves.
-        #
-        # 'forget' is therefore never emitted without a --keep-* argument, which is what
-        # it would take to delete every snapshot in the repository. That is also why the
-        # keep_* parameters have no defaults: a default would silently override a
-        # 'keep_daily: ~' meant to disable daily retention, since Puppet falls back to
-        # the default when a parameter is explicitly given as undef.
-        if empty($keep_args) {
-          sunet::scriptherder::cronjob { "restic-prune-${safe_name}":
-            cmd           => "${wrapper} prune",
-            hour          => $prune_hour,
-            minute        => pick($prune_minute, String(fqdn_rand(60, "restic-prune-${safe_name}"))),
-            weekday       => $prune_weekday,
-            ok_criteria   => ['exit_status=0', "max_age=${_prune_max_age}"],
-            warn_criteria => ['exit_status=1'],
-          }
-        } else {
-          sunet::scriptherder::cronjob { "restic-forget-${safe_name}":
-            cmd           => "${wrapper} forget ${join($keep_args, ' ')} --prune",
-            hour          => $prune_hour,
-            minute        => pick($prune_minute, String(fqdn_rand(60, "restic-forget-${safe_name}"))),
-            weekday       => $prune_weekday,
-            ok_criteria   => ['exit_status=0', "max_age=${_prune_max_age}"],
-            warn_criteria => ['exit_status=1'],
-          }
+        # Repacking only. Deciding *which snapshots* to keep belongs to the job, which
+        # tags its own snapshots and can therefore scope a 'forget' exactly - see
+        # sunet::backup::restic::job. There is nothing to guard against here: 'restic
+        # prune' drops data that no snapshot references and cannot delete a snapshot.
+        sunet::scriptherder::cronjob { "restic-prune-${safe_name}":
+          cmd           => "${wrapper} prune",
+          hour          => $prune_hour,
+          minute        => pick($prune_minute, String(fqdn_rand(60, "restic-prune-${safe_name}"))),
+          weekday       => $prune_weekday,
+          ok_criteria   => ['exit_status=0', "max_age=${_prune_max_age}"],
+          warn_criteria => ['exit_status=1'],
         }
       }
 
