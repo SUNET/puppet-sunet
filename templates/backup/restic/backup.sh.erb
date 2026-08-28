@@ -1,0 +1,181 @@
+#!/bin/bash
+# Managed by puppet: sunet::backup::restic::job['<%= @title %>'] - do not edit
+#
+# Back up to the '<%= @repository %>' restic repository.
+#
+# Steps in <%= @pre_dir %> run first, in filename order, and the
+# first one that fails aborts this script before restic runs. Steps in
+# <%= @post_dir %> run afterwards from an EXIT trap - all of them,
+# even if the backup or an earlier step failed. Add them with
+# sunet::backup::restic::hook, not by editing this file.
+#
+# Exit status: 0 = success, 3 = completed but some files could not be read,
+# anything else = failure. The scriptherder job restic-backup-<%= @safe_name %>
+# treats 3 as a warning and every other non-zero status as a critical, so a single
+# unreadable open file does not page anyone while real breakage does.
+
+set -euo pipefail
+umask 077
+
+# Deterministic glob order, so pre.d/post.d run in the order their names imply
+# regardless of the machine's locale.
+export LC_ALL=C
+
+if [ ! -r <%= @quoted['env_file'] %> ]; then
+  echo "restic repository env file <%= @quoted['env_file'] %> is missing - is repository '<%= @quoted['safe_repository'] %>' declared on this host?" >&2
+  exit 1
+fi
+
+# shellcheck disable=SC1091  # puppet-managed, path is known at generation time
+. <%= @quoted['env_file'] %>
+
+# mode 'strict' stops at the first failing script; mode 'all' runs every script and
+# returns the first non-zero status it saw. Either way a failure is reported, never
+# swallowed. The [ -f ] && [ -x ] test also covers the empty-directory case, where the
+# glob stays literal, so no nullglob is needed.
+run_hooks() {
+  local dir="$1" mode="$2" script this rc=0
+  [ -d "$dir" ] || return 0
+  for script in "$dir"/*; do
+    [ -f "$script" ] && [ -x "$script" ] || continue
+    echo "running $(basename "$script")"
+    this=0
+    "$script" || this=$?
+    if [ "$this" -ne 0 ]; then
+      echo "$(basename "$script") failed with exit status ${this}" >&2
+      if [ "$rc" -eq 0 ]; then
+        rc=$this
+      fi
+      if [ "$mode" = 'strict' ]; then
+        return "$rc"
+      fi
+    fi
+  done
+  return "$rc"
+}
+
+PATHS=(
+<% @quoted['paths'].each do |path| -%>
+  <%= path %>
+<% end -%>
+)
+
+TAGS=(
+<% @quoted['tags'].each do |tag| -%>
+  <%= tag %>
+<% end -%>
+)
+
+EXCLUDES=(
+<% @quoted['exclude'].each do |pattern| -%>
+  <%= pattern %>
+<% end -%>
+)
+
+EXCLUDE_IF_PRESENT=(
+<% @quoted['exclude_if_present'].each do |filename| -%>
+  <%= filename %>
+<% end -%>
+)
+
+EXTRA_ARGS=(
+<% @quoted['extra_args'].each do |arg| -%>
+  <%= arg %>
+<% end -%>
+)
+
+# Installed before pre.d runs, so cleanup happens even when a pre.d step fails. 'set
+# +e' means one failing step does not skip the rest.
+on_exit() {
+  local exit_status=$?
+  local hook_rc=0
+
+  set +e
+  run_hooks <%= @quoted['post_dir'] %> all
+  hook_rc=$?
+  set -e
+
+  # A cleanup failure must not be silent: an unfinished 'start slave' or a failed
+  # retention step matters. But it must not overwrite a real backup failure either, so
+  # it only shows through when restic actually produced a snapshot (0 or 3).
+  if [ "$hook_rc" -ne 0 ] && { [ "$exit_status" -eq 0 ] || [ "$exit_status" -eq 3 ]; }; then
+    echo "post.d reported failure, exiting ${hook_rc} instead of ${exit_status}" >&2
+    exit_status=$hook_rc
+  fi
+
+  exit "${exit_status}"
+}
+trap on_exit EXIT
+
+# Under 'set -e': the first failing step aborts before restic runs.
+run_hooks <%= @quoted['pre_dir'] %> strict
+
+args=(backup)
+<% if @exclude_caches -%>
+args+=(--exclude-caches)
+<% end -%>
+<% if @one_file_system -%>
+args+=(--one-file-system)
+<% end -%>
+
+for tag in "${TAGS[@]}"; do
+  args+=(--tag "${tag}")
+done
+
+if [ ${#EXCLUDES[@]} -gt 0 ]; then
+  for pattern in "${EXCLUDES[@]}"; do
+    args+=(--exclude "${pattern}")
+  done
+fi
+
+if [ ${#EXCLUDE_IF_PRESENT[@]} -gt 0 ]; then
+  for filename in "${EXCLUDE_IF_PRESENT[@]}"; do
+    args+=(--exclude-if-present "${filename}")
+  done
+fi
+
+if [ ${#EXTRA_ARGS[@]} -gt 0 ]; then
+  args+=("${EXTRA_ARGS[@]}")
+fi
+
+args+=("${PATHS[@]}")
+
+# Not wrapped in 'set -e', because exit status 3 has to be inspected rather than
+# aborted on.
+set +e
+<%= @quoted['restic_bin'] %> "${args[@]}"
+rc=$?
+set -e
+
+case "${rc}" in
+  0)
+    echo "restic backup <%= @safe_name %> completed"
+    ;;
+  3)
+    echo "restic backup <%= @safe_name %> completed, but some files could not be read" >&2
+    ;;
+  *)
+    echo "restic backup <%= @safe_name %> failed with exit status ${rc}" >&2
+    ;;
+esac
+<% if @forget_args -%>
+
+# Retention, applied only when restic produced a snapshot - forgetting after a failed
+# backup is pointless work. Selected by this job's own tag, so jobs sharing a
+# repository never touch each other's snapshots, and with grouping disabled so that all
+# of this job's snapshots form one group even if its paths have changed over time.
+#
+# Deliberately no --prune: repacking takes an exclusive lock on the whole repository
+# and is scheduled once per repository by sunet::backup::restic::repository. Running it
+# here would mean every job racing for that lock.
+if [ "$rc" -eq 0 ] || [ "$rc" -eq 3 ]; then
+  forget_rc=0
+  <%= @quoted['restic_bin'] %> forget --tag <%= @safe_name %> <%= @forget_args %> || forget_rc=$?
+  if [ "$forget_rc" -ne 0 ]; then
+    echo "restic forget <%= @safe_name %> failed with exit status ${forget_rc}" >&2
+    rc=$forget_rc
+  fi
+fi
+<% end -%>
+
+exit "${rc}"
