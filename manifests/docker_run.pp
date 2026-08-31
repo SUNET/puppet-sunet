@@ -23,6 +23,7 @@ define sunet::docker_run(
   Hash[String, String] $extra_systemd_parameters = {},
   Boolean $uid_gid_consistency = true,
   Boolean $fetch_docker_image  = true,
+  Optional[String] $run_user   = undef,
 ) {
 
   $docker_class = $::facts['dockerhost2'] ? {

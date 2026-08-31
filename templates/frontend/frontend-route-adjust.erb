@@ -1,0 +1,62 @@
+#!/bin/bash
+set -u
+
+INSTANCE=${1:?Usage: $0 <instance> [stop]}
+MODE=${2:-run}
+ANNOUNCE=/opt/frontend/monitor/$INSTANCE/announce
+FIFO=/var/run/frontend-exabgp/exabgp-commands
+
+log() { echo "frontend-route-adjust[$INSTANCE]: $*"; }
+
+fifo_write() {
+    if [[ ! -p "$FIFO" ]]; then
+        log "FIFO $FIFO not present, skipping BGP update"
+        return 0
+    fi
+    timeout 5 tee "$FIFO" > /dev/null || log "WARNING: FIFO write timed out or failed"
+}
+
+route_cmd() {
+    local action=$1 prefix=$2 ip=${prefix%%/*}
+    log "route $action $prefix"
+    if [[ $ip == *:* ]]; then
+        ip -6 route "$action" "$prefix" dev "to_$INSTANCE" 2>/dev/null || true
+    else
+        ip route "$action" "$prefix" dev "to_$INSTANCE" 2>/dev/null || true
+    fi
+}
+
+route_del_all() {
+    ip    route show dev "to_$INSTANCE" 2>/dev/null | awk '/^[0-9]/{print $1}'   | \
+        while read -r p; do route_cmd del "$p"; done
+    ip -6 route show dev "to_$INSTANCE" 2>/dev/null | awk '/^[0-9a-f]/{print $1}' | \
+        while read -r p; do route_cmd del "$p"; done
+}
+
+prefixes() {
+    awk '/^(announce|withdraw) route / { print $3 }' "$ANNOUNCE" 2>/dev/null | sort -u
+}
+
+if [[ $MODE == stop ]]; then
+    log "stopping: withdrawing BGP announcements and removing kernel routes"
+    if [[ -f "$ANNOUNCE" ]]; then
+        sed 's/^announce /withdraw /' "$ANNOUNCE" | fifo_write
+    fi
+    route_del_all
+    exit 0
+fi
+
+if [[ -f "$ANNOUNCE" ]]; then
+    if grep -q '^announce' "$ANNOUNCE"; then
+        log "healthy: adding routes and announcing to BGP"
+        fifo_write < "$ANNOUNCE"
+        while read -r prefix; do route_cmd replace "$prefix"; done < <(prefixes)
+    else
+        log "unhealthy: removing routes and withdrawing from BGP"
+        fifo_write < "$ANNOUNCE"
+        route_del_all
+    fi
+else
+    log "no announce file yet, removing any existing routes"
+    route_del_all
+fi
