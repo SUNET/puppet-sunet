@@ -50,6 +50,11 @@ services:
     hostname: <%= @hostname %>
     network_mode: host
     volumes:
-      - /opt/xrootd/acme/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - /opt/xrootd/acme/haproxy.cfg:/etc/haproxy/haproxy.cfg:ro
+    # Explicit -f: this image is Debian-packaged and reads /etc/haproxy, not the
+    # official image's /usr/local/etc/haproxy. Mounting over the wrong path left
+    # haproxy running on its built-in config, listening on nothing, with an empty
+    # log and a healthy-looking "Up" status.
+    command: ["haproxy", "-db", "-f", "/etc/haproxy/haproxy.cfg"]
     restart: always
 <%- end -%>
