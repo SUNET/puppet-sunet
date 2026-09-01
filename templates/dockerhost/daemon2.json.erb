@@ -14,7 +14,7 @@
     }
   ],
   <% if @docker_dns -%>
-  "dns": <%= scope.function_flatten([[@docker_dns]]) %>,
+  "dns": <%= [[@docker_dns]].flatten() %>,
   <% end -%>
   <% if @ipv6 -%>
   "fixed-cidr-v6": "<%= @docker_network_v6 -%>",
