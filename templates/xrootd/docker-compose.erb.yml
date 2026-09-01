@@ -42,3 +42,14 @@ services:
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
       - /dev/log:/dev/log
     command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg"]
+<%- if @acme_responder -%>
+  # ACME HTTP-01 responder. Required for this node to hold a certificate at all:
+  # acme-c validates over HTTP, so port 80 must reach its document root.
+  acme:
+    image: <%= @haproxy_image %>:<%= @haproxy_tag %>
+    hostname: <%= @hostname %>
+    network_mode: host
+    volumes:
+      - /opt/xrootd/acme/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    restart: always
+<%- end -%>

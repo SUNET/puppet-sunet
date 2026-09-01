@@ -5,6 +5,15 @@ fi
 if exec xrootd
   xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
   xrd.port <%= @xrootd_port %>
+<% if @tpc and ['http','both'].include?(@tpc_mode) -%>
+  # Third-party copy over HTTPS (WebDAV COPY). Requires libXrdHttpTPC.so in the
+  # container image; without this handler a COPY is silently downgraded and the
+  # data streams through the client instead of between the endpoints.
+  http.cadir /etc/grid-security/certificates
+  http.cert /etc/grid-security/xrd/xrdcert.pem
+  http.key /etc/grid-security/xrd/xrdkey.pem
+  http.exthandler xrdtpc libXrdHttpTPC.so
+<% end -%>
 fi
 
 # Config TLS
@@ -20,6 +29,19 @@ acc.audit deny
 acc.authdb /etc/xrootd/Authfile
 acc.authrefresh 60
 ofs.authorize
+<% if @tpc and ['xroot','both'].include?(@tpc_mode) -%>
+
+# Native xroot third-party copy, delegating the client's GSI proxy to the pull
+# side. The X.509 counterpart of http.exthandler above: HTTP TPC normally needs a
+# bearer credential (macaroons or SciTokens) for the third-party leg, which we
+# deliberately do not run.
+ofs.tpc fcreds ?gsi =X509_USER_PROXY ttl 60 70 xfr 100 autorm pgm /usr/bin/xrdcp
+<% end -%>
+<% if @tpc_chksum -%>
+# S3 has nowhere to store a checksum, so every request re-reads the whole object
+# from Ceph. Enable only while deliberately testing checksum behaviour.
+xrootd.chksum max 4 adler32
+<% end -%>
 
 # Upon last testing, the plugin did not yet work in async mode
 xrootd.async off

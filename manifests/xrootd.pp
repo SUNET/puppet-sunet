@@ -10,6 +10,19 @@ class sunet::xrootd(
   String      $interface                = 'ens3',
   String      $xrootd_port              = '1094',
   String      $xrootd_admin_path        = '/var/spool/xrootd',
+  Boolean     $tpc                      = false,
+  Enum['http','xroot','both'] $tpc_mode = 'both',
+  Boolean     $tpc_chksum               = false,
+  # Name dehydrated fetched the certificate under. Left undef, managers use
+  # $manager_domain and data servers their own FQDN — the managers share one
+  # certificate covering the xrdm alias, which is the name clients connect to.
+  Optional[String] $cert_domain         = undef,
+  # ACME HTTP-01 responder on port 80. On by default because without it this node
+  # cannot obtain a certificate, and without a certificate xrootd will not start.
+  Boolean     $acme_responder           = true,
+  String      $acme_server              = 'acme-c.sunet.se',
+  String      $haproxy_image            = 'docker.sunet.se/library/haproxy',
+  String      $haproxy_tag              = 'stable',
 )
 {
 
@@ -26,7 +39,28 @@ class sunet::xrootd(
   }
   # Config
   $xrootd_buckets = lookup('xrootd_buckets')
-  $tls_key = lookup('tls_key')
+
+  # TLS material comes from dehydrated, as it does for imap, smtp and calendar.
+  # It used to be a certificate committed to this module plus a key in eyaml,
+  # which left it outside every renewal path; it expired unnoticed on 2026-06-24.
+  # fullchain rather than cert.pem so peers are sent the intermediate.
+  $_cert_domain = $cert_domain ? {
+    undef   => $role ? { 'manager' => $manager_domain, default => $hostname },
+    default => $cert_domain,
+  }
+  $acme_dir = "/etc/dehydrated/certs/${_cert_domain}"
+  $acme_cert = "${acme_dir}/fullchain.pem"
+  $acme_key = "${acme_dir}/privkey.pem"
+
+  # The define rather than sunet::dehydrated::client: that class takes a single
+  # $domain and cannot be re-instantiated, so one cosmos-rules regex covering all
+  # five nodes could not give each its own certificate name.
+  sunet::dehydrated::client_define { "domain_${_cert_domain}":
+    domain          => $_cert_domain,
+    single_domain   => false,
+    ssl_links       => false,
+    check_cert_port => $xrootd_port,
+  }
 
   # Composefile
   sunet::docker_compose { 'xrootd':
@@ -35,6 +69,23 @@ class sunet::xrootd(
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'XRootD S3 HTTP',
+  }
+  if $acme_responder {
+    file { '/opt/xrootd/acme':
+      ensure => directory,
+    }
+    file { '/opt/xrootd/acme/haproxy.cfg':
+      ensure  => file,
+      content => template('sunet/xrootd/haproxy-acme.cfg.erb'),
+    }
+    # Port 80 must be open to the world: Let's Encrypt validates from outside,
+    # and for the managers it may validate the shared xrdm alias against either
+    # host, so both have to answer.
+    sunet::nftables::docker_expose { 'acme_http_80':
+      allow_clients => 'any',
+      port          => '80',
+      iif           => $interface,
+    }
   }
   sunet::nftables::docker_expose { "xrootd_port_${xrootd_port}":
     allow_clients => 'any',
@@ -114,16 +165,28 @@ class sunet::xrootd(
     ensure  => link,
     target  => 'geant-tls.crt'
   }
-  file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
-    ensure  => file,
-    content => file('sunet/xrootd/wildcard.drive.test.sunet.se.crt'),
-  }
-  file { '/opt/xrootd/grid-security/xrd/xrdkey.pem':
-    ensure  => file,
-    content => $tls_key,
-    owner   => '996',
-    group   => '996',
-    mode    => "0400",
+  # Copied rather than symlinked: the container only bind-mounts
+  # /opt/xrootd/grid-security, and it runs as uid 996, which cannot read
+  # dehydrated's root-owned key. XRootD reads xrd.tls once at startup, so the
+  # service is notified to pick up a renewal.
+  if find_file($acme_cert) and find_file($acme_key) {
+    file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
+      ensure => file,
+      source => $acme_cert,
+      notify => Service['sunet-xrootd'],
+    }
+    file { '/opt/xrootd/grid-security/xrd/xrdkey.pem':
+      ensure => file,
+      source => $acme_key,
+      owner  => '996',
+      group  => '996',
+      mode   => '0400',
+      notify => Service['sunet-xrootd'],
+    }
+  } else {
+    notify { "xrootd: no dehydrated certificate at ${acme_dir}, TLS will not start":
+      loglevel => 'warning',
+    }
   }
   $xrootd_buckets.each |$bucket| {
     file { "/opt/xrootd/config/${bucket['name']}":

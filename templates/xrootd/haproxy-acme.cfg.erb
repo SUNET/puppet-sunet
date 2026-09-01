@@ -1,0 +1,23 @@
+# Answers ACME HTTP-01 challenges for this node's own certificate by proxying to
+# the central dehydrated host, which serves the tokens from one document root for
+# every name. Nothing else is served: acme-c pre-flights each name with
+#   curl -s http://${DOMAIN}/.well-known/acme-challenge/ | grep -q meep
+# so this path must work before a certificate can ever be issued.
+global
+  log stdout format raw local0
+
+defaults
+  mode http
+  timeout connect 3s
+  timeout client 6s
+  timeout server 6s
+
+frontend ft_http
+  bind *:80
+  acl acme path_beg -i /.well-known/acme-challenge
+  use_backend bk_acme if acme
+  # Not an open proxy: anything outside the challenge path is refused.
+  http-request deny unless acme
+
+backend bk_acme
+  server acme-c <%= @acme_server %>:80
