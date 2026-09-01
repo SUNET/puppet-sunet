@@ -50,11 +50,12 @@ services:
     hostname: <%= @hostname %>
     network_mode: host
     volumes:
+      # /etc/haproxy, not the official image's /usr/local/etc/haproxy: this one is
+      # Debian-packaged, and its own Cmd is
+      #   /usr/sbin/haproxy -p /run/haproxy.pid -f /etc/haproxy/haproxy.cfg -W -db
+      # Mounting over the wrong path left haproxy on its built-in config, bound to
+      # nothing, with an empty log and a healthy-looking "Up". No command override:
+      # the image's Cmd is already right, and replacing it would drop -W and -p.
       - /opt/xrootd/acme/haproxy.cfg:/etc/haproxy/haproxy.cfg:ro
-    # Explicit -f: this image is Debian-packaged and reads /etc/haproxy, not the
-    # official image's /usr/local/etc/haproxy. Mounting over the wrong path left
-    # haproxy running on its built-in config, listening on nothing, with an empty
-    # log and a healthy-looking "Up" status.
-    command: ["haproxy", "-db", "-f", "/etc/haproxy/haproxy.cfg"]
     restart: always
 <%- end -%>
