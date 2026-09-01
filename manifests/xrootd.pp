@@ -136,6 +136,9 @@ class sunet::xrootd(
   file { '/opt/xrootd/grid-security/grid-mapfile':
     ensure  => file,
     content => file('sunet/xrootd/grid-mapfile'),
+    # GSI loads the map at startup and caches entries for 600s; unlike the
+    # Authfile (acc.authrefresh 60) it is not re-read on its own.
+    notify  => Service['sunet-xrootd'],
   }
   file { '/opt/xrootd/grid-security/certificates/harica-ca-root.crt':
     ensure  => file,
