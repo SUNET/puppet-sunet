@@ -77,6 +77,8 @@ class sunet::xrootd(
     file { '/opt/xrootd/acme/haproxy.cfg':
       ensure  => file,
       content => template('sunet/xrootd/haproxy-acme.cfg.erb'),
+      # Bind-mounted into the container, so a change needs a restart to take.
+      notify  => Service['sunet-xrootd'],
     }
     # Port 80 must be open to the world: Let's Encrypt validates from outside,
     # and for the managers it may validate the shared xrdm alias against either

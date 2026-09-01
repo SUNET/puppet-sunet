@@ -3,9 +3,9 @@
 # every name. Nothing else is served: acme-c pre-flights each name with
 #   curl -s http://${DOMAIN}/.well-known/acme-challenge/ | grep -q meep
 # so this path must work before a certificate can ever be issued.
-global
-  log stdout format raw local0
-
+#
+# Deliberately no global section: this image's haproxy predates
+# 'log ... format raw', and a responder this small has nothing worth logging.
 defaults
   mode http
   timeout connect 3s
@@ -15,9 +15,10 @@ defaults
 frontend ft_http
   bind *:80
   acl acme path_beg -i /.well-known/acme-challenge
-  use_backend bk_acme if acme
-  # Not an open proxy: anything outside the challenge path is refused.
+  # Deny before use_backend: haproxy evaluates http-request rules first whatever
+  # the file order, and warns if they are written the other way round.
   http-request deny unless acme
+  use_backend bk_acme if acme
 
 backend bk_acme
   server acme-c <%= @acme_server %>:80
