@@ -171,15 +171,24 @@ class sunet::xrootd(
   # /opt/xrootd/grid-security, and it runs as uid 996, which cannot read
   # dehydrated's root-owned key. XRootD reads xrd.tls once at startup, so the
   # service is notified to pick up a renewal.
+  # links => follow is load-bearing: dehydrated's fullchain.pem and privkey.pem are
+  # relative symlinks to versioned files, and without it puppet copies the link
+  # rather than its content, leaving a dangling link here. Modes are explicit so
+  # the source's 0600 root is not inherited; 996 is the container's xrootd uid.
   if find_file($acme_cert) and find_file($acme_key) {
     file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
       ensure => file,
       source => $acme_cert,
+      links  => follow,
+      owner  => '996',
+      group  => '996',
+      mode   => '0444',
       notify => Service['sunet-xrootd'],
     }
     file { '/opt/xrootd/grid-security/xrd/xrdkey.pem':
       ensure => file,
       source => $acme_key,
+      links  => follow,
       owner  => '996',
       group  => '996',
       mode   => '0400',
