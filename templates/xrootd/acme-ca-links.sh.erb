@@ -1,26 +1,52 @@
 #!/bin/sh
-# Split the ACME chain into one file per certificate in XRootD's CA directory and
-# create the <subject_hash>.0 links GSI requires.
+# Install the ACME chain into XRootD's CA directory as grid CAs.
 #
-# XRootD's GSI will not initialise unless the issuing CA of its *own* server
-# certificate is present here. Our certificate is ACME-issued and Let's Encrypt is
-# not in the IGTF bundle that this directory otherwise holds, so the chain is
-# installed from what dehydrated delivered alongside the certificate. Derived on
-# every change rather than committed, because ACME intermediates rotate.
+# Two different consumers need different things from this directory:
+#   * GSI initialisation needs the *issuing* CA of our own server certificate,
+#     found by <subject_hash>.0 link.
+#   * TLS client-certificate verification needs a complete path from a presented
+#     certificate up to a *self-signed trust anchor*.
+# ACME delivers a chain that stops short of a self-signed root, because it assumes
+# the root is in the system trust store. It is — so any issuer still missing after
+# the chain is unpacked is resolved from there rather than committed here, which
+# also means a rotated intermediate or restructured chain fixes itself.
 set -e
 
 dir='<%= @certdir %>'
+sysdir='<%= @system_certdir %>'
 cd "${dir}"
 
-rm -f acme-ca-*.pem
+rm -f acme-ca-*.pem acme-root-*.pem
 awk '/-----BEGIN CERTIFICATE-----/ { n++ }
      n > 0 { print > sprintf("acme-ca-%02d.pem", n) }' acme-chain.pem
 
+link_cert() {
+    _f="$1"
+    chmod 0444 "${_f}"
+    ln -sf "${_f}" "$(openssl x509 -in "${_f}" -noout -subject_hash).0"
+}
+
 for f in acme-ca-*.pem; do
     [ -f "${f}" ] || continue
-    chmod 0444 "${f}"
-    h="$(openssl x509 -in "${f}" -noout -subject_hash)"
-    ln -sf "${f}" "${h}.0"
+    link_cert "${f}"
+done
+
+# Walk upwards: for every certificate present, make sure its issuer is present
+# too, pulling anchors out of the system trust store. Bounded rather than
+# recursive; three rounds covers any realistic chain.
+for _round in 1 2 3; do
+    for f in acme-ca-*.pem acme-root-*.pem; do
+        [ -f "${f}" ] || continue
+        ih="$(openssl x509 -in "${f}" -noout -issuer_hash)"
+        sh="$(openssl x509 -in "${f}" -noout -subject_hash)"
+        # self-signed: already an anchor, nothing above it
+        [ "${ih}" = "${sh}" ] && continue
+        [ -e "${ih}.0" ] && continue
+        if [ -e "${sysdir}/${ih}.0" ]; then
+            cp -L "${sysdir}/${ih}.0" "acme-root-${ih}.pem"
+            link_cert "acme-root-${ih}.pem"
+        fi
+    done
 done
 
 # Drop links left dangling by a rotated intermediate.

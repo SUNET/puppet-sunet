@@ -23,6 +23,8 @@ class sunet::xrootd(
   String      $acme_server              = 'acme-c.sunet.se',
   String      $haproxy_image            = 'docker.sunet.se/library/haproxy',
   String      $haproxy_tag              = 'stable',
+  # Where to find trust anchors the ACME chain stops short of.
+  String      $system_certdir           = '/etc/ssl/certs',
 )
 {
 
