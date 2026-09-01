@@ -51,6 +51,8 @@ class sunet::xrootd(
   $acme_dir = "/etc/dehydrated/certs/${_cert_domain}"
   $acme_cert = "${acme_dir}/fullchain.pem"
   $acme_key = "${acme_dir}/privkey.pem"
+  $acme_chain = "${acme_dir}/chain.pem"
+  $certdir = '/opt/xrootd/grid-security/certificates'
 
   # The define rather than sunet::dehydrated::client: that class takes a single
   # $domain and cannot be re-instantiated, so one cosmos-rules regex covering all
@@ -197,6 +199,30 @@ class sunet::xrootd(
   } else {
     notify { "xrootd: no dehydrated certificate at ${acme_dir}, TLS will not start":
       loglevel => 'warning',
+    }
+  }
+  # GSI refuses to initialise unless the issuing CA of our own server certificate
+  # is present here with hash links, and Let's Encrypt is not in the IGTF bundle
+  # this directory otherwise holds. Install the chain dehydrated delivered with the
+  # certificate and derive the links from it.
+  if find_file($acme_chain) {
+    file { "${certdir}/acme-chain.pem":
+      ensure => file,
+      source => $acme_chain,
+      links  => follow,
+      mode   => '0444',
+      notify => Exec['xrootd: acme ca links'],
+    }
+    file { '/usr/local/bin/xrootd-acme-ca-links.sh':
+      ensure  => file,
+      mode    => '0755',
+      content => template('sunet/xrootd/acme-ca-links.sh.erb'),
+      notify  => Exec['xrootd: acme ca links'],
+    }
+    exec { 'xrootd: acme ca links':
+      command     => '/usr/local/bin/xrootd-acme-ca-links.sh',
+      refreshonly => true,
+      notify      => Service['sunet-xrootd'],
     }
   }
   $xrootd_buckets.each |$bucket| {

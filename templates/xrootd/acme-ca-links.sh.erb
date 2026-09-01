@@ -1,0 +1,27 @@
+#!/bin/sh
+# Split the ACME chain into one file per certificate in XRootD's CA directory and
+# create the <subject_hash>.0 links GSI requires.
+#
+# XRootD's GSI will not initialise unless the issuing CA of its *own* server
+# certificate is present here. Our certificate is ACME-issued and Let's Encrypt is
+# not in the IGTF bundle that this directory otherwise holds, so the chain is
+# installed from what dehydrated delivered alongside the certificate. Derived on
+# every change rather than committed, because ACME intermediates rotate.
+set -e
+
+dir='<%= @certdir %>'
+cd "${dir}"
+
+rm -f acme-ca-*.pem
+awk '/-----BEGIN CERTIFICATE-----/ { n++ }
+     n > 0 { print > sprintf("acme-ca-%02d.pem", n) }' acme-chain.pem
+
+for f in acme-ca-*.pem; do
+    [ -f "${f}" ] || continue
+    chmod 0444 "${f}"
+    h="$(openssl x509 -in "${f}" -noout -subject_hash)"
+    ln -sf "${f}" "${h}.0"
+done
+
+# Drop links left dangling by a rotated intermediate.
+find . -maxdepth 1 -xtype l -delete
