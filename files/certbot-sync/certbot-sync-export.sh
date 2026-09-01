@@ -57,8 +57,13 @@ install -d -m 0700 "${dest}"
 # install(1) follows the live/ -> archive/ symlinks and writes a real regular
 # file at the destination, so clients receive plain files rather than symlinks.
 # fullchain.pem is written last since clients key their "changed?" check off it.
-for f in privkey cert chain fullchain; do
-	install -m 0600 "${lineage}/${f}.pem" "${dest}/${f}.pem"
+for f in privkey cert chain fullchain bundle; do
+  # Not all servers have a bundle but easier to check for each type even if the others always will succeed.
+  if [[ -f ${lineage}/${f}.pem ]]; then
+	  install -m 0600 "${lineage}/${f}.pem" "${dest}/${f}.pem"
+  else
+    echo "Skipping missing ${f}."
+  fi
 done
 
 echo "Exported ${name} to ${dest}."
