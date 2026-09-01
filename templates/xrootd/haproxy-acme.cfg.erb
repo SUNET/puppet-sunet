@@ -13,7 +13,11 @@ defaults
   timeout server 6s
 
 frontend ft_http
+  # Both families explicitly: 'bind *:80' is IPv4-only, and these nodes have AAAA
+  # records that Let's Encrypt will prefer. v6only keeps the two sockets from
+  # depending on net.ipv6.bindv6only.
   bind *:80
+  bind [::]:80 v6only
   acl acme path_beg -i /.well-known/acme-challenge
   # Deny before use_backend: haproxy evaluates http-request rules first whatever
   # the file order, and warns if they are written the other way round.
