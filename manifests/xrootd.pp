@@ -33,6 +33,8 @@ class sunet::xrootd(
   $cahash2 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-auth-ca.crt -noout -hash').chomp
   $cahash3 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-trust-ca.crt -noout -hash').chomp
   $cahash4 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-tls.crt -noout -hash').chomp
+  $cahash5 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-auth-ecc-ca.crt -noout -hash').chomp
+  $cahash6 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-trust-ecc-ca.crt -noout -hash').chomp
 
   if ($hostname in $managers ) {
     $role = 'manager'
@@ -173,6 +175,25 @@ class sunet::xrootd(
   file { "/opt/xrootd/grid-security/certificates/${cahash4}.0":
     ensure  => link,
     target  => 'geant-tls.crt'
+  }
+  # GEANT now issues eScience credentials from its ECC hierarchy; the RSA pair
+  # above is the older one. Both halves are needed: GSI must resolve the issuer of
+  # a client certificate, and TLS must reach a self-signed anchor above it.
+  file { '/opt/xrootd/grid-security/certificates/geant-auth-ecc-ca.crt':
+    ensure  => file,
+    content => file('sunet/xrootd/geant-auth-ecc-ca.crt'),
+  }
+  file { "/opt/xrootd/grid-security/certificates/${cahash5}.0":
+    ensure  => link,
+    target  => 'geant-auth-ecc-ca.crt',
+  }
+  file { '/opt/xrootd/grid-security/certificates/geant-trust-ecc-ca.crt':
+    ensure  => file,
+    content => file('sunet/xrootd/geant-trust-ecc-ca.crt'),
+  }
+  file { "/opt/xrootd/grid-security/certificates/${cahash6}.0":
+    ensure  => link,
+    target  => 'geant-trust-ecc-ca.crt',
   }
   # Copied rather than symlinked: the container only bind-mounts
   # /opt/xrootd/grid-security, and it runs as uid 996, which cannot read
