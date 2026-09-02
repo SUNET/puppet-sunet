@@ -132,6 +132,8 @@ class sunet::xrootd(
   file { '/opt/xrootd/config/xrootd.cfg':
     ensure  => file,
     content => template("sunet/xrootd/xrootd-${role}.cfg.erb"),
+    # Read once at startup; without this a config change never takes effect.
+    notify  => Service['sunet-xrootd'],
   }
   file { '/opt/xrootd/config/Authfile':
     ensure  => file,
