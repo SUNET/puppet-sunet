@@ -9,6 +9,15 @@
 # @param one_file_system    do not cross filesystem boundaries
 # @param tags               extra snapshot tags. The job name is always a tag.
 # @param extra_args         further arguments appended to 'restic backup'
+# @param pre_hooks          scripts to run before the backup, as a hash of filename to
+#                           either { source => } or { template => } - exactly one of the
+#                           two. The key becomes the filename under <job dir>/pre.d and
+#                           therefore the execution order, so name them '10-dump',
+#                           '20-something'. The first hook that fails aborts the backup.
+#                           A template is rendered in this define's scope, so it can read
+#                           the job's own variables.
+# @param post_hooks         scripts to run after the backup, same shape as pre_hooks. All
+#                           of them run, even if the backup or an earlier hook failed.
 # @param keep_last          'restic forget --keep-last' for this job's snapshots
 # @param keep_hourly        'restic forget --keep-hourly' for this job's snapshots
 # @param keep_daily         'restic forget --keep-daily' for this job's snapshots
@@ -35,6 +44,8 @@ define sunet::backup::restic::job (
   Boolean                  $one_file_system    = false,
   Array[String]            $tags               = [],
   Array[String]            $extra_args         = [],
+  Hash[String[1], Struct[{Optional['source'] => String[1], Optional['template'] => String[1]}]] $pre_hooks = {},
+  Hash[String[1], Struct[{Optional['source'] => String[1], Optional['template'] => String[1]}]] $post_hooks = {},
   Optional[Integer]        $keep_last          = undef,
   Optional[Integer]        $keep_hourly        = undef,
   Optional[Integer]        $keep_daily         = undef,
@@ -147,8 +158,9 @@ keep_last/keep_hourly/keep_daily/keep_weekly/keep_monthly/keep_yearly, or accept
       mode   => '0700',
     }
 
-    # Purged so that a hook that is no longer declared disappears from disk. Puppet
-    # only purges children it does not manage, so declared hooks are untouched.
+    # Purged so that a hook dropped from $pre_hooks/$post_hooks disappears from disk.
+    # Puppet only purges children it does not manage, so the hooks declared below are
+    # untouched.
     file { [$pre_dir, $post_dir]:
       ensure  => 'directory',
       owner   => 'root',
@@ -158,6 +170,54 @@ keep_last/keep_hourly/keep_daily/keep_weekly/keep_monthly/keep_yearly, or accept
       purge   => true,
       force   => true,
       require => File[$job_dir],
+    }
+
+    # The hash key is the filename, so it carries the execution order too - sorted here
+    # only so that $hook_files below has a stable order in the catalog.
+    $pre_files  = $pre_hooks.keys.sort.map  |$hook| { "${pre_dir}/${hook}" }
+    $post_files = $post_hooks.keys.sort.map |$hook| { "${post_dir}/${hook}" }
+    $hook_files = ($pre_files + $post_files).map |$path| { File[$path] }
+
+    $hooks_by_dir = {
+      $pre_dir  => $pre_hooks,
+      $post_dir => $post_hooks,
+    }
+
+    $hooks_by_dir.each |$dir, $specs| {
+      $specs.each |$hook, $spec| {
+        # The key is written out verbatim as a filename, so a stray '/' or space is
+        # refused rather than silently mangled into something the operator did not ask
+        # for - and the name ends up in backup.sh's expected-hook list either way.
+        if $hook !~ /\A[0-9A-Za-z._\-]+\z/ {
+          fail("sunet::backup::restic::job['${title}']: hook name '${hook}' becomes a \
+filename, so it may only contain [0-9A-Za-z._-]")
+        }
+
+        if length([$spec['source'], $spec['template']].filter |$value| { $value =~ NotUndef }) != 1 {
+          fail("sunet::backup::restic::job['${title}']: hook '${hook}' needs exactly one \
+of 'source' or 'template'")
+        }
+
+        # Rendered in this define's scope, so a hook template can read the job's own
+        # variables - $safe_name, $paths, $repository.
+        $hook_content = $spec['template'] ? {
+          undef   => undef,
+          default => template($spec['template']),
+        }
+
+        # A hook stays a script of its own rather than being inlined into backup.sh: it
+        # keeps its shebang, so it can be written in whatever language suits it, and it
+        # can be run by hand on the host to test it.
+        file { "${dir}/${hook}":
+          ensure  => 'file',
+          owner   => 'root',
+          group   => 'root',
+          mode    => '0700',
+          source  => $spec['source'],
+          content => $hook_content,
+          require => File[$dir],
+        }
+      }
     }
 
     file { $script:
@@ -178,8 +238,14 @@ keep_last/keep_hourly/keep_daily/keep_weekly/keep_monthly/keep_yearly, or accept
       monthday      => $monthday,
       random_sleep  => $random_sleep,
       ok_criteria   => ['exit_status=0', "max_age=${max_age}"],
-      warn_criteria => ['exit_status=3'],
-      require       => File[$script],
+      # 4 is backup.sh refusing to run against a hook set that does not match what it
+      # expects, i.e. puppet was mid-run. Transient by nature, so a warning - and if it
+      # somehow persists, max_age escalates it without any extra logic here.
+      warn_criteria => ['exit_status=3', 'exit_status=4'],
+      # The hooks as well as the script: this is what stops the cron entry from existing
+      # before the hooks it is supposed to run. Without it a fresh node installs cron
+      # first, and the first firing backs up whatever the pre hooks had not yet created.
+      require       => [File[$script]] + $hook_files,
     }
   }
 }

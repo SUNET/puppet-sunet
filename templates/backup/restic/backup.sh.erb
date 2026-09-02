@@ -6,12 +6,13 @@
 # Steps in <%= @pre_dir %> run first, in filename order, and the
 # first one that fails aborts this script before restic runs. Steps in
 # <%= @post_dir %> run afterwards from an EXIT trap - all of them,
-# even if the backup or an earlier step failed. Add them with
-# sunet::backup::restic::hook, not by editing this file.
+# even if the backup or an earlier step failed. Add them through the pre_hooks and
+# post_hooks parameters of the job, not by editing this file or either directory.
 #
 # Exit status: 0 = success, 3 = completed but some files could not be read,
+# 4 = skipped because the hooks on disk are not the ones this script expects,
 # anything else = failure. The scriptherder job restic-backup-<%= @safe_name %>
-# treats 3 as a warning and every other non-zero status as a critical, so a single
+# treats 3 and 4 as warnings and every other non-zero status as a critical, so a single
 # unreadable open file does not page anyone while real breakage does.
 
 set -euo pipefail
@@ -54,6 +55,50 @@ run_hooks() {
   return "$rc"
 }
 
+# Puppet writes each hook file atomically, but a hook set is several files, so a cron
+# firing in the middle of a catalog run can see only some of them. A backup that silently
+# skipped the step which was supposed to dump a database produces a snapshot that looks
+# fine and is not, so refuse the run instead - the expected set below travels in this
+# script, which is itself one atomic write. A changed hook body needs no such care: the
+# run sees either the old or the new script, both of them complete.
+#
+# This also catches a hook that was edited or removed by hand, and a stale one that
+# puppet's purge has not swept yet.
+verify_hooks() {
+  local dir="$1" label="$2"
+  shift 2
+  local script
+  local found=()
+
+  for script in "$dir"/*; do
+    [ -f "$script" ] && [ -x "$script" ] || continue
+    found+=("$(basename "$script")")
+  done
+
+  # Hook names are restricted to [0-9A-Za-z._-] by the job, so joining on space is
+  # unambiguous, and the glob is sorted by LC_ALL=C above just like the expected list.
+  if [ "${found[*]}" != "$*" ]; then
+    echo "${label} holds [${found[*]}] but this script expects [$*] - puppet is probably mid-run, skipping this backup" >&2
+    return 1
+  fi
+
+  return 0
+}
+
+# Written out sorted, to be compared against the LC_ALL=C glob in verify_hooks. The job
+# restricts hook names to [0-9A-Za-z._-], so these need no quoting of their own.
+EXPECTED_PRE=(
+<% @pre_hooks.keys.sort.each do |hook| -%>
+  <%= hook %>
+<% end -%>
+)
+
+EXPECTED_POST=(
+<% @post_hooks.keys.sort.each do |hook| -%>
+  <%= hook %>
+<% end -%>
+)
+
 PATHS=(
 <% @quoted['paths'].each do |path| -%>
   <%= path %>
@@ -83,6 +128,13 @@ EXTRA_ARGS=(
   <%= arg %>
 <% end -%>
 )
+
+# Both phases are checked here, before the EXIT trap below is installed, so that a skip
+# cannot run post.d without pre.d ever having run.
+if ! verify_hooks <%= @quoted['pre_dir'] %> pre.d "${EXPECTED_PRE[@]}" \
+  || ! verify_hooks <%= @quoted['post_dir'] %> post.d "${EXPECTED_POST[@]}"; then
+  exit 4
+fi
 
 # Installed before pre.d runs, so cleanup happens even when a pre.d step fails. 'set
 # +e' means one failing step does not skip the rest.
