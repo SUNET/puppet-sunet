@@ -11,16 +11,18 @@ define sunet::nagios::nrpe_command ($command_line = undef) {
   )
 
   # Don't guess a service name if neither var resolved - only notify
-  # when we actually know which service to restart.
-  $_notify = $service ? {
-    undef   => {},
-    default => { 'notify' => Service[$service] },
+  # when we actually know which service to restart. pick_default()
+  # returns '' (not undef) when nothing resolves, so check both.
+  if $service == undef or $service == '' {
+    $_notify = {}
+  } else {
+    $_notify = { 'notify' => Service[$service] }
   }
 
   concat::fragment {"sunet_nrpe_command_${name}":
     target  => '/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg',
     content => template('sunet/nagioshost/nrpe_command.erb'),
     order   => '30',
-    * => $_notify,
+    *       => $_notify,
   }
 }
