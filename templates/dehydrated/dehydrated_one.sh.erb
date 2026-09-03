@@ -21,6 +21,12 @@ if ! grep -qE "^${HOSTNAME}[[:space:]]" "$DOMAINFILE"; then
     exit 2
 fi
 
+# Get the full line from domains.txt, including SAN's
+DOMAIN_LINE=$(grep -E "^${HOSTNAME}[[:space:]]" "$DOMAINFILE" | head -n1)
+
+# Extract all domains from the line
+DOMAINS=$(echo "$DOMAIN_LINE" | tr ' ' '\n' | grep -v '^$' | tr '\n' ' ' | sed 's/ $//')
+
 JOBNAME="dehydrated_${HOSTNAME}"
 JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini"
 
@@ -29,8 +35,5 @@ if [[ ! -f "$JOBFILE" ]]; then
     cp "$SCRIPTHERDER_TEMPLATE" "$JOBFILE"
 fi
 
-# run dehydrated only for this domain
-"$SCRIPTHERDER" --mode wrap --syslog --name "$JOBNAME" -- "$DEHYDRATED" --cron --domain "$HOSTNAME" --hook "$HOOKFILE" --config "$CONFIGFILE" --force
-
-# update compatibility symlinks etc
-/usr/bin/le-ssl-compat.sh
+# run dehydrated with all domains (primary + SANs)
+"$SCRIPTHERDER" --mode wrap --syslog --name "$JOBNAME" -- "$DEHYDRATED" --cron --domain "$DOMAINS" --hook "$HOOKFILE" --config "$CONFIGFILE" --force
