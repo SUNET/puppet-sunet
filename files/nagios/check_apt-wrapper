@@ -48,6 +48,6 @@ Pin-Priority: -10' >"${pref_file}"
 if [ -f /etc/apt/apt.conf.d/20auto-upgrades ]; then
 	if grep -q 'APT::Periodic::Unattended-Upgrade "1";' /etc/apt/apt.conf.d/20auto-upgrades; then
 		unattended_check
-  fi
+	fi
 fi
 default_check
