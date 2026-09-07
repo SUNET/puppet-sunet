@@ -113,10 +113,10 @@ class sunet::mastodon::backend(
       # the job's cron entry depend on it, so cron can no longer fire before the hook that
       # creates /opt/backups exists.
       pre_hooks    => {
-        '10-dump'  => { template => template('sunet/mastodon/backend/pre-backup.erb.sh') },
+        '10-dump'  => { content => template('sunet/mastodon/backend/pre-backup.erb.sh') },
       },
       post_hooks   => {
-        '10-cleanup' => { template => template('sunet/mastodon/backend/post-backup.erb.sh') },
+        '10-cleanup' => { content => template('sunet/mastodon/backend/post-backup.erb.sh') },
       },
     }
   }
