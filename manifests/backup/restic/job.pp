@@ -37,7 +37,7 @@
 #                           entry
 define sunet::backup::restic::job (
   Array[String[1]]         $paths,
-  String                   $repository,
+  String                   $repository         = 'default',
   Array[String]            $exclude            = [],
   Array[String]            $exclude_if_present = [],
   Boolean                  $exclude_caches     = true,
