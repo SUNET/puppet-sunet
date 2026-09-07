@@ -106,7 +106,7 @@ class sunet::mastodon::backend(
       paths        => ['/opt/backups'],
       minute       => '31',
       keep_hourly  => 24,
-      keep_daily   => 1
+      keep_daily   => 1,
       keep_weekly  => 1,
       keep_monthly => 1,
       keep_yearly  => 1,
