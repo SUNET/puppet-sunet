@@ -6,6 +6,7 @@ class sunet::mastodon::backend(
   String $postgres_image                 = 'postgres:14-alpine',
   String $redis_image                    = 'redis:6-alpine',
   Variant[String, Undef] $baas2_nodename = undef,
+  Boolean $restic_backup                 = false,
 ) {
   # Must set in hiera eyaml
   $db_pass=safe_hiera('db_pass')
@@ -92,6 +93,31 @@ class sunet::mastodon::backend(
       minute        => '31',
       ok_criteria   => ['exit_status=0', 'max_age=2h'],
       warn_criteria => ['exit_status=1', 'max_age=5h'],
+    }
+  } elseif ($restic_backup {
+    sunet::scriptherder::cronjob { 'backup2baas':
+      ensure        => 'absent',
+      cmd           => '/opt/mastodon_backend/scripts/backup.sh',
+      minute        => '31',
+      ok_criteria   => ['exit_status=0', 'max_age=2h'],
+      warn_criteria => ['exit_status=1', 'max_age=5h'],
+    }
+    sunet::backup::restic::job { 'mastodon_backup':
+      paths        => ['/opt/backups'],
+      minute       => '31',
+      keep_weekly  => 1,
+      keep_monthly => 1,
+      keep_yearly  => 1,
+      # The key is the filename under the job's pre.d, so the '10-' prefix is what used to
+      # be the hook's order parameter. Declaring the hook as part of the job is what lets
+      # the job's cron entry depend on it, so cron can no longer fire before the hook that
+      # creates /opt/backups exists.
+      pre_hooks    => {
+        '10-dump'  => { source => template('sunet/mastodon/backend/pre-backup.erb.sh') },
+      },
+      post_hooks   => {
+        '10-cleanup' => { source => template('sunet/mastodon/backend/post-backup.erb.sh') },
+      },
     }
   }
   sunet::scriptherder::cronjob { 'vacuum_postgres':
