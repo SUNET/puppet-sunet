@@ -10,14 +10,20 @@
 # @param tags               extra snapshot tags. The job name is always a tag.
 # @param extra_args         further arguments appended to 'restic backup'
 # @param pre_hooks          scripts to run before the backup, as a hash of filename to
-#                           either { source => } or { template => } - exactly one of the
-#                           two. The key becomes the filename under <job dir>/pre.d and
-#                           therefore the execution order, so name them '10-dump',
-#                           '20-something'. The first hook that fails aborts the backup.
-#                           A template is rendered in this define's scope, so it can read
-#                           the job's own variables.
+#                           exactly one of { source => }, { template => } or
+#                           { content => }. The key becomes the filename under
+#                           <job dir>/pre.d and therefore the execution order, so name
+#                           them '10-dump', '20-something'. The first hook that fails
+#                           aborts the backup.
+#                           'source' is a puppet:// file source URL. 'template' is a
+#                           template path rendered in this define's scope, so it can read
+#                           the job's own variables. 'content' is literal file content,
+#                           for a caller that already has a rendered string (e.g. from
+#                           its own template() call, in its own scope).
 # @param post_hooks         scripts to run after the backup, same shape as pre_hooks. All
 #                           of them run, even if the backup or an earlier hook failed.
+#                           (see pre_hooks above for what 'source'/'template'/'content'
+#                           mean)
 # @param keep_last          'restic forget --keep-last' for this job's snapshots
 # @param keep_hourly        'restic forget --keep-hourly' for this job's snapshots
 # @param keep_daily         'restic forget --keep-daily' for this job's snapshots
@@ -44,8 +50,8 @@ define sunet::backup::restic::job (
   Boolean                  $one_file_system    = false,
   Array[String]            $tags               = [],
   Array[String]            $extra_args         = [],
-  Hash[String[1], Struct[{Optional['source'] => String[1], Optional['template'] => String[1]}]] $pre_hooks = {},
-  Hash[String[1], Struct[{Optional['source'] => String[1], Optional['template'] => String[1]}]] $post_hooks = {},
+  Hash[String[1], Struct[{Optional['source'] => String[1], Optional['template'] => String[1], Optional['content'] => String}]] $pre_hooks = {},
+  Hash[String[1], Struct[{Optional['source'] => String[1], Optional['template'] => String[1], Optional['content'] => String}]] $post_hooks = {},
   Optional[Integer]        $keep_last          = undef,
   Optional[Integer]        $keep_hourly        = undef,
   Optional[Integer]        $keep_daily         = undef,
@@ -193,15 +199,16 @@ keep_last/keep_hourly/keep_daily/keep_weekly/keep_monthly/keep_yearly, or accept
 filename, so it may only contain [0-9A-Za-z._-]")
         }
 
-        if length([$spec['source'], $spec['template']].filter |$value| { $value =~ NotUndef }) != 1 {
+        if length([$spec['source'], $spec['template'], $spec['content']].filter |$value| { $value =~ NotUndef }) != 1 {
           fail("sunet::backup::restic::job['${title}']: hook '${hook}' needs exactly one \
-of 'source' or 'template'")
+of 'source', 'template' or 'content'")
         }
 
         # Rendered in this define's scope, so a hook template can read the job's own
-        # variables - $safe_name, $paths, $repository.
+        # variables - $safe_name, $paths, $repository. A 'content' spec is already a
+        # rendered string, from a caller that rendered it in its own scope instead.
         $hook_content = $spec['template'] ? {
-          undef   => undef,
+          undef   => $spec['content'],
           default => template($spec['template']),
         }
 
