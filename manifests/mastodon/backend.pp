@@ -94,7 +94,7 @@ class sunet::mastodon::backend(
       ok_criteria   => ['exit_status=0', 'max_age=2h'],
       warn_criteria => ['exit_status=1', 'max_age=5h'],
     }
-  } elseif ($restic_backup {
+  } elseif ($restic_backup) {
     sunet::scriptherder::cronjob { 'backup2baas':
       ensure        => 'absent',
       cmd           => '/opt/mastodon_backend/scripts/backup.sh',
