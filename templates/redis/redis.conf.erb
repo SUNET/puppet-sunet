@@ -742,3 +742,7 @@ min-slaves-max-lag 10
 <% else -%>
 # redis_sentinel_config not set in puppet
 <% end -%>
+
+<% if @unprotected -%>
+protected-mode no
+<% end -%>

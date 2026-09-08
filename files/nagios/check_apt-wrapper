@@ -49,6 +49,5 @@ if [ -f /etc/apt/apt.conf.d/20auto-upgrades ]; then
 	if grep -q 'APT::Periodic::Unattended-Upgrade "1";' /etc/apt/apt.conf.d/20auto-upgrades; then
 		unattended_check
 	fi
-else
-	default_check
 fi
+default_check

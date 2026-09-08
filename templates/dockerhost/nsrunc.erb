@@ -1,0 +1,8 @@
+#!/bin/bash
+# Run runc inside Docker's mount namespace.
+# systemd 253+ creates a private (slave) mount namespace for Docker when
+# PrivateNetwork=yes is set. Container rootfs overlays are only visible inside
+# that namespace, so runc must enter it to see them.
+DOCKER_PID=$(pidof dockerd 2>/dev/null | awk '{print $1}')
+[ -n "$DOCKER_PID" ] && exec nsenter --mount=/proc/$DOCKER_PID/ns/mnt -- /usr/bin/runc "$@"
+exec /usr/bin/runc "$@"

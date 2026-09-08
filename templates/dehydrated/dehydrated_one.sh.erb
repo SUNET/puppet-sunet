@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <hostname>"
+    exit 1
+fi
+
+HOSTNAME="$1"
+DOMAINFILE="/etc/dehydrated/domains.txt"
+SCRIPTHERDER="/usr/local/bin/scriptherder"
+SCRIPTHERDER_TEMPLATE="/etc/scriptherder/check/dehydrated.ini"
+DEHYDRATED="/usr/sbin/dehydrated"
+HOOKFILE="/etc/dehydrated/hook.sh"
+CONFIGFILE="/etc/dehydrated/config"
+
+# verify domain exists
+if ! grep -qE "^${HOSTNAME}[[:space:]]" "$DOMAINFILE"; then
+    echo "ERROR: ${HOSTNAME} not found in ${DOMAINFILE}"
+    exit 2
+fi
+
+JOBNAME="dehydrated_${HOSTNAME}"
+JOBFILE="/etc/scriptherder/check/${JOBNAME}.ini"
+
+# create scriptherder config if missing
+if [[ ! -f "$JOBFILE" ]]; then
+    cp "$SCRIPTHERDER_TEMPLATE" "$JOBFILE"
+fi
+
+# run dehydrated only for this domain
+"$SCRIPTHERDER" --mode wrap --syslog --name "$JOBNAME" -- "$DEHYDRATED" --cron --domain "$HOSTNAME" --hook "$HOOKFILE" --config "$CONFIGFILE" --force
+
+# update compatibility symlinks etc
+/usr/bin/le-ssl-compat.sh

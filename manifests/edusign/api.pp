@@ -12,6 +12,7 @@ class sunet::edusign::api(
   }
   $cp = hiera('edusign_credential_password')
   $cp_geant = hiera('edusign_credential_password_geant')
+  $cp_ki = hiera('edusign_ki_credential_password')
   sunet::snippets::reinstall::keep { '/etc/signservice-rest/keys/sp-keystore.jks': }
   sunet::snippets::reinstall::keep { '/etc/signservice-rest/keys/edusign-test-geant.jks': }
   sunet::snippets::reinstall::keep { '/etc/signservice-rest/signservice-users.properties': }
@@ -26,7 +27,9 @@ class sunet::edusign::api(
                   "SIGNSERVICE_CREDENTIAL_PASSWORD=${cp}",
                   "SIGNSERVICE_CREDENTIAL_KEY_PASSWORD=${cp}",
                   "SIGNSERVICE_CREDENTIAL_PASSWORD_GEANT=${cp_geant}",
-                  "SIGNSERVICE_CREDENTIAL_KEY_PASSWORD_GEANT=${cp_geant}"]
+                  "SIGNSERVICE_CREDENTIAL_KEY_PASSWORD_GEANT=${cp_geant}",
+                  "SIGNSERVICE_KI_CREDENTIAL_PASSWORD=${cp_ki}",
+                  "SIGNSERVICE_KI_CREDENTIAL_KEY_PASSWORD=${cp_ki}"]
   }
   if $facts['sunet_nftables_opt_in'] == 'yes' or
     ( $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '22.04') >= 0 ) {

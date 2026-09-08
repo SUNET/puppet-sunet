@@ -45,10 +45,10 @@ class sunet::disable_resolved_stub(
 
   exec { 'resolved_stub_enable':
     refreshonly => true,
-    command     => 'ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf',
+    command     => 'ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf && systemctl reload-or-restart systemd-resolved',
   }
   exec { 'resolved_stub_disable':
     refreshonly => true,
-    command     => 'ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf',
+    command     => 'ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf && systemctl reload-or-restart systemd-resolved',
   }
 }

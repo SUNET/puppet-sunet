@@ -1,0 +1,3 @@
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd<% unless @_docker_dns.nil? %> --dns=<%= @_docker_dns %><% end %><% unless @storage_driver.nil? %> --storage-driver=<%= @storage_driver %><% end %><% if @_extra_parameters and @_extra_parameters != '' %> <%= @_extra_parameters %><% end %><% unless @_tcp_bind.nil? %> --host=<%= @_tcp_bind %><% end %><% if @tls_enable %> --tls --tlscacert=<%= @tls_cacert %> --tlscert=<%= @tls_cert %> --tlskey=<%= @tls_key %><% end %>

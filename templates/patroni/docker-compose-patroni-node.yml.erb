@@ -8,7 +8,9 @@ services:
       - '/etc/ssl:/etc/ssl:ro'
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'
       - '/opt/patroni/certs:/opt/patroni/certs:ro'
+<% if @legacy_ca == true %>
       - '/etc/ssl/certs/infra.crt:/etc/ssl/certs/infra.crt:ro'
+<% end %>
       - postgres_data:/var/lib/postgresql
       <% if @pgbackrest == true %>
       - '/usr/bin/pgbackrest:/usr/bin/pgbackrest'

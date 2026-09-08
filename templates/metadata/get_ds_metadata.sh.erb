@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -euo pipefail
+
+DEST_DIR="/opt/discovery/metadata"
+
+fetch_and_update() {
+  local url="$1"
+  local dest="$2"
+  local tmpf
+  tmpf=$(mktemp)
+
+  trap "rm -f ${tmpf}" RETURN
+
+  if [[ "${dest}" == *"/metadata_sp.json" ]]; then
+       wget -qO$tmpf $url && jq -e '.[].entityID' $tmpf >/dev/null 2>&1
+  else
+       wget -qO$tmpf $url && jq -e '.[].title' $tmpf >/dev/null 2>&1
+  fi
+
+  if ! cmp -s "$tmpf" "$dest"; then
+    mv "$tmpf" "$dest"
+    return 0
+  fi
+  return 1
+}
+
+changed=0
+fetch_and_update <%= @src %> "${DEST_DIR}/metadata.json"    && changed=1 || true
+fetch_and_update <%= @src_trust %> "${DEST_DIR}/metadata_sp.json" && changed=1 || true
+
+if [[ "$changed" -eq 1 ]]; then
+  sleep $(( RANDOM % 10 + 1 ))
+  docker compose -f /opt/discovery/docker-compose.yml restart mdq
+fi

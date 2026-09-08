@@ -194,9 +194,16 @@ def _collect_compose_service(compose_file: str, service_name: str, logger: loggi
             return []
 <% end %>
         for service in data.get("services", []):
-            container_name = data["services"][service].get("container_name", f"{service_name!s}<%= @container_name_delimiter %>{service!s}<%= @container_name_delimiter %>1")
+            # Use original project name with dash (v2 style); case and delimiter variants tried in the check_docker_containers script
+            container_name = data["services"][service].get("container_name", f"{service_name}-{service}-1")
             res.append(container_name)
     return res
+
+
+def _normalise_containername(name: str) -> str:
+    """Strip replica/run suffix, lowercase, normalise _ to - for comparison."""
+    name = re.sub(r'[-_](run[-_])?\d+$', '', name)
+    return name.lower().replace('_', '-')
 
 
 def docker_inspect(container: str, logger: logging.Logger) -> Optional[Dict[str, Any]]:
@@ -217,6 +224,23 @@ def docker_inspect(container: str, logger: logging.Logger) -> Optional[Dict[str,
         return None
     # data is a list of dicts, return the first dict
     return data[0]
+
+
+def docker_inspect_all(logger: logging.Logger) -> List[Dict[str, Any]]:
+    cmd = ["/usr/bin/docker", "ps", "-q", "--all"]
+    proc = subprocess.Popen(cmd, cwd="/", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+    (stdout, _) = proc.communicate()
+    ids = stdout.decode("utf-8").split()
+    if not ids:
+        return []
+    cmd = ["/usr/bin/docker", "inspect"] + ids
+    proc = subprocess.Popen(cmd, cwd="/", stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+    (stdout, _) = proc.communicate()
+    try:
+        return json.loads(stdout.decode("utf-8"))
+    except ValueError as exc:
+        logger.error(f"Failed parsing docker inspect output: {exc!s}")
+        return []
 
 
 def calc_running_seconds(started_at: str) -> float:
@@ -253,24 +277,18 @@ def timestr(seconds: float) -> str:
     return f"{seconds!s}s"
 
 
-def check_containers(expect: List[str], args: Arguments, logger: logging.Logger) -> Tuple[str, str, str]:
+def check_containers(expect: List[str], all_containers: List[Dict[str, Any]], args: Arguments, logger: logging.Logger) -> Tuple[str, str, str]:
     critical: List[str] = []
     warning: List[str] = []
     ok: List[str] = []
 
     for this in expect:
-        logger.debug(f"Docker inspect {this!r}")
-        data = docker_inspect(this, logger)
-        if not data:
-            # try to find containers started with docker-compose run too
-            if this.endswith("_1"):
-                data = docker_inspect(this[:-2] + "_run_1", logger)
-                if data:
-                    # update 'this' for logging below
-                    this = this[:-2] + "_run_1"
+        norm = _normalise_containername(this)
+        data = next((c for c in all_containers if _normalise_containername(c["Name"].lstrip("/")) == norm), None)
         if not data:
             critical.append(f"{this!s} not found")
             continue
+        this = data["Name"].lstrip("/")
         try:
             status = data["State"]["Status"]
             running = data["State"]["Running"]
@@ -356,7 +374,8 @@ def main(args: Arguments, logger: logging.Logger) -> int:
         print("UNKNOWN: No containers specified")
         return STATUS["UNKNOWN"]
 
-    critical, warning, ok = check_containers(expect, args, logger)
+    all_containers = docker_inspect_all(logger)
+    critical, warning, ok = check_containers(expect, all_containers, args, logger)
 
     output: List[str] = []
     if critical:

@@ -25,7 +25,7 @@ class sunet::forgejo (
   # S3 credentials from openstack
   $s3_secret_key = lookup('s3_secret_key', undef, undef, undef)
   $s3_access_key = lookup('s3_access_key', undef, undef, undef)
-  $s3_host = 's3.sto4.safedc.net'
+  $s3_host       = lookup('s3_host', undef, undef, 's3.sto4.safedc.net')
 
   # GPG password
   $platform_sunet_se_gpg_password = lookup('platform_sunet_se_gpg_password', undef, undef, undef)

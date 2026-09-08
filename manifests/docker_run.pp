@@ -80,6 +80,11 @@ define sunet::docker_run(
 
     if ($docker_class == 'sunet::dockerhost') {
 
+      # Ensure the custom docker network exists if needed
+      if $net != 'host' and $net != 'bridge' {
+        ensure_resource('docker_network', $net, { 'ensure' => 'present' })
+      }
+
       # If a non-default network is used, make sure it is created before this container starts
       $req = $net ? {
         'host'   => [],
