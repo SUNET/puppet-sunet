@@ -5,7 +5,7 @@ import sys
 # Remove acmec checks and cached check data for domains not existing in local.yaml
 def remove_unused_checks(all_acmec_domains):
     has_errors = False
-    
+
     try:
         checks = os.listdir("/etc/scriptherder/check/")
         cached_checks = os.listdir("/var/cache/scriptherder")
@@ -16,10 +16,10 @@ def remove_unused_checks(all_acmec_domains):
     for f in checks:
         if not f.startswith("dehydrated_") or not f.endswith(".ini"):
             continue
-        
+
         fn_check = f[:-4].replace("dehydrated_", "").strip().lower()
         fp_check = f"/etc/scriptherder/check/{f}"
-        
+
         if fn_check not in all_acmec_domains:
             # Try to remove the .ini file
             try:
@@ -28,10 +28,10 @@ def remove_unused_checks(all_acmec_domains):
             except OSError as e:
                 print(f"Failed to remove {fp_check}: {e}")
                 has_errors = True
-            
+
             # Build the cache prefix from the .ini filename
-            fn_cache = f[:-4].replace(".", "_")
-            
+            fn_cache = f[:-4].replace(".", "_").replace("-", "_")
+
             # Find and remove all cache files for this specific check
             for cfile in cached_checks:
                 if cfile.startswith(fn_cache + "__"):
@@ -66,7 +66,7 @@ def parse_acmec_domains(yaml_path):
 
 if __name__ == "__main__":
     all_acmec_domains = parse_acmec_domains("/etc/hiera/data/local.yaml")
-    
+
     if remove_unused_checks(all_acmec_domains):
         sys.exit(2)
     else:
