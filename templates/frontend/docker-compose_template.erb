@@ -18,7 +18,7 @@ services:
       - '/dev/log:/dev/log'
       - '/opt/frontend/scripts/haproxy-start.sh:/haproxy-start.sh:ro'
       - 'haproxy_data:/etc/haproxy'
-      - 'haproxy_control:/var/run/haproxy-control'
+      - 'haproxy_control:/haproxy_control'
 <% if @multi_certs.is_a? Array and @multi_certs.size > 1 -%>
 <%- index = 0 -%>
 <% @multi_certs.each do |cert| -%>
@@ -104,11 +104,11 @@ services:
       - /opt/frontend/config/common:/opt/frontend/config/common:ro
       - /opt/frontend/config/<%= @instance %>:/opt/frontend/config/<%= @instance %>:ro
       - /opt/frontend/monitor/<%= @instance %>:/opt/frontend/monitor/<%= @instance %>:rw
-      - haproxy_control:/var/run/haproxy-control
+      - haproxy_control:/haproxy_control
     command: >
         /opt/frontend/scripts/monitor-haproxy
             <% if @statsd_enabled == true -%>--statsd_host <%= @statsd_host %> --statsd_prefix sarimner.<%= @instance %><% end -%>
-            --stats_url /var/run/haproxy-control/stats
+            --stats_url /haproxy_control/stats
             'site=<%= @site_name %>;group=default'
 <% if @dns.is_a? Array and @dns.size > 0 -%>
     dns:
@@ -117,9 +117,10 @@ services:
 <% end -%>
 <% end -%>
     environment:
-      - 'HOSTFQDN=<%= @fqdn %>'
+      - 'HOSTFQDN=<%= @facts['networking']['fqdn'] %>'
       - 'INSTANCE=<%= @instance %>'
       - 'SITENAME=<%= @site_name %>'
+      - 'STATSSOCKET=/haproxy_control/stats'
 
 volumes:
   haproxy_data:
