@@ -19,7 +19,7 @@ APT_KILL_AFTER=60   # grace period between SIGTERM and SIGKILL
 RANDOM_SLEEP=0
 if [[ "$1" == "--random-sleep" ]]; then
     RANDOM_SLEEP=1
-    sleep $(( $RANDOM % 120))
+    sleep $(( $RANDOM % 600))
 fi
 
 # Recover from a previous hung/killed apt run: clear stale locks and
