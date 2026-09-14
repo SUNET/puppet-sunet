@@ -219,7 +219,8 @@ restic repository '${title}' is not set - not exporting it")
       if $check {
         $check_args = $check_read_data_subset ? {
           undef   => 'check',
-          default => "check --read-data-subset=${check_read_data_subset}",
+          default => "check --read-data-subset='${check_read_data_subset}'",
+
         }
 
         $_check_max_age = $check_weekday ? { undef => '25h', default => '8d' }
