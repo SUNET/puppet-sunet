@@ -41,7 +41,7 @@ services:
     entrypoint: gitea -c /opt/forgejo/config/app.ini
     pull_policy: daily
   nginx:
-    image: docker.io/nginxproxy/nginx-proxy:1.7
+    image: docker.io/nginxproxy/nginx-proxy:1.11
     container_name: nginx
     networks:
       - internal_network

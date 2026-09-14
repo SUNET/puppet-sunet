@@ -55,7 +55,7 @@ def decide_days_to_save(interval):
 
 def remove_files(job_name, days_to_save):
     command = "find /var/cache/scriptherder -type f "
-    command += f"-mtime +{days_to_save} -name {job_name}__* "
+    command += f"-mtime +{days_to_save} -name \"{job_name}__*\" "
     command += "-delete"
     os.system(command)
 

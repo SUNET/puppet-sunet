@@ -1,0 +1,34 @@
+# Production settings override
+DEBUG = False
+ALLOWED_HOSTS = ['<%= @hostname %>']
+SECRET_KEY = '<%= @secret_key %>'
+
+# Use your production domain
+TA_DOMAIN = 'https://<%= @hostname %>'
+# Add the required endpoints for TA
+FEDERATION_ENTITY = {
+ "federation_fetch_endpoint": f"{TA_DOMAIN}/fetch",
+ "federation_list_endpoint": f"{TA_DOMAIN}/list",
+ "federation_resolve_endpoint": f"{TA_DOMAIN}/resolve",
+ "federation_trust_mark_status_endpoint": f"{TA_DOMAIN}/trust_mark_status",
+ "federation_trust_mark_list_endpoint": f"{TA_DOMAIN}/trust_mark_list",
+ "federation_trust_mark_endpoint": f"{TA_DOMAIN}/trust_mark",
+ "federation_historical_keys_endpoint": f"{TA_DOMAIN}/historical_keys",
+ "federation_collection_endpoint": f"{TA_DOMAIN}/collection",
+}
+TRUSTMARK_PROVIDER = 'https://<%= @hostname %>'
+
+# Reverse proxy settings (REQUIRED — see section below)
+SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# CORS — only needed if something external hits the admin API
+CORS_ALLOWED_ORIGINS = ["https://<%= @hostname %>"]
+CSRF_TRUSTED_ORIGINS = ["https://<%= @hostname %>"]
+
+# HTTPS security
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# MFA encryption key
+MFA_ENCRYPTION_KEY = '<%= @mfa_key %>'

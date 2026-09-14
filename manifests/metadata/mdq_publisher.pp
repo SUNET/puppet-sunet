@@ -1,6 +1,7 @@
 # Wrapper to setup a MDQ-publiser
 class sunet::metadata::mdq_publisher(
   Boolean $docker_compose = false,
+  Boolean $acme = false,
   Boolean $infra_cert_from_this_class = true,
   Boolean $nftables_init = true,
   Optional[String] $publisher_cert="/etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt",
@@ -75,13 +76,37 @@ class sunet::metadata::mdq_publisher(
     warn_criteria => ['exit_status=1', 'max_age=5h'],
   }
 
-  if $infra_cert_from_this_class {
+  if $infra_cert_from_this_class and !acme {
     sunet::ici_ca::rp { 'infra': }
   }
+
+  $effective_publisher_cert = $acme ? {
+    true    => '/certs/fullchain.pem',
+    default => $publisher_cert,
+  }
+
+  $effective_publisher_key = $acme ? {
+    true    => '/certs/privkey.pem',
+    default => $publisher_key,
+  }
+
   $env_certs = [
-        "PUBLISHER_CERT=${publisher_cert}",
-        "PUBLISHER_KEY=${publisher_key}",
+    "PUBLISHER_CERT=${effective_publisher_cert}",
+    "PUBLISHER_KEY=${effective_publisher_key}",
   ]
+  if ($acme) {
+    # The certbot package creates the hooks dir
+    include sunet::packages::certbot
+
+    file { '/etc/letsencrypt/renewal-hooks/deploy/mdq_publisher-renewal-hook':
+      ensure  => 'file',
+      mode    => '0755',
+      owner   => 'root',
+      group   => 'root',
+      content => file('sunet/metadata/certbot-renewal-hook.sh'),
+      before  => Class['sunet::certbot::acmed']
+    }
+  }
 
   if $docker_compose {
     service { 'docker-swamid-mdq-publisher':

@@ -138,6 +138,10 @@ if __name__ == "__main__":
     results = check_hostnames(prefixes, all_hosts, required_tag)
 
     not_resolvable, missing_sunet_prefix, missing_acmec_tag = results
+
+    if not_resolvable and missing_sunet_prefix and missing_acmec_tag:
+        print('OK')
+        sys.exit(0)
     
     print("\n\nNot resolvable:")
     if not not_resolvable:

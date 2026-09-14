@@ -1,0 +1,18 @@
+#!/bin/sh -eu
+# vim: ai ts=4 sts=4 et sw=4
+
+mkdir -p /opt/discovery/cert
+
+install -m 644 "${RENEWED_LINEAGE}/fullchain.pem" \
+    /opt/discovery/cert/ds.pem
+install -m 640 -g 33 \
+    "${RENEWED_LINEAGE}/privkey.pem" \
+    /opt/discovery/cert/ds.key
+
+# Prevent reload when service is not fully installed.
+# Like when issuing the cert for the first time.
+if [ -n "${NO_RELOAD:-}" ]; then
+    exit 0
+fi
+
+docker exec ds nginx -s reload

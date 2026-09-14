@@ -1,4 +1,4 @@
-publiccodeYmlVersion: "0.4"
+publiccodeYmlVersion: "0"
 
 name: puppet-sunet
 url: "https://github.com/SUNET/puppet-sunet"
@@ -18,7 +18,10 @@ description:
       Puppet classes for configurstion management. 
 
     longDescription: >
-      Puppet classes for configurstion management. 
+      Puppet classes and utilities used by SUNET for configuration
+      management of the operational infrastructure across hosts. The
+      repository collects shared classes, defined types and helper scripts
+      used in day-to-day SUNET ops.
 
     features:
       - Configuration management

@@ -125,6 +125,10 @@ rLocalStateComment=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group
 
 rSSTMethod=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_VARIABLES where VARIABLE_NAME = 'wsrep_sst_method'") # mariabackup
 
+rSSLSocket=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_VARIABLES where VARIABLE_NAME = 'wsrep_provider_socket_ssl'") # ON
+
+rSSL=$(/usr/bin/docker exec mariadb-db-1 "${CMD}" --defaults-group-suffix=_backup -B -N -e "select variable_value from information_schema.GLOBAL_VARIABLES where VARIABLE_NAME = 'have_ssl'") # YES
+
 if [ "$rClusterStatus" != 'Primary' ]; then
 	critText+="CRITICAL: node is not primary (wsrep_cluster_status). "
 	critAlerts=$((criticalAlerts + 1))
@@ -149,6 +153,20 @@ if [ "$rSSTMethod" != 'mariabackup' ]; then
 	critText+="CRITICAL: node is not backed up - actual state is: $rSSTMethod (wsrep_sst_method). "
 	critAlerts=$((criticalAlerts + 1))
 fi
+
+<%- if @use_tls -%>
+
+if [ "$rSSLSocket" != 'ON' ]; then
+	critText+="CRITICAL: SSL socket is not enabled: $rSSL (wsrep_provider_socket_ssl). "
+	critAlerts=$((criticalAlerts + 1))
+fi
+
+if [ "$rSSL" != 'YES' ]; then
+	critText+="CRITICAL: SSL is not supported: $rSSL (have_ssl). "
+	critAlerts=$((criticalAlerts + 1))
+fi
+
+<% end -%>
 
 if [ "$rClusterSize" -gt "$warn" ]; then
 	# only display the ok message if the state check not enabled

@@ -7,8 +7,8 @@ DATABASES:
     ENGINE: django.db.backends.postgresql
     HOST: <%= @django_ca_db_servicename %>
     PORT: 5432
-    NAME: djangoca
-    USER: djangoca
+    NAME: <%= @django_ca_db_name %>
+    USER: <%= @django_ca_db_user %>
     PASSWORD: <%= @djangoca_db_password %>
 
 
@@ -32,6 +32,9 @@ CA_KEY_BACKENDS:
       token: <%= @hsm_partition %>
       user_pin: <%= @pkcs11_pin %>
 
+<% if @default_ca_serial -%>
+CA_DEFAULT_CA: <%= @default_ca_serial %>
+<% end -%>
 
 <% if @django_ca_cmc %>
 EXTEND_INSTALLED_APPS:

@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# === Configuration ===
+CERT_DIR="/opt/mariadb/cert"
+CERT_DST="${CERT_DIR}/cert.pem"
+KEY_DST="${CERT_DIR}/privkey.pem"
+CONTAINER_NAME="mariadb-db-1"
+
+# mariadb runtime UID/GID (inside container)
+MARIADB_UID=999
+MARIADB_GID=999
+
+# Restrict default permissions for any files created by this script
+umask 077
+
+# === Sanity checks ===
+if [ -z "${RENEWED_LINEAGE:-}" ]; then
+	echo "ERROR: RENEWED_LINEAGE not set (not running from certbot?)" >&2
+	exit 1
+fi
+
+# === Ensure directory exists ===
+install -d -m 750 "${CERT_DIR}"
+
+# === Copy certs to temp files ===
+cp "${RENEWED_LINEAGE}/fullchain.pem" "${CERT_DIR}/cert.pem.tmp"
+cp "${RENEWED_LINEAGE}/privkey.pem"   "${CERT_DIR}/privkey.pem.tmp"
+
+# Set correct permissions on temp files before swapping
+chown ${MARIADB_UID}:${MARIADB_GID} "${CERT_DIR}"/*.tmp
+chmod 644 "${CERT_DIR}"/cert.pem.tmp
+chmod 600 "${CERT_DIR}"/privkey.pem.tmp
+
+# Atomically swap into place
+mv "${CERT_DIR}/cert.pem.tmp" "${CERT_DST}"
+mv "${CERT_DIR}/privkey.pem.tmp" "${KEY_DST}"
+
+# === Defensive stat check (host-safe) ===
+KEY_UID="$(stat -c %u "${KEY_DST}")"
+KEY_MODE="$(stat -c %a "${KEY_DST}")"
+
+if [ "${KEY_UID}" -ne "${MARIADB_UID}" ] || [ "${KEY_MODE}" != 600 ]; then
+	echo "ERROR: Incorrect ownership or permissions on ${KEY_DST}" >&2
+	exit 1
+fi
+
+# Prevent reload when service is not fully installed.
+# Like when issuing the cert for the first time.
+if [ -n "${NO_RELOAD:-}" ]; then
+	exit 0
+fi
+
+MYSQL_USER="root"
+MYSQL_PASSWORD=$(docker exec ${CONTAINER_NAME} printenv MYSQL_ROOT_PASSWORD)
+
+# --- Reload MariaDB server TLS (client connections) ---
+docker exec "${CONTAINER_NAME}" mariadb -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "FLUSH SSL;"
+
+echo "mariadb TLS certificates successfully updated"

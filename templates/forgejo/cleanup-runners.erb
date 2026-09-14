@@ -1,0 +1,43 @@
+#!/bin/bash
+
+FORGEJO_URL="https://<%= @forgejo_instance %>"
+TOKEN="<%= @forgejo_registration_token %>"
+PAGE=1
+
+# Use gdate on macOS, date on Linux
+if command -v gdate &>/dev/null; then
+  DATE="gdate"
+else
+  DATE="date"
+fi
+
+CUTOFF=$($DATE -d '30 minutes ago' +%s)
+PAGE=1
+
+while true; do
+  RUNNERS=$(curl -s \
+    -H "Authorization: token $TOKEN" \
+    "$FORGEJO_URL/api/v1/admin/actions/runners?page=$PAGE&limit=50")
+
+  # Break if empty or no more runners
+  COUNT=$(echo "$RUNNERS" | jq 'length')
+  [ "$COUNT" -eq 0 ] && break
+
+  # Filter to offline runners older than 30 minutes
+  OFFLINE_IDS=$(echo "$RUNNERS" | jq -r --argjson cutoff "$CUTOFF" '
+    .[] | select(.status == "offline") |
+    select((.name | split("-") | last | tonumber) < $cutoff) |
+    .id')
+
+  for ID in $OFFLINE_IDS; do
+    NAME=$(echo "$RUNNERS" | jq -r ".[] | select(.id == $ID) | .name")
+    echo "Deleting offline runner '$NAME' (id: $ID)..."
+    curl -s -X DELETE \
+      -H "Authorization: token $TOKEN" \
+      "$FORGEJO_URL/api/v1/admin/actions/runners/$ID"
+  done
+
+  PAGE=$((PAGE + 1))
+done
+
+echo "Done."
