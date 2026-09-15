@@ -208,7 +208,7 @@ def manager_process(script, args, write_fd, logger):
                         args.name, retry
                     ))
             if not locked and not retry:
-                llogger.error('Failed to acquire lock in {} seconds - exiting'.format(args.lock_retry))
+                logger.error('Failed to acquire lock in {} seconds - exiting'.format(args.lock_retry))
                 os.write(write_fd, b'exit\n')
                 os.close(write_fd)
                 sys.exit(1)
