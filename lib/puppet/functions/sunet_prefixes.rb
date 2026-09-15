@@ -71,6 +71,7 @@ Puppet::Functions.create_function(:sunet_prefixes) do
       { "net": "130.242.132.0/24",      "family": "ip",  "comment": "SWAMID, eIDAS, FIDUS, eduid-dev", "resource_type": "SUNET", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "184.72.45.62/32",       "family": "ip",  "comment": "ec2-184-72-45-62.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
       { "net": "184.169.227.115/32",    "family": "ip",  "comment": "ec2-184-169-227-115.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
+      { "net": "188.240.152.0/32",      "family": "ip",  "comment": "wik.sunet.se(CDN IP)", "resource_type": "SUNET", "tags": ["acmec"] },
       { "net": "192.36.171.64/26",      "family": "ip",  "comment": "Nutanix", "resource_type": "SUNET", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "192.36.171.128/26",     "family": "ip",  "comment": "Nutanix", "resource_type": "SUNET", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "192.36.171.192/26",     "family": "ip",  "comment": "Nutanix", "resource_type": "SUNET", "tags": ["knubbis", "infraca", "acmec"] },
@@ -92,6 +93,7 @@ Puppet::Functions.create_function(:sunet_prefixes) do
       { "net": "2001:948:4:6::111/128", "family": "ip6", "comment": "nagios.nordu.net", "resource_type": "nagiosxi", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "2001:948:4::/47",       "family": "ip6", "comment": "Inacademia", "resource_type": "inacademia", "tags": ["acmec", "infraca", "knubbis"] },
       { "net": "2001:6b0:6c::/48",      "family": "ip6", "comment": "Safespring STO4", "resource_type": "safespring", "tags": ["acmec", "infraca", "knubbis"] },
+      { "net": "2001:6b0:2100::/48",    "family": "ip",  "comment": "wik.sunet.se(CDN IP)", "resource_type": "SUNET", "tags": ["acmec"] },
     ]
   end
 end
