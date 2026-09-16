@@ -20,10 +20,14 @@ rm -f acme-ca-*.pem acme-root-*.pem
 awk '/-----BEGIN CERTIFICATE-----/ { n++ }
      n > 0 { print > sprintf("acme-ca-%02d.pem", n) }' acme-chain.pem
 
+# Both hash forms: GSI advertises and looks up either, e.g.
+#   ca:1a416bbd.0|a075c285.0
+# which is one CA under -subject_hash and -subject_hash_old, not two CAs.
 link_cert() {
     _f="$1"
     chmod 0444 "${_f}"
     ln -sf "${_f}" "$(openssl x509 -in "${_f}" -noout -subject_hash).0"
+    ln -sf "${_f}" "$(openssl x509 -in "${_f}" -noout -subject_hash_old).0"
 }
 
 for f in acme-ca-*.pem; do
