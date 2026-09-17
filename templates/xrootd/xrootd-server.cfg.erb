@@ -28,7 +28,12 @@ if exec xrootd
   # findings.md). Macaroons let an X.509-authenticated client obtain that
   # token dynamically - required for TPC to work at all on this cluster.
   all.sitename <%= @sitename %>
-  ofs.authlib libXrdMacaroons.so
+  # The ++ stacks this onto the existing acc.authdb/Authfile chain instead of
+  # replacing it. Without it, a bearer-only request (no client cert - true for
+  # the destination's internal pull leg of a 3rd-party COPY) resolves to an
+  # "unknown" identity and is denied outright: the macaroon's own caveats
+  # never get consulted at all (F12 in findings.md).
+  ofs.authlib ++ libXrdMacaroons.so
   http.exthandler xrdmacaroons libXrdMacaroons.so
   macaroons.secretkey /etc/xrootd/macaroon-secret
 <% end -%>
