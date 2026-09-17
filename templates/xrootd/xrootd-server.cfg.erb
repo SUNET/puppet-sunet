@@ -36,6 +36,12 @@ if exec xrootd
   ofs.authlib ++ libXrdMacaroons.so
   http.exthandler xrdmacaroons libXrdMacaroons.so
   macaroons.secretkey /etc/xrootd/macaroon-secret
+  # Without this, XrdHttp never forwards the Authorization header into the
+  # opaque info the authorization plugins see - a bearer-only request (no
+  # client cert) resolves to "nobody" and is denied by the classic
+  # acc.authdb/Authfile chain before the macaroon is ever inspected, even
+  # with ofs.authlib stacked via ++ (also part of F12 in findings.md).
+  http.header2cgi Authorization authz
 <% end -%>
 <% end -%>
 fi
