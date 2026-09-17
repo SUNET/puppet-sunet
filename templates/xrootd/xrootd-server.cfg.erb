@@ -13,6 +13,12 @@ if exec xrootd
   http.cert /etc/grid-security/xrd/xrdcert.pem
   http.key /etc/grid-security/xrd/xrdkey.pem
   http.exthandler xrdtpc libXrdHttpTPC.so
+  # sec.protocol's -gridmap: below only covers the xroot protocol. XrdHttp maps
+  # DNs to users through this separate directive, and without it every HTTPS
+  # request is anonymous regardless of which certificate is presented - proven
+  # by a direct test: the same proxy against the same file succeeds over
+  # root:// and fails "permission denied" over https:// (F10 in findings.md).
+  http.gridmap /etc/grid-security/grid-mapfile
 <% end -%>
 fi
 
