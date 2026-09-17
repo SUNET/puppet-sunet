@@ -5,7 +5,7 @@ class sunet::xrootd(
   String      $manager_domain,
   String      $cms_port                 = '1213',
   String      $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
-  String      $container_tag            = '0.4.1-1',
+  String      $container_tag            = '0.6.9-1-1',
   String      $export                   = '/',
   String      $interface                = 'ens3',
   String      $xrootd_port              = '1094',
