@@ -13,6 +13,19 @@ class sunet::xrootd(
   Boolean     $tpc                      = false,
   Enum['http','xroot','both'] $tpc_mode = 'both',
   Boolean     $tpc_chksum               = false,
+  # gfal2/davix always send `Credential: gridsite` on an HTTPS TPC COPY
+  # unless a bearer token was already obtained for that endpoint - and
+  # XrdHttpTPC rejects anything but `Credential: none` outright. Macaroons
+  # are what let an X.509-authenticated client get that token dynamically,
+  # which HTTP TPC needs to work at all against this cluster (F11).
+  Boolean     $macaroons                = false,
+  # Symmetric key macaroons are signed with, shared by the whole cluster.
+  # Required if $macaroons is true; generate with
+  # `openssl rand -base64 -out macaroon-secret 64` and supply via hiera/eyaml.
+  Optional[String] $macaroons_secret    = undef,
+  # Published in each macaroon's `location` field; required by XrdMacaroons
+  # whenever macaroons are enabled, otherwise cosmetic.
+  String      $sitename                 = 'sunet-dts-test',
   # Name dehydrated fetched the certificate under. Left undef, managers use
   # $manager_domain and data servers their own FQDN — the managers share one
   # certificate covering the xrdm alias, which is the name clients connect to.
@@ -251,6 +264,23 @@ class sunet::xrootd(
       command     => '/usr/local/bin/xrootd-acme-ca-links.sh',
       refreshonly => true,
       notify      => Service['sunet-xrootd'],
+    }
+  }
+  if $macaroons {
+    if $macaroons_secret {
+      file { '/opt/xrootd/config/macaroon-secret':
+        ensure  => file,
+        content => $macaroons_secret,
+        owner   => '996',
+        group   => '996',
+        mode    => '0400',
+        # Only read at startup; a rotated secret needs a restart to take.
+        notify  => Service['sunet-xrootd'],
+      }
+    } else {
+      notify { 'xrootd: macaroons enabled but $macaroons_secret is undef, macaroon issuance will not start':
+        loglevel => 'warning',
+      }
     }
   }
   $xrootd_buckets.each |$bucket| {

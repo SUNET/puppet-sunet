@@ -5,20 +5,33 @@ fi
 if exec xrootd
   xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
   xrd.port <%= @xrootd_port %>
-<% if @tpc and ['http','both'].include?(@tpc_mode) -%>
-  # Third-party copy over HTTPS (WebDAV COPY). Requires libXrdHttpTPC.so in the
-  # container image; without this handler a COPY is silently downgraded and the
-  # data streams through the client instead of between the endpoints.
+<% if (@tpc and ['http','both'].include?(@tpc_mode)) or @macaroons -%>
   http.cadir /etc/grid-security/certificates
   http.cert /etc/grid-security/xrd/xrdcert.pem
   http.key /etc/grid-security/xrd/xrdkey.pem
-  http.exthandler xrdtpc libXrdHttpTPC.so
   # sec.protocol's -gridmap: below only covers the xroot protocol. XrdHttp maps
   # DNs to users through this separate directive, and without it every HTTPS
   # request is anonymous regardless of which certificate is presented - proven
   # by a direct test: the same proxy against the same file succeeds over
   # root:// and fails "permission denied" over https:// (F10 in findings.md).
   http.gridmap /etc/grid-security/grid-mapfile
+<% if @tpc and ['http','both'].include?(@tpc_mode) -%>
+  # Third-party copy over HTTPS (WebDAV COPY). Requires libXrdHttpTPC.so in the
+  # container image; without this handler a COPY is silently downgraded and the
+  # data streams through the client instead of between the endpoints.
+  http.exthandler xrdtpc libXrdHttpTPC.so
+<% end -%>
+<% if @macaroons -%>
+  # gfal2/davix always send `Credential: gridsite` on an HTTPS TPC COPY
+  # unless a bearer token was already obtained for the endpoint, and
+  # XrdHttpTPC rejects any Credential value except `none` outright (F11 in
+  # findings.md). Macaroons let an X.509-authenticated client obtain that
+  # token dynamically - required for TPC to work at all on this cluster.
+  all.sitename <%= @sitename %>
+  ofs.authlib libXrdMacaroons.so
+  http.exthandler xrdmacaroons libXrdMacaroons.so
+  macaroons.secretkey /etc/xrootd/macaroon-secret
+<% end -%>
 <% end -%>
 fi
 
