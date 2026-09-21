@@ -10,6 +10,9 @@ services:
 <% end -%>
 <% end -%>
     environment:
+<%- if @native_pkcs11 -%>
+      - PYKCS11PIN=<%= @pkcs11pin %>
+<% end -%>
       - UPDATE_FREQUENCY=<%= @pyff_update_frequency %>
       - PORT=<%= @pyff_port %>
       - DATADIR=<%= @pyff_datadir %>
@@ -27,6 +30,10 @@ services:
 <%- if @manage_signing_key -%>
       - "<%= @pyff_credentialsdir %>:<%= @pyff_credentialsdir %>"
 <%- end -%>
+<%- if @native_pkcs11 -%>
+     - '/etc/Chrystoki.conf:/etc/Chrystoki.conf:ro'
+     - '/usr/safenet/lunaclient/cert/:/usr/safenet/lunaclient/cert/:ro'
+<% end -%>
     ports:
       - "<%= @pyff_port %>:<%= @pyff_port %>"
 
