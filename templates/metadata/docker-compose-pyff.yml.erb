@@ -31,8 +31,8 @@ services:
       - "<%= @pyff_credentialsdir %>:<%= @pyff_credentialsdir %>"
 <%- end -%>
 <%- if @native_pkcs11 -%>
-     - '/etc/Chrystoki.conf:/etc/Chrystoki.conf:ro'
-     - '/usr/safenet/lunaclient/cert/:/usr/safenet/lunaclient/cert/:ro'
+      - '/etc/Chrystoki.conf:/etc/Chrystoki.conf:ro'
+      - '/usr/safenet/lunaclient/cert/:/usr/safenet/lunaclient/cert/:ro'
 <% end -%>
     ports:
       - "<%= @pyff_port %>:<%= @pyff_port %>"
