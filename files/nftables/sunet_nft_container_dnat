@@ -52,6 +52,19 @@ if [ -z "$project" ] || [ -z "$service" ] || [ -z "$host_ip" ] || [ -z "$port" ]
   usage
 fi
 
+# Reload nftables and report success/failure via return status - callers
+# decide how loudly to report a failure, since it matters more after a
+# fail-closed removal (a stale rule stays live in the kernel until this
+# succeeds) than after a routine update.
+reload_nftables() {
+  if systemctl restart nftables; then
+    return 0
+  else
+    echo "sunet_nft_container_dnat: systemctl restart nftables failed" >&2
+    return 1
+  fi
+}
+
 container_ip=''
 elapsed=0
 poll_interval=2
@@ -89,10 +102,31 @@ while [ "$elapsed" -lt "$wait_seconds" ]; do
 done
 
 if [ -z "$container_ip" ]; then
+  # Fail closed: this script only ever runs from ExecStartPost, which is
+  # always preceded by ExecStop's `docker compose down` tearing down the
+  # old network, so any rule left in $out_file points at an address that
+  # no longer belongs to this container - and could later be silently
+  # reused by an unrelated one. Remove it rather than leave DNAT/forward
+  # rules aimed at a stale target; the fact-based rule (see
+  # sunet::auth_server) or a later run of this script will restore it
+  # once the IP is known again.
   echo "sunet_nft_container_dnat: timed out after ${wait_seconds}s waiting for" \
     "a running container with com.docker.compose.project=${project}" \
     "com.docker.compose.service=${service} to get an IPv4 address;" \
-    "leaving ${out_file} untouched" >&2
+    "removing ${out_file} (if present) to fail closed" >&2
+  if [ -e "$out_file" ]; then
+    rm -f "$out_file"
+    if reload_nftables; then
+      exit 0
+    else
+      # The stale rule is still loaded in the kernel despite the file
+      # being gone - exit non-zero so this is visible in the journal/unit
+      # status, even though ExecStartPost=- means it won't fail the unit.
+      echo "sunet_nft_container_dnat: ${out_file} removed but reload failed;" \
+        "a stale rule may still be active in the live ruleset" >&2
+      exit 1
+    fi
+  fi
   exit 0
 fi
 
@@ -112,8 +146,10 @@ printf '%s\n' "$new_content" > "$tmp_file"
 chmod 0400 "$tmp_file"
 mv "$tmp_file" "$out_file"
 
-if systemctl restart nftables; then
-  :
+if reload_nftables; then
+  exit 0
 else
-  echo "sunet_nft_container_dnat: failed to restart nftables after updating ${out_file}" >&2
+  echo "sunet_nft_container_dnat: ${out_file} updated but reload failed;" \
+    "the new rule is not yet active in the live ruleset" >&2
+  exit 1
 fi

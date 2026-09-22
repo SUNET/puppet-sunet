@@ -84,7 +84,15 @@ define sunet::auth_server(
 
       include sunet::nftables::container_dnat
 
-      $dnat_out_file = "/etc/nftables/conf.d/650-container_dnat-${compose_project}-haproxy.nft"
+      # Numbered between 200-sunet_dockerhost.nft (which declares the
+      # `table ip nat` / `prerouting` chain this rule needs to already
+      # exist) and the fact-based rules in 400-sunet_rules.nft (see
+      # above), so this freshly-discovered rule is matched first - nft
+      # dnat is first-match-wins per connection, and files are included
+      # in lexical order, so this must sort after 200- (chain must
+      # exist) but before 400- (take precedence over a stale rule left
+      # by an unrun puppet apply).
+      $dnat_out_file = "/etc/nftables/conf.d/300-container_dnat-${compose_project}-haproxy.nft"
       $dnat_exec_start_post = 'ExecStartPost=-/usr/local/sbin/sunet_nft_container_dnat ' +
         "--project '${compose_project}' " +
         '--service haproxy ' +
