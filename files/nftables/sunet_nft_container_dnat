@@ -1,0 +1,155 @@
+#!/bin/bash
+#
+# Re-derive the live IP address of a docker-compose managed container and
+# (re)write a dedicated nftables conf.d file with DNAT/forward rules that
+# point at that IP, reloading nftables only when the content actually
+# changed.
+#
+# This exists because a systemd unit built by sunet::docker_compose_service
+# runs `docker compose down` on ExecStop, which deletes the compose
+# network - so the container gets a fresh Docker-assigned IP on every
+# start (deploy, reboot, manual restart). Puppet's own fact-based nftables
+# rule (see sunet::auth_server) only gets refreshed on the next puppet
+# run, leaving a window where the DNAT rule points at a stale IP. This
+# script closes that window immediately at service start time, run via an
+# ExecStartPost= line.
+#
+# Installed by sunet::nftables::container_dnat.
+#
+set -euo pipefail
+
+wait_seconds=60
+
+usage() {
+  echo "Usage: $0 --project P --service S --host-ip IP --port PORT --saddr-set SET --comment-prefix PREFIX --out FILE [--wait SECONDS]" >&2
+  exit 1
+}
+
+project=''
+service=''
+host_ip=''
+port=''
+saddr_set=''
+comment_prefix=''
+out_file=''
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --project) project="$2"; shift 2 ;;
+    --service) service="$2"; shift 2 ;;
+    --host-ip) host_ip="$2"; shift 2 ;;
+    --port) port="$2"; shift 2 ;;
+    --saddr-set) saddr_set="$2"; shift 2 ;;
+    --comment-prefix) comment_prefix="$2"; shift 2 ;;
+    --out) out_file="$2"; shift 2 ;;
+    --wait) wait_seconds="$2"; shift 2 ;;
+    *) echo "Unknown argument: $1" >&2; usage ;;
+  esac
+done
+
+if [ -z "$project" ] || [ -z "$service" ] || [ -z "$host_ip" ] || [ -z "$port" ] || \
+   [ -z "$saddr_set" ] || [ -z "$comment_prefix" ] || [ -z "$out_file" ]; then
+  usage
+fi
+
+# Reload nftables and report success/failure via return status - callers
+# decide how loudly to report a failure, since it matters more after a
+# fail-closed removal (a stale rule stays live in the kernel until this
+# succeeds) than after a routine update.
+reload_nftables() {
+  if systemctl restart nftables; then
+    return 0
+  else
+    echo "sunet_nft_container_dnat: systemctl restart nftables failed" >&2
+    return 1
+  fi
+}
+
+container_ip=''
+elapsed=0
+poll_interval=2
+
+while [ "$elapsed" -lt "$wait_seconds" ]; do
+  cid=''
+  if cid=$(docker container ls -q \
+      --filter "label=com.docker.compose.project=${project}" \
+      --filter "label=com.docker.compose.service=${service}" 2>/dev/null | head -n1); then
+    :
+  else
+    cid=''
+  fi
+
+  if [ -n "$cid" ]; then
+    ip=''
+    # Use jq (guaranteed present on dockerhost2, see sunet::packages::jq)
+    # rather than a Go template range, so that if the container is ever
+    # attached to more than one network we deterministically pick one
+    # address instead of concatenating all of them into one bad string.
+    if ip=$(docker container inspect "$cid" --format '{{json .NetworkSettings.Networks}}' 2>/dev/null \
+        | jq -r '[.[].IPAddress] | map(select(length > 0)) | .[0] // empty' 2>/dev/null); then
+      :
+    else
+      ip=''
+    fi
+    if [ -n "$ip" ]; then
+      container_ip="$ip"
+      break
+    fi
+  fi
+
+  sleep "$poll_interval"
+  elapsed=$((elapsed + poll_interval))
+done
+
+if [ -z "$container_ip" ]; then
+  # Fail closed: this script only ever runs from ExecStartPost, which is
+  # always preceded by ExecStop's `docker compose down` tearing down the
+  # old network, so any rule left in $out_file points at an address that
+  # no longer belongs to this container - and could later be silently
+  # reused by an unrelated one. Remove it rather than leave DNAT/forward
+  # rules aimed at a stale target; the fact-based rule (see
+  # sunet::auth_server) or a later run of this script will restore it
+  # once the IP is known again.
+  echo "sunet_nft_container_dnat: timed out after ${wait_seconds}s waiting for" \
+    "a running container with com.docker.compose.project=${project}" \
+    "com.docker.compose.service=${service} to get an IPv4 address;" \
+    "removing ${out_file} (if present) to fail closed" >&2
+  if [ -e "$out_file" ]; then
+    rm -f "$out_file"
+    if reload_nftables; then
+      exit 0
+    else
+      # The stale rule is still loaded in the kernel despite the file
+      # being gone - exit non-zero so this is visible in the journal/unit
+      # status, even though ExecStartPost=- means it won't fail the unit.
+      echo "sunet_nft_container_dnat: ${out_file} removed but reload failed;" \
+        "a stale rule may still be active in the live ruleset" >&2
+      exit 1
+    fi
+  fi
+  exit 0
+fi
+
+new_content=$(cat <<EOF
+add rule ip nat prerouting iifname != "br-*" ${saddr_set} ip daddr ${host_ip} tcp dport ${port} counter dnat to ${container_ip}:443 comment "${comment_prefix}: DNAT HTTPS directly to container"
+add rule inet filter forward iifname != "br-*" oifname "br-*" ${saddr_set} ip daddr ${container_ip} tcp dport 443 counter accept comment "${comment_prefix}: allow post-DNAT HTTPS to container"
+EOF
+)
+
+if [ -f "$out_file" ] && [ "$(cat "$out_file")" = "$new_content" ]; then
+  # No change, nothing to do.
+  exit 0
+fi
+
+tmp_file="${out_file}.tmp"
+printf '%s\n' "$new_content" > "$tmp_file"
+chmod 0400 "$tmp_file"
+mv "$tmp_file" "$out_file"
+
+if reload_nftables; then
+  exit 0
+else
+  echo "sunet_nft_container_dnat: ${out_file} updated but reload failed;" \
+    "the new rule is not yet active in the live ruleset" >&2
+  exit 1
+fi
