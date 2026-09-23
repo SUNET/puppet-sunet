@@ -192,8 +192,8 @@ class sunet::bankidp(
       hostmode          => true,
       tls               => true,
       automatic_rectify => true,
-      prevent_reboot    => true
-      cert_source       => new_ca,
+      prevent_reboot    => true,
+      cert_source       => 'new_ca',
     }
 
     include sunet::packages::redis_tools

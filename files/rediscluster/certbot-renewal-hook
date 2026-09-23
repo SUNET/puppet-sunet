@@ -6,7 +6,7 @@ CERT_DIR="/opt/redis/cert"
 CERT_DST="${CERT_DIR}/cert.pem"
 KEY_DST="${CERT_DIR}/privkey.pem"
 fqdn=$(hostname -f)
-password=$(puppet lookup --render-as s redis_password 2> /dev/null)
+password=$(eyaml decrypt -f /etc/hiera/data/local.eyaml --pkcs7-private-key=/etc/hiera/eyaml/private_key.pkcs7.pem --pkcs7-public-key=/etc/hiera/eyaml/public_certkey.pkcs7.pem | awk '/^redis_password: /{print $2}')
 
 # Valkey runtime UID/GID (inside container)
 REDIS_UID=999
