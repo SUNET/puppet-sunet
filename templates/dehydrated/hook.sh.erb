@@ -172,6 +172,18 @@ invalid_challenge() {
 request_failure() {
     local STATUSCODE="${1}" REASON="${2}" REQTYPE="${3}" HEADERS="${4}"
 
+    # Log everything to a file for debugging
+    LOGFILE="/var/log/dehydrated_request_failures.log"
+    
+    echo "---" >> "${LOGFILE}"
+    echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> "${LOGFILE}"
+    echo "Status Code: ${STATUSCODE}" >> "${LOGFILE}"
+    echo "Reason: ${REASON}" >> "${LOGFILE}"
+    echo "Request Type: ${REQTYPE}" >> "${LOGFILE}"
+    echo "Headers: ${HEADERS}" >> "${LOGFILE}"
+    echo "---" >> "${LOGFILE}"
+    echo "" >> "${LOGFILE}"
+
     # This hook is called when an HTTP request fails (e.g., when the ACME
     # server is busy, returns an error, etc). It will be called upon any
     # response code that does not start with '2'. Useful to alert admins
