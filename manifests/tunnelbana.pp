@@ -20,9 +20,9 @@
 class sunet::tunnelbana(
   String                  $image            = 'docker.sunet.se/tunnelbana',
   String                  $tunnelbana_tag   = '0.2.0',
-  String                  $config_dir       = '/etc/tunnelbana/config',
-  String                  $keys_dir         = '/etc/tunnelbana/keys',
-  String                  $metadata_dir     = '/etc/tunnelbana/metadata',
+  String                  $config_dir       = '/opt/tunnelbana/config',
+  String                  $keys_dir         = '/opt/tunnelbana/keys',
+  String                  $metadata_dir     = '/opt/tunnelbana/metadata',
   Integer[1, 65535]       $host_port        = 8088,
   Optional[Array[String]] $ports            = undef,
   String                  $tunnelbana_bind  = '0.0.0.0:8080',
@@ -45,7 +45,7 @@ class sunet::tunnelbana(
     $service_to_notify = undef
   }
 
-  $env_file = '/etc/tunnelbana/tunnelbana.env'
+  $env_file = '/opt/tunnelbana/tunnelbana.env'
 
   # Tunnelbana serves plain HTTP. Bind the host port to loopback by default so a
   # local reverse proxy, such as Caddy, can terminate TLS and expose public 443.
@@ -54,7 +54,7 @@ class sunet::tunnelbana(
     default => $ports,
   }
 
-  ensure_resource('file', '/etc/tunnelbana', {
+  ensure_resource('file', '/opt/tunnelbana', {
       ensure => directory,
       owner  => 'root',
       group  => 'root',
@@ -69,7 +69,7 @@ class sunet::tunnelbana(
     owner   => '10001',
     group   => '10001',
     mode    => '0750',
-    require => File['/etc/tunnelbana'],
+    require => File['/opt/tunnelbana'],
     before  => Sunet::Docker_compose['tunnelbana_compose'],
   }
 
@@ -167,7 +167,7 @@ class sunet::tunnelbana(
     mode      => '0400',
     content   => $env_content,
     show_diff => false,
-    require   => File['/etc/tunnelbana'],
+    require   => File['/opt/tunnelbana'],
     notify    => $service_to_notify,
     before    => Sunet::Docker_compose['tunnelbana_compose'],
   }
