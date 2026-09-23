@@ -5,11 +5,39 @@ class sunet::xrootd(
   String      $manager_domain,
   String      $cms_port                 = '1213',
   String      $container_image          = 'docker.sunet.se/staas/xrootd-s3-http',
-  String      $container_tag            = '0.4.1-1',
+  String      $container_tag            = '0.6.9-1-1',
   String      $export                   = '/',
   String      $interface                = 'ens3',
   String      $xrootd_port              = '1094',
   String      $xrootd_admin_path        = '/var/spool/xrootd',
+  Boolean     $tpc                      = false,
+  Enum['http','xroot','both'] $tpc_mode = 'both',
+  Boolean     $tpc_chksum               = false,
+  # gfal2/davix always send `Credential: gridsite` on an HTTPS TPC COPY
+  # unless a bearer token was already obtained for that endpoint - and
+  # XrdHttpTPC rejects anything but `Credential: none` outright. Macaroons
+  # are what let an X.509-authenticated client get that token dynamically,
+  # which HTTP TPC needs to work at all against this cluster (F11).
+  Boolean     $macaroons                = false,
+  # Symmetric key macaroons are signed with, shared by the whole cluster.
+  # Required if $macaroons is true; generate with
+  # `openssl rand -base64 -out macaroon-secret 64` and supply via hiera/eyaml.
+  Optional[String] $macaroons_secret    = undef,
+  # Published in each macaroon's `location` field; required by XrdMacaroons
+  # whenever macaroons are enabled, otherwise cosmetic.
+  String      $sitename                 = 'sunet-dts-test',
+  # Name dehydrated fetched the certificate under. Left undef, managers use
+  # $manager_domain and data servers their own FQDN — the managers share one
+  # certificate covering the xrdm alias, which is the name clients connect to.
+  Optional[String] $cert_domain         = undef,
+  # ACME HTTP-01 responder on port 80. On by default because without it this node
+  # cannot obtain a certificate, and without a certificate xrootd will not start.
+  Boolean     $acme_responder           = true,
+  String      $acme_server              = 'acme-c.sunet.se',
+  String      $haproxy_image            = 'docker.sunet.se/library/haproxy',
+  String      $haproxy_tag              = 'stable',
+  # Where to find trust anchors the ACME chain stops short of.
+  String      $system_certdir           = '/etc/ssl/certs',
 )
 {
 
@@ -18,6 +46,8 @@ class sunet::xrootd(
   $cahash2 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-auth-ca.crt -noout -hash').chomp
   $cahash3 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-trust-ca.crt -noout -hash').chomp
   $cahash4 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-tls.crt -noout -hash').chomp
+  $cahash5 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-auth-ecc-ca.crt -noout -hash').chomp
+  $cahash6 = generate('/bin/sh', '-c', '/usr/bin/openssl x509 -in /etc/puppet/cosmos-modules/sunet/files/xrootd/geant-trust-ecc-ca.crt -noout -hash').chomp
 
   if ($hostname in $managers ) {
     $role = 'manager'
@@ -26,7 +56,30 @@ class sunet::xrootd(
   }
   # Config
   $xrootd_buckets = lookup('xrootd_buckets')
-  $tls_key = lookup('tls_key')
+
+  # TLS material comes from dehydrated, as it does for imap, smtp and calendar.
+  # It used to be a certificate committed to this module plus a key in eyaml,
+  # which left it outside every renewal path; it expired unnoticed on 2026-06-24.
+  # fullchain rather than cert.pem so peers are sent the intermediate.
+  $_cert_domain = $cert_domain ? {
+    undef   => $role ? { 'manager' => $manager_domain, default => $hostname },
+    default => $cert_domain,
+  }
+  $acme_dir = "/etc/dehydrated/certs/${_cert_domain}"
+  $acme_cert = "${acme_dir}/fullchain.pem"
+  $acme_key = "${acme_dir}/privkey.pem"
+  $acme_chain = "${acme_dir}/chain.pem"
+  $certdir = '/opt/xrootd/grid-security/certificates'
+
+  # The define rather than sunet::dehydrated::client: that class takes a single
+  # $domain and cannot be re-instantiated, so one cosmos-rules regex covering all
+  # five nodes could not give each its own certificate name.
+  sunet::dehydrated::client_define { "domain_${_cert_domain}":
+    domain          => $_cert_domain,
+    single_domain   => false,
+    ssl_links       => false,
+    check_cert_port => $xrootd_port,
+  }
 
   # Composefile
   sunet::docker_compose { 'xrootd':
@@ -35,6 +88,25 @@ class sunet::xrootd(
     compose_dir      => '/opt',
     compose_filename => 'docker-compose.yml',
     description      => 'XRootD S3 HTTP',
+  }
+  if $acme_responder {
+    file { '/opt/xrootd/acme':
+      ensure => directory,
+    }
+    file { '/opt/xrootd/acme/haproxy.cfg':
+      ensure  => file,
+      content => template('sunet/xrootd/haproxy-acme.cfg.erb'),
+      # Bind-mounted into the container, so a change needs a restart to take.
+      notify  => Service['sunet-xrootd'],
+    }
+    # Port 80 must be open to the world: Let's Encrypt validates from outside,
+    # and for the managers it may validate the shared xrdm alias against either
+    # host, so both have to answer.
+    sunet::nftables::docker_expose { 'acme_http_80':
+      allow_clients => 'any',
+      port          => '80',
+      iif           => $interface,
+    }
   }
   sunet::nftables::docker_expose { "xrootd_port_${xrootd_port}":
     allow_clients => 'any',
@@ -73,6 +145,8 @@ class sunet::xrootd(
   file { '/opt/xrootd/config/xrootd.cfg':
     ensure  => file,
     content => template("sunet/xrootd/xrootd-${role}.cfg.erb"),
+    # Read once at startup; without this a config change never takes effect.
+    notify  => Service['sunet-xrootd'],
   }
   file { '/opt/xrootd/config/Authfile':
     ensure  => file,
@@ -81,6 +155,9 @@ class sunet::xrootd(
   file { '/opt/xrootd/grid-security/grid-mapfile':
     ensure  => file,
     content => file('sunet/xrootd/grid-mapfile'),
+    # GSI loads the map at startup and caches entries for 600s; unlike the
+    # Authfile (acc.authrefresh 60) it is not re-read on its own.
+    notify  => Service['sunet-xrootd'],
   }
   file { '/opt/xrootd/grid-security/certificates/harica-ca-root.crt':
     ensure  => file,
@@ -114,16 +191,97 @@ class sunet::xrootd(
     ensure  => link,
     target  => 'geant-tls.crt'
   }
-  file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
+  # GEANT now issues eScience credentials from its ECC hierarchy; the RSA pair
+  # above is the older one. Both halves are needed: GSI must resolve the issuer of
+  # a client certificate, and TLS must reach a self-signed anchor above it.
+  file { '/opt/xrootd/grid-security/certificates/geant-auth-ecc-ca.crt':
     ensure  => file,
-    content => file('sunet/xrootd/wildcard.drive.test.sunet.se.crt'),
+    content => file('sunet/xrootd/geant-auth-ecc-ca.crt'),
   }
-  file { '/opt/xrootd/grid-security/xrd/xrdkey.pem':
+  file { "/opt/xrootd/grid-security/certificates/${cahash5}.0":
+    ensure  => link,
+    target  => 'geant-auth-ecc-ca.crt',
+  }
+  file { '/opt/xrootd/grid-security/certificates/geant-trust-ecc-ca.crt':
     ensure  => file,
-    content => $tls_key,
-    owner   => '996',
-    group   => '996',
-    mode    => "0400",
+    content => file('sunet/xrootd/geant-trust-ecc-ca.crt'),
+  }
+  file { "/opt/xrootd/grid-security/certificates/${cahash6}.0":
+    ensure  => link,
+    target  => 'geant-trust-ecc-ca.crt',
+  }
+  # Copied rather than symlinked: the container only bind-mounts
+  # /opt/xrootd/grid-security, and it runs as uid 996, which cannot read
+  # dehydrated's root-owned key. XRootD reads xrd.tls once at startup, so the
+  # service is notified to pick up a renewal.
+  # links => follow is load-bearing: dehydrated's fullchain.pem and privkey.pem are
+  # relative symlinks to versioned files, and without it puppet copies the link
+  # rather than its content, leaving a dangling link here. Modes are explicit so
+  # the source's 0600 root is not inherited; 996 is the container's xrootd uid.
+  if find_file($acme_cert) and find_file($acme_key) {
+    file { '/opt/xrootd/grid-security/xrd/xrdcert.pem':
+      ensure => file,
+      source => $acme_cert,
+      links  => follow,
+      owner  => '996',
+      group  => '996',
+      mode   => '0444',
+      notify => Service['sunet-xrootd'],
+    }
+    file { '/opt/xrootd/grid-security/xrd/xrdkey.pem':
+      ensure => file,
+      source => $acme_key,
+      links  => follow,
+      owner  => '996',
+      group  => '996',
+      mode   => '0400',
+      notify => Service['sunet-xrootd'],
+    }
+  } else {
+    notify { "xrootd: no dehydrated certificate at ${acme_dir}, TLS will not start":
+      loglevel => 'warning',
+    }
+  }
+  # GSI refuses to initialise unless the issuing CA of our own server certificate
+  # is present here with hash links, and Let's Encrypt is not in the IGTF bundle
+  # this directory otherwise holds. Install the chain dehydrated delivered with the
+  # certificate and derive the links from it.
+  if find_file($acme_chain) {
+    file { "${certdir}/acme-chain.pem":
+      ensure => file,
+      source => $acme_chain,
+      links  => follow,
+      mode   => '0444',
+      notify => Exec['xrootd: acme ca links'],
+    }
+    file { '/usr/local/bin/xrootd-acme-ca-links.sh':
+      ensure  => file,
+      mode    => '0755',
+      content => template('sunet/xrootd/acme-ca-links.sh.erb'),
+      notify  => Exec['xrootd: acme ca links'],
+    }
+    exec { 'xrootd: acme ca links':
+      command     => '/usr/local/bin/xrootd-acme-ca-links.sh',
+      refreshonly => true,
+      notify      => Service['sunet-xrootd'],
+    }
+  }
+  if $macaroons {
+    if $macaroons_secret {
+      file { '/opt/xrootd/config/macaroon-secret':
+        ensure  => file,
+        content => $macaroons_secret,
+        owner   => '996',
+        group   => '996',
+        mode    => '0400',
+        # Only read at startup; a rotated secret needs a restart to take.
+        notify  => Service['sunet-xrootd'],
+      }
+    } else {
+      notify { 'xrootd: macaroons enabled but $macaroons_secret is undef, macaroon issuance will not start':
+        loglevel => 'warning',
+      }
+    }
   }
   $xrootd_buckets.each |$bucket| {
     file { "/opt/xrootd/config/${bucket['name']}":

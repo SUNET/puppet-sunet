@@ -5,6 +5,45 @@ fi
 if exec xrootd
   xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
   xrd.port <%= @xrootd_port %>
+<% if (@tpc and ['http','both'].include?(@tpc_mode)) or @macaroons -%>
+  http.cadir /etc/grid-security/certificates
+  http.cert /etc/grid-security/xrd/xrdcert.pem
+  http.key /etc/grid-security/xrd/xrdkey.pem
+  # sec.protocol's -gridmap: below only covers the xroot protocol. XrdHttp maps
+  # DNs to users through this separate directive, and without it every HTTPS
+  # request is anonymous regardless of which certificate is presented - proven
+  # by a direct test: the same proxy against the same file succeeds over
+  # root:// and fails "permission denied" over https:// (F10 in findings.md).
+  http.gridmap /etc/grid-security/grid-mapfile
+<% if @tpc and ['http','both'].include?(@tpc_mode) -%>
+  # Third-party copy over HTTPS (WebDAV COPY). Requires libXrdHttpTPC.so in the
+  # container image; without this handler a COPY is silently downgraded and the
+  # data streams through the client instead of between the endpoints.
+  http.exthandler xrdtpc libXrdHttpTPC.so
+<% end -%>
+<% if @macaroons -%>
+  # gfal2/davix always send `Credential: gridsite` on an HTTPS TPC COPY
+  # unless a bearer token was already obtained for the endpoint, and
+  # XrdHttpTPC rejects any Credential value except `none` outright (F11 in
+  # findings.md). Macaroons let an X.509-authenticated client obtain that
+  # token dynamically - required for TPC to work at all on this cluster.
+  all.sitename <%= @sitename %>
+  # The ++ stacks this onto the existing acc.authdb/Authfile chain instead of
+  # replacing it. Without it, a bearer-only request (no client cert - true for
+  # the destination's internal pull leg of a 3rd-party COPY) resolves to an
+  # "unknown" identity and is denied outright: the macaroon's own caveats
+  # never get consulted at all (F12 in findings.md).
+  ofs.authlib ++ libXrdMacaroons.so
+  http.exthandler xrdmacaroons libXrdMacaroons.so
+  macaroons.secretkey /etc/xrootd/macaroon-secret
+  # Without this, XrdHttp never forwards the Authorization header into the
+  # opaque info the authorization plugins see - a bearer-only request (no
+  # client cert) resolves to "nobody" and is denied by the classic
+  # acc.authdb/Authfile chain before the macaroon is ever inspected, even
+  # with ofs.authlib stacked via ++ (also part of F12 in findings.md).
+  http.header2cgi Authorization authz
+<% end -%>
+<% end -%>
 fi
 
 # Config TLS
@@ -20,6 +59,19 @@ acc.audit deny
 acc.authdb /etc/xrootd/Authfile
 acc.authrefresh 60
 ofs.authorize
+<% if @tpc and ['xroot','both'].include?(@tpc_mode) -%>
+
+# Native xroot third-party copy, delegating the client's GSI proxy to the pull
+# side. The X.509 counterpart of http.exthandler above: HTTP TPC normally needs a
+# bearer credential (macaroons or SciTokens) for the third-party leg, which we
+# deliberately do not run.
+ofs.tpc fcreds ?gsi =X509_USER_PROXY ttl 60 70 xfr 100 autorm pgm /usr/bin/xrdcp
+<% end -%>
+<% if @tpc_chksum -%>
+# S3 has nowhere to store a checksum, so every request re-reads the whole object
+# from Ceph. Enable only while deliberately testing checksum behaviour.
+xrootd.chksum max 4 adler32
+<% end -%>
 
 # Upon last testing, the plugin did not yet work in async mode
 xrootd.async off

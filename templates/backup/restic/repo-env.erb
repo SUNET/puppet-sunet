@@ -1,0 +1,11 @@
+# Managed by puppet: sunet::backup::restic::repository['<%= @title %>'] - do not edit
+#
+# Sourced by the restic-<%= @safe_name %> wrapper and by every backup job that uses
+# this repository. Contains credentials, hence mode 0400.
+
+export RESTIC_REPOSITORY=<%= @quoted['url'] %>
+export RESTIC_PASSWORD_FILE=<%= @quoted['password_file'] %>
+export RESTIC_CACHE_DIR=<%= @quoted['cache_dir'] %>
+<% @restic_env.sort.each do |name, value| -%>
+export <%= name %>=<%= value %>
+<% end -%>
