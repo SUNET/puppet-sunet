@@ -19,8 +19,8 @@ key="/etc/ssl/private/${fqdn}_infra.key"
 ca="/etc/ssl/certs/infra.crt"
 <% end %>
 <% if @cert_source == 'new_ca' -%>
-cert="/opt/redis/cert.pem"
-key="/opt/redis/privkey.pem"
+cert="/opt/redis/cert/cert.pem"
+key="/opt/redis/cert/privkey.pem"
 ca="/etc/ssl/certs/infra-2-prod.crt"
 <% end %>
 password=$(puppet lookup --render-as s redis_password 2> /dev/null)

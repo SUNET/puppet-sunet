@@ -7,7 +7,7 @@ echo "Checking redis cluster status,please standby..."
 cluster_status=$(redis-cli -a "$(puppet lookup --render-as s redis_password 2>/dev/null)" --tls --cert /etc/ssl/certs/$(hostname -f)_infra.crt --key /etc/ssl/private/$(hostname -f)_infra.key --cacert /etc/ssl/certs/infra.crt -h $(hostname -f) cluster nodes 2> /dev/null)
 <% end %>
 <% if @cert_source == 'new_ca' -%>
-cluster_status=$(redis-cli -a "$(puppet lookup --render-as s redis_password 2>/dev/null)" --tls --cert /opt/redis/cert.pem --key /opt/redis/privkey.pem --cacert /etc/ssl/certs/infra-2-prod.crt -h $(hostname -f) cluster nodes 2> /dev/null)
+cluster_status=$(redis-cli -a "$(puppet lookup --render-as s redis_password 2>/dev/null)" --tls --cert /opt/redis/cert/cert.pem --key /opt/redis/cert/privkey.pem --cacert /etc/ssl/certs/infra-2-prod.crt -h $(hostname -f) cluster nodes 2> /dev/null)
 <% end %>
 
 my_ip=$(echo "${cluster_status}" | grep myself, | awk '{print $2}' | cut -d : -f 1)
