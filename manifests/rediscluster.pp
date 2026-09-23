@@ -8,6 +8,7 @@ class sunet::rediscluster(
   Optional[Boolean] $prevent_reboot = false,
   Optional[String] $image = 'redis',
   Optional[String] $tag = '7-bookworm',
+  Enum['old_ca', 'new_ca'] $cert_source  = 'old_ca',
 )
 {
   include sunet::packages::redis_tools
@@ -61,6 +62,14 @@ class sunet::rediscluster(
       ensure  => present,
       mode    => '0755',
       content => template('sunet/rediscluster/11-rediscluster.erb'),
+    }
+  }
+
+  if $cert_source == 'new_ca' {
+    file { '/etc/letsencrypt/renewal-hooks/deploy/redis':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/rediscluster/certbot-renewal-hook'),
     }
   }
 

@@ -23,6 +23,9 @@ services:
       - /opt/redis/node-<%= i %>:/data
 <% if @tls == true -%>
       - /etc/ssl:/etc/ssl
+<% if @cert_source == 'new_ca' -%>
+      - /opt/redis/cert:/cert
+<% end %>
 <% end %>
     command: redis-server /data/server.conf
     restart: always

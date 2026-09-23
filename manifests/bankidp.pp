@@ -193,14 +193,7 @@ class sunet::bankidp(
       tls               => true,
       automatic_rectify => true,
       prevent_reboot    => true
-    }
-
-    file { "/etc/ssl/certs/${fqdn}_infra.crt":
-      mode   => '0644',
-    }
-
-    file { '/etc/ssl/private':
-      mode   => '0711',
+      cert_source       => new_ca,
     }
 
     include sunet::packages::redis_tools
