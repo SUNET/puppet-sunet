@@ -11,7 +11,6 @@ class sunet::bankidp(
   Boolean $app_node = false,
   Boolean $prod = true,
   Boolean $redis_node = false,
-  Boolean $infra_cert_from_this_class = true,
   String $bankid_home = '/opt/bankidp',
   String $imagetag='latest',
   String $imagename='bankid-idp',
@@ -27,9 +26,6 @@ class sunet::bankidp(
   $apps = $facts['bankid_cluster_info']['apps']
   $redises = $facts['bankid_cluster_info']['redises']
 
-  if $infra_cert_from_this_class {
-    sunet::ici_ca::rp { 'infra': }
-  }
 
   if $app_node {
 
@@ -102,7 +98,7 @@ class sunet::bankidp(
     }
 
     exec { "${facts['networking']['fqdn']}_infra.p12":
-      command => "openssl pkcs12 -export -in /etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt -inkey /etc/ssl/private/${facts['networking']['fqdn']}_infra.pem -name 'infra' -out /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12 -passout pass:${pass}",
+      command => "openssl pkcs12 -export -in /etc/letsencrypt/live/${facts['networking']['fqdn']}/cert.pem -inkey /etc/letsencrypt/live/${facts['networking']['fqdn']}/privkey.pem -name 'infra' -out /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12 -passout pass:${pass}",
       onlyif  => "test ! -f /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
     }
 
