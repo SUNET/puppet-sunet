@@ -72,6 +72,12 @@ class sunet::bankidp(
       }
     }
 
+    file { '/etc/letsencrypt/renewal-hooks/deploy/bankidp':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/bankidp/certbot-renewal-hook'),
+    }
+
 
     if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
       sunet::snippets::secret_file { "${credsdir}/saml_metadata.key": hiera_key => 'bankid_saml_metadata_key' }
@@ -115,7 +121,6 @@ class sunet::bankidp(
       content => template('sunet/bankidp/bankidp.yml.erb'),
       mode    => '0755',
     }
-
 
 
     if $swamid {
