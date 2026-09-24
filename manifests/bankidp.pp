@@ -11,7 +11,6 @@ class sunet::bankidp(
   Boolean $app_node = false,
   Boolean $prod = true,
   Boolean $redis_node = false,
-  Boolean $infra_cert_from_this_class = true,
   String $bankid_home = '/opt/bankidp',
   String $imagetag='latest',
   String $imagename='bankid-idp',
@@ -27,9 +26,6 @@ class sunet::bankidp(
   $apps = $facts['bankid_cluster_info']['apps']
   $redises = $facts['bankid_cluster_info']['redises']
 
-  if $infra_cert_from_this_class {
-    sunet::ici_ca::rp { 'infra': }
-  }
 
   if $app_node {
 
@@ -76,6 +72,12 @@ class sunet::bankidp(
       }
     }
 
+    file { '/etc/letsencrypt/renewal-hooks/deploy/bankidp':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/bankidp/certbot-renewal-hook'),
+    }
+
 
     if lookup('bankid_saml_metadata_key', undef, undef, undef) != undef {
       sunet::snippets::secret_file { "${credsdir}/saml_metadata.key": hiera_key => 'bankid_saml_metadata_key' }
@@ -102,7 +104,7 @@ class sunet::bankidp(
     }
 
     exec { "${facts['networking']['fqdn']}_infra.p12":
-      command => "openssl pkcs12 -export -in /etc/ssl/certs/${facts['networking']['fqdn']}_infra.crt -inkey /etc/ssl/private/${facts['networking']['fqdn']}_infra.pem -name 'infra' -out /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12 -passout pass:${pass}",
+      command => "openssl pkcs12 -export -in /etc/letsencrypt/live/${facts['networking']['fqdn']}/cert.pem -inkey /etc/letsencrypt/live/${facts['networking']['fqdn']}/privkey.pem -name 'infra' -out /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12 -passout pass:${pass}",
       onlyif  => "test ! -f /etc/ssl/private/${facts['networking']['fqdn']}_infra.p12"
     }
 
@@ -119,7 +121,6 @@ class sunet::bankidp(
       content => template('sunet/bankidp/bankidp.yml.erb'),
       mode    => '0755',
     }
-
 
 
     if $swamid {
@@ -192,15 +193,8 @@ class sunet::bankidp(
       hostmode          => true,
       tls               => true,
       automatic_rectify => true,
-      prevent_reboot    => true
-    }
-
-    file { "/etc/ssl/certs/${fqdn}_infra.crt":
-      mode   => '0644',
-    }
-
-    file { '/etc/ssl/private':
-      mode   => '0711',
+      prevent_reboot    => true,
+      cert_source       => 'new_ca',
     }
 
     include sunet::packages::redis_tools

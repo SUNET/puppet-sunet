@@ -13,9 +13,16 @@ port 0
 tls-port <%= @redisportnum %>
 tls-replication yes
 tls-cluster yes
+<% if @cert_source == 'old_ca' -%>
 tls-cert-file /etc/ssl/certs/<%= @fqdn %>_infra.crt
 tls-key-file /etc/ssl/private/<%= @fqdn %>_infra.key
 tls-ca-cert-file /etc/ssl/certs/infra.crt
+<% end -%>
+<% if @cert_source == 'new_ca' -%>
+tls-cert-file /cert/cert.pem
+tls-key-file /cert/privkey.pem
+tls-ca-cert-file /etc/ssl/certs/infra-2-prod.crt
+<% end -%>
 <% else %>
 port <%= @redisportnum %>
 <% end %>
