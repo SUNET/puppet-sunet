@@ -19,7 +19,7 @@
 #   only the key names and destination paths should be in ordinary git data.
 class sunet::tunnelbana(
   String                  $image            = 'docker.sunet.se/tunnelbana',
-  String                  $tunnelbana_tag   = '0.2.0',
+  String                  $tunnelbana_tag   = '0.5.0',
   String                  $config_dir       = '/opt/tunnelbana/config',
   String                  $keys_dir         = '/opt/tunnelbana/keys',
   String                  $metadata_dir     = '/opt/tunnelbana/metadata',
