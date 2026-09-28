@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 fqdn=$(hostname -f)
 pass=qwerty123
 
-openssl pkcs12 -export -in ${RENEWED_LINEAGE}/${fqdn}/cert.pem -inkey ${RENEWED_LINEAGE}/${fqdn}/privkey.pem -name 'infra' -out /etc/ssl/private/${fqdn}_infra.p12 -passout pass:${pass}
+# === Sanity checks ===
+if [ -z "${RENEWED_LINEAGE:-}" ]; then
+	echo "ERROR: RENEWED_LINEAGE not set (not running from certbot?)" >&2
+	exit 1
+fi
+
+openssl pkcs12 -export -in ${RENEWED_LINEAGE}/cert.pem -inkey ${RENEWED_LINEAGE}/privkey.pem -name 'infra' -out /etc/ssl/private/${fqdn}_infra.p12 -passout pass:${pass}
 
 touch /var/run/reboot-required

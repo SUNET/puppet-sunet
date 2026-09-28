@@ -8,7 +8,7 @@ KEY_DST="${CERT_DIR}/privkey.pem"
 fqdn=$(hostname -f)
 password=$(eyaml decrypt -f /etc/hiera/data/local.eyaml --pkcs7-private-key=/etc/hiera/eyaml/private_key.pkcs7.pem --pkcs7-public-key=/etc/hiera/eyaml/public_certkey.pkcs7.pem | awk '/^redis_password: /{print $2}')
 
-# Valkey runtime UID/GID (inside container)
+# Redis runtime UID/GID (inside container)
 REDIS_UID=999
 REDIS_GID=999
 
@@ -42,7 +42,7 @@ if [ -n "${NO_RELOAD:-}" ]; then
 fi
 
 
-# === Reload TLS material in Valkey ===
+# === Reload TLS material in Redis ===
 redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${CERT_DST}" --key "${KEY_DST}" CONFIG SET tls-cert-file /cert/cert.pem
 redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${CERT_DST}" --key "${KEY_DST}"  CONFIG SET tls-key-file /cert/privkey.pem
 
