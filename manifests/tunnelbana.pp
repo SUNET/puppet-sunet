@@ -23,10 +23,8 @@ class sunet::tunnelbana(
   String                  $config_dir       = '/opt/tunnelbana/config',
   String                  $keys_dir         = '/opt/tunnelbana/keys',
   String                  $metadata_dir     = '/opt/tunnelbana/metadata',
-  Integer[1, 65535]       $host_port        = 8088,
-  Optional[Array[String]] $ports            = undef,
-  String                  $tunnelbana_bind  = '0.0.0.0:8080',
   String                  $config_file      = 'proxy.toml',
+  Integer                 $expose_port      = 443,
   Array[String]           $environment      = [],
   Optional[String]        $proxy_toml       = lookup('tunnelbana_proxy_toml', Optional[String], undef, undef),
   String                  $attributes_toml  = lookup('tunnelbana_attributes_toml', String),
@@ -46,13 +44,6 @@ class sunet::tunnelbana(
   }
 
   $env_file = '/opt/tunnelbana/tunnelbana.env'
-
-  # Tunnelbana serves plain HTTP. Bind the host port to loopback by default so a
-  # local reverse proxy, such as Caddy, can terminate TLS and expose public 443.
-  $port_bindings = $ports ? {
-    undef   => ["127.0.0.1:${host_port}:8080"],
-    default => $ports,
-  }
 
   ensure_resource('file', '/opt/tunnelbana', {
       ensure => directory,

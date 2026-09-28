@@ -2,19 +2,10 @@ services:
   tunnelbana:
     image: <%= @image %>:<%= @tunnelbana_tag %>
     restart: unless-stopped
-    env_file:
-      - <%= @env_file %>
-    environment:
-      - 'TUNNELBANA_BIND=<%= @tunnelbana_bind %>'
-<% @environment.each do |environment| -%>
-      - '<%= environment %>'
-<% end -%>
     volumes:
       - '<%= @config_dir %>:/app/config:ro'
       - '<%= @keys_dir %>:/app/keys:ro'
       - '<%= @metadata_dir %>:/app/metadata:ro'
     ports:
-<% @port_bindings.each do |port| -%>
-      - '<%= port %>'
-<% end -%>
+      - 443:8080
     command: ['/app/config/<%= @config_file %>']
