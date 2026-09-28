@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
-set -euo pipefail
+
+fqdn=$(hostname -f)
+pass=qwerty123
+
+openssl pkcs12 -export -in ${RENEWED_LINEAGE}/${fqdn}/cert.pem -inkey ${RENEWED_LINEAGE}/${fqdn}/privkey.pem -name 'infra' -out /etc/ssl/private/${fqdn}_infra.p12 -passout pass:${pass}
 
 touch /var/run/reboot-required
