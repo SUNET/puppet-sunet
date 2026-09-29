@@ -29,6 +29,9 @@
 # @param install_tbmr      If set to true it will install "Bare Machine Recovery for Tivoli TSM (TBMR)"
 # @param tbmr_version      The version of TBMR to be installed (it has to match the version in $tbmr_url)
 # @param tbmr_url          The download URL for the TBMR installer (it has to match the version in $tbmr_version)
+# @pre_schedule_cmd        Define a command which will run and complete before a scheduled backup starts.
+# @pren_schedule_cmd       Define a command which will start at the same time as a scheduled backup (runs in parallel).
+# @post_schedule_cmd       Define a command which will run once a scheduled backup has been completed.
 class sunet::baas2(
   String        $nodename='',
   String        $tcpserveraddress='server2.backup.dco1.safedc.net',
@@ -39,6 +42,9 @@ class sunet::baas2(
   Boolean       $install_tbmr=false,
   String        $tbmr_version='9.6.3.3418-1',
   String        $tbmr_url="https://s3.sto1.safedc.net/94f5b4f4aa674782b6bc4181943e67f1:tbmr/wab0snk8lrh6l8cjzgnaozm8siw7g7/tbmr_${tbmr_version}_amd64.deb",
+  String        $pre_schedule_cmd='',
+  String        $pren_schedule_cmd='',
+  String        $post_schedule_cmd='',
 ) {
 
   # MUST be set properly in hiera to continue
@@ -47,6 +53,13 @@ class sunet::baas2(
 
   if $nodename and $baas_password != 'NOT_SET_IN_HIERA' and $baas_encryption_password != 'NOT_SET_IN_HIERA' {
 
+    if $pre_schedule_cmd != '' or $install_tbmr {
+      file { '/opt/tivoli/tsm/client/ba/bin/pre-schedule-cmd.sh':
+        ensure  => 'file',
+        mode    => '0755',
+        content => template('sunet/baas2/pre-schedule-cmd.sh.erb')
+      }
+    }
 
     # The dsm.sys template expects backup_dirs to not have a trailing slash, so
     # make sure this is the case

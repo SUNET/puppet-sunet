@@ -72,8 +72,12 @@ SERVERNAME SafeDC
   domain <%= dir %>
 <% end -%>
 <% end -%>
-<% if @install_tbmr -%>
-
-* Collect TBMR information before doing the backup
-PRESCHEDULECMD '"/usr/bin/tbmrcfg" 1> tbmr.log 2>&1 || (exit 0)'
+<% if @pre_schedule_cmd.present? || @install_tbmr -%>
+  PRESCHEDULECMD /opt/tivoli/tsm/client/ba/bin/pre-schedule-cmd.sh
+<% end -%>
+<% if pren_schedule_cmd.present? -%>
+  PRENSCHEDULECMD <%= pren_schedule_cmd %>
+<% end -%>
+<% if post_schedule_cmd.present? -%>
+  POSTSCHEDULECMD <%= post_schedule_cmd %>
 <% end -%>
