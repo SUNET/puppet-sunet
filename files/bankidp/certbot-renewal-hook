@@ -11,6 +11,12 @@ if [ -z "${RENEWED_LINEAGE:-}" ]; then
 	exit 1
 fi
 
+# Prevent reload when service is not fully installed.
+# Like when issuing the cert for the first time.
+if [ -n "${NO_RELOAD:-}" ]; then
+	exit 0
+fi
+
 openssl pkcs12 -export -in ${RENEWED_LINEAGE}/cert.pem -inkey ${RENEWED_LINEAGE}/privkey.pem -name 'infra' -out /etc/ssl/private/${fqdn}_infra.p12 -passout pass:${pass}
 
 touch /var/run/reboot-required
