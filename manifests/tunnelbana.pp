@@ -79,7 +79,7 @@ class sunet::tunnelbana(
   }
 
 
-  $attributes_map = lockup('tunnelbana_attributes',undef, undef, {})
+  $attributes_map = lookup('tunnelbana_attributes',undef, undef, {})
   if $attributes_map != undef {
     file { "${config_dir}/custom_attributes.toml":
       ensure    => file,
