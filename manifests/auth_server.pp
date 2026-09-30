@@ -63,23 +63,29 @@ define sunet::auth_server(
 
       if $haproxy_ip != undef and is_ipaddr($haproxy_ip, 4) {
         sunet::nftables::rule { "${name}-dnat-${port}-to-haproxy":
-          rule => 'add rule ip nat prerouting iifname != "br-*" ' +
-                  "${auth_server_saddr} " +
-                  "ip daddr ${facts['networking']['ip']} " +
-                  "tcp dport ${port} counter dnat to ${haproxy_ip}:443 " +
-                  "comment \"${service_name}: DNAT HTTPS directly to container\""
+          rule => join([
+            'add rule ip nat prerouting iifname != "br-*"',
+            $auth_server_saddr,
+            "ip daddr ${facts['networking']['ip']}",
+            "tcp dport ${port} counter dnat to ${haproxy_ip}:443",
+            "comment \"${service_name}: DNAT HTTPS directly to container\"",
+          ], ' ')
         }
 
         sunet::nftables::rule { "${name}-allow-post-dnat-${port}-to-haproxy":
-          rule => 'add rule inet filter forward iifname != "br-*" oifname "br-*" ' +
-                  "${auth_server_saddr} " +
-                  "ip daddr ${haproxy_ip} tcp dport 443 counter accept " +
-                  "comment \"${service_name}: allow post-DNAT HTTPS to container\""
+          rule => join([
+            'add rule inet filter forward iifname != "br-*" oifname "br-*"',
+            $auth_server_saddr,
+            "ip daddr ${haproxy_ip} tcp dport 443 counter accept",
+            "comment \"${service_name}: allow post-DNAT HTTPS to container\"",
+          ], ' ')
         }
       } else {
-        notice('sunet::auth_server: IP of the ' +
-          "${compose_project}/haproxy container is not known yet - " +
-          'not setting up the DNAT rules (will probably work next time)')
+        notice(join([
+          'sunet::auth_server: IP of the',
+          "${compose_project}/haproxy container is not known yet -",
+          'not setting up the DNAT rules (will probably work next time)',
+        ], ' '))
       }
 
       include sunet::nftables::container_dnat
@@ -93,15 +99,17 @@ define sunet::auth_server(
       # exist) but before 400- (take precedence over a stale rule left
       # by an unrun puppet apply).
       $dnat_out_file = "/etc/nftables/conf.d/300-container_dnat-${compose_project}-haproxy.nft"
-      $dnat_exec_start_post = 'ExecStartPost=-/usr/local/sbin/sunet_nft_container_dnat ' +
-        "--project '${compose_project}' " +
-        '--service haproxy ' +
-        "--host-ip '${facts['networking']['ip']}' " +
-        "--port '${port}' " +
-        "--saddr-set '${auth_server_saddr}' " +
-        "--comment-prefix '${service_name}' " +
-        "--out '${dnat_out_file}' " +
-        '--wait 60'
+      $dnat_exec_start_post = join([
+        'ExecStartPost=-/usr/local/sbin/sunet_nft_container_dnat',
+        "--project '${compose_project}'",
+        '--service haproxy',
+        "--host-ip '${facts['networking']['ip']}'",
+        "--port '${port}'",
+        "--saddr-set '${auth_server_saddr}'",
+        "--comment-prefix '${service_name}'",
+        "--out '${dnat_out_file}'",
+        '--wait 60',
+      ], ' ')
     }
 
     $auth_server_service_extras = $::facts['dockerhost2'] ? {
