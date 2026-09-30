@@ -56,13 +56,57 @@ define sunet::auth_server(
       $auth_server_allow_v4 = filter(flatten($allow_clients)) |$this| { is_ipaddr($this, 4) or $this == 'any' }
       $auth_server_saddr    = sunet::format_nft_set('ip saddr', $auth_server_allow_v4)
 
-      sunet::nftables::rule { "DNAT port ${port} to haproxy":
-        rule => "add rule ip nat prerouting iifname != \"br-*\" ${auth_server_saddr} ip daddr ${facts['networking']['ip']} tcp dport ${port} counter dnat to 172.16.1.2:443 comment \"DNAT HTTPS directly to container\""
+      # docker compose derives the project name from the directory holding the
+      # compose file, i.e. $service_name (normalised to lowercase alnum/-/_).
+      $compose_project = downcase(regsubst($service_name, '[^a-zA-Z0-9_-]', '', 'G'))
+      $haproxy_ip      = $facts.dig('sunet_docker_compose_ips', $compose_project, 'haproxy', 'ipv4')
+
+      if $haproxy_ip != undef and is_ipaddr($haproxy_ip, 4) {
+        sunet::nftables::rule { "${name}-dnat-${port}-to-haproxy":
+          rule => 'add rule ip nat prerouting iifname != "br-*" ' +
+                  "${auth_server_saddr} " +
+                  "ip daddr ${facts['networking']['ip']} " +
+                  "tcp dport ${port} counter dnat to ${haproxy_ip}:443 " +
+                  "comment \"${service_name}: DNAT HTTPS directly to container\""
+        }
+
+        sunet::nftables::rule { "${name}-allow-post-dnat-${port}-to-haproxy":
+          rule => 'add rule inet filter forward iifname != "br-*" oifname "br-*" ' +
+                  "${auth_server_saddr} " +
+                  "ip daddr ${haproxy_ip} tcp dport 443 counter accept " +
+                  "comment \"${service_name}: allow post-DNAT HTTPS to container\""
+        }
+      } else {
+        notice('sunet::auth_server: IP of the ' +
+          "${compose_project}/haproxy container is not known yet - " +
+          'not setting up the DNAT rules (will probably work next time)')
       }
 
-      sunet::nftables::rule { "allow post-DNAT traffic to haproxy on ${port}":
-        rule => "add rule inet filter forward iifname != \"br-*\" oifname \"br-*\" ${auth_server_saddr} ip daddr 172.16.1.2 tcp dport 443 counter accept comment \"allow post-DNAT HTTPS to container\""
-      }
+      include sunet::nftables::container_dnat
+
+      # Numbered between 200-sunet_dockerhost.nft (which declares the
+      # `table ip nat` / `prerouting` chain this rule needs to already
+      # exist) and the fact-based rules in 400-sunet_rules.nft (see
+      # above), so this freshly-discovered rule is matched first - nft
+      # dnat is first-match-wins per connection, and files are included
+      # in lexical order, so this must sort after 200- (chain must
+      # exist) but before 400- (take precedence over a stale rule left
+      # by an unrun puppet apply).
+      $dnat_out_file = "/etc/nftables/conf.d/300-container_dnat-${compose_project}-haproxy.nft"
+      $dnat_exec_start_post = 'ExecStartPost=-/usr/local/sbin/sunet_nft_container_dnat ' +
+        "--project '${compose_project}' " +
+        '--service haproxy ' +
+        "--host-ip '${facts['networking']['ip']}' " +
+        "--port '${port}' " +
+        "--saddr-set '${auth_server_saddr}' " +
+        "--comment-prefix '${service_name}' " +
+        "--out '${dnat_out_file}' " +
+        '--wait 60'
+    }
+
+    $auth_server_service_extras = $::facts['dockerhost2'] ? {
+      'yes'   => [$dnat_exec_start_post],
+      default => [],
     }
 
     if $saml_sp {
@@ -85,11 +129,12 @@ define sunet::auth_server(
     $auth_server_tag = $config["auth_server_tag"]
     $content = template('sunet/auth_server/docker-compose_auth_server.yml.erb')
     sunet::docker_compose { "${service_name}-docker-compose":
-        service_name => $service_name,
-        content      => $content,
-        description  => 'sunet auth server application',
-        compose_dir  => '/opt/sunet/compose',
-        subscribe    => [
+        service_name   => $service_name,
+        content        => $content,
+        description    => 'sunet auth server application',
+        compose_dir    => '/opt/sunet/compose',
+        service_extras => $auth_server_service_extras,
+        subscribe      => [
             Sunet::Haproxy::Simple_setup["${service_name}-haproxy"],
             Sunet::Misc::Create_cfgfile["${base_dir}/${service_name}/etc/config.yaml"],
             Sunet::Misc::Create_cfgfile["${base_dir}/${service_name}/etc/keystore.jwks"],
