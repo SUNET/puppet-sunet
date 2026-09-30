@@ -61,7 +61,10 @@ define sunet::auth_server(
       $compose_project = downcase(regsubst($service_name, '[^a-zA-Z0-9_-]', '', 'G'))
       $haproxy_ip      = $facts.dig('sunet_docker_compose_ips', $compose_project, 'haproxy', 'ipv4')
 
-      if $haproxy_ip != undef and is_ipaddr($haproxy_ip, 4) {
+      # format_nft_set returns undef (not a String) when there are no allowed
+      # IPv4 clients. Never emit the rules then, an empty saddr clause would
+      # match everyone.
+      if $haproxy_ip != undef and is_ipaddr($haproxy_ip, 4) and $auth_server_saddr =~ String {
         sunet::nftables::rule { "${name}-dnat-${port}-to-haproxy":
           rule => join([
             'add rule ip nat prerouting iifname != "br-*"',
@@ -80,12 +83,14 @@ define sunet::auth_server(
             "comment \"${service_name}: allow post-DNAT HTTPS to container\"",
           ], ' ')
         }
-      } else {
+      } elsif $auth_server_saddr =~ String {
         notice(join([
           'sunet::auth_server: IP of the',
           "${compose_project}/haproxy container is not known yet -",
           'not setting up the DNAT rules (will probably work next time)',
         ], ' '))
+      } else {
+        notice('sunet::auth_server: no IPv4 allow_clients - not setting up the DNAT rules')
       }
 
       include sunet::nftables::container_dnat
@@ -99,21 +104,26 @@ define sunet::auth_server(
       # exist) but before 400- (take precedence over a stale rule left
       # by an unrun puppet apply).
       $dnat_out_file = "/etc/nftables/conf.d/300-container_dnat-${compose_project}-haproxy.nft"
-      $dnat_exec_start_post = join([
-        'ExecStartPost=-/usr/local/sbin/sunet_nft_container_dnat',
-        "--project '${compose_project}'",
-        '--service haproxy',
-        "--host-ip '${facts['networking']['ip']}'",
-        "--port '${port}'",
-        "--saddr-set '${auth_server_saddr}'",
-        "--comment-prefix '${service_name}'",
-        "--out '${dnat_out_file}'",
-        '--wait 60',
-      ], ' ')
+      if $auth_server_saddr =~ String {
+        $dnat_exec_start_post = join([
+          'ExecStartPost=-/usr/local/sbin/sunet_nft_container_dnat',
+          "--project '${compose_project}'",
+          '--service haproxy',
+          "--host-ip '${facts['networking']['ip']}'",
+          "--port '${port}'",
+          "--saddr-set '${auth_server_saddr}'",
+          "--comment-prefix '${service_name}'",
+          "--out '${dnat_out_file}'",
+          '--wait 60',
+        ], ' ')
+        $dnat_service_extras = [$dnat_exec_start_post]
+      } else {
+        $dnat_service_extras = []
+      }
     }
 
     $auth_server_service_extras = $::facts['dockerhost2'] ? {
-      'yes'   => [$dnat_exec_start_post],
+      'yes'   => $dnat_service_extras,
       default => [],
     }
 

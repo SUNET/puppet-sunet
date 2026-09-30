@@ -30,6 +30,7 @@ service=''
 host_ip=''
 port=''
 saddr_set=''
+saddr_set_given=0
 comment_prefix=''
 out_file=''
 
@@ -39,7 +40,7 @@ while [ $# -gt 0 ]; do
     --service) service="$2"; shift 2 ;;
     --host-ip) host_ip="$2"; shift 2 ;;
     --port) port="$2"; shift 2 ;;
-    --saddr-set) saddr_set="$2"; shift 2 ;;
+    --saddr-set) saddr_set="$2"; saddr_set_given=1; shift 2 ;;
     --comment-prefix) comment_prefix="$2"; shift 2 ;;
     --out) out_file="$2"; shift 2 ;;
     --wait) wait_seconds="$2"; shift 2 ;;
@@ -48,9 +49,10 @@ while [ $# -gt 0 ]; do
 done
 
 if [ -z "$project" ] || [ -z "$service" ] || [ -z "$host_ip" ] || [ -z "$port" ] || \
-   [ -z "$saddr_set" ] || [ -z "$comment_prefix" ] || [ -z "$out_file" ]; then
+   [ "$saddr_set_given" -eq 0 ] || [ -z "$comment_prefix" ] || [ -z "$out_file" ]; then
   usage
 fi
+# An empty --saddr-set is valid: it means "any source" (allow_clients => ['any']).
 
 # Reload nftables and report success/failure via return status - callers
 # decide how loudly to report a failure, since it matters more after a
