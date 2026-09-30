@@ -26,7 +26,6 @@ class sunet::tunnelbana(
   String                  $config_file      = 'proxy.toml',
   Integer                 $expose_port      = 443,
   Array[String]           $environment      = [],
-  String                  $attributes_toml  = lookup('tunnelbana_attributes_toml', String),
   Optional[String]        $state_key        = lookup('tunnelbana_state_key', Optional[String], undef, undef),
   Hash[String, String]    $config_files     = lookup('tunnelbana_config', Hash[String, String], undef, {}),
   Hash[String, String]    $files            = lookup('tunnelbana_files', Hash[String, String], undef, {}),
@@ -79,16 +78,20 @@ class sunet::tunnelbana(
     warning("tunnelbana_proxy_toml is not set; ${config_dir}/${config_file} will not be managed")
   }
 
-  file { "${config_dir}/attributes.toml":
-    ensure    => file,
-    owner     => '10001',
-    group     => '10001',
-    mode      => '0440',
-    content   => "${attributes_toml}\n",
-    show_diff => false,
-    require   => File[$config_dir],
-    notify    => $service_to_notify,
-    before    => Sunet::Docker_compose['tunnelbana_compose'],
+
+  $attributes_map = lockup('tunnelbana_attributes',undef, undef, {})
+  if $attributes_map != undef {
+    file { "${config_dir}/custom_attributes.toml":
+      ensure    => file,
+      owner     => '10001',
+      group     => '10001',
+      mode      => '0440',
+      content   => stdlib::to_toml($attributes_map),
+      show_diff => false,
+      require   => File[$config_dir],
+      notify    => $service_to_notify,
+      before    => Sunet::Docker_compose['tunnelbana_compose'],
+    }
   }
 
   # Extra config/public/secret maps let deployments keep protocol-specific keys,
