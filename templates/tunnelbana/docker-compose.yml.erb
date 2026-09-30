@@ -3,7 +3,7 @@ services:
     image: <%= @image %>:<%= @tunnelbana_tag %>
     restart: unless-stopped
     volumes:
-      - '<%= @config_dir %>:/app/config:ro'
+      - '<%= @config_dir %>/proxy.toml:/app/config/proxy.toml:ro'
       - '<%= @keys_dir %>:/app/keys:ro'
       - '<%= @metadata_dir %>:/app/metadata:ro'
     ports:
