@@ -26,6 +26,7 @@ class sunet::django_ca::server (
   String                    $django_ca_db_user = 'djangoca',
   String                    $django_ca_db_name = 'djangoca',
   Boolean                   $legacy_ca = false,
+  Optional[String]          $default_ca_serial = undef,
 ) {
 
   $allowed_https_hosts = lookup('djangoca_allowed_https_hosts', Array, undef, [])

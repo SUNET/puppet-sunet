@@ -21,6 +21,47 @@ Facter.add('tls_certificates') do
     end
   end
 
+  # Look for acme/certbot certs, keys and bundles
+  filenames = Dir.glob('/etc/letsencrypt/live/*')
+  filenames.each do | full_fn |
+    hostpart = File.basename(full_fn)
+    if hostpart == 'README'
+      next
+    end
+    res[hostpart] ||= {}
+    ['cert', 'privkey', 'chain', 'fullchain', 'bundle'].each do | part |
+      partname = '/etc/letsencrypt/live/' + hostpart + '/' + part + '.pem'
+      if part == 'privkey'
+        part = 'key'  # consistency with non-dehydrated certs
+      end
+      if File.exists? partname
+        res[hostpart]['certbot_' + part] = partname
+      else
+        warn("Not found: #{partname}")
+      end
+    end
+  end
+
+  filenames = Dir.glob('/opt/certbot-sync/letsencrypt/live/*')
+  filenames.each do | full_fn |
+    hostpart = File.basename(full_fn)
+    if hostpart == 'README'
+      next
+    end
+    res[hostpart] ||= {}
+    ['cert', 'privkey', 'chain', 'fullchain', 'bundle'].each do | part |
+      partname = '/opt/certbot-sync/letsencrypt/live/' + hostpart + '/' + part + '.pem'
+      if part == 'privkey'
+        part = 'key'  # consistency with non-dehydrated certs
+      end
+      if File.exists? partname
+        res[hostpart]['certbot_sync_' + part] = partname
+      else
+        warn("Not found: #{partname}")
+      end
+    end
+  end
+
   # Look in /etc/ssl and /etc/ssl/private for crt/pem files with at least one underscore in them.
   # Assume what is to the left of the first underscore is a hostname and store the filename under
   # res[hostname][rest_of_path]
