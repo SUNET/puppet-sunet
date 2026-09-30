@@ -72,12 +72,7 @@ SERVERNAME SafeDC
   domain <%= dir %>
 <% end -%>
 <% end -%>
-<% if @pre_schedule_cmd.present? || @install_tbmr -%>
-  PRESCHEDULECMD /opt/tivoli/tsm/client/ba/bin/pre-schedule-cmd.sh
-<% end -%>
-<% if pren_schedule_cmd.present? -%>
-  PRENSCHEDULECMD <%= pren_schedule_cmd %>
-<% end -%>
-<% if post_schedule_cmd.present? -%>
-  POSTSCHEDULECMD <%= post_schedule_cmd %>
-<% end -%>
+
+  PRESCHEDULECMD /usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/pre.d
+  PRENSCHEDULECMD /usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/parallel.d
+  POSTSCHEDULECMD /usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/post.d
