@@ -62,7 +62,7 @@ class sunet::tunnelbana(
     before  => Sunet::Docker_compose['tunnelbana_compose'],
   }
 
-  $proxy_conf = lockup('tunnelbana_proxy_conf',undef, undef, {})
+  $proxy_conf = lookup('tunnelbana_proxy_conf',undef, undef, {})
   if $proxy_conf != undef {
     file { "${config_dir}/proxy.toml":
       ensure  => file,
