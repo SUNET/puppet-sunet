@@ -15,8 +15,11 @@ define sunet::docker_compose_service(
     default => $service_name,
   }
 
-  $_template = $::facts['dockerhost2'] ? {
-    yes => 'sunet/dockerhost/compose2.service.erb',
+  $_use_compose2 = ($::facts['dockerhost2'] == 'yes') or
+    ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0)
+
+  $_template = $_use_compose2 ? {
+    true    => 'sunet/dockerhost/compose2.service.erb',
     default => 'sunet/dockerhost/compose.service.erb',
   }
 
