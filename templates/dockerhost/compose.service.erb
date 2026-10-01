@@ -22,16 +22,16 @@ WorkingDirectory=/
 # To make docker pull work with basic-auth credentials
 Environment="HOME=/root"
 
-#ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> rm -f --stop
-<% if @pull_on_start != true -%>#<% end -%>ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %> pull
+#ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %><%= @_project_args %>rm -f --stop
+<% if @pull_on_start != true -%>#<% end -%>ExecStartPre=-/usr/local/bin/docker-compose -f <%= @compose_file %><%= @_project_args %>pull
 
 <% if @start_command -%>
 ExecStart=<%= @start_command %>
 <% else %>
-ExecStart=/usr/local/bin/docker-compose -f <%= @compose_file %> up --force-recreate --no-deps
+ExecStart=/usr/local/bin/docker-compose -f <%= @compose_file %><%= @_project_args %>up --force-recreate --no-deps
 <% end -%>
 
-ExecStop=/usr/local/bin/docker-compose -f <%= @compose_file %> down
+ExecStop=/usr/local/bin/docker-compose -f <%= @compose_file %><%= @_project_args %>down
 
 NotifyAccess=all
 

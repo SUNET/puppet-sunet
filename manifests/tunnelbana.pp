@@ -166,10 +166,10 @@ class sunet::tunnelbana(
   }
 
   sunet::docker_compose { 'tunnelbana_compose':
-    content          => template('sunet/tunnelbana/docker-compose.yml.erb'),
-    service_name     => 'tunnelbana',
-    compose_dir      => '/opt/',
-    compose_filename => 'docker-compose.yml',
-    description      => 'Tunnelbana',
+    content            => template('sunet/tunnelbana/docker-compose.yml.erb'),
+    service_name       => 'tunnelbana',
+    compose_dir        => '/opt',
+    service_dir_layout => true,
+    description        => 'Tunnelbana',
   }
 }
