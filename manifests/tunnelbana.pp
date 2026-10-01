@@ -50,6 +50,17 @@ class sunet::tunnelbana(
       mode   => '0755',
   })
 
+
+  include sunet::packages::certbot
+  file { '/etc/letsencrypt/renewal-hooks/deploy/tunnelbana-hook':
+    ensure  => file,
+    mode    => '0755',
+    content => file('sunet/files/tunnelbana-renewal-hook'),
+    require => File['/etc/letsencrypt/renewal-hooks/deploy'],
+    before  => Class['sunet::certbot::acmed'],
+  }
+
+
   # The production image runs as the unprivileged `tunnelbana` user with UID
   # 10001. Numeric ownership keeps the files readable inside the container even
   # when the host does not have a matching passwd/group entry.
