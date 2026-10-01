@@ -55,7 +55,7 @@ class sunet::tunnelbana(
   file { '/etc/letsencrypt/renewal-hooks/deploy/tunnelbana-hook':
     ensure  => file,
     mode    => '0755',
-    content => file('sunet/files/tunnelbana-renewal-hook'),
+    content => file('sunet/tunnelbana-renewal-hook'),
     require => File['/etc/letsencrypt/renewal-hooks/deploy'],
     before  => Class['sunet::certbot::acmed'],
   }
