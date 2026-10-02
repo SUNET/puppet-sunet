@@ -78,7 +78,6 @@ import os
 import sys
 from fcntl import LOCK_EX, LOCK_NB
 from logging.handlers import SysLogHandler
-from multiprocessing import Process, Queue
 
 import argparse
 import datetime
@@ -164,7 +163,7 @@ def get_logger(myname, args, logger_in=None):
             for this_h in logging.getLogger('').handlers:
                 this_h.setLevel(logging.WARNING)
     if args.syslog:
-        syslog_h = logging.handlers.SysLogHandler()
+        syslog_h = SysLogHandler()
         formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
         syslog_h.setFormatter(formatter)
         logger.addHandler(syslog_h)
