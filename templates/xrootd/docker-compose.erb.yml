@@ -42,3 +42,20 @@ services:
       - /opt/xrootd/admin:<%= @xrootd_admin_path %>:rw
       - /dev/log:/dev/log
     command: ["cmsd", "-c", "/etc/xrootd/xrootd.cfg"]
+<%- if @acme_responder -%>
+  # ACME HTTP-01 responder. Required for this node to hold a certificate at all:
+  # acme-c validates over HTTP, so port 80 must reach its document root.
+  acme:
+    image: <%= @haproxy_image %>:<%= @haproxy_tag %>
+    hostname: <%= @hostname %>
+    network_mode: host
+    volumes:
+      # /etc/haproxy, not the official image's /usr/local/etc/haproxy: this one is
+      # Debian-packaged, and its own Cmd is
+      #   /usr/sbin/haproxy -p /run/haproxy.pid -f /etc/haproxy/haproxy.cfg -W -db
+      # Mounting over the wrong path left haproxy on its built-in config, bound to
+      # nothing, with an empty log and a healthy-looking "Up". No command override:
+      # the image's Cmd is already right, and replacing it would drop -W and -p.
+      - /opt/xrootd/acme/haproxy.cfg:/etc/haproxy/haproxy.cfg:ro
+    restart: always
+<%- end -%>

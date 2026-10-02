@@ -5,9 +5,13 @@ services:
     volumes:
       - <%= @base_dir %>/<%= @service_name %>/data:/data
       - <%= @base_dir %>/<%= @service_name %>/etcd.conf.yml:<%= @base_dir %>/<%= @service_name %>/etcd.conf.yml:ro
+<% if @legacy_ca == true %>
       - <%= @cert_file %>:<%= @cert_file %>:ro
       - <%= @key_file %>:<%= @key_file %>:ro
       - <%= @trusted_ca_file %>:<%= @trusted_ca_file %>:ro
+<% else %>
+      - <%= @base_dir %>/<%= @service_name %>/cert:/cert:ro
+<% end %>
 
 <% if @hostmode == true %>
     network_mode: host
