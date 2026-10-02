@@ -17,6 +17,15 @@
 # - `tunnelbana_secret_files` for private keys and other sensitive files.
 #   These values are Hiera secret keys, normally from per-host or shared eyaml;
 #   only the key names and destination paths should be in ordinary git data.
+#
+# Every `frontend`/`backend` of type `saml2` in `tunnelbana_proxy_conf` gets a
+# key and certificate in `$keys_dir` named `<frontend|backend>-<name>.key` and
+# `.pem` (name lowercased, non-alphanumerics replaced by `_`). The TOML must
+# point at them, e.g. `../keys/backend-saml2.key`, using `sp_key_path`/
+# `sp_cert_path` for backends and `idp_key_path`/`idp_cert_path` for frontends.
+# A key is taken from Hiera `tunnelbana_<end>_<name>_key` (and optionally
+# `tunnelbana_<end>_<name>_cert`) when set, otherwise a self-signed pair is
+# generated; see `sunet::tunnelbana::saml2_keypair`.
 class sunet::tunnelbana(
   String                  $image            = 'docker.sunet.se/tunnelbana',
   String                  $tunnelbana_tag   = '0.5.0',
@@ -89,6 +98,24 @@ class sunet::tunnelbana(
     warning("tunnelbana_proxy_toml is not set; ${config_dir}/${config_file} will not be managed")
   }
 
+
+  ['frontend', 'backend'].each |$end| {
+    $saml2_ends = pick($proxy_conf[$end], []).filter |$e| { $e['type'] == 'saml2' }
+    $saml2_ends.each |$e| {
+      if $e['name'] == undef {
+        fail("tunnelbana: ${end} of type saml2 requires a name")
+      }
+      $slug = regsubst(downcase($e['name']), '[^0-9a-z]', '_', 'G')
+      sunet::tunnelbana::saml2_keypair { "${end}-${slug}":
+        end               => $end,
+        slug              => $slug,
+        keys_dir          => $keys_dir,
+        service_to_notify => $service_to_notify,
+        require           => File[$keys_dir],
+        before            => Sunet::Docker_compose['tunnelbana_compose'],
+      }
+    }
+  }
 
   $attributes_map = lookup('tunnelbana_attributes',undef, undef, {})
   if $attributes_map != undef {
