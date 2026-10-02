@@ -1,0 +1,87 @@
+---
+services:
+  ta:
+    restart: always
+    image: docker.sunet.se/inmor:<%= @inmor_version %>
+    healthcheck:
+      test: ['CMD', 'curl', '--insecure', '--fail', '--silent', 'http://localhost:8080/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./taconfig.toml:/app/taconfig.toml:ro
+      - ./keys/private.json:/app/private.json:ro
+      - ./keys/publickeys:/app/publickeys:ro
+      - ./keys/historical_keys:/app/historical_keys:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: ./inmor -c taconfig.toml
+    environment:
+      - 'RUST_LOG=info'
+  db:
+    restart: always
+    image: postgres:14-alpine
+    shm_size: 1024mb
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
+  redis:
+    restart: always
+    image: redis:7-alpine
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    volumes:
+      - ./redis:/data
+  admin:
+    image: docker.sunet.se/inmor-admin:<%= @inmor_version %>
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ta:
+        condition: service_healthy
+    command: /app/docker-entrypoint.sh
+    environment:
+      - INSIDE_CONTAINER=true
+      - PRODUCTION=true
+    volumes:
+      - ./keys/private.json:/app/private.json:ro
+      - ./keys/publickeys:/app/publickeys:ro
+      - ./keys/historical_keys:/app/historical_keys:ro
+      - ./localsettings.py:/app/inmoradmin/localsettings.py:ro
+  nginx:
+    image: nginx:1.21
+    depends_on:
+      ta:
+        condition: service_healthy
+    ports:
+      - 443:443
+      - 8443:8443
+    volumes:
+      - /opt/nginx_conf:/etc/nginx/conf.d
+<%- if @acmed -%>
+      - /opt/nginx_conf/cert:/etc/ssl
+<%- else -%>
+      - /etc/dehydrated/certs/<%= @hostname %>:/etc/ssl
+  always-https:
+    image: docker.sunet.se/always-https
+    pull_policy: always
+    environment:
+      - ACME_URL=http://acme-c.sunet.se/
+    ports:
+      - "80:80"
+<%- end -%>  

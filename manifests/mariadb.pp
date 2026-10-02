@@ -1,14 +1,22 @@
 # Mariadb cluster class for SUNET
+
+# @param docker_healthcheck               Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb on how to setup the healthcheck
+# @param use_tls                          Enable TLS for cluster and client traffic (requires the server to have infra certs)
+# @param ca_cert_path                     Point to the CA to use if you have enabled TLS ($use_tls)
+# @param binlog_retention_hours           The number of hours before purge-binlogs.sh removes binlog's
 define sunet::mariadb(
   String $mariadb_version          = latest,
-  String $mariadb_image='docker.sunet.se/drive/mariadb',
+  String $mariadb_image            = 'docker.sunet.se/drive/mariadb',
   Boolean $new_cluster             = false, # applies to maridb images from dockerhub.io
-  Boolean $docker_healthcheck      = false, # Read here https://wiki.sunet.se/spaces/sunetops/pages/314212754/Mariadb on how to setup the healthcheck
+  Boolean $docker_healthcheck      = false,
   Array[Integer] $ports            = [3306, 4444, 4567, 4568],
   Array[String] $dns               = [],
   Boolean $galera                  = true,
+  Boolean $use_tls                 = false,
   Boolean $nagios_monitoring       = false,
   String  $innodb_buffer_pool_size = '4G',
+  String  $ca_cert_path            = '/etc/ssl/certs/infra-2-prod.crt',
+  Integer $binlog_retention_hours  = 6,
 )
 {
 
@@ -32,6 +40,22 @@ define sunet::mariadb(
     ensure_resource('file',"${mariadb_dir}/${dir}", { ensure => directory, recurse => true } )
   }
 
+  if $use_tls {
+    # Create cert dir where the TLS certs will be stored
+    file { "${mariadb_dir}/cert":
+      ensure => directory,
+      mode   => '0750',
+      owner  => '999',
+      group  => '999',
+    }
+    # Copy the certbot deploy hook
+    file { '/etc/letsencrypt/renewal-hooks/deploy/mariadb':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/mariadb/certbot-renewal-hook'),
+    }
+  }
+
   $_from = $clients + $cluster_nodes
   sunet::misc::ufw_allow { 'mariadb_ports':
     from => $_from,
@@ -40,7 +64,7 @@ define sunet::mariadb(
 
   file { '/usr/local/bin/purge-binlogs':
     ensure  => present,
-    content => template('sunet/mariadb/purge-binlogs.erb.sh'),
+    content => template('sunet/mariadb/purge-binlogs.sh.erb'),
     mode    => '0744',
     owner   => 999,
     group   => 999,
@@ -117,7 +141,7 @@ define sunet::mariadb(
       ensure  => 'file',
       mode    => '0755',
       owner   => 'root',
-      content => file('sunet/mariadb/check_galera_cluster')
+      content => template('sunet/mariadb/check_galera_cluster.erb')
     }
     # sudo exceptions
     sunet::sudoer {'nrpe_galera_check':

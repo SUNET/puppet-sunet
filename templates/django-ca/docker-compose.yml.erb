@@ -34,7 +34,11 @@ services:
       - "443:443"
     volumes:
       - <%= @config_dir %>/nginx.conf:/etc/nginx/conf.d/ca.conf:ro
+<% if @legacy_ca -%>
       - /etc/ssl:/etc/ssl:ro
+<% else -%>
+      - /opt/djangoca/certs:/certs:ro
+<% end -%>
       - <%= @config_dir %>/index.html:/usr/share/nginx/html/index.html:ro
       - <%= @config_dir %>/index.png:/usr/share/nginx/html/index.png:ro
       - static:/usr/share/nginx/html/static/:ro

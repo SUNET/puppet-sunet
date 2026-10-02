@@ -2,9 +2,7 @@
 class sunet::ici_acme::client(
   String $ca_url = 'http://ca-test-1.sunet.se/',
 ) {
-  package { 'python3-josepy':
-    ensure => 'installed',
-  }
+  include sunet::packages::python3_josepy
 
   sunet::misc::create_dir { '/etc/ici_acme/dehydrated': owner => 'root', group => 'root', mode => '0700' }
 

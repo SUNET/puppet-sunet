@@ -1,12 +1,13 @@
 # Setup a a patroni node
 class sunet::patroni::node(
-  String $patroni_cluster_name = 'batman',
+  String $patroni_cluster_name   = 'batman',
   Integer $patroni_rest_api_port = 8008,
-  Integer $postgres_port = 5432,
-  String $patroni_imagetag = '4.1.0',
-  Boolean $pgbackrest = false,
+  Integer $postgres_port         = 5432,
+  String $patroni_imagetag       = '4.1.0',
+  Boolean $pgbackrest            = false,
   String $pgbackrest_backup_host = '',
-  String $pgbackrest_user = 'root',
+  String $pgbackrest_user        = 'root',
+  Boolean $legacy_ca             = false,
 ) {
 
   $myself = $facts['networking']['fqdn'] # Use with connect_addr
@@ -32,14 +33,26 @@ class sunet::patroni::node(
 
   ensure_resource('sunet::misc::create_dir', '/opt/patroni/certs/', { owner  => 'root', group => 'root', mode => '0755'})
 
-  # The patroni image is hardcorded to use a user which we cant override or set correct permissions for.
-  if (find_file($infra_cert)) {
-    file { $postgres_cert:
-        ensure => 'file',
-        source => $infra_cert,
-        owner  => 'root',
-        group  => 'root',
-        mode   => '0755',
+  if $legacy_ca {
+    # The patroni image is hardcorded to use a user which we cant override or set correct permissions for.
+    if (find_file($infra_cert)) {
+      file { $postgres_cert:
+          ensure => 'file',
+          source => $infra_cert,
+          owner  => 'root',
+          group  => 'root',
+          mode   => '0755',
+      }
+    }
+  }
+  else {
+    $cert_file = '/opt/patroni/certs/cert.pem'
+    $key_file = '/opt/patroni/certs/privkey.pem'
+    $trusted_ca_file = '/opt/patroni/certs/chain.pem'
+    file { '/etc/letsencrypt/renewal-hooks/deploy/patroni':
+      ensure  => file,
+      mode    => '0700',
+      content => file('sunet/patroni/certbot-renewal-hook.sh'),
     }
   }
 
