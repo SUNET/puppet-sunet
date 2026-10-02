@@ -210,4 +210,9 @@ class sunet::tunnelbana(
     service_dir_layout => true,
     description        => 'Tunnelbana',
   }
+
+  sunet::nftables::allow { 'djangoca_allowed_https_hosts':
+    from => 'any',
+    port => 443,
+  }
 }
