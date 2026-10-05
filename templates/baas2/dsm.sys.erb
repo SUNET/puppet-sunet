@@ -72,8 +72,7 @@ SERVERNAME SafeDC
   domain <%= dir %>
 <% end -%>
 <% end -%>
-<% if @install_tbmr -%>
 
-* Collect TBMR information before doing the backup
-PRESCHEDULECMD '"/usr/bin/tbmrcfg" 1> tbmr.log 2>&1 || (exit 0)'
-<% end -%>
+  PRESCHEDULECMD "/usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/pre.d"
+  PRENSCHEDULECMD "/usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/parallel.d"
+  POSTSCHEDULECMD "/usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/post.d"
