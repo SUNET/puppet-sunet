@@ -7,10 +7,7 @@ class sunet::forgejo (
   Integer $gid            = '900',
   Boolean $restic_backup  = true,
 ) {
-  include sunet::packages::rclone
-  package { 'duplicity':
-    ensure => latest,
-  }
+
   # gitea generate secret INTERNAL_TOKEN
   $internal_token = lookup('internal_token', undef, undef, undef)
   # gitea generate secret JWT_SECRET
@@ -105,11 +102,6 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
   command     => 'systemctl restart sunet-forgejo.service',
   refreshonly => true,
   onlyif      => 'systemctl is-active sunet-forgejo.service',
-  }
-  -> file{ '/root/.rclone.conf':
-    ensure  => file,
-    content => template('sunet/forgejo/rclone.conf.erb'),
-    mode    => '0644',
   }
 
   if ($restic_backup) {
