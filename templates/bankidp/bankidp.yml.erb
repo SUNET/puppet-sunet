@@ -9,10 +9,10 @@ spring:
       pem:
         infra:
           keystore:
-            private-key: file:/etc/ssl/private/<%= @fqdn %>_infra.key
-            certificate: file:/etc/ssl/certs/<%= @fqdn %>_infra.crt
+            private-key: file:/etc/letsencrypt/live/<%= @fqdn %>/privkey.pem
+            certificate: file:/etc/letsencrypt/live/<%= @fqdn %>/cert.pem
           truststore:
-            certificate: file:/etc/ssl/certs/infra.crt
+            certificate: file:/etc/ssl/certs/infra-2-prod.crt
   data:
     redis:
       password: '<%= scope.call_function('safe_hiera', ['bankidp_redis_password'])  %>'
