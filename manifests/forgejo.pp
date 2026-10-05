@@ -116,7 +116,6 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
     sunet::backup::restic::job { 'mastodon_backup':
       paths        => ['/opt/forgejo/backups'],
       minute       => '20',
-      keep_hourly  => 2,
       keep_daily   => 1,
       keep_weekly  => 1,
       keep_monthly => 1,
