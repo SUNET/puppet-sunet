@@ -128,7 +128,7 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
         '10-dump'  => { content => template('sunet/forgejo/backup.erb.sh') },
       },
       post_hooks   => {
-        '10-cleanup' => { content => '#!/bin/bash\nfind /opt/forgejo/backups/ -mtime +1 -delete\n'  },
+        '10-cleanup' => { content => "#!/bin/bash\nfind /opt/forgejo/backups/ -mtime +1 -delete\n"  },
       },
     }
   }
