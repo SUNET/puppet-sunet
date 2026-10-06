@@ -8,7 +8,7 @@ hookdir="$basedir/renewal-hooks/deploy"
 
 config=${basedir}/conf/certbot-sync-from-server.source
 if [[ -f "${config}" ]]; then
-  # shellcheck source=/dev/null
+	# shellcheck source=/dev/null
 	. ${config}
 else
 	echo "No config (${config}) found!"
@@ -26,11 +26,17 @@ else
 	targetdir=$(mktemp -d /tmp/certbot_sync.XXXXX)
 fi
 
+# Only ever sync the live/ tree out of the export dir.
+mkdir -p "${targetdir}/live"
 if [[ "${CERTBOT_SYNC_SERVER}" = "$(hostname -f)" ]]; then
-	rsync -az -v /etc/letsencrypt/ "${targetdir}"
+	rsync -az -v /opt/certbot-sync/export/live/ "${targetdir}/live/"
 else
-	rsync -e "ssh -i $HOME/.ssh/id_certbot_sync_client" -az -v root@"${CERTBOT_SYNC_SERVER}": "${targetdir}"
+	rsync -e "ssh -i $HOME/.ssh/id_certbot_sync_client" -az -v root@"${CERTBOT_SYNC_SERVER}":live/ "${targetdir}/live/"
 fi
+
+# With default-closed exporting the live/ dir can be empty; don't let the glob
+# expand to itself and produce a bogus "*" cert. Also covers the hook loop below.
+shopt -s nullglob
 
 certs_to_deploy=()
 for file_system_entity in "${targetdir}"/live/*; do
@@ -61,9 +67,7 @@ if [[ "${bootstrap}" == 0 ]]; then
 	rm -vrf "${targetdir}"
 fi
 
-# Don't expand the glob to itself if no matching hooks
-# Not all services do need hooks
-shopt -s nullglob
+# Not all services need hooks; nullglob (set above) keeps this loop empty then.
 for cert in "${certs_to_deploy[@]}"; do
 	for hook in "$hookdir"/*; do
 		echo "Running deploy hook ${hook} for ${cert}."

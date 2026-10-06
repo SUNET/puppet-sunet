@@ -14,7 +14,6 @@ class sunet::dockerhost2(
 
   include apt
 
-  $container_name_delimiter = '-'
   include sunet::packages::jq # restart_unhealthy_containers requirement
   include sunet::packages::python3_yaml # check_docker_containers requirement
 
@@ -59,54 +58,7 @@ class sunet::dockerhost2(
       ;
   }
 
-  $distro = $facts['os']['distro']['id']
-  $lc_distro = downcase($distro)
-  $release = $facts['os']['distro']['release']['major']
-
-  if (
-    ($distro == 'Ubuntu' and versioncmp($release, '26') <= 0) or
-    ($distro == 'Debian' and versioncmp($release, '12') <= 0)
-  ) {
-    # Add the dockerproject repository, then force an apt-get update before
-    # trying to install the package. See https://tickets.puppetlabs.com/browse/MODULES-2190.
-    #
-    sunet::misc::create_dir { '/etc/cosmos/apt/keys': owner => 'root', group => 'root', mode => '0755'}
-    file {
-      '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub':
-        ensure  => file,
-        mode    => '0644',
-        content => file('sunet/apt/docker.asc'),
-        ;
-      }
-    apt::key { 'docker_ce':
-      id     => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88',
-      server => 'https://does-not-exists-but-is-required.example.com',
-      source => '/etc/cosmos/apt/keys/docker_ce-8D81803C0EBFCD88.pub',
-      notify => Exec['dockerhost_apt_get_update'],
-    }
-
-    # new source
-    apt::source {'docker_ce':
-      location => "https://download.docker.com/linux/${lc_distro}",
-      release  => $facts['os']['distro']['codename'],
-      repos    => $docker_repo,
-      key      => {'id' => '9DC858229FC7DD38854AE2D88D81803C0EBFCD88'},
-      notify   => Exec['dockerhost_apt_get_update'],
-    }
-
-    apt::pin { 'Pin docker repo':
-      packages => '*',
-      priority => 1,
-      origin   => 'download.docker.com'
-    }
-    exec { 'dockerhost_apt_get_update':
-      command     => '/usr/bin/apt-get update',
-      cwd         => '/tmp',
-      refreshonly => true,
-    }
-  } else {
-    ensure_resource('sunet::apt::repo_docker', 'sunet-dockerhost2-docker-repo')
-  }
+  ensure_resource('sunet::apt::repo_docker', 'sunet-dockerhost2-docker-repo', {'docker_repo' => $docker_repo})
 
   package { $docker_package_name :
     ensure  => $docker_version,

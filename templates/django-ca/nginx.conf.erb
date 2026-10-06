@@ -31,8 +31,13 @@ server {
     listen       [::]:443 ssl ipv6only=off;
     server_name  <%= @server_fqdn %>;
 
+<% if @legacy_ca -%>
     ssl_certificate_key /etc/ssl/private/<%= @server_fqdn %>_infra.key;
     ssl_certificate     /etc/ssl/certs/<%= @server_fqdn %>_infra.crt;
+<% else -%>
+    ssl_certificate_key /certs/privkey.pem;
+    ssl_certificate     /certs/fullchain.pem;
+<% end -%>
 
     location /django_ca/acme/ {
         try_files "" @django_ca;
