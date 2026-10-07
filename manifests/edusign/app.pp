@@ -48,7 +48,7 @@ class sunet::edusign::app(
     image    => 'docker.sunet.se/edusign-sp',
     imagetag => $version,
     hostname => $facts['networking']['fqdn'],
-    volumes  => ['/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
+    volumes  => ['/dev/log:/dev/log','/var/log:/var/log','/etc/ssl:/etc/ssl','/etc/dehydrated:/etc/dehydrated','/etc/metadata:/etc/metadata:ro',
                   '/etc/edusign:/etc/edusign:ro', '/etc/views.py:/opt/edusign/venv/lib/python3.12/site-packages/edusign_webapp/views.py'],
     env      => $env_sp_final,
     depends  => ['edusign-app'],
