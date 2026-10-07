@@ -34,7 +34,6 @@ class sunet::tunnelbana(
   String                  $keys_dir         = '/opt/tunnelbana/keys',
   String                  $metadata_dir     = '/opt/tunnelbana/metadata',
   Integer                 $expose_port      = 443,
-  Hash[String, String]    $config_files     = lookup('tunnelbana_config', Hash[String, String], undef, {}),
   Hash[String, String]    $files            = lookup('tunnelbana_files', Hash[String, String], undef, {}),
   Hash[String, String]    $secret_files     = lookup('tunnelbana_secret_files', Hash[String, String], undef, {}),
 ) {
