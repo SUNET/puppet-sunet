@@ -125,28 +125,6 @@ class sunet::tunnelbana(
     }
   }
 
-  # Extra config/public/secret maps let deployments keep protocol-specific keys,
-  # certs and metadata in Hiera without adding a new class parameter each time.
-  # Like `sunet::satosa`, private key material is written through
-  # `sunet::snippets::secret_file` from Hiera and is never passed through the
-  # compose template or committed as a plaintext cosmos file.
-  $config_files.each |$hiera_key, $path| {
-    $config_content = lookup($hiera_key, Optional[String], undef, undef)
-    if $config_content != undef {
-      file { $path:
-        ensure    => file,
-        owner     => '10001',
-        group     => '10001',
-        mode      => '0440',
-        content   => "${config_content}\n",
-        show_diff => false,
-        require   => [File[$config_dir], File[$keys_dir], File[$metadata_dir]],
-        notify    => $service_to_notify,
-        before    => Sunet::Docker_compose['tunnelbana_compose'],
-      }
-    }
-  }
-
   $files.each |$hiera_key, $path| {
     $file_content = lookup($hiera_key, Optional[String], undef, undef)
     if $file_content != undef {
