@@ -4,6 +4,9 @@ services:
     restart: unless-stopped
     volumes:
       - '<%= @config_dir %>/proxy.toml:/app/config/proxy.toml:ro'
+<% @additional_tomls.keys.sort.each do |name| -%>
+      - '<%= @config_dir %>/<%= name %>.toml:/app/config/<%= name %>.toml:ro'
+<% end -%>
       - '<%= @keys_dir %>:/app/keys:ro'
       - '<%= @metadata_dir %>:/app/metadata:ro'
     ports:

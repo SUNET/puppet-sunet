@@ -4,10 +4,12 @@
 # rendered to `$config_dir/proxy.toml` and mounted into the container as
 # `/app/config/proxy.toml`.
 #
-# `tunnelbana_attributes` (a hash, rendered to `custom_attributes.toml`) should
-# be provided by each deployment. Attribute mapping is deployment policy, just
-# like SATOSA's generated `internal_attributes.yaml`, so this module does not
-# ship a fallback map.
+# `tunnelbana_additional_tomls` is a hash from file name (without `.toml`) to a
+# hash rendered as TOML. Each entry is written to `$config_dir/<name>.toml` and
+# mounted into the container as `/app/config/<name>.toml`. Attribute mapping
+# (e.g. `custom_attributes`) is deployment policy, just like SATOSA's generated
+# `internal_attributes.yaml`, so this module does not ship a fallback map but
+# the upstream container does.
 #
 # Additional Hiera-backed files can be supplied as maps from Hiera key name to
 # target path:
@@ -108,14 +110,14 @@ class sunet::tunnelbana(
     }
   }
 
-  $attributes_map = lookup('tunnelbana_attributes', undef, undef, {})
-  if !empty($attributes_map) {
-    file { "${config_dir}/custom_attributes.toml":
+  $additional_tomls = lookup('tunnelbana_additional_tomls', Hash[Pattern[/\A[0-9A-Za-z_-]+\z/], Hash], undef, {})
+  $additional_tomls.each |$name, $toml_conf| {
+    file { "${config_dir}/${name}.toml":
       ensure    => file,
       owner     => '10001',
       group     => '10001',
       mode      => '0440',
-      content   => stdlib::to_toml($attributes_map),
+      content   => stdlib::to_toml($toml_conf),
       show_diff => false,
       require   => File[$config_dir],
       notify    => $service_to_notify,
