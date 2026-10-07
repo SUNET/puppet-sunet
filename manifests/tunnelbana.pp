@@ -13,7 +13,6 @@
 #
 # Additional Hiera-backed files can be supplied as maps from Hiera key name to
 # target path:
-# - `tunnelbana_config` for extra config/TOML files.
 # - `tunnelbana_files` for non-secret certs or metadata.
 # - `tunnelbana_secret_files` for private keys and other sensitive files.
 #   These values are Hiera secret keys, normally from per-host or shared eyaml;
@@ -34,8 +33,6 @@ class sunet::tunnelbana(
   String                  $keys_dir         = '/opt/tunnelbana/keys',
   String                  $metadata_dir     = '/opt/tunnelbana/metadata',
   Integer                 $expose_port      = 443,
-  Hash[String, String]    $files            = lookup('tunnelbana_files', Hash[String, String], undef, {}),
-  Hash[String, String]    $secret_files     = lookup('tunnelbana_secret_files', Hash[String, String], undef, {}),
 ) {
   # Only notify the service if it already exists on disk. This mirrors
   # `sunet::satosa` and avoids restart attempts during first install.
@@ -124,6 +121,7 @@ class sunet::tunnelbana(
     }
   }
 
+  $files = lookup('tunnelbana_files', Hash[String, String], undef, {})
   $files.each |$hiera_key, $path| {
     $file_content = lookup($hiera_key, Optional[String], undef, undef)
     if $file_content != undef {
@@ -140,6 +138,7 @@ class sunet::tunnelbana(
     }
   }
 
+  $secret_files = lookup('tunnelbana_secret_files', Hash[String, String], undef, {})
   $secret_files.each |$hiera_key, $path| {
     if lookup($hiera_key, undef, undef, undef) != undef {
       sunet::snippets::secret_file { $path:
