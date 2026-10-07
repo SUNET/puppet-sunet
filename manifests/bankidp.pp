@@ -99,7 +99,7 @@ class sunet::bankidp(
     }
 
     exec { 'infra.p12':
-      command => "keytool -import -noprompt -deststorepass ${pass} -file /etc/ssl/certs/infra.crt -keystore /etc/ssl/certs/infra.p12",
+      command => "keytool -import -noprompt -deststorepass ${pass} -file /etc/ssl/certs/infra-2-prod.crt -keystore /etc/ssl/certs/infra.p12",
       onlyif  => 'test ! -f /etc/ssl/certs/infra.p12'
     }
 
