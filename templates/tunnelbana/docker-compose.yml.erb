@@ -7,5 +7,5 @@ services:
       - '<%= @keys_dir %>:/app/keys:ro'
       - '<%= @metadata_dir %>:/app/metadata:ro'
     ports:
-      - 443:8080
-    command: ['/app/config/<%= @config_file %>']
+      - <%= @expose_port %>:8080
+    command: ['/app/config/proxy.toml']

@@ -1,14 +1,13 @@
 # Run tunnelbana in docker-compose.
 #
-# The main deployment input is `tunnelbana_proxy_toml`, which is written under
-# `$config_dir` using `$config_file` and mounted into the container as
-# `/app/config/$config_file`. `tunnelbana_state_key` is written to an env file
-# as `TUNNELBANA_STATE_KEY` so the TOML can use `${TUNNELBANA_STATE_KEY}`
-# without storing the secret in the compose file.
+# The main deployment input is the Hiera hash `tunnelbana_proxy_conf`, which is
+# rendered to `$config_dir/proxy.toml` and mounted into the container as
+# `/app/config/proxy.toml`.
 #
-# `tunnelbana_attributes_toml` must be provided by each deployment. Attribute
-# mapping is deployment policy, just like SATOSA's generated
-# `internal_attributes.yaml`, so this module does not ship a fallback map.
+# `tunnelbana_attributes` (a hash, rendered to `custom_attributes.toml`) should
+# be provided by each deployment. Attribute mapping is deployment policy, just
+# like SATOSA's generated `internal_attributes.yaml`, so this module does not
+# ship a fallback map.
 #
 # Additional Hiera-backed files can be supplied as maps from Hiera key name to
 # target path:
@@ -32,10 +31,7 @@ class sunet::tunnelbana(
   String                  $config_dir       = '/opt/tunnelbana/config',
   String                  $keys_dir         = '/opt/tunnelbana/keys',
   String                  $metadata_dir     = '/opt/tunnelbana/metadata',
-  String                  $config_file      = 'proxy.toml',
   Integer                 $expose_port      = 443,
-  Array[String]           $environment      = [],
-  Optional[String]        $state_key        = lookup('tunnelbana_state_key', Optional[String], undef, undef),
   Hash[String, String]    $config_files     = lookup('tunnelbana_config', Hash[String, String], undef, {}),
   Hash[String, String]    $files            = lookup('tunnelbana_files', Hash[String, String], undef, {}),
   Hash[String, String]    $secret_files     = lookup('tunnelbana_secret_files', Hash[String, String], undef, {}),
@@ -50,15 +46,12 @@ class sunet::tunnelbana(
     $service_to_notify = undef
   }
 
-  $env_file = '/opt/tunnelbana/tunnelbana.env'
-
   ensure_resource('file', '/opt/tunnelbana', {
       ensure => directory,
       owner  => 'root',
       group  => 'root',
       mode   => '0755',
   })
-
 
   include sunet::packages::certbot
   file { '/etc/letsencrypt/renewal-hooks/deploy/tunnelbana-hook':
@@ -68,7 +61,6 @@ class sunet::tunnelbana(
     require => File['/etc/letsencrypt/renewal-hooks/deploy'],
     before  => Class['sunet::certbot::acmed'],
   }
-
 
   # The production image runs as the unprivileged `tunnelbana` user with UID
   # 10001. Numeric ownership keeps the files readable inside the container even
@@ -82,22 +74,21 @@ class sunet::tunnelbana(
     before  => Sunet::Docker_compose['tunnelbana_compose'],
   }
 
-  $proxy_conf = lookup('tunnelbana_proxy_conf',undef, undef, {})
-  if $proxy_conf != undef {
-    file { "${config_dir}/proxy.toml":
-      ensure  => file,
-      owner   => '10001',
-      group   => '10001',
-      mode    => '0440',
-      content =>  stdlib::to_toml($proxy_conf),
-      require => File[$config_dir],
-      notify  => $service_to_notify,
-      before  => Sunet::Docker_compose['tunnelbana_compose'],
-    }
-  } else {
-    warning("tunnelbana_proxy_toml is not set; ${config_dir}/${config_file} will not be managed")
+  $proxy_conf = lookup('tunnelbana_proxy_conf', undef, undef, {})
+  if empty($proxy_conf) {
+    fail('tunnelbana: tunnelbana_proxy_conf is not set')
   }
 
+  file { "${config_dir}/proxy.toml":
+    ensure  => file,
+    owner   => '10001',
+    group   => '10001',
+    mode    => '0440',
+    content => stdlib::to_toml($proxy_conf),
+    require => File[$config_dir],
+    notify  => $service_to_notify,
+    before  => Sunet::Docker_compose['tunnelbana_compose'],
+  }
 
   ['frontend', 'backend'].each |$end| {
     $saml2_ends = pick($proxy_conf[$end], []).filter |$e| { $e['type'] == 'saml2' }
@@ -117,8 +108,8 @@ class sunet::tunnelbana(
     }
   }
 
-  $attributes_map = lookup('tunnelbana_attributes',undef, undef, {})
-  if $attributes_map != undef {
+  $attributes_map = lookup('tunnelbana_attributes', undef, undef, {})
+  if !empty($attributes_map) {
     file { "${config_dir}/custom_attributes.toml":
       ensure    => file,
       owner     => '10001',
@@ -136,9 +127,7 @@ class sunet::tunnelbana(
   # certs and metadata in Hiera without adding a new class parameter each time.
   # Like `sunet::satosa`, private key material is written through
   # `sunet::snippets::secret_file` from Hiera and is never passed through the
-  # compose template or committed as a plaintext cosmos file. Tunnelbana does
-  # not generate fallback keys here: each deployment decides the filename and key
-  # algorithm in `proxy.toml`.
+  # compose template or committed as a plaintext cosmos file.
   $config_files.each |$hiera_key, $path| {
     $config_content = lookup($hiera_key, Optional[String], undef, undef)
     if $config_content != undef {
@@ -186,23 +175,6 @@ class sunet::tunnelbana(
     }
   }
 
-  $env_content = $state_key ? {
-    undef   => '',
-    default => "TUNNELBANA_STATE_KEY=${state_key}\n",
-  }
-
-  file { $env_file:
-    ensure    => file,
-    owner     => 'root',
-    group     => 'root',
-    mode      => '0400',
-    content   => $env_content,
-    show_diff => false,
-    require   => File['/opt/tunnelbana'],
-    notify    => $service_to_notify,
-    before    => Sunet::Docker_compose['tunnelbana_compose'],
-  }
-
   sunet::docker_compose { 'tunnelbana_compose':
     content            => template('sunet/tunnelbana/docker-compose.yml.erb'),
     service_name       => 'tunnelbana',
@@ -211,8 +183,8 @@ class sunet::tunnelbana(
     description        => 'Tunnelbana',
   }
 
-  sunet::nftables::allow { 'djangoca_allowed_https_hosts':
+  sunet::nftables::allow { 'tunnelbana_https':
     from => 'any',
-    port => 443,
+    port => $expose_port,
   }
 }
