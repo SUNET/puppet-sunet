@@ -1,0 +1,4 @@
+#!/bin/bash
+
+* Collect TBMR information before doing the backup
+/usr/bin/tbmrcfg 1> tbmr.log 2>&1 || (exit 0)

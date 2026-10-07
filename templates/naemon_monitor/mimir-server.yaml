@@ -43,3 +43,5 @@ store_gateway:
 limits:
   # Delete from storage metrics data older than x.
   compactor_blocks_retention_period: <%= @otel_retention %>
+  max_global_series_per_user: 2000000 #default is 150 000, k8s generates alot
+
