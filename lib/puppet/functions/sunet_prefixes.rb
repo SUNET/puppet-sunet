@@ -39,7 +39,7 @@ Puppet::Functions.create_function(:sunet_prefixes) do
   [
       { "net": "3.71.178.160/32",       "family": "ip",  "comment": "ec2-3-71-178-160.eu-central-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
       { "net": "3.101.5.178/32",        "family": "ip",  "comment": "ec2-3-101-5-178.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
-      { "net": "3.121.211.200/32",      "family": "ip",  "comment": "md-publisher-fra.inacademia.org", "resource_type": "inacademia", "tags": ["knubbis", "infraca", "acmec"]},
+      { "net": "52.58.10.96/32",        "family": "ip",  "comment": "md-publisher-fra.inacademia.org", "resource_type": "inacademia", "tags": ["knubbis", "infraca", "acmec"]},
       { "net": "13.56.217.109/32",      "family": "ip",  "comment": "ec2-13-56-217-109.us-west-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
       { "net": "18.156.124.185/32",     "family": "ip",  "comment": "ec2-18-156-124-185.eu-central-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
       { "net": "18.157.244.215/32",     "family": "ip",  "comment": "ec2-18-157-244-215.eu-central-1.compute.amazonaws.com", "resource_type": "seamlessaccess", "tags": ["knubbis", "infraca"] },
