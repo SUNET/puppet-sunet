@@ -14,6 +14,7 @@ SCRIPTHERDER_TEMPLATE="/etc/scriptherder/check/dehydrated.ini"
 DEHYDRATED="/usr/sbin/dehydrated"
 HOOKFILE="/etc/dehydrated/hook.sh"
 CONFIGFILE="/etc/dehydrated/config"
+LOCKFILE="/etc/dehydrated/lock"
 
 # verify domain exists
 if ! grep -qE "^${HOSTNAME}[[:space:]]" "$DOMAINFILE"; then
@@ -35,5 +36,14 @@ if [[ ! -f "$JOBFILE" ]]; then
     cp "$SCRIPTHERDER_TEMPLATE" "$JOBFILE"
 fi
 
+# Atomic locking with flock
+# This ensures dehydrated_one script waits for the main wrapper (or vice versa)
+exec 200>"${LOCKFILE}"
+
+if ! flock -w 400 200; then
+    echo "ERROR: Could not acquire lock after 400 seconds. Aborting."
+    exit 1
+fi
+
 # run dehydrated with all domains (primary + SANs)
-"$SCRIPTHERDER" --mode wrap --syslog --name "$JOBNAME" -- "$DEHYDRATED" --cron --domain "$DOMAINS" --hook "$HOOKFILE" --config "$CONFIGFILE" --force
+timeout 460 "$SCRIPTHERDER" --mode wrap --syslog --name "$JOBNAME" -- "$DEHYDRATED" --cron --domain "$DOMAINS" --hook "$HOOKFILE" --config "$CONFIGFILE" --force --no-lock

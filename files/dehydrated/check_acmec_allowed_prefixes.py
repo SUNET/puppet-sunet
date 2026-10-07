@@ -20,18 +20,21 @@ def parse_acmec_non_clients(yaml_path):
     for item in other_clients:
         result.append(item)
 
+    excluded_domains = data.get("dehydrated", {}).get("exclude_domains", [])
     for item in dehydrated.get("domains", []):
         if not isinstance(item, dict):
             continue
 
-        for _, props in item.items():
+        for name, props in item.items():
             if not isinstance(props, dict):
+                continue
+
+            if name in excluded_domains:
                 continue
 
             # skip anything with clients
             if "clients" in props:
                 continue
-
             names = props.get("names")
             if isinstance(names, list):
                 result.extend(names)
@@ -142,7 +145,7 @@ if __name__ == "__main__":
     if not_resolvable and missing_sunet_prefix and missing_acmec_tag:
         print('OK')
         sys.exit(0)
-    
+
     print("\n\nNot resolvable:")
     if not not_resolvable:
         print(None)
