@@ -106,8 +106,8 @@ class sunet::tunnelbana(
     }
   }
 
-  $additional_tomls = lookup('tunnelbana_additional_tomls', Hash[Pattern[/\A[0-9A-Za-z_-]+\z/], Hash], undef, {})
-  $additional_tomls.each |$name, $toml_conf| {
+  $additional_config= lookup('tunnelbana_additional_config', Hash[Pattern[/\A[0-9A-Za-z_-]+\z/], Hash], undef, {})
+  $additional_config.each |$name, $toml_conf| {
     file { "${config_dir}/${name}.toml":
       ensure    => file,
       owner     => '10001',
