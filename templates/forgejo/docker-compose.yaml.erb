@@ -38,6 +38,21 @@ services:
       - VIRTUAL_PATH=/
       - VIRTUAL_PORT=3000
     entrypoint: gitea -c /opt/forgejo/config/app.ini
+  # Challenges browsers on the archive download endpoints (and serves its own
+  # assets under /.within.website/); everything else goes straight to forgejo.
+  anubis:
+    image: ghcr.io/techarohq/anubis:<%= @anubis_version %>
+    container_name: anubis
+    restart: always
+    networks:
+      - internal_network
+    environment:
+      - BIND=:8923
+      - TARGET=http://forgejo:3000
+      - SERVE_ROBOTS_TXT=false
+      - VIRTUAL_HOST=<%= @domain %>
+      - 'VIRTUAL_PATH=~ ^/(\.within\.website/|api/v1/repos/[^/]+/[^/]+/archive/|[^/]+/[^/]+/archive/)'
+      - VIRTUAL_PORT=8923
   nginx:
     image: docker.io/nginxproxy/nginx-proxy:1.11
     container_name: nginx

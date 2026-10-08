@@ -3,6 +3,7 @@ class sunet::forgejo (
   String $domain          = 'platform.sunet.se',
   String $interface       = 'ens3',
   String $forgejo_version = '1.18.5-0-rootless',
+  String $anubis_version  = 'v1.27.0',
   Integer $uid            = '900',
   Integer $gid            = '900',
   Boolean $restic_backup  = true,
