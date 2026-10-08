@@ -1,0 +1,31 @@
+---
+# Challenge the expensive archive downloads only. Requests that match no rule
+# are allowed through, so the rest of Forgejo is unaffected.
+bots:
+  - name: subdirectory-archive
+    path_regex: '(?i)^/([^/]+/[^/]+/archive/|api/v1/repos/[^/]+/[^/]+/(archive/|(tarball|zipball|bundle)/)).*(:|%3a)'
+    action: CHALLENGE
+    challenge:
+      algorithm: fast
+      difficulty: 4
+
+  - name: zip-or-bundle-archive
+    path_regex: '(?i)^/([^/]+/[^/]+/archive/.*\.(zip|bundle)|api/v1/repos/[^/]+/[^/]+/(zipball|bundle)/.*|api/v1/repos/[^/]+/[^/]+/archive/.*\.(zip|bundle))$'
+    action: CHALLENGE
+    challenge:
+      algorithm: fast
+      difficulty: 4
+
+  - name: raw-commit-archive
+    path_regex: '(?i)^/([^/]+/[^/]+/archive/|api/v1/repos/[^/]+/[^/]+/(archive/|tarball/))([0-9a-f]{40}|[0-9a-f]{64})(\.(zip|bundle|tar\.gz)|/|$)'
+    action: CHALLENGE
+    challenge:
+      algorithm: fast
+      difficulty: 4
+
+# Only holds in-flight challenge state; losing it just means clients solve a
+# challenge again.
+store:
+  backend: bbolt
+  parameters:
+    path: /data/state/anubis.bdb

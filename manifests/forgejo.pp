@@ -74,6 +74,25 @@ class sunet::forgejo (
     owner  => 'git',
     group  => 'git',
   }
+  -> file{ '/opt/forgejo/anubis':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  -> file{ '/opt/forgejo/anubis/state':
+    ensure => directory,
+    owner  => 'git',
+    group  => 'git',
+    mode   => '0750',
+  }
+  -> file{ '/opt/forgejo/anubis/botPolicy.yaml':
+    ensure  => file,
+    content => file('sunet/forgejo/anubis-botPolicy.yaml'),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+  }
   -> file{ '/opt/forgejo/config/app.ini':
     ensure  => file,
     content => template('sunet/forgejo/app.ini.erb'),

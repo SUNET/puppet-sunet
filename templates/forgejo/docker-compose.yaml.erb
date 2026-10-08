@@ -44,14 +44,19 @@ services:
     image: ghcr.io/techarohq/anubis:<%= @anubis_version %>
     container_name: anubis
     restart: always
+    user: "<%= @uid %>:<%= @gid %>"
     networks:
       - internal_network
+    volumes:
+      - /opt/forgejo/anubis/botPolicy.yaml:/etc/anubis/botPolicy.yaml:ro
+      - /opt/forgejo/anubis/state:/data/state
     environment:
       - BIND=:8923
       - TARGET=http://forgejo:3000
+      - POLICY_FNAME=/etc/anubis/botPolicy.yaml
       - SERVE_ROBOTS_TXT=false
       - VIRTUAL_HOST=<%= @domain %>
-      - 'VIRTUAL_PATH=~ ^/(\.within\.website/|api/v1/repos/[^/]+/[^/]+/archive/|[^/]+/[^/]+/archive/)'
+      - 'VIRTUAL_PATH=~ ^/(\.within\.website/|api/v1/repos/[^/]+/[^/]+/(archive|tarball|zipball|bundle)/|[^/]+/[^/]+/archive/)'
       - VIRTUAL_PORT=8923
   nginx:
     image: docker.io/nginxproxy/nginx-proxy:1.11
