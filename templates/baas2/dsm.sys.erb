@@ -73,6 +73,6 @@ SERVERNAME SafeDC
 <% end -%>
 <% end -%>
 
-  PRESCHEDULECMD "/usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/pre.d"
-  PRENSCHEDULECMD "/usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/parallel.d"
-  POSTSCHEDULECMD "/usr/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/post.d"
+  PRESCHEDULECMD "/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/pre.d"
+  PRENSCHEDULECMD "/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/parallel.d"
+  POSTSCHEDULECMD "/bin/run-parts<%= ' --exit-on-error' if @exit_on_error %> /opt/baas2/scheduled-scripts/post.d"
