@@ -3,6 +3,7 @@ class sunet::forgejo (
   String $domain          = 'platform.sunet.se',
   String $interface       = 'ens3',
   String $forgejo_version = '1.18.5-0-rootless',
+  String $anubis_version  = 'v1.27.0',
   Integer $uid            = '900',
   Integer $gid            = '900',
   Boolean $restic_backup  = true,
@@ -72,6 +73,25 @@ class sunet::forgejo (
     ensure => directory,
     owner  => 'git',
     group  => 'git',
+  }
+  -> file{ '/opt/forgejo/anubis':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  -> file{ '/opt/forgejo/anubis/state':
+    ensure => directory,
+    owner  => 'git',
+    group  => 'git',
+    mode   => '0750',
+  }
+  -> file{ '/opt/forgejo/anubis/botPolicy.yaml':
+    ensure  => file,
+    content => file('sunet/forgejo/anubis-botPolicy.yaml'),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
   }
   -> file{ '/opt/forgejo/config/app.ini':
     ensure  => file,
