@@ -5,6 +5,7 @@ define sunet::frontend::load_balancer::website2(
   String  $scriptdir,
   Hash    $config,
   Integer $api_port = 8080,
+  String  $api_group = 'sunetfrontend',
 ) {
   $instance  = $name
   if length($instance) > 12 {
@@ -60,18 +61,25 @@ define sunet::frontend::load_balancer::website2(
 
   $local_config = lookup('sunet_frontend_local', undef, undef, {})
   $config4 = deep_merge($config3, $local_config)
-  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}",
-                                              "${confdir}/${instance}/certs",
-                                              ], { owner => 'root', group => 'root', mode => '0700' })
+  ensure_resource('sunet::misc::create_dir', ["${confdir}/${instance}/certs"],
+                  { owner => 'root', group => 'root', mode => '0700' })
+  # Pre-create monitor dir so the systemd path unit can watch it before the monitor container starts
+  ensure_resource('sunet::misc::create_dir', ["${basedir}/monitor/${instance}"],
+                  { owner => 'root', group => 'root', mode => '0755' })
 
   # copy $tls_certificate_bundle to the instance 'certs' directory to detect when it is updated
   # so the service can be restarted
   $multi_certs = shell_split($tls_certificate_bundle).filter |String $cert| { $cert != 'crt' }
+  # Mirror sunet::docker_compose condition: only notify when Service will exist in catalog
+  # (on fresh install, to_docker doesn't exist yet so the service is not created)
+  $_nft_and_to_docker = $facts['sunet_nftables_enabled'] == 'yes' and has_key($facts['networking']['interfaces'], 'to_docker')
+  $_adv_or_nft_off = $facts['dockerhost_advanced_network'] == 'yes' or $facts['sunet_nftables_enabled'] == 'no'
+  $_notify_svc = if $_nft_and_to_docker or $_adv_or_nft_off { [Service["frontend-${instance}"]] } else { [] }
   if length($multi_certs) > 1 {
     $multi_certs.each |Integer $index, String $cert| {
       file { "${confdir}/${instance}/certs/tls_certificate_bundle.${index}.pem":
           source => $cert,
-          notify => Sunet::Docker_compose["frontend-${instance}"],
+          notify => $_notify_svc,
       }
     }
     file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
@@ -80,7 +88,7 @@ define sunet::frontend::load_balancer::website2(
   } else {
     file { "${confdir}/${instance}/certs/tls_certificate_bundle.pem":
         source => $tls_certificate_bundle,
-        notify => Sunet::Docker_compose["frontend-${instance}"],
+        notify => $_notify_svc,
     }
 
   }
@@ -88,7 +96,7 @@ define sunet::frontend::load_balancer::website2(
   file {
     "${confdir}/${instance}/config.yml":
       ensure  => 'file',
-      group   => 'sunetfrontend',
+      group   => $api_group,
       mode    => '0640',
       force   => true,
       content => inline_template("# File created from Hiera by Puppet\n<%= @config4.to_yaml %>\n"),
@@ -107,7 +115,7 @@ define sunet::frontend::load_balancer::website2(
   $multinode_port         = pick_default($config['multinode_port'], false)
   $set_fqdn               = pick($config['set_fqdn'], false)
   $statsd_enabled         = pick($config['statsd_enabled'], true)
-  $statsd_host            = pick($facts['networking']['interfaces']['docker0']['ip'], $facts['networking']['ip'])
+  $statsd_host            = pick($facts.dig('networking', 'interfaces', 'docker0', 'ip'), $facts['networking']['ip'])
   $varnish_config         = pick($config['varnish_config'], '/opt/frontend/config/common/default.vcl')
   $varnish_enabled        = pick($config['varnish_enabled'], false)
   $varnish_image          = pick($config['varnish_image'], 'docker.sunet.se/library/varnish')
@@ -138,6 +146,11 @@ define sunet::frontend::load_balancer::website2(
     content => template('sunet/frontend/frontend-config.erb'),
   })
 
+  $_compose_bin_arg = ($facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '26.04') >= 0) ? {
+    true    => '--compose_bin /usr/bin/docker',
+    default => '',
+  }
+
   sunet::docker_compose { "frontend-${instance}":
     content          => template('sunet/frontend/docker-compose_template.erb'),
     service_prefix   => 'frontend',
@@ -145,7 +158,24 @@ define sunet::frontend::load_balancer::website2(
     compose_dir      => $confdir,
     compose_filename => 'docker-compose.yml',
     description      => "SUNET frontend instance ${instance} (site ${site_name})",
-    start_command    => "/usr/local/bin/start-frontend ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
+    start_command    => "/usr/local/bin/start-frontend ${_compose_bin_arg} ${basedir} ${name} ${confdir}/${instance}/docker-compose.yml",
+    mode             => '0755',
+  }
+
+  service { "frontend-route-adjust@${instance}.service":
+    enable   => true,
+    provider => 'systemd',
+    require  => File['/etc/systemd/system/frontend-route-adjust@.service'],
+  }
+  service { "frontend-route-adjust@${instance}.path":
+    enable   => true,
+    provider => 'systemd',
+    require  => File['/etc/systemd/system/frontend-route-adjust@.path'],
+  }
+  service { "frontend-route-adjust-stop@${instance}.service":
+    enable   => true,
+    provider => 'systemd',
+    require  => File['/etc/systemd/system/frontend-route-adjust-stop@.service'],
   }
 
   if has_key($config, 'allow_ports') {
@@ -161,8 +191,17 @@ define sunet::frontend::load_balancer::website2(
       }
     }
   }
-  exec { "workaround_allow_forwarding_to_${instance}":
-    command => "/usr/sbin/ufw route allow out on br-${instance}",
+  if $::facts['sunet_nftables_enabled'] == 'yes' {
+    file { "/etc/nftables/conf.d/600-frontend_forward-${instance}.nft":
+      ensure  => file,
+      mode    => '0400',
+      content => "add rule inet filter forward oifname \"to_${instance}\" accept comment \"frontend forward to ${instance}\"\n",
+      notify  => Service['nftables'],
+    }
+  } else {
+    exec { "workaround_allow_forwarding_to_${instance}":
+      command => "/usr/sbin/ufw route allow out on br-${instance}",
+    }
   }
 
   if has_key($config, 'letsencrypt_server') and $config['letsencrypt_server'] != $facts['networking']['fqdn'] {
@@ -185,6 +224,7 @@ define sunet::frontend::load_balancer::website2(
           site_name   => $site_name,
           backend_ips => $params['ips'],
           api_port    => $api_port,
+          group       => $api_group,
         }
       }
     }
