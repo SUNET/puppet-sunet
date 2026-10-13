@@ -49,6 +49,4 @@ redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${CERT_DST}" --key "${KEY_
 redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${CERT_DST}" --key "${KEY_DST}"  -p <%= redisportnum %> CONFIG SET tls-key-file /cert/privkey.pem
 <% end %>
 
-
-
 echo "Redis TLS certificates successfully updated"
