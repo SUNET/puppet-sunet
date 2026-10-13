@@ -45,8 +45,8 @@ fi
 # === Reload TLS material in Redis ===
 <% (0..(@numnodes.to_i - 1)).each do |i| %>
   <% redisportnum = 6379 + i %>
-  redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${CERT_DST}" --key "${KEY_DST}" -p <%= redisportnum %>CONFIG SET tls-cert-file /cert/cert.pem
-redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${CERT_DST}" --key "${KEY_DST}"  -p <%= redisportnum %>CONFIG SET tls-key-file /cert/privkey.pem
+redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${CERT_DST}" --key "${KEY_DST}" -p <%= redisportnum %> CONFIG SET tls-cert-file /cert/cert.pem
+redis-cli -a "${password}" -h "${fqdn}" --tls --cert "${CERT_DST}" --key "${KEY_DST}"  -p <%= redisportnum %> CONFIG SET tls-key-file /cert/privkey.pem
 <% end %>
 
 
