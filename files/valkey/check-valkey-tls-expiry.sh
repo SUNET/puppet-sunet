@@ -34,9 +34,9 @@ CAFILE="/etc/ssl/certs/infra-2-prod.crt"
 #
 cluster_nodes="$(valkey-connect --cluster-nodes 2>/dev/null)"
 
-if [ -z "$cluster_nodes" ]; then
+if [[ -z "$cluster_nodes" ]]; then
     echo "UNKNOWN - Failed to retrieve cluster nodes"
-    exit $STATE_UNKNOWN
+    exit "$STATE_UNKNOWN"
 fi
 
 #
@@ -51,9 +51,9 @@ local_fqdn=$(
     }'
 )
 
-if [ -z "$local_fqdn" ]; then
+if [[ -z "$local_fqdn" ]]; then
     echo "UNKNOWN - Failed to determine local FQDN"
-    exit $STATE_UNKNOWN
+    exit "$STATE_UNKNOWN"
 fi
 
 #
@@ -70,17 +70,17 @@ ports=$(
     sort -nu
 )
 
-if [ -z "$ports" ]; then
+if [[ -z "$ports" ]]; then
     echo "UNKNOWN - No local ports found"
-    exit $STATE_UNKNOWN
+    exit "$STATE_UNKNOWN"
 fi
 
 worst_state=$STATE_OK
 status_text=""
 perfdata=""
 
-for port in $ports
-do
+for port in $ports; do
+
     enddate=$(
         openssl s_client \
             -connect "${local_fqdn}:${port}" \
@@ -92,26 +92,20 @@ do
         openssl x509 -noout -enddate 2>/dev/null
     )
 
-    if [ -z "$enddate" ]; then
-        status_text="${status_text}port ${port}: unable to read certificate; "
+    if [[ -z "$enddate" ]]; then
+        status_text+="port ${port}: unable to read certificate; "
 
-        if [ $worst_state -lt $STATE_UNKNOWN ]; then
-            worst_state=$STATE_UNKNOWN
-        fi
+        (( worst_state < STATE_UNKNOWN )) && worst_state=$STATE_UNKNOWN
 
         continue
     fi
 
     expiry_date="${enddate#notAfter=}"
 
-    expiry_epoch=$(date -d "$expiry_date" +%s 2>/dev/null)
+    if ! expiry_epoch=$(date -d "$expiry_date" +%s 2>/dev/null); then
+        status_text+="port ${port}: unable to parse certificate date; "
 
-    if [ $? -ne 0 ]; then
-        status_text="${status_text}port ${port}: unable to parse certificate date; "
-
-        if [ $worst_state -lt $STATE_UNKNOWN ]; then
-            worst_state=$STATE_UNKNOWN
-        fi
+        (( worst_state < STATE_UNKNOWN )) && worst_state=$STATE_UNKNOWN
 
         continue
     fi
@@ -119,16 +113,17 @@ do
     now_epoch=$(date +%s)
     days_remaining=$(( (expiry_epoch - now_epoch) / 86400 ))
 
-    status_text="${status_text}port ${port}: ${days_remaining} days (${expiry_date}); "
+    status_text+="port ${port}: ${days_remaining} days (${expiry_date}); "
 
-    perfdata="${perfdata} port_${port}=${days_remaining};${WARNING_DAYS};${CRITICAL_DAYS}"
+    perfdata+=" port_${port}=${days_remaining};${WARNING_DAYS};${CRITICAL_DAYS}"
 
-    if [ "$days_remaining" -le "$CRITICAL_DAYS" ]; then
-        [ $worst_state -lt $STATE_CRITICAL ] && worst_state=$STATE_CRITICAL
+    if (( days_remaining <= CRITICAL_DAYS )); then
+        (( worst_state < STATE_CRITICAL )) && worst_state=$STATE_CRITICAL
 
-    elif [ "$days_remaining" -le "$WARNING_DAYS" ]; then
-        [ $worst_state -lt $STATE_WARNING ] && worst_state=$STATE_WARNING
+    elif (( days_remaining <= WARNING_DAYS )); then
+        (( worst_state < STATE_WARNING )) && worst_state=$STATE_WARNING
     fi
+
 done
 
 case $worst_state in
@@ -146,4 +141,4 @@ case $worst_state in
         ;;
 esac
 
-exit $worst_state
+exit "$worst_state"
