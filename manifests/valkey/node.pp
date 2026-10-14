@@ -8,10 +8,12 @@
 # @param valkey_loglevel      Configure the loglevel for valkey
 # @param allow_clients        This is a list of client prefixes that should be allowed to talk to valkey
 # @param allow_peers          This is the list of valkey server prefixes that are part of the cluster (used for nftables)
+# @param tls_reload_interval  The automatic reload interval of TLS materials (in seconds)
 class sunet::valkey::node(
   Integer           $numnodes = 3,
   Boolean           $hostmode = true,
   Optional[Boolean] $tls = true,
+  Optional[Integer] $tls_reload_interval = 43200,
   Optional[Boolean] $cluster = true,
   Optional[String]  $cluster_announce_ip = '',
   Array[String]     $cluster_nodes = [$facts['networking']['fqdn']],
@@ -146,6 +148,12 @@ class sunet::valkey::node(
     mode    => '0755',
     owner   => 'root',
     content => file('sunet/valkey/check-valkey-status.py')
+  }
+  file { '/usr/local/sbin/check-valkey-tls-expiry':
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    content => file('sunet/valkey/check-valkey-tls-expiry.sh')
   }
   # sudo exceptions (needed to read cert files)
   file { '/etc/sudoers.d/sudoers-valkey':
