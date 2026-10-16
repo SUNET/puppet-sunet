@@ -1,12 +1,4 @@
 #
-# Silently drop broad broadcast and multicast traffic. We'd get a lot of IPv6 router solicitations and other things of little
-# interest in the logs generated below otherwise.
-#
-add rule inet filter input   pkttype broadcast counter drop comment "Silently drop broadcast"
-add rule inet filter input   pkttype multicast counter drop comment "Silently drop multicast"
-add rule inet filter forward pkttype broadcast counter drop comment "Silently drop broadcast"
-add rule inet filter forward pkttype multicast counter drop comment "Silently drop multicast"
-#
 # Log packets being dropped, with rate limiting to avoid the logging itself becoming a problem (attack vector).
 #
 add rule inet filter input   counter limit rate 5/second log flags all prefix "input_drop: " counter drop comment "Default deny (and log) packets to this host"
