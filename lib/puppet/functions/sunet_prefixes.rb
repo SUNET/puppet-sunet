@@ -81,7 +81,7 @@ Puppet::Functions.create_function(:sunet_prefixes) do
       { "net": "2001:6b0:1e:2::22d/128","family": "ip6", "comment": "anycast1-link.sunet.se", "resource_type": "SUNIC", "tags": ["knubbis"] },
       { "net": "2001:6b0:1e:2::22f/128","family": "ip6", "comment": "anycast2-link.sunet.se", "resource_type": "SUNIC", "tags": ["knubbis"] },
       { "net": "2001:6b0:1e:2::231/128","family": "ip6", "comment": "sunic-node3.sunet.se", "resource_type": "SUNIC", "tags": ["knubbis"] },
-      { "net": "2001:6b0:303:500::/64", "family": "ip6", "comment": "OpenStack Public DCO", "resource_type": "SUNET", "tags": ["knubbis","infraca", "acmec"] },
+      { "net": "2001:6b0:303:500::/64", "family": "ip6", "comment": "Sunet Cloud Orion", "resource_type": "SUNET", "tags": ["knubbis","infraca", "acmec"] },
       { "net": "2001:6b0:5a:4020::/64", "family": "ip6", "comment": "sunet.se-public (STO1)", "resource_type": "safespring", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "2001:6b0:8::/48",       "family": "ip6", "comment": "SUNET HOSTING", "resource_type": "SUNET", "tags": ["knubbis", "infraca", "acmec"] },
       { "net": "2001:6b0:40::/48",      "family": "ip6", "comment": "Safespring STO3", "resource_type": "safespring", "tags": ["knubbis", "infraca", "acmec"] },
