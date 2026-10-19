@@ -68,7 +68,8 @@ class sunet::metadata::discovery(
           content => file('sunet/metadata/discovery-renewal-hook'),
           owner   => root,
           group   => root,
-          mode    => '0755'
+          mode    => '0755',
+          before  => Class['sunet::certbot::acmed'],
       }
     }
 
