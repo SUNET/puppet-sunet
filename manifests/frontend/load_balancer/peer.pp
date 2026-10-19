@@ -8,7 +8,7 @@ define sunet::frontend::load_balancer::peer(
 ) {
   # If $local_ip is not set, default to either $::ipaddress_default or $::ipaddress6_default
   # depending on the address family of $remote_ip
-  if ! is_ipaddr($local_ip) {
+  if $local_ip == undef or ! is_ipaddr($local_ip) {
     if is_ipaddr($remote_ip, 4) {
       $_local_ip = $facts['networking']['ip']
       $_local_ip_family = 4

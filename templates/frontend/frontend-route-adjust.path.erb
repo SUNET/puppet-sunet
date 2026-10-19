@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch %i announce file for VIP route and BGP adjustments
+BindsTo=frontend-%i.service
+
+[Path]
+PathChanged=/opt/frontend/monitor/%i/announce
+Unit=frontend-route-adjust@%i.service
+
+[Install]
+WantedBy=frontend-%i.service

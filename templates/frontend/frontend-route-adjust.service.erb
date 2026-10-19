@@ -1,0 +1,10 @@
+[Unit]
+Description=Adjust VIP routes and BGP announcements for frontend %i
+After=frontend-%i.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/frontend-route-adjust %i
+
+[Install]
+WantedBy=frontend-%i.service
