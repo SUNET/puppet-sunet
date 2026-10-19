@@ -78,7 +78,7 @@ services:
 <%- else -%>
       - /etc/dehydrated/certs/<%= @hostname %>:/etc/ssl
   always-https:
-    image: docker.sunet.se/always-https
+    image: platform.sunet.se/platform/always-https:stable
     pull_policy: always
     environment:
       - ACME_URL=http://acme-c.sunet.se/
