@@ -1,5 +1,6 @@
 # Run pyff with compose
 class sunet::metadata::pyff_compose(
+  String $pyff_image='docker.sunet.se/pyff',
   String $pyff_imagetag='latest',
   String $luna_imagetag='latest',
   Array $pyff_extra_volumes = [],
