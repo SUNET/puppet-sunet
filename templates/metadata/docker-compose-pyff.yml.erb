@@ -2,7 +2,7 @@ version: '3.2'
 
 services:
   pyff:
-    image: docker.sunet.se/pyff:<%= @pyff_imagetag %>
+    image: <%= @pyff_image %>:<%= @pyff_imagetag %>
 <% unless @resolvers.empty? -%>
     dns:
 <% @resolvers.each do |resolver| -%>
