@@ -19,7 +19,7 @@
 class sunet::hittade (
   String $hostname,
   String $image       = 'docker.sunet.se/hittade-server',
-  String $image_tag   = '0.0.2',
+  String $image_tag   = '0.0.3',
   String $config_dir  = '/etc/hittade',
   String $compose_dir = '/opt',
 ) {
