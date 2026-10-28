@@ -106,10 +106,9 @@ class sunet::mastodon::backend(
       paths        => ['/opt/backups'],
       minute       => '31',
       keep_hourly  => 24,
-      keep_daily   => 1,
-      keep_weekly  => 1,
-      keep_monthly => 1,
-      keep_yearly  => 1,
+      keep_daily   => 7,
+      keep_monthly => 12,
+      keep_yearly  => 10,
       # The key is the filename under the job's pre.d, so the '10-' prefix is what used to
       # be the hook's order parameter. Declaring the hook as part of the job is what lets
       # the job's cron entry depend on it, so cron can no longer fire before the hook that
