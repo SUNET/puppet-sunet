@@ -3,8 +3,10 @@ class sunet::forgejo (
   String $domain          = 'platform.sunet.se',
   String $interface       = 'ens3',
   String $forgejo_version = '1.18.5-0-rootless',
+  String $anubis_version  = 'v1.27.0',
   Integer $uid            = '900',
   Integer $gid            = '900',
+  Boolean $restic_backup  = true,
 ) {
   include sunet::packages::rclone
   package { 'duplicity':
@@ -26,12 +28,6 @@ class sunet::forgejo (
   $s3_secret_key = lookup('s3_secret_key', undef, undef, undef)
   $s3_access_key = lookup('s3_access_key', undef, undef, undef)
   $s3_host       = lookup('s3_host', undef, undef, 's3.sto4.safedc.net')
-
-  # GPG password
-  $platform_sunet_se_gpg_password = lookup('platform_sunet_se_gpg_password', undef, undef, undef)
-
-  # GPG key
-  $platform_sunet_se_gpg_key = lookup('platform_sunet_se_gpg_key', undef, undef, undef)
 
   # Nginx stuff
   file{ '/opt/nginx':
@@ -78,6 +74,25 @@ class sunet::forgejo (
     owner  => 'git',
     group  => 'git',
   }
+  -> file{ '/opt/forgejo/anubis':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  -> file{ '/opt/forgejo/anubis/state':
+    ensure => directory,
+    owner  => 'git',
+    group  => 'git',
+    mode   => '0750',
+  }
+  -> file{ '/opt/forgejo/anubis/botPolicy.yaml':
+    ensure  => file,
+    content => file('sunet/forgejo/anubis-botPolicy.yaml'),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+  }
   -> file{ '/opt/forgejo/config/app.ini':
     ensure  => file,
     content => template('sunet/forgejo/app.ini.erb'),
@@ -116,17 +131,27 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
     content => template('sunet/forgejo/rclone.conf.erb'),
     mode    => '0644',
   }
-  -> file{ '/opt/forgejo/backup.sh':
-    ensure  => file,
-    content => template('sunet/forgejo/backup.erb.sh'),
-    mode    => '0744',
-  }
-  -> sunet::scriptherder::cronjob { 'forgejo_backup':
-    cmd           => '/opt/forgejo/backup.sh',
-    minute        => '20',
-    hour          => '2',
-    ok_criteria   => ['exit_status=0', 'max_age=25h'],
-    warn_criteria => ['exit_status=0', 'max_age=48h'],
+
+  if ($restic_backup) {
+    sunet::backup::restic::job { 'forgejo_backup':
+      paths        => ['/opt/forgejo/backups'],
+      minute       => '20',
+      hour         => '2',
+      keep_daily   => 1,
+      keep_weekly  => 1,
+      keep_monthly => 1,
+      keep_yearly  => 1,
+      # The key is the filename under the job's pre.d, so the '10-' prefix is what used to
+      # be the hook's order parameter. Declaring the hook as part of the job is what lets
+      # the job's cron entry depend on it, so cron can no longer fire before the hook that
+      # creates /opt/backups exists.
+      pre_hooks    => {
+        '10-dump'  => { content => template('sunet/forgejo/backup.erb.sh') },
+      },
+      post_hooks   => {
+        '10-cleanup' => { content => "#!/bin/bash\nfind /opt/forgejo/backups/ -mtime +1 -delete\n"  },
+      },
+    }
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
@@ -150,14 +175,5 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
       from => 'any',
       port => ['80', '443', '22022'],
     }
-  }
-  file{ '/opt/forgejo/import-secret-key.sh':
-    ensure  => file,
-    content => template('sunet/forgejo/import-secret-key.erb.sh'),
-    mode    => '0700',
-  }
-  # Import gpg key
-  -> exec{ 'import_gpg_key':
-    command => '/opt/forgejo/import-secret-key.sh'
   }
 }

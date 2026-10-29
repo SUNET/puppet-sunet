@@ -1,0 +1,28 @@
+# Answers ACME HTTP-01 challenges for this node's own certificate by proxying to
+# the central dehydrated host, which serves the tokens from one document root for
+# every name. Nothing else is served: acme-c pre-flights each name with
+#   curl -s http://${DOMAIN}/.well-known/acme-challenge/ | grep -q meep
+# so this path must work before a certificate can ever be issued.
+#
+# Deliberately no global section: this image's haproxy predates
+# 'log ... format raw', and a responder this small has nothing worth logging.
+defaults
+  mode http
+  timeout connect 3s
+  timeout client 6s
+  timeout server 6s
+
+frontend ft_http
+  # Both families explicitly: 'bind *:80' is IPv4-only, and these nodes have AAAA
+  # records that Let's Encrypt will prefer. v6only keeps the two sockets from
+  # depending on net.ipv6.bindv6only.
+  bind *:80
+  bind [::]:80 v6only
+  acl acme path_beg -i /.well-known/acme-challenge
+  # Deny before use_backend: haproxy evaluates http-request rules first whatever
+  # the file order, and warns if they are written the other way round.
+  http-request deny unless acme
+  use_backend bk_acme if acme
+
+backend bk_acme
+  server acme-c <%= @acme_server %>:80

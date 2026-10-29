@@ -141,7 +141,7 @@ services:
   mimir:
     restart: on-failure
     image: grafana/mimir:<%= @mimir_tag %>
-    command: ["-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml"]
+    command: ["-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml"<% @mimir_extra_flags.each do |flag| -%>, "<%= flag %>"<% end -%>]
     ports:
       - "9009:9009"
     volumes:

@@ -4,10 +4,12 @@
 # and allow monitoring of the cron jobs from Nagios or similar.
 #
 # @param install    Whether to install the bundled scriptherder.py script or not
+# @param rs         Install the Rust scriptherder-rs binary instead of scriptherder.py (both go to /usr/local/bin/scriptherder)
 # @param nrpe       Whether to install the default NRPE checks or not
 # @param nrpe_sudo  Run the NRPE check with sudo or not. Needed if umask prevents nagios user from reading check results.
 class sunet::scriptherder::init (
   Boolean $install                  = true,
+  Boolean $rs                       = false,
   Boolean $nrpe                     = true,
   Boolean $nrpe_sudo                = true,
   String  $scriptherder_dir         = '/var/cache/scriptherder',
@@ -15,12 +17,16 @@ class sunet::scriptherder::init (
   Enum['present', 'absent'] $ensure = 'present',
 ) {
   if $install {
-    if $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '18.04') < 0 {
+    if ! $rs and $facts['os']['name'] == 'Ubuntu' and versioncmp($facts['os']['release']['full'], '18.04') < 0 {
       notice('Not installing Scriptherder on Ubuntu < 18.04 (because of too old Python version)')
     } else {
+      $_scriptherder_source = $rs ? {
+        true    => 'puppet:///modules/sunet/scriptherder/scriptherder-rs',
+        default => 'puppet:///modules/sunet/scriptherder/scriptherder.py',
+      }
       file { '/usr/local/bin/scriptherder':
         mode   => '0755',
-        source => 'puppet:///modules/sunet/scriptherder/scriptherder.py',
+        source => $_scriptherder_source,
       }
       file { '/etc/bash_completion.d/scriptherder-tab-completion.sh':
         mode   => '0755',

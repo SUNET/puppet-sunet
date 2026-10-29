@@ -1,0 +1,19 @@
+#!/bin/bash
+# Managed by puppet: sunet::backup::restic::repository['<%= @title %>'] - do not edit
+#
+# Run restic against the '<%= @title %>' repository with the right environment
+# already in place:
+#
+#   restic-<%= @safe_name %> snapshots
+#   restic-<%= @safe_name %> ls latest
+#   restic-<%= @safe_name %> restore latest --target /tmp/restore
+#
+# This is also what the prune and check cron jobs invoke.
+
+set -euo pipefail
+umask 077
+
+# shellcheck disable=SC1091  # puppet-managed, path is known at generation time
+. <%= @quoted['env_file'] %>
+
+exec <%= @quoted['restic_bin'] %> "$@"

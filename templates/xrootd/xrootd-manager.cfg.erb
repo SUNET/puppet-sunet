@@ -5,6 +5,14 @@ fi
 if exec xrootd
   xrd.protocol http:<%= @xrootd_port %> libXrdHttp.so
   xrd.port <%= @xrootd_port %>
+<% if @tpc and ['http','both'].include?(@tpc_mode) -%>
+  # The manager answers the initial COPY and redirects it to a data server, so it
+  # needs the handler too — see the matching block in xrootd-server.cfg.erb.
+  http.cadir /etc/grid-security/certificates
+  http.cert /etc/grid-security/xrd/xrdcert.pem
+  http.key /etc/grid-security/xrd/xrdkey.pem
+  http.exthandler xrdtpc libXrdHttpTPC.so
+<% end -%>
 fi
 
 # Config TLS

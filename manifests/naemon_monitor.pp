@@ -23,6 +23,7 @@ class sunet::naemon_monitor (
   String $grafana_default_role = 'Viewer',
   String $loki_tag = '3.5.7',
   String $mimir_tag = '2.17.1',
+  Array[String] $mimir_extra_flags = [],
   String $tempo_tag = '2.9.0',
   String $alloy_tag = 'v1.11.2',
   Hash $manual_hosts = {},

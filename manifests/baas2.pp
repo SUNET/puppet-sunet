@@ -29,6 +29,7 @@
 # @param install_tbmr      If set to true it will install "Bare Machine Recovery for Tivoli TSM (TBMR)"
 # @param tbmr_version      The version of TBMR to be installed (it has to match the version in $tbmr_url)
 # @param tbmr_url          The download URL for the TBMR installer (it has to match the version in $tbmr_version)
+# @exit_on_error           If true, passes --exit-on-error to run-parts.
 class sunet::baas2(
   String        $nodename='',
   String        $tcpserveraddress='server2.backup.dco1.safedc.net',
@@ -39,6 +40,7 @@ class sunet::baas2(
   Boolean       $install_tbmr=false,
   String        $tbmr_version='9.6.3.3418-1',
   String        $tbmr_url="https://s3.sto1.safedc.net/94f5b4f4aa674782b6bc4181943e67f1:tbmr/wab0snk8lrh6l8cjzgnaozm8siw7g7/tbmr_${tbmr_version}_amd64.deb",
+  Boolean       $exit_on_error=false,
 ) {
 
   # MUST be set properly in hiera to continue
@@ -47,6 +49,18 @@ class sunet::baas2(
 
   if $nodename and $baas_password != 'NOT_SET_IN_HIERA' and $baas_encryption_password != 'NOT_SET_IN_HIERA' {
 
+    file {[
+      '/opt/baas2/',
+      '/opt/baas2/scheduled-scripts',
+      '/opt/baas2/scheduled-scripts/pre.d',
+      '/opt/baas2/scheduled-scripts/parallel.d',
+      '/opt/baas2/scheduled-scripts/post.d',
+    ]:
+      ensure => directory,
+      mode   => '0755',
+      owner  => 'root',
+      group  => 'root',
+    }
 
     # The dsm.sys template expects backup_dirs to not have a trailing slash, so
     # make sure this is the case
@@ -135,6 +149,12 @@ class sunet::baas2(
     $tbmr_lic = safe_hiera('tbmr_lic')
     $tbmr_cid = safe_hiera('tbmr_cid')
     if $install_tbmr and $tbmr_lic != 'NOT_SET_IN_HIERA' and $tbmr_cid != 'NOT_SET_IN_HIERA' {
+      file { '/opt/baas2/scheduled-scripts/pre.d/10get-tbmr-info':
+        ensure  => 'file',
+        mode    => '0755',
+        content => template('sunet/baas2/scheduled-scripts/pre.d/10get-tbmr-info.erb')
+      }
+
       file { '/usr/local/sbin/sunet-baas2-tbmr-bootstrap':
         ensure  => 'file',
         mode    => '0755',
