@@ -2,7 +2,7 @@
 services:
   always-https:
     container_name: always-https
-    image: docker.sunet.se/always-https
+    image: platform.sunet.se/platform/always-https:stable
     ports:
       - '80:80'
     environment:

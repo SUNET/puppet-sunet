@@ -86,7 +86,7 @@ class sunet::docker_registry (
     }
 
     sunet::docker_run { 'always-https':
-      image               => 'docker.sunet.se/always-https',
+      image               => 'platform.sunet.se/platform/always-https:stable',
       fetch_docker_image  => false,
       uid_gid_consistency => false,
       ports               => ['80:80'],
