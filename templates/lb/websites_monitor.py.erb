@@ -38,6 +38,16 @@ Install this script as /etc/bgp/monitor and configure exabgp with this:
         encoder text;
    }
 
+and list the process in the neighbor(s):
+
+   api {
+        processes [ watch-service ];
+   }
+
+ExaBGP 5 answers every command with 'done' or 'error' on this script's stdin. This script
+must read those answers (or exabgp stops servicing the process once the pipe fills up), and
+exits when exabgp closes stdin. stdout is reserved for commands, log to stderr/syslog only.
+
 If exabgp runs in a docker container, make sure to volume mount the monitor_dir
 (default /opt/frontend/monitor) into that container.
 """
@@ -114,6 +124,27 @@ def init_logger(myname, args):
     return logger
 
 
+def _prog_logger():
+    # Same name as in init_logger(), so messages also reach the syslog handler
+    return logging.getLogger(os.path.basename(sys.argv[0]))
+
+
+def send_command(line: str):
+    """Send one API command to exabgp. Exactly one newline terminated line, flushed."""
+    line = line.rstrip('\r\n')
+    if not line.strip() or '\r' in line or '\n' in line:
+        _prog_logger().warning(f'Refusing to send malformed command: {line!r}')
+        return
+    try:
+        sys.stdout.write(line + '\n')
+        sys.stdout.flush()
+    except BrokenPipeError:
+        # exabgp is gone. Point stdout at /dev/null so the interpreter does not complain on exit.
+        _prog_logger().info('stdout closed by exabgp, exiting')
+        os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
+        raise SystemExit(0)
+
+
 class InstanceDir(object):
 
     def __init__(self, dir, timeout, logger):
@@ -165,8 +196,7 @@ class InstanceDir(object):
                     self._logger.info('{}: Announcement updated'.format(self))
                 for line in new:
                     self._logger.debug('  cmd: {!r}'.format(line))
-                    sys.stdout.write(line)
-                sys.stdout.flush()
+                    send_command(line)
             self._contents = new
             return True
         #else:
@@ -182,13 +212,14 @@ class InstanceDir(object):
         """
         self._logger.info('{}: Withdrawing any previous announcements'.format(self))
         new = []
-        for line in self._contents:
+        if self._contents is None:
+            self._logger.warning('{}: No announcements were loaded, nothing to withdraw'.format(self))
+        for line in self._contents or []:
             if line.startswith('announce '):
                 line = 'withdraw ' + line[9:]
                 self._logger.debug('  cmd: {!r}'.format(line))
-                sys.stdout.write(line)
+                send_command(line)
                 new += [line]
-        sys.stdout.flush()
         self._contents = new
 
     def poll(self, now):
@@ -234,15 +265,65 @@ class AnnounceEvent(ProcessEvent):
                 _timeout = self._args.timeout + (random.random() * 5) - 2.5  # spread polling intervals
                 this = InstanceDir(_dir, _timeout, self._logger)
                 self._state.dirs[_dir] = this
-                logger.info(f'Added instance {this}')
-        elif event.maskname == 'DELETE':
+                self._logger.info(f'Added instance {this}')
+        elif event.maskname == 'IN_DELETE':
             _dir = os.path.dirname(event.pathname)
             if _dir in self._state.dirs:
                 self._state.dirs[_dir].withdraw()
                 this = self._state.dirs.pop(_dir)
-                logger.info(f'Removed instance {this}')
+                self._logger.info(f'Removed instance {this}')
         else:
             self._logger.warning(f'Unhandled announce event: {event}')
+
+
+_reply_buf = b''
+
+
+def read_replies(loop, logger):
+    """
+    Drain exabgp replies ('done'/'error') from stdin. Stop the loop on EOF (exabgp closed the pipe).
+    """
+    global _reply_buf
+    try:
+        # os.read, not readline(): buffered data would be hidden from the event loop
+        data = os.read(sys.stdin.fileno(), 65536)
+    except (BlockingIOError, InterruptedError):
+        return
+    except OSError as exc:
+        logger.error(f'Error reading from stdin, exiting: {exc}')
+        loop.remove_reader(sys.stdin.fileno())
+        loop.stop()
+        return
+    if not data:
+        logger.info('stdin closed by exabgp, exiting')
+        loop.remove_reader(sys.stdin.fileno())
+        loop.stop()
+        return
+    # A reply can be split over two reads, only handle complete lines
+    _reply_buf += data
+    *lines, _reply_buf = _reply_buf.split(b'\n')
+    if len(_reply_buf) > 65536:
+        logger.warning('Discarding oversized unterminated reply from exabgp')
+        _reply_buf = b''
+    for raw in lines:
+        reply = raw.decode(errors='replace').strip()
+        if reply == 'done':
+            logger.debug('exabgp: done')
+        elif reply:
+            logger.warning(f'exabgp reply: {reply!r}')
+
+
+def poll_instances(loop, state: State, logger):
+    """Safety net: periodically let every instance re-check its announce file."""
+    now = time.time()
+    for this in list(state.dirs.values()):
+        try:
+            this.poll(now)
+        except SystemExit:
+            raise
+        except Exception as exc:
+            logger.error(f'Error polling {this}: {exc}')
+    loop.call_later(1, poll_instances, loop, state, logger)
 
 
 def main(args, logger):
@@ -269,9 +350,11 @@ def main(args, logger):
 
     notifier = AsyncioNotifier(wm, loop, default_proc_fun=AnnounceEvent(args, logger, state))
     wm.add_watch(args.monitor_dir, mask, rec=True, auto_add=True)
+    loop.add_reader(sys.stdin.fileno(), read_replies, loop, logger)
+    loop.call_later(1, poll_instances, loop, state, logger)
     loop.run_forever()
     notifier.stop()
-    return False
+    return True  # only reached when exabgp closed stdin, which is a normal shutdown
 
 
 if __name__ == '__main__':
