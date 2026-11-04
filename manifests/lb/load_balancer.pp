@@ -142,7 +142,7 @@ class sunet::lb::load_balancer(
   }
   file { '/etc/sudoers.d/nrpe_maxconn_check':
     ensure  => file,
-    content => "nagios ALL=(root) NOPASSWD: /usr/lib/nagios/plugins/check_haproxy_maxconn",
+    content => 'nagios ALL=(root) NOPASSWD: /usr/lib/nagios/plugins/check_haproxy_maxconn',
     mode    => '0440',
     owner   => 'root',
     group   => 'root',
