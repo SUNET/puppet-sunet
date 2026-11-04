@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# Exabgp monitor process: creates the command FIFO, pushes initial route state from
+# existing announce files, then relays ongoing route updates to exabgp via stdout.
+# Run by exabgp as its process monitor inside the exabgp container.
+#
+# frontend-route-adjust@<instance> services watch for changes to the announce files
+# and write route add/withdraw commands to the write end of the FIFO.
+
+fifo=/var/run/frontend-exabgp/exabgp-commands
+mkdir -p "$(dirname "$fifo")"
+rm -f "$fifo"
+mkfifo -m 0600 "$fifo"
+
+# Push current state from all existing announce files so exabgp has initial state
+for f in /opt/frontend/monitor/*/announce; do
+    [[ -f "$f" ]] && cat "$f"
+done
+
+# Block-read FIFO for updates from frontend-route-adjust, relay to exabgp stdout.
+# exec 3<>$fifo holds the write end open so cat never gets EOF between writes.
+exec 3<>"$fifo"
+cat <&3

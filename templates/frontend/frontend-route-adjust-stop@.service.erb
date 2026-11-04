@@ -1,0 +1,12 @@
+[Unit]
+Description=Withdraw VIP routes and BGP announcements on frontend %i stop
+PartOf=frontend-%i.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecStop=/usr/local/bin/frontend-route-adjust %i stop
+
+[Install]
+WantedBy=frontend-%i.service
