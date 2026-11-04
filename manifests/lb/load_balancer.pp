@@ -131,4 +131,24 @@ class sunet::lb::load_balancer(
       group => 'haproxy',
     })
   }
+
+  # monitoring
+  file { '/usr/lib/nagios/plugins/check_haproxy_maxconn':
+    ensure  => 'file',
+    mode    => '0755',
+    owner   => 'root',
+    group   => 'root',
+    content => file('sunet/lb/check_haproxy_maxconn.sh'),
+  }
+  file { '/etc/sudoers.d/nrpe_maxconn_check':
+    ensure  => file,
+    content => "nagios ALL=(root) NOPASSWD: /usr/lib/nagios/plugins/check_haproxy_maxconn",
+    mode    => '0440',
+    owner   => 'root',
+    group   => 'root',
+  }
+  sunet::nagios::nrpe_command {'check_haproxy_maxconn':
+    command_line => '/usr/bin/sudo /usr/lib/nagios/plugins/check_haproxy_maxconn',
+    require      => File['/usr/lib/nagios/plugins/check_haproxy_maxconn'],
+  }
 }
