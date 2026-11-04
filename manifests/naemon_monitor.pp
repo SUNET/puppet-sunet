@@ -12,6 +12,7 @@ class sunet::naemon_monitor (
   Array $naemon_extra_volumes = [],
   Array $thruk_extra_volumes = [],
   Array $resolvers = [],
+  String $thruk_image = 'docker.sunet.se/thruk',
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
   Array $thruk_users = [],

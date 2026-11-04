@@ -50,7 +50,7 @@ services:
 
   thruk:
     restart: on-failure
-    image: docker.sunet.se/thruk:<%= @thruk_tag %>
+    image: <%= @thruk_image %>:<%= @thruk_tag %>
 <% unless @resolvers.empty? -%>
     dns:
 <% @resolvers.each do |resolver| -%>
