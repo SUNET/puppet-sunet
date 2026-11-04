@@ -242,9 +242,18 @@ def main():
     acme_directory_url = args.server.rstrip("/") + "/"
     parsed = urlparse(acme_directory_url)
     path_parts = [p for p in parsed.path.split("/") if p]
+    if parsed.scheme not in ("http", "https") or not parsed.netloc or not path_parts:
+        parser.error("--server must be a full URL like https://host/.../directory/<serial>/")
+    if any(p in (".", "..") for p in path_parts) or "\\" in args.server:
+        parser.error("--server must not contain '.', '..' or backslash path segments")
     serial_no_colons = path_parts[-1].replace(":", "").upper()
     acme_base_url = parsed.scheme + "://" + parsed.netloc
     server_dir = parsed.netloc + parsed.path.rstrip("/")
+
+    # Defence in depth: everything we create or read must stay under --output-dir.
+    output_root = Path(args.output_dir).resolve()
+    if not (output_root / server_dir).resolve().is_relative_to(output_root):
+        parser.error("--server resolves outside --output-dir")
 
     symlink = Path(args.output_dir) / "public_key.pem"
     if symlink.exists() and not symlink.is_symlink():
