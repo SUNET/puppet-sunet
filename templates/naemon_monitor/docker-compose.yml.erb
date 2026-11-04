@@ -21,7 +21,7 @@ services:
     pull_policy: <%= @pull_policy %>
     init: true
     restart: on-failure
-    image: docker.sunet.se/naemon:<%= @naemon_tag %>
+    image: <%= @naemon_image %>:<%= @naemon_tag %>
 <% unless @resolvers.empty? -%>
     dns:
 <% @resolvers.each do |resolver| -%>
@@ -96,12 +96,12 @@ services:
   histou:
     pull_policy: <%= @pull_policy %>
     restart: on-failure
-    image: docker.sunet.se/histou:<%= @histou_tag %>
+    image: <%= @histou_image %>:<%= @histou_tag %>
 
   nagflux:
     pull_policy: <%= @pull_policy %>
     restart: on-failure
-    image: docker.sunet.se/nagflux:<%= @nagflux_tag %>
+    image: <%= @nagflux_image %>:<%= @nagflux_tag %>
     volumes:
       - '/var/nagflux/:/var/nagflux/'
     environment:
