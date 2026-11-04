@@ -74,6 +74,7 @@ services:
       - "<%= extra_volume %>"
 <%- end -%>
     environment:
+      - "THRUK_PUBLIC_HOSTNAME=<%= @domain %>"
 <%- @thruk_env.each do |environ| -%>
       - "<%= environ %>"
 <%- end -%>
