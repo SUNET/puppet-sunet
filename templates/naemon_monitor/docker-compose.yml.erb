@@ -3,6 +3,7 @@ version: '3.2'
 services:
 <% if @acme_protocol == 'acme-c' -%>
   always-https:
+    pull_policy: <%= @pull_policy %>
     image: platform.sunet.se/platform/always-https:stable
 <% unless @resolvers.empty? -%>
     dns:
@@ -17,9 +18,10 @@ services:
 <% end -%>
 
   naemon:
+    pull_policy: <%= @pull_policy %>
     init: true
     restart: on-failure
-    image: docker.sunet.se/naemon:<%= @naemon_tag %>
+    image: <%= @naemon_image %>:<%= @naemon_tag %>
 <% unless @resolvers.empty? -%>
     dns:
 <% @resolvers.each do |resolver| -%>
@@ -49,8 +51,9 @@ services:
 <% end -%>
 
   thruk:
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
-    image: docker.sunet.se/thruk:<%= @thruk_tag %>
+    image: <%= @thruk_image %>:<%= @thruk_tag %>
 <% unless @resolvers.empty? -%>
     dns:
 <% @resolvers.each do |resolver| -%>
@@ -74,11 +77,13 @@ services:
       - "<%= extra_volume %>"
 <%- end -%>
     environment:
+      - "THRUK_PUBLIC_HOSTNAME=<%= @domain %>"
 <%- @thruk_env.each do |environ| -%>
       - "<%= environ %>"
 <%- end -%>
 
   influxdb:
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
     image: influxdb:<%= @influxdb_tag %>
     volumes:
@@ -89,12 +94,14 @@ services:
 <%- end -%>
 
   histou:
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
-    image: docker.sunet.se/histou:<%= @histou_tag %>
+    image: <%= @histou_image %>:<%= @histou_tag %>
 
   nagflux:
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
-    image: docker.sunet.se/nagflux:<%= @nagflux_tag %>
+    image: <%= @nagflux_image %>:<%= @nagflux_tag %>
     volumes:
       - '/var/nagflux/:/var/nagflux/'
     environment:
@@ -103,6 +110,7 @@ services:
 <%- end -%>
 
   grafana:
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
     image: grafana/grafana:<%= @grafana_tag %>
     volumes:
@@ -113,6 +121,7 @@ services:
 
 <% if @receive_otel -%>
   loki:
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
     image: grafana/loki:<%= @loki_tag %>
     ports:
@@ -123,6 +132,7 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
 
   tempo:
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
     image: grafana/tempo:<%= @tempo_tag %>
     ports:
@@ -139,6 +149,7 @@ services:
       - "/opt/naemon_monitor/tempo:/var/tempo:rw"
 
   mimir:
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
     image: grafana/mimir:<%= @mimir_tag %>
     command: ["-ingester.native-histograms-ingestion-enabled=true", "-config.file=/etc/mimir.yaml"<% @mimir_extra_flags.each do |flag| -%>, "<%= flag %>"<% end -%>]
@@ -149,6 +160,7 @@ services:
       - "/opt/naemon_monitor/mimir:/data:rw"
 
   alloy: #Router for otel
+    pull_policy: <%= @pull_policy %>
     restart: on-failure
     image: grafana/alloy:<%= @alloy_tag %>
     command: ["run", "/etc/alloy/config.alloy"]
