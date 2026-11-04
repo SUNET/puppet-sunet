@@ -5,6 +5,7 @@
 #
 class sunet::naemon_monitor (
   String $domain,
+  String $pull_policy = 'missing',
   Enum['acme-c','acme-d'] $acme_protocol = 'acme-c',
   Boolean $enable_nocsection = false,
   String $influx_password = lookup('influx_password', String, undef, ''),
