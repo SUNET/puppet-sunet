@@ -5,19 +5,24 @@
 #
 class sunet::naemon_monitor (
   String $domain,
+  String $pull_policy = 'missing',
   Enum['acme-c','acme-d'] $acme_protocol = 'acme-c',
   Boolean $enable_nocsection = false,
   String $influx_password = lookup('influx_password', String, undef, ''),
+  String $naemon_image = 'docker.sunet.se/naemon',
   String $naemon_tag = 'latest',
   Array $naemon_extra_volumes = [],
   Array $thruk_extra_volumes = [],
   Array $resolvers = [],
+  String $thruk_image = 'docker.sunet.se/thruk',
   String $thruk_tag = 'latest',
   Array $thruk_admins = ['placeholder'],
   Array $thruk_users = [],
   Array[String] $thruk_allow_clients = ['any'],
   String $influxdb_tag = '1.8',
+  String $histou_image = 'docker.sunet.se/histou',
   String $histou_tag = 'latest',
+  String $nagflux_image = 'docker.sunet.se/nagflux',
   String $nagflux_tag = 'latest',
   String $grafana_tag = '12.1.1',
   String $grafana_default_role = 'Viewer',
@@ -45,6 +50,12 @@ class sunet::naemon_monitor (
   Boolean $nsca          = false,
 ) {
   include sunet::systemd_reload
+
+  # Only the image built from github.com/SUNET (platform.sunet.se/platform/thruk)
+  # has the user access control (allowed users file and reload-access.sh).
+  # Older images ignore it, and the new image lets nobody in without the file,
+  # so this is derived from the image rather than being a separate setting.
+  $thruk_access_control = $thruk_image =~ /^platform\.sunet\.se\/platform\/thruk$/
 
   $naemon_container = $::facts['dockerhost2'] ? {
     'yes' => 'naemon_monitor-naemon-1',
@@ -120,6 +131,34 @@ class sunet::naemon_monitor (
   $thruk_admins_string = inline_template('ADMIN_USERS=<%- @thruk_admins.each do |user| -%><%= user %>,<%- end -%>')
   $thruk_users_string = inline_template('READONLY_USERS=<%- @thruk_users.each do |user| -%><%= user %>,<%- end -%>')
   $thruk_env = [$thruk_admins_string, $thruk_users_string]
+
+  # Names or globs (* and ?) that may log in to Thruk, Grafana and histou.
+  # The Thruk container applies the file with a graceful Apache reload, so
+  # changes need no container restart. An empty file lets nobody in.
+  if $thruk_access_control {
+    $thruk_access_users = unique($thruk_admins + $thruk_users)
+    file { '/opt/naemon_monitor/access':
+      ensure => directory,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0755',
+    }
+    file { '/opt/naemon_monitor/access/allowed-users.txt':
+      ensure  => file,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      content => inline_template("<% @thruk_access_users.each do |user| -%><%= user %>\n<% end -%>"),
+      require => File['/opt/naemon_monitor/access'],
+      notify  => Exec['reload-thruk-access'],
+    }
+    exec { 'reload-thruk-access':
+      command     => '/usr/bin/docker exec naemon_monitor-thruk-1 /usr/local/bin/reload-access.sh',
+      onlyif      => '/usr/bin/docker ps -q --filter name=^naemon_monitor-thruk-1$ | /bin/grep -q .',
+      provider    => shell,
+      refreshonly => true,
+    }
+  }
 
   if $influx_password == '' {
     err('ERROR: influx password not set')
@@ -221,20 +260,35 @@ class sunet::naemon_monitor (
     package { ['sqlite3']: ensure => 'present' }
 
     # Grafana can only use one group via the apache proxy auth module, so we cheat and make everyone Viewers
-    # and admins will be set with the sql below.
-    $allowed_users_string = join($thruk_admins + $thruk_users,' ')
-    $thruk_admins.each |$user| {
-      exec { "set-admin for ${user}":
-        command => "sqlite3 /opt/naemon_monitor/grafana/grafana.db \"update user set is_admin=1 where login='${user}';UPDATE org_user SET role = 'Admin' WHERE user_id=(SELECT id from user where login='${user}');\"",
-        onlyif  => 'test -f /opt/naemon_monitor/grafana/grafana.db'
-      }
-    }
-    file { '/opt/naemon_monitor/groups.txt':
+    # and admins will be set with the sql below. Admins in thruk_admins are promoted and users that are
+    # Admin but no longer listed are demoted to the default role. The built-in "admin" user is never
+    # touched, and Editor/Viewer roles set by hand in Grafana are left alone.
+    $grafana_admins_sql = join($thruk_admins.map |$user| { "'${regsubst($user, "'", "''", 'G')}'" }, ',')
+    $grafana_keep_sql = join(["'admin'", $grafana_admins_sql].filter |$item| { $item != '' }, ',')
+    file { '/opt/naemon_monitor/grafana-sync-admins.sql':
       ensure  => file,
-      content => inline_template('editors:<%= @allowed_users_string-%>'),
+      content => @("SQL"),
+        UPDATE user SET is_admin=1 WHERE login IN (${grafana_admins_sql});
+        UPDATE org_user SET role='Admin'
+          WHERE user_id IN (SELECT id FROM user WHERE login IN (${grafana_admins_sql}));
+        UPDATE user SET is_admin=0 WHERE is_admin=1 AND login NOT IN (${grafana_keep_sql});
+        UPDATE org_user SET role='${grafana_default_role}' WHERE role='Admin'
+          AND user_id IN (SELECT id FROM user WHERE login NOT IN (${grafana_keep_sql}));
+        | SQL
       mode    => '0644',
       group   => 'root',
       owner   => 'root',
+    }
+    exec { 'sync-grafana-admins':
+      command  => 'sqlite3 /opt/naemon_monitor/grafana/grafana.db < /opt/naemon_monitor/grafana-sync-admins.sql',
+      onlyif   => 'test -f /opt/naemon_monitor/grafana/grafana.db',
+      provider => shell,
+      require  => [Package['sqlite3'], File['/opt/naemon_monitor/grafana-sync-admins.sql']],
+    }
+    # groups.txt was never mounted into the Thruk container, so it was never used.
+    # This can be removed when the class is run on all machines.
+    file { '/opt/naemon_monitor/groups.txt':
+      ensure => absent,
     }
     file { '/opt/naemon_monitor/grafana-provisioning/datasources/loki.yaml':
       ensure  => file,
