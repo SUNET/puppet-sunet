@@ -158,8 +158,6 @@ class sunet::naemon_monitor (
       provider    => shell,
       refreshonly => true,
     }
-    # The file has to exist before the container starts.
-    File['/opt/naemon_monitor/access/allowed-users.txt'] -> Sunet::Docker_compose['naemon_monitor']
   }
 
   if $influx_password == '' {
