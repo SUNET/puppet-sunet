@@ -1,8 +1,9 @@
 # Wrapper to setup a OpenIDFed TA host
 class sunet::oidf::ta(
-  String $hostname              = undef,
-  String $inmor_version         = undef,
-  Optional[Boolean] $acmed      = true
+  String $hostname                    = undef,
+  String $inmor_version               = undef,
+  Optional[String] $postgres_version  = 18,
+  Optional[Boolean] $acmed            = true
 ){
   $secret_key = lookup('inmor_secret_key', undef, undef, 'your-production-secret-key')
   $mfa_key = lookup('inmor_mfa_key', undef, undef, 'your-production-MFA-key')

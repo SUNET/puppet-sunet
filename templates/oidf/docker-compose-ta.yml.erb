@@ -22,7 +22,7 @@ services:
       - 'RUST_LOG=info'
   db:
     restart: always
-    image: postgres:14-alpine
+    image: postgres:<%= postgres_version %>-alpine
     shm_size: 1024mb
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'postgres']
