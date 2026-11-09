@@ -2,7 +2,7 @@
 class sunet::oidf::ta(
   String $hostname                    = undef,
   String $inmor_version               = undef,
-  Optional[String] $postgres_version  = 18,
+  Optional[Integer] $postgres_version = 18,
   Optional[Boolean] $acmed            = true
 ){
   $secret_key = lookup('inmor_secret_key', undef, undef, 'your-production-secret-key')
