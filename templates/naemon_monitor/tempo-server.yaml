@@ -55,7 +55,7 @@ metrics_generator:
   storage:
     path: /var/tempo/generator/wal
     remote_write:
-      - url: http://prometheus:9009/api/v1/write
+      - url: http://mimir:9009/api/v1/push
         send_exemplars: true
 <% unless @tempo_v3_1_plus -%>
   traces_storage:                      # only used by the local-blocks processor (2.x)
