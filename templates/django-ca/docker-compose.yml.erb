@@ -2,7 +2,7 @@
 services:
   app:
     container_name: django-ca-app
-    image: <%= django_ca_image %>:<%= @django_ca_tag %>
+    image: <%= @django_ca_image %>:<%= @django_ca_tag %>
     volumes:
       - <%= @config_dir %>/django-ca.yaml:/usr/src/django-ca/ca/conf/compose/99-django-ca.yaml
       - static:/usr/share/django-ca/static/
