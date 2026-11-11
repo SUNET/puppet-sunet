@@ -58,6 +58,13 @@ class sunet::naemon_monitor (
   # so this is derived from the image rather than being a separate setting.
   $thruk_access_control = $thruk_image =~ /^platform\.sunet\.se\/platform\/thruk$/
 
+  # Tempo 3.1+ drops the compactor, opencensus and local-blocks; the template branches on this.
+  # 'latest' is treated as 3.x. A leading 'v' is ignored.
+  $tempo_version    = regsubst($tempo_tag, '^v', '')
+  $tempo_v3_1_plus  = $tempo_version == 'latest' or (
+    $tempo_version =~ /^\d+(\.\d+)*/ and versioncmp($tempo_version, '3.1') >= 0
+  )
+
   $naemon_container = $::facts['dockerhost2'] ? {
     'yes' => 'naemon_monitor-naemon-1',
     default => 'naemon_monitor_naemon_1',
