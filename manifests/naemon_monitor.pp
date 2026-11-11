@@ -65,6 +65,31 @@ class sunet::naemon_monitor (
     $tempo_version =~ /^\d+(\.\d+)*/ and versioncmp($tempo_version, '3.1') >= 0
   )
 
+  # The influxdb 1.13+ images run as the unprivileged influxdb user (1500:1500)
+  # instead of root, and fail with "permission denied" on root-owned data.
+  $influxdb_runs_as_user = $influxdb_tag =~ /^\d+(\.\d+)*/ and
+    versioncmp($influxdb_tag, '1.13') >= 0 and versioncmp($influxdb_tag, '2') < 0
+
+  if $influxdb_runs_as_user {
+    # Also covers fresh hosts, where Docker would otherwise create the bind mount as root.
+    file { '/var/lib/influxdb':
+      ensure => directory,
+      owner  => '1500',
+      group  => '1500',
+      mode   => '0755',
+    }
+    # Hand existing data over to the influxdb user. Runs only when something
+    # isn't owned by 1500, so it's a no-op once fixed.
+    exec { 'influxdb-chown-data':
+      command  => 'chown -R 1500:1500 /var/lib/influxdb',
+      onlyif   => 'find /var/lib/influxdb ! -user 1500 -print -quit | grep -q .',
+      path     => ['/usr/bin', '/bin'],
+      provider => shell,
+      require  => File['/var/lib/influxdb'],
+      before   => Sunet::Docker_compose['naemon_monitor'],
+    }
+  }
+
   $naemon_container = $::facts['dockerhost2'] ? {
     'yes' => 'naemon_monitor-naemon-1',
     default => 'naemon_monitor_naemon_1',
