@@ -21,7 +21,7 @@ class sunet::django_ca::server (
   Boolean                   $django_ca_admin_gui = false,
   Boolean                   $django_ca_bg_task_runner = false,
   Boolean                   $django_ca_cmc = false,
-  String                    $docker_pull_policy = 'daily'
+  String                    $docker_pull_policy = 'daily',
   String                    $config_dir = '/opt/django-ca',
   String                    $django_ca_tag = 'latest',
   String                    $django_ca_image = 'platform.sunet.se/platform/django-ca',
