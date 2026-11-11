@@ -7,8 +7,10 @@
 # @param django_ca_admin_gui                Enable or disable the django-ca admin web-gui
 # @param django_ca_bg_task_runner           If running multiple app servers, only one should run background tasks
 # @param django_ca_cmc                      Enable the CMS feature
+# @param docker_pull_policy                 Lets you configure how you want the pull policy to work
 # @param config_dir                         The local directory on the server where all config is stored
 # @param django_ca_tag                      The version of djanog-ca to run
+# @param django_ca_image                    The location of the docker image for django-ca
 # @param nginx_tag                          The version of nginx to run
 # @param server_fqdn                        The fqdn of the server, used in nginx.conf
 class sunet::django_ca::server (
@@ -19,10 +21,11 @@ class sunet::django_ca::server (
   Boolean                   $django_ca_admin_gui = false,
   Boolean                   $django_ca_bg_task_runner = false,
   Boolean                   $django_ca_cmc = false,
+  String                    $docker_pull_policy = 'daily'
   String                    $config_dir = '/opt/django-ca',
   String                    $django_ca_tag = 'latest',
   String                    $django_ca_image = 'platform.sunet.se/platform/django-ca',
-  String                    $nginx_tag = '1.29-bookworm',
+  String                    $nginx_tag = '1.31-bookworm',
   String                    $server_fqdn = $facts['networking']['fqdn'],
   String                    $django_ca_db_user = 'djangoca',
   String                    $django_ca_db_name = 'djangoca',
