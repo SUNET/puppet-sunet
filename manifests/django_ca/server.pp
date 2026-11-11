@@ -21,6 +21,7 @@ class sunet::django_ca::server (
   Boolean                   $django_ca_cmc = false,
   String                    $config_dir = '/opt/django-ca',
   String                    $django_ca_tag = 'latest',
+  String                    $django_ca_image = 'platform.sunet.se/platform/django-ca',
   String                    $nginx_tag = '1.29-bookworm',
   String                    $server_fqdn = $facts['networking']['fqdn'],
   String                    $django_ca_db_user = 'djangoca',
