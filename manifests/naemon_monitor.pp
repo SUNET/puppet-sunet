@@ -163,7 +163,7 @@ class sunet::naemon_monitor (
   if $influx_password == '' {
     err('ERROR: influx password not set')
   }
-  $influx_env = ['INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux']
+  $influx_env = ['INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux', 'INFLUXDB_REPORTING_DISABLED=true']
   $nagflux_env = ["INFLUXDB_ADMIN_PASSWORD=${influx_password}"]
 
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/':
