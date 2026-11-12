@@ -57,7 +57,7 @@ class sunet::certbot::sync::server(
   }
 
   file { '/etc/letsencrypt/renewal-hooks/deploy/certbot-sync-export':
-    ensure  => absent,
-    before  => Class['sunet::certbot::acmed']
+    ensure => absent,
+    before => Class['sunet::certbot::acmed']
   }
 }
