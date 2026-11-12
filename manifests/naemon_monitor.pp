@@ -2,7 +2,9 @@
 # @param receive_otel                     Feature flag to enable the LGTM stack
 # @param otel_retention                   Number of hours to keep logs, metrics and traces, defaults to 3 months
 # @param naemon_automatic_repo_hosts      Option to skip the automatic monitoring of hosts in the ops-repo where the server resides
-# @parma grafana_log_level                Configure grafana log level: debug, info, warn, error
+# @param grafana_log_level                Configure grafana log level: debug, info, warn, error
+# @param mimir_log_level                  Configure mimir log level: debug, info, warn, error
+
 class sunet::naemon_monitor (
   String $domain,
   String $pull_policy                    = 'missing',
@@ -26,9 +28,20 @@ class sunet::naemon_monitor (
   String $nagflux_tag                    = 'latest',
   String $grafana_tag                    = '12.1.1',
   String $grafana_default_role           = 'Viewer',
-  String $grafana_log_level              = 'info',
+  Enum[
+    'debug',
+    'info',
+    'warn',
+    'error'
+  ] $grafana_log_level                   = 'info',
   String $loki_tag                       = '3.5.7',
   String $mimir_tag                      = '2.17.1',
+  Enum[
+    'debug',
+    'info',
+    'warn',
+    'error',
+  ] $mimir_log_level                     = 'info',
   Array[String] $mimir_extra_flags       = [],
   String $tempo_tag                      = '2.9.0',
   String $alloy_tag                      = 'v1.11.2',

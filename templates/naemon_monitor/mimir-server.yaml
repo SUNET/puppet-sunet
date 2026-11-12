@@ -35,7 +35,7 @@ ruler_storage:
 
 server:
   http_listen_port: 9009
-  log_level: error
+  log_level: <%= @mimir_log_level %>
 
 store_gateway:
   sharding_ring:
