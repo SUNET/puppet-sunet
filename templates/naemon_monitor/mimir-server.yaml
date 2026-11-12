@@ -52,4 +52,5 @@ limits:
   # Delete from storage metrics data older than x.
   compactor_blocks_retention_period: <%= @otel_retention %>
   max_global_series_per_user: 2000000 #default is 150 000, k8s generates alot
-
+  # Store exemplars (trace IDs attached to samples) sent by Tempo's metrics-generator
+  max_global_exemplars_per_user: 100000
