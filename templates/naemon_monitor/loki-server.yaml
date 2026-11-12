@@ -57,7 +57,7 @@ distributor:
   otlp_config:
   # We add host.name to be picked up automatically
   # It will be exposed as host_name in grafana as loki translates . -> _
-    default_resource_attributes_as_index_labels: 
+    default_resource_attributes_as_index_labels:
       - service.name
       - service.namespace
       - service.instance.id
