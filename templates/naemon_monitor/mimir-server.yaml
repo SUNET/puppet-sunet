@@ -41,6 +41,9 @@ store_gateway:
   sharding_ring:
     replication_factor: 1
 
+usage_stats:
+  enabled: false
+
 # Mimir 3.x routes all queries through the query-scheduler, whose
 # per-tenant queue defaults to 100. Dashboards with many panels (e.g.
 # Node Exporter Full) overflowed it and panels failed with 429 "too many
