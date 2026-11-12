@@ -25,11 +25,27 @@ distributor:
           endpoint: ":4318"
         grpc:
           endpoint: ":4317"
-    opencensus:
+<% unless @tempo_v3_1_plus -%>
+    opencensus:                        # removed in Tempo 3.0
+<% end -%>
 
+<% if @tempo_v3_1_plus -%>
+# Tempo 3.x: the compactor is replaced by the backend scheduler/worker,
+# which handle retention. Both must be set, otherwise retention falls back to 336h.
+backend_scheduler:
+  provider:
+    compaction:
+      compaction:
+        block_retention: <%= @otel_retention %>
+
+backend_worker:
+  compaction:
+    block_retention: <%= @otel_retention %>
+<% else -%>
 compactor:
   compaction:
     block_retention: <%= @otel_retention %>
+<% end -%>
 
 metrics_generator:
   registry:
@@ -39,10 +55,12 @@ metrics_generator:
   storage:
     path: /var/tempo/generator/wal
     remote_write:
-      - url: http://prometheus:9009/api/v1/write
+      - url: http://mimir:9009/api/v1/push
         send_exemplars: true
-  traces_storage:
+<% unless @tempo_v3_1_plus -%>
+  traces_storage:                      # only used by the local-blocks processor (2.x)
     path: /var/tempo/generator/traces
+<% end -%>
 
 storage:
   trace:
@@ -52,7 +70,14 @@ storage:
     local:
       path: /var/tempo/blocks
 
+usage_report:
+  reporting_enabled: false
+
 overrides:
   defaults:
     metrics_generator:
+<% if @tempo_v3_1_plus -%>
+      processors: [service-graphs, span-metrics] # enables metrics generator (local-blocks removed in 3.x)
+<% else -%>
       processors: [service-graphs, span-metrics, local-blocks] # enables metrics generator
+<% end -%>

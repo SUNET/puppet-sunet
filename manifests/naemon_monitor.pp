@@ -2,52 +2,66 @@
 # @param receive_otel                     Feature flag to enable the LGTM stack
 # @param otel_retention                   Number of hours to keep logs, metrics and traces, defaults to 3 months
 # @param naemon_automatic_repo_hosts      Option to skip the automatic monitoring of hosts in the ops-repo where the server resides
-#
+# @param grafana_log_level                Configure grafana log level: debug, info, warn, error
+# @param mimir_log_level                  Configure mimir log level: debug, info, warn, error
+
 class sunet::naemon_monitor (
   String $domain,
-  String $pull_policy = 'missing',
+  String $pull_policy                    = 'missing',
   Enum['acme-c','acme-d'] $acme_protocol = 'acme-c',
-  Boolean $enable_nocsection = false,
-  String $influx_password = lookup('influx_password', String, undef, ''),
-  String $naemon_image = 'docker.sunet.se/naemon',
-  String $naemon_tag = 'latest',
-  Array $naemon_extra_volumes = [],
-  Array $thruk_extra_volumes = [],
-  Array $resolvers = [],
-  String $thruk_image = 'docker.sunet.se/thruk',
-  String $thruk_tag = 'latest',
-  Array $thruk_admins = ['placeholder'],
-  Array $thruk_users = [],
-  Array[String] $thruk_allow_clients = ['any'],
-  String $influxdb_tag = '1.8',
-  String $histou_image = 'docker.sunet.se/histou',
-  String $histou_tag = 'latest',
-  String $nagflux_image = 'docker.sunet.se/nagflux',
-  String $nagflux_tag = 'latest',
-  String $grafana_tag = '12.1.1',
-  String $grafana_default_role = 'Viewer',
-  String $loki_tag = '3.5.7',
-  String $mimir_tag = '2.17.1',
-  Array[String] $mimir_extra_flags = [],
-  String $tempo_tag = '2.9.0',
-  String $alloy_tag = 'v1.11.2',
-  Hash $manual_hosts = {},
-  Hash $additional_entities = {},
-  Hash $regexp_based_groups = {
+  Boolean $enable_nocsection             = false,
+  String $influx_password                = lookup('influx_password', String, undef, ''),
+  String $naemon_image                   = 'docker.sunet.se/naemon',
+  String $naemon_tag                     = 'latest',
+  Array $naemon_extra_volumes            = [],
+  Array $thruk_extra_volumes             = [],
+  Array $resolvers                       = [],
+  String $thruk_image                    = 'docker.sunet.se/thruk',
+  String $thruk_tag                      = 'latest',
+  Array $thruk_admins                    = ['placeholder'],
+  Array $thruk_users                     = [],
+  Array[String] $thruk_allow_clients     = ['any'],
+  String $influxdb_tag                   = '1.8',
+  String $histou_image                   = 'docker.sunet.se/histou',
+  String $histou_tag                     = 'latest',
+  String $nagflux_image                  = 'docker.sunet.se/nagflux',
+  String $nagflux_tag                    = 'latest',
+  String $grafana_tag                    = '12.1.1',
+  String $grafana_default_role           = 'Viewer',
+  Enum[
+    'debug',
+    'info',
+    'warn',
+    'error'
+  ] $grafana_log_level                   = 'info',
+  String $loki_tag                       = '3.5.7',
+  String $mimir_tag                      = '2.17.1',
+  Enum[
+    'debug',
+    'info',
+    'warn',
+    'error',
+  ] $mimir_log_level                     = 'info',
+  Array[String] $mimir_extra_flags       = [],
+  String $tempo_tag                      = '2.9.0',
+  String $alloy_tag                      = 'v1.11.2',
+  Hash $manual_hosts                     = {},
+  Hash $additional_entities              = {},
+  Hash $regexp_based_groups              = {
         'prod' => '.*-prod-.*',
         'test' => '.*-test-.*',
         'lab' => '.*-lab-.*',
         'qa' => '.*-qa-.*',
   },
-  String $nrpe_group = 'nrpe',
-  String $interface = 'ens3',
-  Array $exclude_hosts = [],
-  Boolean $naemon_automatic_repo_hosts = true,
-  Optional[String] $default_host_group = undef,
+  String $nrpe_group                     = 'nrpe',
+  String $interface                      = 'ens3',
+  Array $exclude_hosts                   = [],
+  Boolean $naemon_automatic_repo_hosts   = true,
+  Optional[String] $default_host_group   = undef,
   Array[Optional[String]] $optout_checks = [],
-  Optional[Boolean] $receive_otel = false,
-  String $otel_retention = '2232h',
-  Boolean $nsca          = false,
+  Optional[Boolean] $receive_otel        = false,
+  String $otel_retention                 = '2232h',
+  Boolean $nsca                          = false,
 ) {
   include sunet::systemd_reload
 
@@ -56,6 +70,38 @@ class sunet::naemon_monitor (
   # Older images ignore it, and the new image lets nobody in without the file,
   # so this is derived from the image rather than being a separate setting.
   $thruk_access_control = $thruk_image =~ /^platform\.sunet\.se\/platform\/thruk$/
+
+  # Tempo 3.1+ drops the compactor, opencensus and local-blocks; the template branches on this.
+  # 'latest' is treated as 3.x. A leading 'v' is ignored.
+  $tempo_version    = regsubst($tempo_tag, '^v', '')
+  $tempo_v3_1_plus  = $tempo_version == 'latest' or (
+    $tempo_version =~ /^\d+(\.\d+)*/ and versioncmp($tempo_version, '3.1') >= 0
+  )
+
+  # The influxdb 1.13+ images run as the unprivileged influxdb user (1500:1500)
+  # instead of root, and fail with "permission denied" on root-owned data.
+  $influxdb_runs_as_user = $influxdb_tag =~ /^\d+(\.\d+)*/ and
+    versioncmp($influxdb_tag, '1.13') >= 0 and versioncmp($influxdb_tag, '2') < 0
+
+  if $influxdb_runs_as_user {
+    # Also covers fresh hosts, where Docker would otherwise create the bind mount as root.
+    file { '/var/lib/influxdb':
+      ensure => directory,
+      owner  => '1500',
+      group  => '1500',
+      mode   => '0755',
+    }
+    # Hand existing data over to the influxdb user. Runs only when something
+    # isn't owned by 1500, so it's a no-op once fixed.
+    exec { 'influxdb-chown-data':
+      command  => 'chown -R 1500:1500 /var/lib/influxdb',
+      onlyif   => 'find /var/lib/influxdb ! -user 1500 -print -quit | grep -q .',
+      path     => ['/usr/bin', '/bin'],
+      provider => shell,
+      require  => File['/var/lib/influxdb'],
+      before   => Sunet::Docker_compose['naemon_monitor'],
+    }
+  }
 
   $naemon_container = $::facts['dockerhost2'] ? {
     'yes' => 'naemon_monitor-naemon-1',
@@ -163,7 +209,7 @@ class sunet::naemon_monitor (
   if $influx_password == '' {
     err('ERROR: influx password not set')
   }
-  $influx_env = ['INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux']
+  $influx_env = ['INFLUXDB_ADMIN_USER=admin',"INFLUXDB_ADMIN_PASSWORD=${influx_password}", 'INFLUXDB_DB=nagflux', 'INFLUXDB_REPORTING_DISABLED=true']
   $nagflux_env = ["INFLUXDB_ADMIN_PASSWORD=${influx_password}"]
 
   file { '/etc/systemd/system/sunet-naemon_monitor.service.d/':

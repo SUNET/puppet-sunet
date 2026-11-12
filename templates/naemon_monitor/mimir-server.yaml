@@ -35,13 +35,25 @@ ruler_storage:
 
 server:
   http_listen_port: 9009
-  log_level: error
+  log_level: <%= @mimir_log_level %>
 
 store_gateway:
   sharding_ring:
     replication_factor: 1
+
+usage_stats:
+  enabled: false
+
+# Mimir 3.x routes all queries through the query-scheduler, whose
+# per-tenant queue defaults to 100. Dashboards with many panels (e.g.
+# Node Exporter Full) overflowed it and panels failed with 429 "too many
+# outstanding requests". Raise max_outstanding_requests_per_tenant to 2000.
+query_scheduler:
+  max_outstanding_requests_per_tenant: 2000
+
 limits:
   # Delete from storage metrics data older than x.
   compactor_blocks_retention_period: <%= @otel_retention %>
   max_global_series_per_user: 2000000 #default is 150 000, k8s generates alot
-
+  # Store exemplars (trace IDs attached to samples) sent by Tempo's metrics-generator
+  max_global_exemplars_per_user: 100000
