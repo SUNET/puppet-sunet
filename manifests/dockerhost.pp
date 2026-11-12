@@ -16,6 +16,9 @@ class sunet::dockerhost(
   Optional[Array[String]] $tcp_bind           = undef,
 ) {
 
+
+  include sunet::packages::python3_yaml # check_docker_containers requirement
+
   # Remove old versions, if installed
   package { ['lxc-docker-1.6.2', 'lxc-docker'] :
     ensure => 'purged',
@@ -112,12 +115,6 @@ class sunet::dockerhost(
     } else {
       notice("Docker version ${docker_version} does not have a docker-ce-cli package")
     }
-  }
-
-  package { [
-    'python3-yaml',  # check_docker_containers requirement
-  ] :
-    ensure => 'installed',
   }
 
   $docker_command = $docker_package_name ? {
