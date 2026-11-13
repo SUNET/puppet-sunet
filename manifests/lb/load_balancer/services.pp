@@ -17,6 +17,7 @@ class sunet::lb::load_balancer::services(
     monitor        => '/etc/exabgp/monitor',
     notify         => Service['exabgp'],
     exabgp_version => '4',
+    encoder        => 'json',
   }
 
   # inotify used in websites_monitor.py.erb

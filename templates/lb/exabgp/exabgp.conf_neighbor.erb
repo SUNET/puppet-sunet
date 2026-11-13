@@ -29,5 +29,10 @@
 
         api {
                 processes [ watch-service ];
+                neighbor-changes;
+                receive {
+                    parsed;
+                    update;
+                }
         }
    }
