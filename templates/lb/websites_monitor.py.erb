@@ -57,6 +57,7 @@ import logging
 import logging.handlers
 import os
 import random
+import re
 from dataclasses import dataclass, field
 from typing import Dict
 
@@ -119,12 +120,26 @@ def init_logger(myname, args):
         formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
         syslog_h.setFormatter(formatter)
         logger.addHandler(syslog_h)
+        if not sys.stderr.isatty() and not args.debug:
+            # Run by exabgp (stderr ends up in the journal too): log through syslog only, not twice
+            for this_h in list(logging.getLogger('').handlers):
+                if isinstance(this_h, logging.StreamHandler) and this_h.stream is sys.stderr:
+                    logging.getLogger('').removeHandler(this_h)
     return logger
 
 
 def _prog_logger():
     # Same name as in init_logger(), so messages also reach the syslog handler
     return logging.getLogger(os.path.basename(sys.argv[0]))
+
+
+def describe_command(line: str) -> str:
+    """Human readable summary of an exabgp command, e.g. 'announced route 10.0.0.1/32 to exabgp'."""
+    m = re.match(r'(announce|withdraw)\s+route\s+(\S+)', line)
+    if not m:
+        return 'sent to exabgp: {}'.format(line.strip())
+    verb = 'announced' if m.group(1) == 'announce' else 'withdrawn'
+    return '{} route {} {} exabgp'.format(verb, m.group(2), 'to' if verb == 'announced' else 'from')
 
 
 def send_command(line: str):
@@ -184,16 +199,9 @@ class InstanceDir(object):
 
         if new != self._contents:
             if new:
-                parts = new[0].split(' ')
-                if parts[0] in ['announce', 'withdraw']:
-                    self._logger.info('{}: Announcement updated (first command: {})'.format(
-                        self, ' '.join(new[0].split(' ')[0:3])))
-                else:
-                    # Since only announce and withdraw lines are kept above, we only end up here if the
-                    # net result was an empty file. Don't want to crash though.
-                    self._logger.info('{}: Announcement updated'.format(self))
+                self._logger.info('{}: Announce file updated ({} command(s))'.format(self, len(new)))
                 for line in new:
-                    self._logger.debug('  cmd: {!r}'.format(line))
+                    self._logger.info('{}: {}'.format(self, describe_command(line)))
                     send_command(line)
             self._contents = new
             return True
@@ -215,7 +223,7 @@ class InstanceDir(object):
         for line in self._contents or []:
             if line.startswith('announce '):
                 line = 'withdraw ' + line[9:]
-                self._logger.debug('  cmd: {!r}'.format(line))
+                self._logger.info('{}: {}'.format(self, describe_command(line)))
                 send_command(line)
                 new += [line]
         self._contents = new
