@@ -31,6 +31,7 @@ class sunet::valkey::node(
   Enum['debug', 'verbose', 'notice', 'warning'] $valkey_loglevel = 'notice',
   Array[String]     $allow_clients = [],
   Array[String]     $allow_peers = [],
+  Array[String]     $service_extras = [],
 )
 {
 
@@ -74,6 +75,7 @@ class sunet::valkey::node(
     compose_dir      => '/opt/',
     compose_filename => 'docker-compose.yml',
     description      => 'valkey Cluster',
+    service_extras   => $service_extras,
   }
   file {'/etc/sysctl.d/55-vm-overcommit.conf':
     ensure  => present,

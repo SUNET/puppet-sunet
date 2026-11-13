@@ -23,7 +23,7 @@ class sunet::certbot::acmed(
   }
 
   if $create_bundle {
-    file { '/etc/letsencrypt/renewal-hooks/deploy/create-bundle.sh':
+    file { '/etc/letsencrypt/renewal-hooks/deploy/40-create-bundle.sh':
       ensure  => file,
       mode    => '0700',
       content => file('sunet/certbot/create-bundle.sh'),
