@@ -31,6 +31,7 @@ class sunet::certbot::acmed(
 
     file { '/etc/letsencrypt/renewal-hooks/deploy/create-bundle.sh':
       ensure => absent,
+      before => Class['sunet::certbot::acmed']
     }
   }
 
