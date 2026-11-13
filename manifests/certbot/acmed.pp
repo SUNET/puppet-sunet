@@ -28,6 +28,11 @@ class sunet::certbot::acmed(
       mode    => '0700',
       content => file('sunet/certbot/create-bundle.sh'),
     }
+
+    file { '/etc/letsencrypt/renewal-hooks/deploy/create-bundle.sh':
+      ensure => absent,
+      before => Class['sunet::certbot::acmed']
+    }
   }
 
   $acmed_clients = lookup('certbot_acmed_clients', undef, undef, {})
