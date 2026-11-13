@@ -112,12 +112,10 @@ def init_logger(myname, args):
     logging.basicConfig(level = level, stream = sys.stderr,
                         format='%(asctime)s: %(name)s: %(levelname)s %(message)s')
     logger = logging.getLogger(myname)
-    # If stderr is not a TTY, change the log level of the StreamHandler (stream = sys.stderr above) to WARNING
-    if not sys.stderr.isatty() and not args.debug:
-        for this_h in logging.getLogger('').handlers:
-            this_h.setLevel(logging.WARNING)
     if args.syslog:
-        syslog_h = logging.handlers.SysLogHandler()
+        # SysLogHandler() defaults to UDP localhost:514, where nothing listens, so use the local socket
+        syslog_h = logging.handlers.SysLogHandler(address='/dev/log' if os.path.exists('/dev/log')
+                                                  else ('localhost', 514))
         formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
         syslog_h.setFormatter(formatter)
         logger.addHandler(syslog_h)
