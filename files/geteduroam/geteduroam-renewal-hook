@@ -1,0 +1,13 @@
+#!/bin/sh -eu
+# vim: ai ts=4 sts=4 et sw=4
+
+install -m 640 "${RENEWED_LINEAGE}/bundle.pem" \
+    /etc/ssl/private/infra.pem
+
+# Prevent reload when service is not fully installed.
+# Like when issuing the cert for the first time.
+if [ -n "${NO_RELOAD:-}" ]; then
+    exit 0
+fi
+
+docker exec geteduroam-app-1 apache2ctl graceful
