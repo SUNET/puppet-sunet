@@ -120,11 +120,6 @@ def init_logger(myname, args):
         formatter = logging.Formatter('%(name)s: %(levelname)s %(message)s')
         syslog_h.setFormatter(formatter)
         logger.addHandler(syslog_h)
-        if not sys.stderr.isatty() and not args.debug:
-            # Run by exabgp (stderr ends up in the journal too): log through syslog only, not twice
-            for this_h in list(logging.getLogger('').handlers):
-                if isinstance(this_h, logging.StreamHandler) and this_h.stream is sys.stderr:
-                    logging.getLogger('').removeHandler(this_h)
     return logger
 
 
