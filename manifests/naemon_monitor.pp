@@ -42,7 +42,7 @@ class sunet::naemon_monitor (
     'debug',
     'info',
     'warn',
-    'error',
+    'error'
   ] $mimir_log_level                     = 'info',
   Array[String] $mimir_extra_flags       = [],
   String $tempo_tag                      = '2.9.0',
