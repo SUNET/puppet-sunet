@@ -3,6 +3,7 @@
 # @param otel_retention                   Number of hours to keep logs, metrics and traces, defaults to 3 months
 # @param naemon_automatic_repo_hosts      Option to skip the automatic monitoring of hosts in the ops-repo where the server resides
 # @param grafana_log_level                Configure grafana log level: debug, info, warn, error
+# @param grafana_visual_refresh           Try out Grafana's new visual UI (public preview, requires grafana_tag 13.3 or newer)
 # @param mimir_log_level                  Configure mimir log level: debug, info, warn, error
 
 class sunet::naemon_monitor (
@@ -28,6 +29,7 @@ class sunet::naemon_monitor (
   String $nagflux_tag                    = 'latest',
   String $grafana_tag                    = '12.1.1',
   String $grafana_default_role           = 'Viewer',
+  Boolean $grafana_visual_refresh        = false,
   Enum[
     'debug',
     'info',
