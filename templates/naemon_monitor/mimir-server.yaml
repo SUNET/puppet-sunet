@@ -57,3 +57,6 @@ limits:
   max_global_series_per_user: 2000000 #default is 150 000, k8s generates alot
   # Store exemplars (trace IDs attached to samples) sent by Tempo's metrics-generator
   max_global_exemplars_per_user: 100000
+  ingestion_rate: 100000        # Default is 10000 samples/s
+  ingestion_burst_size: 1000000 # Default is 200000 samples
+  native_histograms_ingestion_enabled: true
