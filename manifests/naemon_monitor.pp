@@ -78,6 +78,14 @@ class sunet::naemon_monitor (
     $tempo_version =~ /^\d+(\.\d+)*/ and versioncmp($tempo_version, '3.1') >= 0
   )
 
+  # Grafana 13+ disables scripted dashboards (used by Histou) by default and no
+  # longer converts the removed "graph" panel type; grafana.ini and histou.js branch on this.
+  # 'latest' is treated as 13.x. A leading 'v' is ignored.
+  $grafana_version = regsubst($grafana_tag, '^v', '')
+  $grafana_v13_plus = $grafana_version == 'latest' or (
+    $grafana_version =~ /^\d+(\.\d+)*/ and versioncmp($grafana_version, '13') >= 0
+  )
+
   # The influxdb 1.13+ images run as the unprivileged influxdb user (1500:1500)
   # instead of root, and fail with "permission denied" on root-owned data.
   $influxdb_runs_as_user = $influxdb_tag =~ /^\d+(\.\d+)*/ and
@@ -270,9 +278,13 @@ class sunet::naemon_monitor (
     group   => 'root',
     owner   => 'root',
   }
+  $histou_js_template = $grafana_v13_plus ? {
+    true    => 'sunet/naemon_monitor/histou-grafana13x.js.erb',
+    default => 'sunet/naemon_monitor/histou.js',
+  }
   file { '/opt/naemon_monitor/histou.js':
     ensure  => file,
-    content => template('sunet/naemon_monitor/histou.js'),
+    content => template($histou_js_template),
     mode    => '0644',
     group   => 'root',
     owner   => 'root',
