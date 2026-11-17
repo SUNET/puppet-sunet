@@ -3,7 +3,7 @@ services:
   patroni:
     container_name: patroni
     network_mode: host
-    image: docker.sunet.se/patroni:<%= @patroni_imagetag %>
+    image: <%= @patroni_image %>:<%= @patroni_imagetag %>
     volumes:
       - '/etc/ssl:/etc/ssl:ro'
       - '/opt/patroni/config/patroni.yml:/home/postgres/patroni.yml:ro'

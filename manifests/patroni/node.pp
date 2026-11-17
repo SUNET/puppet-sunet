@@ -4,6 +4,7 @@ class sunet::patroni::node(
   Integer $patroni_rest_api_port = 8008,
   Integer $postgres_port         = 5432,
   String $patroni_imagetag       = '4.1.0',
+  String $patroni_image          = 'docker.sunet.se/patroni',
   Boolean $pgbackrest            = false,
   String $pgbackrest_backup_host = '',
   String $pgbackrest_user        = 'root',
