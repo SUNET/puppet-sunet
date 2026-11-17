@@ -1,5 +1,6 @@
 # Run pyff with compose
 class sunet::metadata::pyff_compose(
+  String $pyff_image='docker.sunet.se/pyff',
   String $pyff_imagetag='latest',
   String $luna_imagetag='latest',
   Array $pyff_extra_volumes = [],
@@ -17,6 +18,8 @@ class sunet::metadata::pyff_compose(
   Boolean $hsm_client = false,
   String $hostname = $facts['networking']['fqdn'],
   Boolean $manage_signing_key = false,
+  Boolean $native_pkcs11      = false,
+  Array $hsms                 = [],
 ) {
 
   $pkcs11pin = lookup('pkcs11pin', undef, undef, '')
@@ -29,6 +32,18 @@ class sunet::metadata::pyff_compose(
     ensure_resource('sunet::snippets::secret_file', "${pyff_credentialsdir}/pyff-signing-key.pem", {
       hiera_key => 'pyff_signing_key',
     })
+  }
+
+  if ($native_pkcs11){
+    sunet::hsm::client_trust { 'hsms':
+      hsm_servers => $hsms,
+    }
+
+    sunet::hsm::client_auth {'client_cert': }
+
+    sunet::hsm::client_chrystoki {'/etc/Chrystoki.conf':
+      hsm_servers => $hsms,
+    }
   }
 
   sunet::docker_compose { 'pyff':

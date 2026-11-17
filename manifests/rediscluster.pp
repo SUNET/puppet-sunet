@@ -69,7 +69,7 @@ class sunet::rediscluster(
     file { '/etc/letsencrypt/renewal-hooks/deploy/redis':
       ensure  => file,
       mode    => '0700',
-      content => file('sunet/rediscluster/certbot-renewal-hook'),
+      content => template('sunet/rediscluster/certbot-renewal-hook.erb'),
     }
   }
 

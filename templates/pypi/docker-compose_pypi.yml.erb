@@ -26,7 +26,7 @@ services:
 
   # Redirect http traffic to https or acme-c
   alwayshttps:
-    image: docker.sunet.se/always-https
+    image: platform.sunet.se/platform/always-https:stable
     ports:
       - 80:80
     environment:

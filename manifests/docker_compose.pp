@@ -6,7 +6,8 @@ define sunet::docker_compose (
   String           $service_name,
   String           $service_prefix = 'sunet',
   Array[String]    $service_extras = [],
-  String           $compose_filename = "${service_name}.yml",
+  Boolean          $service_dir_layout = false,
+  Optional[String] $compose_filename = undef,
   String           $group = 'root',
   String           $mode = '0700',
   String           $owner = 'root',
@@ -33,10 +34,26 @@ define sunet::docker_compose (
   }
 
   if $_install_service {
-    $compose_file = "${compose_dir}/${service_name}/${compose_filename}"
+    if $service_dir_layout {
+      # The caller owns ${compose_dir}/${service_name}; we only manage its compose/ subdirectory.
+      # The project name can't come from the directory name here, so pin it to the service name.
+      $_compose_subdir = "${compose_dir}/${service_name}/compose"
+      $_project_name = $service_name
+    } else {
+      # docker-compose uses dirname as project name, so we add $service_name and put the compose_file in there
+      $_compose_subdir = "${compose_dir}/${service_name}"
+      $_project_name = undef
+    }
+    $_compose_filename = $compose_filename ? {
+      undef   => $service_dir_layout ? {
+        true    => 'docker-compose.yaml',
+        default => "${service_name}.yml",
+      },
+      default => $compose_filename,
+    }
+    $compose_file = "${_compose_subdir}/${_compose_filename}"
 
-    # docker-compose uses dirname as project name, so we add $service_name and put the compose_file in there
-    ensure_resource('sunet::misc::create_dir', ["${compose_dir}/${service_name}"], { owner => $owner, group => $group, mode => $mode })
+    ensure_resource('sunet::misc::create_dir', [$_compose_subdir], { owner => $owner, group => $group, mode => $mode })
 
     ensure_resource('file', $compose_file, {
         ensure  => 'file',
@@ -52,6 +69,7 @@ define sunet::docker_compose (
       require        => File[$compose_file],
       service_extras => $service_extras,
       start_command  => $start_command,
+      project_name   => $_project_name,
     }
   }
 }

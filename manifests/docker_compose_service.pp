@@ -7,8 +7,15 @@ define sunet::docker_compose_service(
   Array[String]    $service_extras = [],
   Optional[String] $service_alias = undef,
   Optional[String] $start_command = undef,
+  Optional[String] $project_name = undef,
 ) {
   include sunet::systemd_reload
+
+  # Compose derives the project name from the compose file's directory unless told otherwise.
+  $_project_args = $project_name ? {
+    undef   => '',
+    default => " -p ${project_name}",
+  }
 
   $_service_name = $service_name ? {
     undef => $name,

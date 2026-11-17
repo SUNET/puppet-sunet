@@ -2,7 +2,7 @@
 class sunet::wifiprobe {
 
   sunet::docker_run {'alwayshttps':
-      image => 'docker.sunet.se/always-https',
+      image => 'platform.sunet.se/platform/always-https:stable',
       ports => ['80:80'],
       env   => ['ACME_URL=http://acme-c.sunet.se']
   }

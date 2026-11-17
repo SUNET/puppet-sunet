@@ -3,6 +3,7 @@ class sunet::forgejo (
   String $domain          = 'platform.sunet.se',
   String $interface       = 'ens3',
   String $forgejo_version = '1.18.5-0-rootless',
+  String $anubis_version  = 'v1.27.0',
   Integer $uid            = '900',
   Integer $gid            = '900',
   Boolean $restic_backup  = true,
@@ -73,6 +74,25 @@ class sunet::forgejo (
     owner  => 'git',
     group  => 'git',
   }
+  -> file{ '/opt/forgejo/anubis':
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+  }
+  -> file{ '/opt/forgejo/anubis/state':
+    ensure => directory,
+    owner  => 'git',
+    group  => 'git',
+    mode   => '0750',
+  }
+  -> file{ '/opt/forgejo/anubis/botPolicy.yaml':
+    ensure  => file,
+    content => file('sunet/forgejo/anubis-botPolicy.yaml'),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+  }
   -> file{ '/opt/forgejo/config/app.ini':
     ensure  => file,
     content => template('sunet/forgejo/app.ini.erb'),
@@ -117,10 +137,9 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
       paths        => ['/opt/forgejo/backups'],
       minute       => '20',
       hour         => '2',
-      keep_daily   => 1,
-      keep_weekly  => 1,
-      keep_monthly => 1,
-      keep_yearly  => 1,
+      keep_daily   => 7,
+      keep_monthly => 12,
+      keep_yearly  => 10,
       # The key is the filename under the job's pre.d, so the '10-' prefix is what used to
       # be the hook's order parameter. Declaring the hook as part of the job is what lets
       # the job's cron entry depend on it, so cron can no longer fire before the hook that

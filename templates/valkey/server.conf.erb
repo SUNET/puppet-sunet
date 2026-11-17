@@ -14,6 +14,8 @@ loglevel <%= @valkey_loglevel %>
 port 0
 tls-port <%= @valkeyportnum %>
 tls-replication yes
+# Automatically reload TLS certificates within X seconds
+tls-auto-reload-interval <%= @tls_reload_interval %>
 <% if @cluster %>
 tls-cluster yes
 # cluster-announce-port 0 - Explicitly disables advertising a non-TLS port

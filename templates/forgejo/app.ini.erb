@@ -67,3 +67,7 @@ DEFAULT_ACTIONS_URL = https://<%= @domain %>
 
 [indexer]
 REPO_INDEXER_ENABLED = true
+
+[cron.archive_cleanup]
+SCHEDULE = @every 1h
+OLDER_THAN = 1h
