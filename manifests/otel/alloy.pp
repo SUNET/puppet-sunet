@@ -42,10 +42,35 @@ class sunet::otel::alloy (
       group   => 'root',
       content => template( 'sunet/otel/config.alloy' ),
     }
+    # Extra command line arguments for Alloy. The packaged unit reads CUSTOM_ARGS
+    # from /etc/default/alloy (a dpkg conffile); a systemd drop-in loads this file
+    # after it instead, so the packaged file can stay untouched.
+    # --disable-reporting stops the anonymous usage reports to Grafana Labs, and
+    # with them the "reporting Alloy stats"/"usage report sent" log lines.
+    include sunet::systemd_reload
+    file { '/etc/alloy/sunet.env' :
+      ensure  => 'file',
+      notify  => Service['alloy'],
+      mode    => '0644',
+      group   => 'root',
+      content => "# Managed by Puppet (sunet::otel::alloy)\nCUSTOM_ARGS=\"--disable-reporting\"\n",
+    }
+    file { '/etc/systemd/system/alloy.service.d' :
+      ensure => 'directory',
+      mode   => '0755',
+      group  => 'root',
+    }
+    file { '/etc/systemd/system/alloy.service.d/sunet.conf' :
+      ensure  => 'file',
+      notify  => [Class['sunet::systemd_reload'], Service['alloy']],
+      mode    => '0644',
+      group   => 'root',
+      content => "# Managed by Puppet (sunet::otel::alloy)\n[Service]\nEnvironmentFile=/etc/alloy/sunet.env\n",
+    }
     service { 'alloy':
       ensure  => 'running',
       enable  => 'true',
-      require => Package['alloy'],
+      require => [Package['alloy'], Class['sunet::systemd_reload']],
     }
     sunet::nftables::allow { 'allow_local_opentelemetry_grpc':
       from => '172.16.0.0/12',
