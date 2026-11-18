@@ -64,7 +64,7 @@ services:
       - ./keys/historical_keys:/app/historical_keys:ro
       - ./localsettings.py:/app/inmoradmin/localsettings.py:ro
   nginx:
-    image: nginx:1.21
+    image: nginx:1.31.9
     depends_on:
       - admin
     ports:
