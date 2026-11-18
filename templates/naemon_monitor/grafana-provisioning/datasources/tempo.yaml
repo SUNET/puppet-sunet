@@ -9,24 +9,27 @@ datasources:
     basicAuth: false
     jsonData:
       tracesToLogsV2:
-        # Field with an internal link pointing to a logs data source in Grafana.
-        # datasourceUid value must match the uid value of the logs data source.
+        # Datasource uid of the logs datasource (Loki)
         datasourceUid: 'loki'
-        spanStartTimeShift: '-1h'
-        spanEndTimeShift: '1h'
-        tags: ['job', 'instance', 'pod', 'namespace']
+        spanStartTimeShift: '-5m'
+        spanEndTimeShift: '5m'
         filterByTraceID: false
         filterBySpanID: false
         customQuery: true
-        query: 'method="$${__span.tags.method}"'
+        # Search all log streams for the trace id, independent of how the app's logs are labelled
+        query: '{service_name=~".+"} | line_format "{{__line__}} {{.trace_id}}" |= "$${__span.traceId}"'
       tracesToMetrics:
-        datasourceUid: 'prom'
-        spanStartTimeShift: '1h'
-        spanEndTimeShift: '-1h'
+        datasourceUid: 'mimir'
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
         tags: [{ key: 'service.name', value: 'service' }, { key: 'job' }]
         queries:
-          - name: 'Sample query'
-            query: 'sum(rate(traces_spanmetrics_latency_bucket{$$__tags}[5m]))'
+          - name: 'Request rate'
+            query: 'sum by (span_name) (rate(traces_spanmetrics_calls_total{$$__tags}[5m]))'
+          - name: 'p95 latency'
+            query: 'histogram_quantile(0.95, sum by (le, span_name) (rate(traces_spanmetrics_latency_bucket{$$__tags}[5m])))'
+          - name: 'Error rate'
+            query: 'sum by (span_name) (rate(traces_spanmetrics_calls_total{$$__tags, status_code="STATUS_CODE_ERROR"}[5m]))'
       tracesToProfiles:
         datasourceUid: 'grafana-pyroscope-datasource'
         tags: ['job', 'instance', 'pod', 'namespace']
@@ -41,8 +44,8 @@ datasources:
         hide: false
       traceQuery:
         timeShiftEnabled: true
-        spanStartTimeShift: '1h'
-        spanEndTimeShift: '-1h'
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
       spanBar:
         type: 'Tag'
         tag: 'http.path'

@@ -15,3 +15,6 @@ datasources:
       disableRecordingRules: false
       incrementalQueryOverlapWindow: 10m
       timeInterval: 60s
+      exemplarTraceIdDestinations:
+        - name: traceID
+          datasourceUid: tempo
