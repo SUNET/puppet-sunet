@@ -3,7 +3,7 @@
 # @param enabled         Possibility to opt out from sending otel data (if you for example enable it globally in a repo)
 class sunet::otel::alloy (
   String  $otel_receiver    = undef,
-  Boolean $enabled=true,
+  Boolean $enabled          = true,
 ) {
 
   if $enabled {
