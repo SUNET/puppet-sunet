@@ -17,3 +17,15 @@
 		header_up X-Real-IP {remote_host}
 	}
 }
+<% @additional_vhosts.sort.each do |host, target| -%>
+
+<%= host %> {
+	log {
+		output stdout
+	}
+
+	reverse_proxy <%= target['backend'] %>:<%= target['port'] %> {
+		header_up X-Real-IP {remote_host}
+	}
+}
+<% end -%>
