@@ -24,5 +24,8 @@
 }
 
 files.<%= @vhost %> {
+	log {
+		output stdout
+	}
 	reverse_proxy files:80
 }
