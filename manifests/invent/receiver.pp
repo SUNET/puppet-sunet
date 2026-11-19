@@ -6,7 +6,6 @@ class sunet::invent::receiver (
 ){
   $admin_password = lookup('invent_admin_password', undef, undef, undef)
   $endpoints = ['hosts', 'images', 'network']
-  $nginx_dirs = [ 'acme', 'certs','conf','dhparam','html','vhost' ]
   $ni_host_key = lookup ('ni_host_key')
   $ni_host_ip = lookup ('ni_host_ip')
 
@@ -29,21 +28,23 @@ class sunet::invent::receiver (
     }
   }
 
-  file { '/opt/receiver/nginx':
+  # Kept outside /opt/receiver, which is writable through the rrsync key below,
+  # so the ACME account key and certificates are not reachable that way.
+  file { ['/opt/caddy', '/opt/caddy/data', '/opt/caddy/config']:
     ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0751',
   }
-  $nginx_dirs.each |$dir| {
-    file { "/opt/receiver/nginx/${dir}":
-      ensure => directory
-    }
+  file { '/opt/caddy/Caddyfile':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('sunet/invent/receiver/Caddyfile.erb'),
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-    sunet::nftables::docker_expose { 'receiver_80_port' :
-      iif           => $interface,
-      allow_clients => 'any',
-      port          => 80,
-    }
     sunet::nftables::docker_expose { 'receiver_443_port' :
       iif           => $interface,
       allow_clients => 'any',
@@ -55,7 +56,7 @@ class sunet::invent::receiver (
   } else {
     sunet::misc::ufw_allow { 'receiver_ports':
       from => 'any',
-      port => [80, 443],
+      port => [443],
     }
   }
 
