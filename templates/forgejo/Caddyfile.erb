@@ -1,0 +1,42 @@
+{
+	# Certificates are validated with TLS-ALPN-01 on port 443 only, so port 80
+	# is neither published nor needed, and no http->https redirects are served.
+	auto_https disable_redirects
+	cert_issuer acme {
+		email noc@sunet.se
+		disable_http_challenge
+	}
+}
+
+<%= @domain %> {
+	# Large pushes (git and LFS).
+	request_body {
+		max_size 2GiB
+	}
+
+	header Strict-Transport-Security "max-age=31536000"
+
+	handle /robots.txt {
+		header Content-Type text/plain
+		respond <<TEXT
+			User-agent: *
+			Disallow: /
+			TEXT 200
+	}
+
+	# Archive downloads and anubis' own assets are challenged by anubis, which
+	# relies on X-Real-IP to identify the client; everything else goes straight
+	# to forgejo.
+	@anubis path_regexp ^/(\.within\.website/|api/v1/repos/[^/]+/[^/]+/(archive|tarball|zipball|bundle)/|[^/]+/[^/]+/archive/)
+	handle @anubis {
+		reverse_proxy anubis:8923 {
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
+	handle {
+		reverse_proxy forgejo:3000 {
+			header_up X-Real-IP {remote_host}
+		}
+	}
+}
