@@ -9,6 +9,9 @@
 }
 
 <%= @vhost %> {
+	log {
+		output stdout
+	}
 	handle /api/v1/streaming* {
 		reverse_proxy streaming:4000 {
 			flush_interval -1
