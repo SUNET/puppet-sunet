@@ -98,6 +98,13 @@ class sunet::mastodon::web(
     mode    => '0740',
     content => template('sunet/mastodon/web/sync.erb.sh'),
   }
+  -> file { '/opt/mastodon_web/Caddyfile':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    content => template('sunet/mastodon/web/Caddyfile.erb'),
+  }
   -> file { '/opt/mastodon_web/files-nginx-vhost.conf':
     ensure  => file,
     owner   => 'root',
@@ -123,7 +130,7 @@ class sunet::mastodon::web(
   sunet::nagios::nrpe_command { 'check_mastodon_version':
     command_line => '/usr/lib/nagios/plugins/check_mastodon_version',
   }
-  $tl_dirs = ['mastodon', 'nginx']
+  $tl_dirs = ['mastodon', 'caddy']
   $tl_dirs.each | $dir| {
     file { "/opt/mastodon_web/${dir}":
       ensure => directory,
@@ -137,9 +144,9 @@ class sunet::mastodon::web(
     recurse => true,
     source  => 'puppet:///modules/sunet/mastodon/www',
   }
-  $nginx_dirs = ['acme', 'certs', 'conf', 'dhparam', 'html', 'vhost']
-  $nginx_dirs.each | $dir| {
-    file { "/opt/mastodon_web/nginx/${dir}":
+  $caddy_dirs = ['data', 'config']
+  $caddy_dirs.each | $dir| {
+    file { "/opt/mastodon_web/caddy/${dir}":
       ensure => directory,
       owner  => 'root',
       group  => 'root',
@@ -168,11 +175,6 @@ class sunet::mastodon::web(
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-    sunet::nftables::docker_expose { 'web_http_port' :
-      iif           => $interface,
-      allow_clients => 'any',
-      port          => 80,
-    }
     sunet::nftables::docker_expose { 'web_https_port' :
       iif           => $interface,
       allow_clients => 'any',
@@ -181,7 +183,7 @@ class sunet::mastodon::web(
   } else {
     sunet::misc::ufw_allow { 'web_ports':
       from => 'any',
-      port => ['80', '443']
+      port => ['443']
     }
   }
 }

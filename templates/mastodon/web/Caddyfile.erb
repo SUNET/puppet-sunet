@@ -1,0 +1,25 @@
+{
+	# Certificates are validated with TLS-ALPN-01 on port 443 only, so port 80
+	# is neither published nor needed, and no http->https redirects are served.
+	auto_https disable_redirects
+	cert_issuer acme {
+		email noc@sunet.se
+		disable_http_challenge
+	}
+}
+
+<%= @vhost %> {
+	handle /api/v1/streaming* {
+		reverse_proxy streaming:4000 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+files.<%= @vhost %> {
+	reverse_proxy files:80
+}
