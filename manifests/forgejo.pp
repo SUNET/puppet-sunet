@@ -29,21 +29,6 @@ class sunet::forgejo (
   $s3_access_key = lookup('s3_access_key', undef, undef, undef)
   $s3_host       = lookup('s3_host', undef, undef, 's3.sto4.safedc.net')
 
-  # Nginx stuff
-  file{ '/opt/nginx':
-    ensure => directory,
-  }
-  $nginx_dirs = ['conf', 'dhparam', 'html', 'vhost', 'template']
-  $nginx_dirs.each|$dir| {
-    file{ "/opt/nginx/${dir}":
-      ensure => directory,
-    }
-  }
-  file{ '/opt/nginx/template/nginx.tmpl':
-    ensure  => file,
-    content => template('sunet/forgejo/nginx.tmpl'),
-    mode    => '0644',
-  }
   # Compose
   sunet::docker_compose { 'forgejo':
     content          => template('sunet/forgejo/docker-compose.yaml.erb'),
@@ -89,6 +74,19 @@ class sunet::forgejo (
   -> file{ '/opt/forgejo/anubis/botPolicy.yaml':
     ensure  => file,
     content => file('sunet/forgejo/anubis-botPolicy.yaml'),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+  }
+  -> file{ ['/opt/forgejo/caddy', '/opt/forgejo/caddy/data', '/opt/forgejo/caddy/config']:
+    ensure => directory,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0751',
+  }
+  -> file{ '/opt/forgejo/Caddyfile':
+    ensure  => file,
+    content => template('sunet/forgejo/Caddyfile.erb'),
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -154,11 +152,6 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
   }
 
   if $::facts['sunet_nftables_enabled'] == 'yes' {
-    sunet::nftables::docker_expose { 'forgejo_80_port' :
-      iif           => $interface,
-      allow_clients => 'any',
-      port          => 80,
-    }
     sunet::nftables::docker_expose { 'forgejo_443_port' :
       iif           => $interface,
       allow_clients => 'any',
@@ -172,7 +165,7 @@ ExecStartPost=/usr/bin/docker compose -f /opt/forgejo/docker-compose.yaml exec -
   } else {
     sunet::misc::ufw_allow { 'forgejo_ports':
       from => 'any',
-      port => ['80', '443', '22022'],
+      port => ['443', '22022'],
     }
   }
 }
