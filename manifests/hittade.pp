@@ -5,13 +5,10 @@
 # systemd unit. The config files mounted into the containers are dropped on
 # the server out-of-band under $config_dir, Puppet only creates the directories.
 #
-# TLS termination and routing are handled by the nginx-proxy + acme-companion
-# stack run by sunet::invent::receiver on the same host. This service is
-# discovered via the VIRTUAL_HOST/LETSENCRYPT_HOST env vars in the compose file
-# and reached over the receiver's external compose network (receiver_default).
-# That means sunet::invent::receiver must also be declared on this node.
+# Declare sunet::invent::receiver on the same node. Its Caddy serves the
+# Hittade hostname on the shared receiver_default network.
 #
-# @param hostname     Required. The public hostname nginx-proxy serves / fetches a Let's Encrypt cert for
+# @param hostname     Public hostname Caddy serves for Hittade.
 # @param image        The hittade-server image (without tag)
 # @param image_tag    The hittade-server image tag
 # @param config_dir   Directory with the hand-dropped config (localsettings.py, urls.py, proxy.xml, certificates/)
@@ -23,6 +20,10 @@ class sunet::hittade (
   String $config_dir  = '/etc/hittade',
   String $compose_dir = '/opt',
 ) {
+  ensure_resource('sunet::invent::receiver::vhost', $hostname, {
+    'backend' => 'web',
+    'port'    => 8000,
+  })
 
   # Directory for the hand-dropped config files (localsettings.py, urls.py,
   # proxy.xml). File contents are managed by the operator, Puppet only ensures
@@ -45,14 +46,12 @@ class sunet::hittade (
     require => Sunet::Misc::Create_dir[$config_dir],
   }
 
-  # No firewall rules here: ports 80/443 are opened by sunet::invent::receiver,
-  # whose nginx-proxy fronts this service.
-
   sunet::docker_compose { 'hittade':
     content          => template('sunet/hittade/docker-compose.yml.erb'),
     service_name     => 'hittade',
     compose_dir      => $compose_dir,
     compose_filename => 'docker-compose.yml',
     description      => 'hittade service',
+    require          => Sunet::Docker_compose['invent_reciver'],
   }
 }
