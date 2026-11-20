@@ -1,0 +1,10 @@
+
+<%= @title %> {
+	log {
+		output stdout
+	}
+
+	reverse_proxy <%= @backend %>:<%= @port %> {
+		header_up X-Real-IP {remote_host}
+	}
+}

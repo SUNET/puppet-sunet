@@ -1,0 +1,8 @@
+{
+	# Use TLS-ALPN-01 on port 443 for certificate validation.
+	auto_https disable_redirects
+	cert_issuer acme {
+		email noc@sunet.se
+		disable_http_challenge
+	}
+}
