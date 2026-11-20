@@ -1,12 +1,14 @@
 # This class sets up a rsyslog server that listens for UDP messages on the specified port
 # - incoming messages are stored in with fromhost template in /var/log/rsyslog/ directory
 # - if graylog_servers is provided, incoming messages are also forwarded to the specified servers.
+# - gelf_tag, if set, is added to the GELF messages in the field gelf_tag_field (default _tag).
 # - syslog_enable_remote (default false) controls forwarding of the server's own logs to syslog_servers.
 # - log files older than retention_days (default 14) are removed.
 class sunet::rsyslog_server(
   $udp_port,
   $graylog_servers = [],
   $gelf_tag = undef,
+  $gelf_tag_field = '_tag',
   $retention_days = 14,
   $syslog_enable_remote = lookup('syslog_enable_remote', undef, undef, 'false'),
 ) {

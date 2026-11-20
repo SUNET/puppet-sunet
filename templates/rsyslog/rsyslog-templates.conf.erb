@@ -21,7 +21,7 @@ template(name="tmpl_gelf" type="list") {
     constant(value="\",\"application_name\":\"")
     property(name="programname" format="json")
 <% if @gelf_tag -%>
-    constant(value="\",\"_tag\":\"")
+    constant(value="\",\"<%= @gelf_tag_field %>\":\"")
     constant(value="<%= @gelf_tag %>")
 <% end -%>
     constant(value="\"}")
