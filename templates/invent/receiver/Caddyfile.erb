@@ -1,0 +1,31 @@
+{
+	# Certificates are validated with TLS-ALPN-01 on port 443 only, so port 80
+	# is neither published nor needed, and no http->https redirects are served.
+	auto_https disable_redirects
+	cert_issuer acme {
+		email noc@sunet.se
+		disable_http_challenge
+	}
+}
+
+<%= @vhost %> {
+	log {
+		output stdout
+	}
+
+	reverse_proxy invent-receiver:8000 {
+		header_up X-Real-IP {remote_host}
+	}
+}
+<% @additional_vhosts.sort.each do |host, target| -%>
+
+<%= host %> {
+	log {
+		output stdout
+	}
+
+	reverse_proxy <%= target['backend'] %>:<%= target['port'] %> {
+		header_up X-Real-IP {remote_host}
+	}
+}
+<% end -%>
