@@ -4,12 +4,14 @@
 # - gelf_tag, if set, is added to the GELF messages in the field gelf_tag_field (default _tag).
 # - syslog_enable_remote (default false) controls forwarding of the server's own logs to syslog_servers.
 # - log files older than retention_days (default 14) are removed.
+# - scriptherder_rotation (default false) runs logrotate from a monitored scriptherder cronjob.
 class sunet::rsyslog_server(
   $udp_port,
   $graylog_servers = [],
   $gelf_tag = undef,
   $gelf_tag_field = '_tag',
   $retention_days = 14,
+  Boolean $scriptherder_rotation = false,
   $syslog_enable_remote = lookup('syslog_enable_remote', undef, undef, 'false'),
 ) {
   class { 'sunet::rsyslog':
@@ -49,10 +51,30 @@ class sunet::rsyslog_server(
     require => File['/var/log/rsyslog'],
   }
 
-  file { '/etc/logrotate.d/rsyslog-server':
+  # With scriptherder_rotation, logrotate runs from a monitored cronjob instead of the system logrotate
+  $logrotate_conf = $scriptherder_rotation ? {
+    true    => '/etc/sunet-rsyslog-server.logrotate',
+    default => '/etc/logrotate.d/rsyslog-server',
+  }
+
+  file { $logrotate_conf:
     ensure  => file,
     mode    => '0644',
     content => template('sunet/rsyslog/rsyslog-server.logrotate.erb'),
+  }
+
+  if $scriptherder_rotation {
+    file { '/etc/logrotate.d/rsyslog-server':
+      ensure => absent,
+    }
+
+    sunet::scriptherder::cronjob { 'rotate_rsyslog_server_logs':
+      cmd           => "/usr/sbin/logrotate -s /var/lib/logrotate/sunet-rsyslog-server.status ${logrotate_conf}",
+      special       => 'daily',
+      ok_criteria   => ['exit_status=0', 'max_age=48h'],
+      warn_criteria => ['exit_status=0', 'max_age=96h'],
+      require       => File[$logrotate_conf],
+    }
   }
 
   sunet::misc::ufw_allow { "allow-syslog-udp-${udp_port}":
