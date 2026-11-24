@@ -1,44 +1,16 @@
 version: '3.1'
 services:
-  nginx:
-    image: docker.io/nginxproxy/nginx-proxy:latest
-    container_name: nginx
+  caddy:
+    image: docker.io/library/caddy:2
+    container_name: caddy
     dns:
       - 89.32.32.32
     ports:
-      - "80:80"
       - "443:443"
-    labels:
-      com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
     volumes:
-      - /opt/receiver/nginx/certs:/etc/nginx/certs:ro
-      - /opt/receiver/nginx/conf:/etc/nginx/conf.d
-      - /opt/receiver/nginx/dhparam:/etc/nginx/dhparam
-      - /opt/receiver/nginx/html:/usr/share/nginx/html
-      - /opt/receiver/nginx/vhost:/etc/nginx/vhost.d
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-    environment:
-      - ENABLE_IPV6=true
-    restart: unless-stopped
-
-  acme:
-    image: docker.io/nginxproxy/acme-companion:latest
-    container_name: acme
-    dns:
-      - 89.32.32.32
-    volumes:
-      - /opt/receiver/nginx/acme:/etc/acme.sh
-      - /opt/receiver/nginx/certs:/etc/nginx/certs:rw
-      - /opt/receiver/nginx/conf:/etc/nginx/conf.d
-      - /opt/receiver/nginx/dhparam:/etc/nginx/dhparam
-      - /opt/receiver/nginx/html:/usr/share/nginx/html
-      - /opt/receiver/nginx/vhost:/etc/nginx/vhost.d:rw
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      - NGINX_PROXY_CONTAINER=nginx
-      - DEFAULT_EMAIL=noc@sunet.se
-    depends_on:
-      - nginx
+      - /opt/caddy/conf:/etc/caddy:ro
+      - /opt/caddy/data:/data
+      - /opt/caddy/config:/config
     restart: unless-stopped
   invent-receiver:
     container_name: receiver
@@ -60,7 +32,3 @@ services:
       - INVENT_HOST_DIR=/app/hosts
       - INVENT_IMAGE_DIR=/app/images
       - INVENT_NETWORK_DIR=/app/network
-      - LETSENCRYPT_HOST=<%= @vhost %>
-      - VIRTUAL_HOST=<%= @vhost %>
-      - VIRTUAL_PATH=/
-      - VIRTUAL_PORT=8000
