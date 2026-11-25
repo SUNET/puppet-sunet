@@ -1,0 +1,18 @@
+#!/usr/bin/python3
+"""Report the percentage of physical memory unavailable to new processes."""
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-w", required=True, type=lambda s: float(s.rstrip("%")))
+parser.add_argument("-c", required=True, type=lambda s: float(s.rstrip("%")))
+args = parser.parse_args()
+try:
+    with open("/proc/meminfo") as stream:
+        memory = {line.split(":")[0]: int(line.split()[1]) for line in stream}
+    used = 100 * (1 - memory["MemAvailable"] / memory["MemTotal"])
+except (OSError, KeyError, ValueError, ZeroDivisionError) as error:
+    print(f"UNKNOWN - {error}")
+    raise SystemExit(3)
+status = 2 if used >= args.c else 1 if used >= args.w else 0
+print(f"{('OK', 'WARNING', 'CRITICAL')[status]} - memory used {used:.1f}%")
+raise SystemExit(status)

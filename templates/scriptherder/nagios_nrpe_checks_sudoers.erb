@@ -1,2 +1,2 @@
-nagios ALL=(root) NOPASSWD: <%= @scriptherder_check_cmd %>
-nagios ALL=(root) NOPASSWD: /usr/local/bin/scriptherder --mode check cosmos
+<%= @nrpe_user %> ALL=(root) NOPASSWD: <%= @scriptherder_check_cmd %>
+<%= @nrpe_user %> ALL=(root) NOPASSWD: /usr/local/bin/scriptherder --mode check cosmos

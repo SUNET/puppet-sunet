@@ -3,6 +3,10 @@ class sunet::nftables::init(
   Boolean $default_log = true,
   Boolean $enabled     = true,
 ) {
+    if $enabled and $facts['sunet_firewalld_enabled'] == 'yes' {
+      fail('firewalld already manages this host. Plan the migration before applying the SUNET nftables ruleset.')
+    }
+
     package { 'nftables':
         ensure => 'present',
     }
@@ -20,7 +24,7 @@ class sunet::nftables::init(
         ensure => 'directory',
         owner  => 'root',
         group  => 'root',
-        mode   => '0644',
+        mode   => '0755',
         source => 'puppet:///modules/sunet/nftables/nftables-conf.d-empty',
         notify => Service['nftables'],
     }
@@ -34,11 +38,16 @@ class sunet::nftables::init(
       }
     }
 
-    file { '/etc/nftables.conf':
-        ensure => 'present',
-        mode   => '0755',
-        source => 'puppet:///modules/sunet/nftables/nftables.conf',
-        notify => Service['nftables'],
+    $config = $facts['os']['name'] ? {
+      'AlmaLinux' => '/etc/sysconfig/nftables.conf',
+      default     => '/etc/nftables.conf',
+    }
+    file { $config:
+        ensure  => 'present',
+        mode    => '0755',
+        source  => 'puppet:///modules/sunet/nftables/nftables.conf',
+        require => Package['nftables'],
+        notify  => Service['nftables'],
     }
 
     service { 'nftables':

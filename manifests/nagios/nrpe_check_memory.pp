@@ -3,6 +3,14 @@ define sunet::nagios::nrpe_check_memory (
   String $warning_arg = '',
   String $critical_arg = '',
 ) {
+  include sunet::nagios::nrpe_paths
+  if $facts['os']['name'] == 'AlmaLinux' {
+    file { "${sunet::nagios::nrpe_paths::plugins}/check_memory":
+      source  => 'puppet:///modules/sunet/nagios/check_memory_el',
+      mode    => '0755',
+      require => Package['nagios-plugins'],
+    }
+  }
 
     $default_warning = $facts['os']['distro']['codename'] ? {
       'bullseye' => '10%',
@@ -28,6 +36,6 @@ define sunet::nagios::nrpe_check_memory (
     }
 
     sunet::nagios::nrpe_command {'check_memory':
-      command_line => "/usr/lib/nagios/plugins/check_memory -w ${_warning} -c ${_critical}"
+      command_line => "${sunet::nagios::nrpe_paths::plugins}/check_memory -w ${_warning} -c ${_critical}"
     }
 }

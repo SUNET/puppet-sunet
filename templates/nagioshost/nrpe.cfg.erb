@@ -40,7 +40,7 @@ log_facility=daemon
 # number.  The file is only written if the NRPE daemon is started by the root
 # user and is running in standalone mode.
 
-pid_file=/var/run/nagios/nrpe.pid
+pid_file=<%= @facts['os']['name'] == 'AlmaLinux' ? '/run/nrpe/nrpe.pid' : '/var/run/nagios/nrpe.pid' %>
 
 
 
@@ -68,7 +68,7 @@ server_port=5666
 # 
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
-nrpe_user=nagios
+nrpe_user=<%= @nrpe_user || 'nagios' %>
 
 
 
@@ -78,7 +78,7 @@ nrpe_user=nagios
 # 
 # NOTE: This option is ignored if NRPE is running under either inetd or xinetd
 
-nrpe_group=nagios
+nrpe_group=<%= @nrpe_user || 'nagios' %>
 
 
 
@@ -242,10 +242,12 @@ connection_timeout=300
 #
 # local configuration:
 #	if you'd prefer, you can instead place directives here
+<% unless @facts['os']['name'] == 'AlmaLinux' -%>
 include=/etc/nagios/nrpe_local.cfg
+<% end -%>
 
 # 
 # you can place your config snipplets into nrpe.d/
 # only snipplets ending in .cfg will get included
-include_dir=/etc/nagios/nrpe.d/
+include_dir=<%= @confdir || '/etc/nagios/nrpe.d' %>/
 

@@ -34,8 +34,21 @@ class sunet::chrony(
 
   ### BEGIN sunet::ntp cleanup
   # Cleanup potential remains from previous usage of sunet::ntp
-  package { 'ntp': ensure => 'purged' }
-  package { 'ntpsec': ensure => 'purged' }
+  if $facts['os']['name'] == 'AlmaLinux' {
+    $service = 'chronyd'
+    $config = '/etc/chrony.conf'
+    $sources = '/etc/chrony.d'
+    $keyfile = '/etc/chrony.keys'
+    $driftfile = '/var/lib/chrony/drift'
+  } else {
+    $service = 'chrony'
+    $config = '/etc/chrony/chrony.conf'
+    $sources = '/etc/chrony/sources.d'
+    $keyfile = '/etc/chrony/chrony.keys'
+    $driftfile = '/var/lib/chrony/chrony.drift'
+    package { 'ntp': ensure => 'purged' }
+    package { 'ntpsec': ensure => 'purged' }
+  }
 
   # Some files that are left behind even after purge because they are created
   # manually by sunet::ntp on Ubuntu.
@@ -55,25 +68,32 @@ class sunet::chrony(
 
   package { 'chrony': ensure => 'installed' }
 
-  service { 'chrony':
-    ensure => running,
-    enable => true,
+  service { $service:
+    ensure  => running,
+    enable  => true,
+    require => Package['chrony'],
   }
 
-  file { '/etc/chrony/chrony.conf':
+  file { $config:
+    require => Package['chrony'],
     ensure  => 'file',
     mode    => '0644',
     owner   => 'root',
     group   => 'root',
     content => template('sunet/chrony/chrony.conf.erb'),
-    notify  => Service['chrony'],
+    notify  => Service[$service],
   }
 
   exec { 'chronyc reload sources':
+    require     => Service[$service],
     refreshonly => true,
   }
 
-  file { '/etc/chrony/sources.d/sunet.sources':
+  file { $sources:
+    ensure  => directory,
+    require => Package['chrony'],
+  }
+  file { "${sources}/sunet.sources":
     ensure  => 'file',
     mode    => '0644',
     owner   => 'root',

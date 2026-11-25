@@ -3,6 +3,10 @@
 class sunet::security::unattended_upgrades (
   Boolean $use_template = false,
 ) {
+  if $facts['os']['name'] == 'AlmaLinux' {
+    include sunet::security::dnf_automatic
+    return()
+  }
   file { '/etc/dpkg/unattended-upgrades.debconf':
     content => template('sunet/security/unattended-upgrades.debconf.erb'),
   }

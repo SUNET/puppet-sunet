@@ -1,0 +1,10 @@
+#!/bin/sh
+# check-update never installs packages. DNF may need to import the configured
+# repository metadata key into the monitoring user's own cache.
+output=$(LC_ALL=C /usr/bin/timeout 50 /usr/bin/dnf -q -y check-update 2>&1)
+case $? in
+    0)   echo 'DNF OK - installed packages are up to date' ;;
+    100) echo 'DNF WARNING - package updates available'; exit 1 ;;
+    124) echo 'DNF UNKNOWN - repository query timed out'; exit 3 ;;
+    *)   echo "DNF UNKNOWN - repository query failed: $output"; exit 3 ;;
+esac

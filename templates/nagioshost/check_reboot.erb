@@ -40,6 +40,19 @@ then
 	echo "Reboot WARNING: System reboot required by package $pkg"
         cleanup $STATE_WARNING;
 fi
+<% if @facts['os']['name'] == 'AlmaLinux' -%>
+# DNF uses exit code 1 to request a reboot. Other errors can also return 1.
+output=$(LC_ALL=C /usr/bin/dnf -q needs-restarting -r 2>&1)
+rc=$?
+if [ "$rc" -ne 0 ]; then
+    if [ "$rc" -eq 1 ] && [[ "$output" == *"Reboot is required"* ]]; then
+        echo "Reboot WARNING: $output"
+        exit 1
+    fi
+    echo "Reboot UNKNOWN: $output"
+    exit 3
+fi
+<% end -%>
       echo "Reboot OK: No reboot required"
       cleanup $STATE_OK;
 cleanup $STATE;

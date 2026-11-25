@@ -1,7 +1,7 @@
 # Base class for all Sunet hosts
 class sunet::server (
   Boolean $fail2ban = true,
-  Boolean $encrypted_swap = true,
+  Boolean $encrypted_swap = $facts['os']['name'] != 'AlmaLinux',
   Boolean $ethernet_bonding = true,
   Boolean $nftables_init = true,
   Boolean $sshd_config = true,
@@ -101,7 +101,18 @@ class sunet::server (
     class { 'sunet::iaas::server': }
   }
 
-  if $facts.dig('os', 'distro', 'id') != 'Raspbian' {
+  if $facts['os']['name'] == 'AlmaLinux' {
+    augeas { 'sunet server grub menu':
+      incl    => '/etc/default/grub',
+      lens    => 'Shellvars.lns',
+      changes => ['set GRUB_TIMEOUT 5', 'set GRUB_TIMEOUT_STYLE menu'],
+      notify  => Exec['sunet_server_update_grub'],
+    }
+    exec { 'sunet_server_update_grub':
+      command     => '/usr/sbin/grub2-mkconfig -o /boot/grub2/grub.cfg',
+      refreshonly => true,
+    }
+  } elsif $facts.dig('os', 'distro', 'id') != 'Raspbian' {
     file { '/etc/default/grub.d/99-sunet-grub-menu.cfg':
       ensure  => present,
       content => file('sunet/server/99-sunet-grub-menu.cfg'),

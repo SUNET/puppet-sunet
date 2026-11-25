@@ -15,7 +15,7 @@ class sunet::security::cve_mitigator (
     }
     exec { 'CVE-2026-31431-blocked-modules':
       command     => 'rmmod algif_aead 2>/dev/null; true',
-      subscribe   => File['/etc/modprobe.d/CVE-2026-43500.conf'],
+      subscribe   => File['/etc/modprobe.d/CVE-2026-31431.conf'],
       refreshonly => true,
     }
   }

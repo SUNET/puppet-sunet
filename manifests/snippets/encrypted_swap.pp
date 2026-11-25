@@ -1,6 +1,10 @@
 # Encrypted swap
 define sunet::snippets::encrypted_swap() {
 
+  if $facts['os']['name'] == 'AlmaLinux' {
+    fail('Provision LUKS swap on AlmaLinux before enabling swap. The eCryptfs setup is Debian-specific.')
+  }
+
   package { 'ecryptfs-utils':
     ensure => 'installed'
   }

@@ -1,2 +1,7 @@
 [sshd]
+<% if @facts['os']['name'] == 'AlmaLinux' -%>
+enabled = true
+backend = systemd
+banaction = nftables-multiport
+<% end -%>
 ignoreip = 130.242.0.0/17 193.10.5.0/24 2001:6b0::/32

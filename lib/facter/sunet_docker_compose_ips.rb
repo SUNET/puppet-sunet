@@ -8,6 +8,7 @@
 require 'json'
 
 Facter.add('sunet_docker_compose_ips') do
+  confine { Facter::Core::Execution.which('docker') }
   setcode do
     begin
       res = {}

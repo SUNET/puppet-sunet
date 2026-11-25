@@ -9,15 +9,15 @@ sourcedir /run/chrony-dhcp
 
 <% end -%>
 # Use NTP sources found in /etc/chrony/sources.d.
-sourcedir /etc/chrony/sources.d
+sourcedir <%= @sources %>
 
 # This directive specifies the location of the file containing ID/key pairs for
 # NTP authentication.
-keyfile /etc/chrony/chrony.keys
+keyfile <%= @keyfile %>
 
 # This directive specifies the file into which chronyd will store the rate
 # information.
-driftfile /var/lib/chrony/chrony.drift
+driftfile <%= @driftfile %>
 
 # Save NTS keys and cookies.
 ntsdumpdir /var/lib/chrony
@@ -73,4 +73,6 @@ ntsserverkey <%= ntsserverkey %>
 cmdport <%= @cmdport %>
 
 # Include configuration files found in /etc/chrony/conf.d.
+<% unless @service == 'chronyd' -%>
 confdir /etc/chrony/conf.d
+<% end -%>

@@ -9,7 +9,11 @@ class sunet::security::configure_sshd (
       ensure => 'installed'
   })
 
-  ensure_resource('service', 'ssh', {
+  $ssh_service = $facts['os']['name'] ? {
+    'AlmaLinux' => 'sshd',
+    default     => 'ssh',
+  }
+  ensure_resource('service', $ssh_service, {
       ensure => 'running',
       enable => true,
   })
@@ -41,6 +45,10 @@ class sunet::security::configure_sshd (
     $set_port = undef
   }
 
+  $sftp_change = $configure_sftp ? {
+    true    => 'rm Subsystem[sftp]',
+    default => undef,
+  }
   augeas { 'sshd_config':
     context => '/files/etc/ssh/sshd_config',
     changes => flatten([
@@ -52,16 +60,9 @@ class sunet::security::configure_sshd (
         $set_hostkey,
         $set_hostcert,
         $set_port,
+        $sftp_change,
     ]).filter |$this| { $this != undef },
-    notify  => Service['ssh'],
+    notify  => Service[$ssh_service],
     require => Package['openssh-server'],
-  }
-  if $configure_sftp {
-    sunet::snippets::file_line { 'no_sftp_subsystem':
-      ensure   => 'comment',
-      filename => '/etc/ssh/sshd_config',
-      line     => 'Subsystem sftp',
-      notify   => Service['ssh'],
-    }
   }
 }

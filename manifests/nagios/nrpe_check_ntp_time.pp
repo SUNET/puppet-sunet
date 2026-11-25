@@ -2,7 +2,9 @@
 define sunet::nagios::nrpe_check_ntp_time (
   String $host = 'ntp.se',
 ) {
+  include sunet::nagios::nrpe_paths
+
     sunet::nagios::nrpe_command { 'check_ntp_time':
-      command_line => "/usr/lib/nagios/plugins/check_ntp_time -H ${host}",
+      command_line => "${sunet::nagios::nrpe_paths::plugins}/check_ntp_time -H ${host}",
     }
 }

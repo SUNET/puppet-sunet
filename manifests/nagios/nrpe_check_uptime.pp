@@ -3,21 +3,25 @@ define sunet::nagios::nrpe_check_uptime (
   Integer $uptimew = 30,
   Integer $uptimec = 50,
 ) {
+  include sunet::nagios::nrpe_paths
+  if $facts['os']['name'] == 'AlmaLinux' {
+    Package['nagios-plugins'] -> File["${sunet::nagios::nrpe_paths::plugins}/check_uptime.py"]
+  }
 
   $_uptimew = lookup('check_uptime_warning', undef, undef, $uptimew)
   $_uptimec = lookup('check_uptime_critical', undef, undef, $uptimec)
 
-  file { '/usr/lib/nagios/plugins/check_uptime.pl' :
+  file { "${sunet::nagios::nrpe_paths::plugins}/check_uptime.pl" :
       ensure  => 'absent',
   }
-  file { '/usr/lib/nagios/plugins/check_uptime.py' :
+  file { "${sunet::nagios::nrpe_paths::plugins}/check_uptime.py" :
       ensure  => 'file',
       mode    => '0751',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
+      group   => $sunet::nagios::nrpe_paths::user,
+      require => Package[$sunet::nagios::nrpe_paths::service],
       content => template('sunet/nagioshost/check_uptime.py.erb'),
   }
   sunet::nagios::nrpe_command {'check_uptime':
-    command_line => "/usr/lib/nagios/plugins/check_uptime.py -w ${_uptimew} -c ${_uptimec}"
+    command_line => "${sunet::nagios::nrpe_paths::plugins}/check_uptime.py -w ${_uptimew} -c ${_uptimec}"
   }
 }

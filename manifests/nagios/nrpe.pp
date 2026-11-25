@@ -1,6 +1,6 @@
 # The class to setup Nagios NRPE
 class sunet::nagios::nrpe(
-  String $nrpe_service    = 'nagios-nrpe-server',
+  String $nrpe_service    = $facts['os']['name'] ? { 'AlmaLinux' => 'nrpe', default => 'nagios-nrpe-server' },
   Integer $command_timeout = 60,
   String $loadw           = '15,10,5',
   String $loadc           = '30,25,20',
@@ -10,14 +10,24 @@ class sunet::nagios::nrpe(
 
 ) {
 
+  include sunet::nagios::nrpe_paths
+  $nrpe_user = $sunet::nagios::nrpe_paths::user
+  $confdir = $sunet::nagios::nrpe_paths::confdir
+  $commands = "${confdir}/sunet_nrpe_commands.cfg"
+  $override_dir = "/etc/systemd/system/${nrpe_service}.service.d"
+
   $nagios_ip_v4 = lookup('nagios_ip_v4', undef, undef, '109.105.111.111')
   $nagios_ip_v6 = lookup('nagios_ip_v6', undef, undef, '2001:948:4:6::111')
   $nrpe_clients = lookup('nrpe_clients', undef, undef, ['127.0.0.1','127.0.1.1',$nagios_ip_v4,$nagios_ip_v6])
   $allowed_hosts = join($nrpe_clients,',')
 
-  exec { "create_${name}_service_dir":
-    command => '/bin/mkdir -p /etc/systemd/system/nagios-nrpe-server.service.d/',
-    unless  => '/usr/bin/test -d /etc/systemd/system/nagios-nrpe-server.service.d/',
+  # Only the Debian APT check needs access to the host's temporary directory.
+  $override_ensure = $facts['os']['name'] ? {
+    'AlmaLinux' => absent,
+    default     => file,
+  }
+  file { $override_dir:
+    ensure => directory,
   }
   exec { "${name}_daemon_reload":
     command     => '/usr/bin/systemctl daemon-reload',
@@ -25,11 +35,11 @@ class sunet::nagios::nrpe(
   }
 
   file {
-    '/etc/systemd/system/nagios-nrpe-server.service.d/privatetmp.conf':
-      ensure  => file,
+    "${override_dir}/privatetmp.conf":
+      ensure  => $override_ensure,
       mode    => '0444',
       content => template('sunet/nagioshost/systemd-override-privatetmp.conf.erb'),
-      require => [Exec["create_${name}_service_dir"], Package[$nrpe_service]],
+      require => Package[$nrpe_service],
       notify  =>  [Exec["${name}_daemon_reload"],Service[$nrpe_service]],
   }
 
@@ -42,29 +52,48 @@ class sunet::nagios::nrpe(
       require => Package[$nrpe_service],
   }
 
-  package {'monitoring-plugins-contrib':
-      ensure => 'installed',
+  if $facts['os']['name'] == 'AlmaLinux' {
+    ensure_packages(['epel-release'])
+    $plugins = ['nagios-plugins', 'nagios-plugins-disk', 'nagios-plugins-load', 'nagios-plugins-ntp', 'nagios-plugins-users', 'nagios-plugins-procs']
+    ensure_packages($plugins)
+    Package['epel-release'] -> Package[$plugins]
+    Package['epel-release'] -> Package[$nrpe_service]
+  } else {
+    package { 'monitoring-plugins-contrib': ensure => installed }
   }
 
-  concat {'/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg':
+  concat { $commands:
+      require => Package[$nrpe_service],
       owner  => root,
       group  => root,
       mode   => '0644',
       notify => Service[$nrpe_service]
   }
   concat::fragment {'sunet_nrpe_commands':
-      target  => '/etc/nagios/nrpe.d/sunet_nrpe_commands.cfg',
-      content => '# Do not edit by hand - maintained by puppet',
+      target  => $commands,
+      content => "# Do not edit by hand - maintained by puppet\n",
       order   => '10',
       notify  => Service[$nrpe_service]
+  }
+  # EPEL installs the NRPE policy during the first catalog. The agent's
+  # cached pre-installation file contexts would otherwise select etc_t.
+  $config_type = $facts['os']['name'] ? {
+    'AlmaLinux' => 'nrpe_etc_t',
+    default     => undef,
   }
   file { '/etc/nagios/nrpe.cfg' :
       ensure  => 'file',
       notify  => Service[$nrpe_service],
       mode    => '0640',
-      group   => 'nagios',
-      require => Package['nagios-nrpe-server'],
+      group   => $nrpe_user,
+      seltype => $config_type,
+      require => Package[$nrpe_service],
       content => template('sunet/nagioshost/nrpe.cfg.erb'),
+  }
+
+  if $nrpe_service != $sunet::nagios::nrpe_paths::service {
+    Package[$nrpe_service] { alias => $sunet::nagios::nrpe_paths::service }
+    Service[$nrpe_service] { alias => $sunet::nagios::nrpe_paths::service }
   }
 
   $checks.each |$check| {

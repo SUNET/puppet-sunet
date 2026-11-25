@@ -1,4 +1,6 @@
-INVENT_DIR="<%= @invent_dir%>"
-INVENT_EXPORT_ENDPOINT=(<%= Array(@export_endpoint).reject { |e| e.nil? || e.empty? }.map { |e| "\"#{e}\"" }.join(' ') %>)
-INVENT_HOST_OS="<%= @host_os %>"
-INVENT_RETENTION_DAYS="<%= @invent_retention_days%>"
+<% require 'shellwords' -%>
+INVENT_DIR=<%= Shellwords.escape(@invent_dir) %>
+INVENT_EXPORT_ENDPOINT=(<%= Shellwords.join(Array(@export_endpoint).reject(&:empty?)) %>)
+INVENT_HOST_OS=<%= Shellwords.escape(@host_os) %>
+INVENT_RETENTION_DAYS=<%= @invent_retention_days %>
+INVENT_PODMAN_USERS=(<%= Shellwords.join(@podman_users.uniq) %>)

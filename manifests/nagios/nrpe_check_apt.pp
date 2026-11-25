@@ -1,13 +1,9 @@
-# Check apt
-define sunet::nagios::nrpe_check_apt (
-) {
-    file { '/usr/lib/nagios/plugins/check_apt-wrapper':
-      ensure  => 'file',
-      mode    => '0755',
-      owner   => 'root',
-      content => file('sunet/nagios/check_apt-wrapper')
-    }
+# Keep the existing check_apt command available to older monitoring configs.
+define sunet::nagios::nrpe_check_apt () {
+  include sunet::nagios::package_updates
+  if $facts['os']['name'] == 'AlmaLinux' {
     sunet::nagios::nrpe_command { 'check_apt':
-      command_line => '/usr/lib/nagios/plugins/check_apt-wrapper',
+      command_line => $sunet::nagios::package_updates::plugin,
     }
+  }
 }

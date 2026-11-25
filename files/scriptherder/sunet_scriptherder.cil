@@ -1,0 +1,8 @@
+; NRPE checks private job metadata through the two Scriptherder sudo commands.
+; Keep read access local to this cache. Its DAC ownership and modes still apply.
+(type sunet_scriptherder_cache_t)
+(roletype object_r sunet_scriptherder_cache_t)
+(typeattributeset file_type (sunet_scriptherder_cache_t))
+(allow nrpe_t sunet_scriptherder_cache_t (dir (getattr search open read)))
+(allow nrpe_t sunet_scriptherder_cache_t (file (getattr open read)))
+(filecon "/var/cache/scriptherder(/.*)?" any (system_u object_r sunet_scriptherder_cache_t ((s0) (s0))))
