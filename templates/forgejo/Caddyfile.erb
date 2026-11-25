@@ -9,6 +9,9 @@
 }
 
 <%= @domain %> {
+	log {
+		output stdout
+	}
 	# Large pushes (git and LFS).
 	request_body {
 		max_size 2GiB
@@ -40,3 +43,5 @@
 		}
 	}
 }
+
+
