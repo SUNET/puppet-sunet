@@ -166,7 +166,7 @@ services:
     pull_policy: <%= @pull_policy %>
     restart: on-failure
     image: grafana/alloy:<%= @alloy_tag %>
-    command: ["run", "/etc/alloy/config.alloy"]
+    command: ["run", "/etc/alloy/config.alloy", "--disable-reporting"]
     ports:
       - "4317-4318:4317-4318"
     volumes:
