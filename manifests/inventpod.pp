@@ -21,6 +21,7 @@ class sunet::inventpod (
   Hash[String, Struct[{backend => String[1], port => Integer[1,65535]}]] $additional_vhosts = {},
 ) {
   include sunet::podman2
+  $site_manages_redirect = $public_https and $site_redirect_service != undef
   if $public_https {
     if $receiver_profile in ['sunet/invent_receiver/1', 'sunet/invent_receiver/2'] or $approved_public_profile != $receiver_profile or
        $listen_address == '0.0.0.0' or $listen_address =~ /\A127\./ {
@@ -31,8 +32,8 @@ class sunet::inventpod (
     if $approved['tag'] == 'docker.sunet.se/invent/receiver:0.0.2-1' {
       fail('Public HTTPS requires an image tag for the corrected receiver')
     }
-    if $site_redirect_service {
-      if $facts['sunet_nftables_enabled'] == 'yes' {
+    if $site_manages_redirect {
+      if $facts['sunet_nftables_service_enabled'] == 'yes' or $facts['sunet_firewalld_enabled'] == 'yes' {
         fail('Assign the HTTPS redirect to only one firewall manager')
       }
       Service[$site_redirect_service] -> Exec['qualify rootless podman2 releases']
@@ -79,7 +80,7 @@ class sunet::inventpod (
         require => [User['invent-ni'], Package['acl'], Exec['qualify rootless podman2 releases']],
       }
     }
-    if $facts['sunet_nftables_enabled'] == 'yes' {
+    if !$site_manages_redirect and $facts['sunet_nftables_enabled'] == 'yes' {
       include sunet::nftables::init
       sunet::nftables::rule { 'podman2_ni_ssh':
         rule => "add rule inet filter input iifname \"${interface}\" ip saddr ${ni_ip} tcp dport 22 accept",

@@ -21,6 +21,13 @@ elif command -v lsb_release >/dev/null; then
     test "$vendor" = "Ubuntu" && dpkg --compare-versions "${version}" "ge" "22.04" && enabled="yes"
 fi
 
+# The distribution default above does not identify the running firewall service.
+if command -v systemctl >/dev/null 2>&1; then
+    if systemctl is-active --quiet nftables.service || systemctl is-enabled --quiet nftables.service 2>/dev/null; then
+        echo 'sunet_nftables_service_enabled=yes'
+    fi
+fi
+
 echo "sunet_nftables_enabled=${enabled}"
 
 # old name, kept for backwards compatibility

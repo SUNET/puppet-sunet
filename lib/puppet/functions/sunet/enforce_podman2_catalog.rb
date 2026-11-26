@@ -9,6 +9,17 @@ Puppet::Functions.create_function(:'sunet::enforce_podman2_catalog', Puppet::Fun
   def register_check(scope)
     validator = Class.new(Puppet::Parser::Compiler::CatalogValidator) do
       def validate
+        invent = catalog.resource('Class', 'Sunet::Inventpod')
+        if invent && invent[:public_https] && invent[:site_redirect_service]
+          %w[nftables firewalld].each do |name|
+            service = catalog.resource('Service', name)
+            if service && (service[:ensure].to_s == 'running' || service[:enable].to_s == 'true')
+              raise Puppet::Parser::Compiler::CatalogValidationError,
+                    "The Invent site redirect conflicts with managed Service[#{name}]"
+            end
+          end
+        end
+
         catalog.resources.each do |resource|
           next unless resource.type.to_s.downcase == 'file'
           next if resource[:ensure].to_s == 'absent'
