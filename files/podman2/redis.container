@@ -1,0 +1,6 @@
+[Container]
+Network=sunet-hittade
+NetworkAlias=redis
+User=999:1000
+HealthCmd=["/usr/local/bin/redis-cli","ping"]
+HealthInterval=10s

@@ -1,0 +1,67 @@
+checks:
+- health via openapi.json
+- upload report
+- SQLite persistence
+- NI report export
+datasets:
+  db:
+    access: rw
+    gid: 999
+    kind: dir
+    target: /app/db
+    type: sunet_podman2_invent_receiver_db_t
+    uid: 999
+  hosts:
+    access: rw
+    gid: 999
+    kind: dir
+    target: /app/hosts
+    type: sunet_podman2_invent_receiver_hosts_t
+    uid: 999
+  images:
+    access: rw
+    gid: 999
+    kind: dir
+    target: /app/images
+    type: sunet_podman2_invent_receiver_images_t
+    uid: 999
+  network:
+    access: rw
+    gid: 999
+    kind: dir
+    target: /app/network
+    type: sunet_podman2_invent_receiver_network_t
+    uid: 999
+dependencies: []
+domain: sunet_podman2_invent_receiver_t
+executables:
+- access: runtime
+  path: /app/.local/bin/uvicorn
+  type: sunet_podman2_invent_receiver_uvicorn_exec_t
+  target: /app/.local/bin/uvicorn
+  sha256: 44104f6f8a50d1412f2c13b33b9c1126e768fcc8af6bc9df192a6ee022b6fc94
+  alias_targets: {}
+  interpreter:
+  - /usr/local/bin/python3.11
+- access: runtime
+  path: /usr/local/bin/python
+  type: sunet_podman2_invent_receiver_python_exec_t
+  target: /usr/local/bin/python3.11
+  sha256: d674a80927584d0337db93556e10e91fc4863ff56c2978349a19e722a056405c
+  alias_targets: {}
+module: sunet_podman2_invent_receiver
+revision: '1'
+tag: docker.sunet.se/invent/receiver:0.0.1-1
+platform: linux/amd64
+startup:
+  Entrypoint: null
+  Cmd:
+  - .local/bin/uvicorn
+  - --host
+  - 0.0.0.0
+  - main:app
+  User: invent
+  WorkingDir: /app
+  config_sha256: 59f17aab68364caa81132322f38ca696aff27eed965a270300ce1834d478d51d
+unit_contract:
+  HealthCmd: '["/usr/local/bin/python","-c","import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/openapi.json'',timeout=3).close()"]'

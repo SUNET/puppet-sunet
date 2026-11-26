@@ -1,0 +1,9 @@
+[Container]
+Network=sunet-hittade
+PublishPort=127.0.0.1:<%= @web_port %>:8000
+Environment=PRODUCTION=true
+Secret=<%= @postgres_secret %>,target=postgres-password,uid=999,gid=999,mode=0400
+Exec=/app/docker-entrypoint.sh
+<% if @django_secret -%>
+Secret=<%= @django_secret %>,target=django-secret,uid=999,gid=999,mode=0400
+<% end -%>

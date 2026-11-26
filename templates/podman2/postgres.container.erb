@@ -1,0 +1,11 @@
+[Container]
+Network=sunet-hittade
+NetworkAlias=db
+User=70:70
+Environment=POSTGRES_HOST_AUTH_METHOD=scram-sha-256 POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256 POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+Secret=<%= @postgres_secret %>,target=postgres-password,uid=70,gid=70,mode=0400
+ShmSize=1g
+Tmpfs=/run/postgresql:rw,nodev,nosuid,noexec,mode=1777
+HealthCmd=["/usr/local/bin/pg_isready","-U","postgres"]
+HealthInterval=10s
+HealthStartPeriod=80s

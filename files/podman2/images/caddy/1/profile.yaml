@@ -1,0 +1,52 @@
+checks:
+- validate configuration
+- HTTPS reverse proxy
+- reload configuration
+datasets:
+  conf:
+    access: ro
+    gid: 0
+    kind: dir
+    target: /etc/caddy
+    type: sunet_podman2_caddy_conf_t
+    uid: 0
+  config:
+    access: rw
+    gid: 0
+    kind: dir
+    target: /config
+    type: sunet_podman2_caddy_config_t
+    uid: 0
+  data:
+    access: rw
+    gid: 0
+    kind: dir
+    target: /data
+    type: sunet_podman2_caddy_data_t
+    uid: 0
+dependencies: []
+domain: sunet_podman2_caddy_t
+executables:
+- access: runtime
+  path: /usr/bin/caddy
+  type: sunet_podman2_caddy_caddy_exec_t
+  target: /usr/bin/caddy
+  sha256: a563843e11cbce39c557bd429ebb787d56f49d51d9bbb3292cd9b36b37a60cdf
+  alias_targets: {}
+module: sunet_podman2_caddy
+revision: '1'
+tag: docker.io/library/caddy:2
+platform: linux/amd64
+startup:
+  Entrypoint: null
+  Cmd:
+  - caddy
+  - run
+  - --config
+  - /etc/caddy/Caddyfile
+  - --adapter
+  - caddyfile
+  User: null
+  WorkingDir: /srv
+  config_sha256: 9e71fc7ab32ea8fa89f13a37d1085bc1aae4c2980deed5c458bf44dabfa5c520
+unit_contract: {}

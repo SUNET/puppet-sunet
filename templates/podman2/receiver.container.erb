@@ -1,0 +1,10 @@
+[Container]
+Network=pasta
+PublishPort=127.0.0.1:<%= @receiver_port %>:8000
+Environment=INVENT_DB_DIR=/app/db INVENT_HOST_DIR=/app/hosts INVENT_IMAGE_DIR=/app/images INVENT_NETWORK_DIR=/app/network
+<% if @receiver_proxy_address -%>
+Environment=FORWARDED_ALLOW_IPS=<%= @receiver_proxy_address %>
+<% end -%>
+Secret=<%= @admin_secret %>,type=env,target=INVENT_ADMIN_PASSWORD
+HealthCmd=["/usr/local/bin/python","-c","import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/openapi.json',timeout=3).close()"]
+HealthInterval=30s

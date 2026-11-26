@@ -1,24 +1,34 @@
 # Rootless Quadlet host. The distribution's useradd allocates subordinate IDs
 # for a regular local account. Never replace an existing container store's map.
 class sunet::podman2 (
-  Pattern[/^[a-z_][a-z0-9_-]*$/] $workload_user = 'barnbarn',
+  Pattern[/\A[a-z_][a-z0-9_-]*\z/] $workload_user = 'barnbarn',
+  Boolean $lockdown = false,
 ) {
   if $workload_user == 'root' {
     fail('A rootless workload requires a dedicated non-root account.')
   }
+  if $lockdown {
+    if $facts['os']['name'] != 'AlmaLinux' or $workload_user != 'barnbarn' {
+      fail('podman2 lockdown requires AlmaLinux and the dedicated barnbarn account')
+    }
+    contain sunet::podman2::lockdown
+  }
   include sunet::packages::podman
   case $facts['os']['family'] {
     'RedHat': {
-      $packages = ['shadow-utils', 'passt', 'container-selinux', 'fuse-overlayfs']
+      $account_packages = ['shadow-utils', 'util-linux']
+      $packages = ['passt', 'container-selinux', 'fuse-overlayfs']
     }
     'Debian': {
+      $account_packages = ['passwd', 'login']
       $packages = ['uidmap', 'passt', 'dbus-user-session', 'fuse-overlayfs']
     }
     default: { fail("Unsupported Podman host OS: ${facts['os']['name']}") }
   }
-  ensure_packages($packages)
+  ensure_packages($account_packages + $packages)
   $home = "/home/${workload_user}"
   group { $workload_user: ensure => present }
+  Package[$account_packages] -> Group[$workload_user]
   user { $workload_user:
     ensure     => present,
     gid        => $workload_user,
@@ -26,18 +36,24 @@ class sunet::podman2 (
     membership => inclusive,
     home       => $home,
     managehome => true,
-    shell      => '/bin/bash',
+    shell      => '/usr/sbin/nologin',
   }
-  file { ["${home}/.config", "${home}/.config/containers", "${home}/.config/containers/systemd"]:
+  # Keep a pre-existing password hash locked without replacing it on each run.
+  exec { "lock password for ${workload_user}":
+    command => ['/usr/sbin/usermod', '--lock', $workload_user],
+    unless  => "/usr/bin/getent shadow ${workload_user} | /usr/bin/grep -Eq '^[^:]+:[!*]'",
+    require => User[$workload_user],
+  }
+  file { [$home, "${home}/.config", "${home}/.config/containers", "${home}/.config/containers/systemd"]:
     ensure  => directory,
     owner   => $workload_user,
     group   => $workload_user,
     mode    => '0700',
-    require => User[$workload_user],
+    require => Exec["lock password for ${workload_user}"],
   }
   exec { "enable linger for ${workload_user}":
     command => "/usr/bin/loginctl enable-linger ${workload_user}",
     creates => "/var/lib/systemd/linger/${workload_user}",
-    require => User[$workload_user],
+    require => File[$home],
   }
 }

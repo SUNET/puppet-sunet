@@ -1,0 +1,147 @@
+checks:
+- Django migrate
+- warmservercache
+- sass build
+- collectstatic
+- three Granian workers
+- read-only report import
+- SAML xmlsec1 child and SP metadata
+datasets:
+  certificates:
+    access: ro
+    gid: 999
+    kind: dir
+    target: /app/certificates
+    type: sunet_podman2_hittade_certificates_t
+    uid: 999
+  css:
+    access: rw
+    gid: 999
+    kind: dir
+    target: /app/static/css
+    type: sunet_podman2_hittade_css_t
+    uid: 999
+  hosts:
+    access: ro
+    gid: 999
+    kind: dir
+    target: /hosts
+    type: sunet_podman2_invent_receiver_hosts_t
+    uid: 999
+  proxy:
+    access: ro
+    gid: 999
+    kind: file
+    target: /app/proxy.xml
+    type: sunet_podman2_hittade_proxy_t
+    uid: 999
+  settings:
+    access: ro
+    gid: 999
+    kind: file
+    target: /app/hittade/localsettings.py
+    type: sunet_podman2_hittade_settings_t
+    uid: 999
+  staticfiles:
+    access: rw
+    gid: 999
+    kind: dir
+    target: /app/staticfiles
+    type: sunet_podman2_hittade_staticfiles_t
+    uid: 999
+  urls:
+    access: ro
+    gid: 999
+    kind: file
+    target: /app/hittade/urls.py
+    type: sunet_podman2_hittade_urls_t
+    uid: 999
+dependencies:
+- sunet_podman2_invent_receiver
+domain: sunet_podman2_hittade_t
+executables:
+- access: runtime
+  path: /app/docker-entrypoint.sh
+  type: sunet_podman2_hittade_entry_exec_t
+  target: /app/docker-entrypoint.sh
+  sha256: aa4dc2bdaf4ed091e530029fe991be749f9969a091b53c148c050cbf586f57f4
+  alias_targets: {}
+  interpreter:
+  - /usr/bin/bash
+- access: both
+  path: /bin/bash
+  type: sunet_podman2_hittade_bash_exec_t
+  target: /usr/bin/bash
+  sha256: 223fe8564b60636bc738b6178d3ba9a50ef7d791266b0efae6363bb716e4c47f
+  alias_targets: {}
+- access: child
+  path: /usr/bin/sleep
+  type: sunet_podman2_hittade_sleep_exec_t
+  target: /usr/bin/sleep
+  sha256: 0637e6d47579929cb72efa46f361861b319d62c62fe8a9d10731fd7655eb5936
+  alias_targets: {}
+- access: both
+  path: /app/bin/python
+  type: sunet_podman2_hittade_python_exec_t
+  target: /usr/local/bin/python3.13
+  sha256: 88ec9342403c9259d17bd68177ecb460753075937f3f56c98073dadf48d0e80d
+  alias_targets: {}
+- access: child
+  path: /usr/local/bin/sass
+  type: sunet_podman2_hittade_sass_exec_t
+  target: /opt/dart-sass/sass
+  sha256: dc1d6ea39e61af298156f1a4b97f4725cf4df48e75d225e8156eb73135885e2e
+  alias_targets: {}
+  interpreter:
+  - /usr/bin/dash
+- access: child
+  path: /bin/sh
+  type: sunet_podman2_hittade_dash_exec_t
+  target: /usr/bin/dash
+  sha256: a6f559e00b69a4aa4d8cb607be18d9386c5aee55c509e2c075549dcf00e00fc7
+  alias_targets: {}
+- access: child
+  path: /usr/bin/dirname
+  type: sunet_podman2_hittade_dirname_exec_t
+  target: /usr/bin/dirname
+  sha256: 088e052097e35176c2714238a7cea6240c82ae3873f02ab77234b30263566768
+  alias_targets: {}
+- access: child
+  path: /usr/bin/readlink
+  type: sunet_podman2_hittade_readlink_exec_t
+  target: /usr/bin/readlink
+  sha256: 1dcaf494f4dec175292b1684b3e978d18a4c3c703c52f81606d9e8eea30eb6db
+  alias_targets: {}
+- access: child
+  path: /opt/dart-sass/src/dart
+  type: sunet_podman2_hittade_dart_exec_t
+  target: /opt/dart-sass/src/dart
+  sha256: 4a738ee5865c3eaefd91a78f95bbe8c5f0cf97e2f3ed3a2021695614f00bc8f5
+  alias_targets: {}
+- access: child
+  path: /app/bin/granian
+  type: sunet_podman2_hittade_granian_exec_t
+  target: /app/bin/granian
+  sha256: 2905aea6410da94f4ec6c48ae5184f5a2b35eee26d7b38ed9d3fe68e79c211cc
+  alias_targets: {}
+  interpreter:
+  - /usr/local/bin/python3.13
+- access: child
+  path: /usr/bin/xmlsec1
+  type: sunet_podman2_hittade_xmlsec_exec_t
+  target: /usr/bin/xmlsec1
+  sha256: d4463a7367e71a304655470d00141c944a82d4b728c60c039d3b5c75761d1002
+  alias_targets: {}
+module: sunet_podman2_hittade
+revision: '2'
+tag: docker.sunet.se/hittade-server:0.2.0
+platform: linux/amd64
+startup:
+  Entrypoint: null
+  Cmd:
+  - python3
+  User: app
+  WorkingDir: /app
+  config_sha256: 36e9d8fecebe6ecd533de878357b6e09b6fcd667c58bbb54bb287b1c62dc0a5b
+unit_contract:
+  Exec: /app/docker-entrypoint.sh

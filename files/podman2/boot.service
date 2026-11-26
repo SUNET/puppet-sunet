@@ -1,0 +1,10 @@
+[Unit]
+Description=Verify SUNET rootless SELinux policies before user managers start
+Before=systemd-user-sessions.service
+After=local-fs.target
+[Service]
+Type=oneshot
+ExecStart=/usr/local/libexec/sunet-podman2/converge.py boot
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target

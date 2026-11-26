@@ -6,7 +6,9 @@ class sunet::invent::client(
   Integer[0]                     $invent_retention_days = 30,
   String                         $repo_path             = '/var/cache/invent/repo',
   String                         $repo_url              = 'https://github.com/SUNET/invent.git',
-  Array[Pattern[/^[a-z_][a-z0-9_-]*$/]] $podman_users  = [],
+  # An omitted list inventories barnbarn when the account exists. An explicit
+  # list selects exactly those accounts, including [] for rootful Podman only.
+  Optional[Array[Pattern[/^[a-z_][a-z0-9_-]*$/]]] $podman_users = undef,
 ) {
   $host_os = downcase($facts['os']['name'])
 

@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+cd /
+case "$1" in exists|create) ;; *) exit 2;; esac
+runtime="/run/user/$(id -u barnbarn)"
+exec runuser -u barnbarn -- env HOME=/home/barnbarn XDG_RUNTIME_DIR="$runtime" DBUS_SESSION_BUS_ADDRESS="unix:path=$runtime/bus" podman network "$1" sunet-hittade

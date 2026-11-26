@@ -3,4 +3,9 @@ INVENT_DIR=<%= Shellwords.escape(@invent_dir) %>
 INVENT_EXPORT_ENDPOINT=(<%= Shellwords.join(Array(@export_endpoint).reject(&:empty?)) %>)
 INVENT_HOST_OS=<%= Shellwords.escape(@host_os) %>
 INVENT_RETENTION_DAYS=<%= @invent_retention_days %>
+<% if @podman_users.nil? -%>
+INVENT_PODMAN_USERS=(barnbarn)
+getent passwd barnbarn >/dev/null || INVENT_PODMAN_USERS=()
+<% else -%>
 INVENT_PODMAN_USERS=(<%= Shellwords.join(@podman_users.uniq) %>)
+<% end -%>
