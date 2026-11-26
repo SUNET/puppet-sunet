@@ -31,7 +31,6 @@ executables:
   path: /usr/bin/caddy
   type: sunet_podman2_caddy_caddy_exec_t
   target: /usr/bin/caddy
-  sha256: a563843e11cbce39c557bd429ebb787d56f49d51d9bbb3292cd9b36b37a60cdf
   alias_targets: {}
 module: sunet_podman2_caddy
 revision: '1'

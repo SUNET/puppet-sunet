@@ -16,6 +16,7 @@ from pathlib import Path
 
 import guard
 from guard import BASE, require
+from image import drop_legacy_file_hashes
 
 SCRIPTS = Path(__file__).resolve().parent
 ACCOUNT = "barnbarn"
@@ -131,7 +132,6 @@ def validate(record):
     for e in entries:
         require(
             re.fullmatch(IDENT, e["type"])
-            and re.fullmatch("[0-9a-f]{64}", e["sha256"])
             and e["access"] in ("runtime", "child", "both")
             and valid_path(e["path"]),
             "invalid executable",
@@ -289,7 +289,7 @@ def qualify(group):
         )
         require(
             json.loads(checked.stdout) == prof,
-            f"{tag}: changed executable or startup contract; review {r['source']}",
+            f"{tag}: changed image paths or startup contract; review {r['source']}",
         )
     return ident
 
@@ -353,8 +353,10 @@ def data_mount(r, key, ds, maps, apply):
 def prepare(r, ident, apply):
     p = r["profile"]
     mounts = []
+    # A new image gets fresh inodes even when its tag and paths stay the same.
+    directory = BASE / "releases" / p["module"] / "by-image" / ident.removeprefix("sha256:")
     for e in p["executables"]:
-        path = BASE / "releases" / p["module"] / e["sha256"] / e["type"]
+        path = directory / e["type"] / e["target"].lstrip("/")
         if not path.exists() and apply:
             path.parent.mkdir(parents=True, exist_ok=True)
             with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as f:
@@ -366,12 +368,12 @@ def prepare(r, ident, apply):
                         stdout=f,
                     )
                     f.flush()
-                    require(guard.digest(tmp) == e["sha256"], "extracted bytes differ from profile")
                     os.fchmod(f.fileno(), 0o555)
+                    os.fsync(f.fileno())
                     os.replace(tmp, path)
                 finally:
                     tmp.unlink(missing_ok=True)
-        require(guard.digest(path) == e["sha256"], "release hash mismatch")
+        guard.check_executable(path)
         context(path, e["type"], "s0", apply)
         mounts.append(
             {
@@ -379,7 +381,6 @@ def prepare(r, ident, apply):
                 "target": e["target"],
                 "label": e["type"] + ":s0",
                 "rw": False,
-                "sha256": e["sha256"],
             }
         )
     maps = [
@@ -417,7 +418,7 @@ def unit(r, release):
         lines.append("Notify=healthy")
     for m in release["mounts"]:
         opts = "rw" if m["rw"] else "ro"
-        if "sha256" not in m:
+        if not guard.executable_mount(m):
             opts += ",nodev,nosuid,noexec"
         lines.append(f"Volume={m['source']}:{m['target']}:{opts}")
     if r.get("after"):
@@ -513,6 +514,7 @@ def execute(mode, recoveries=()):
     names = set()
     bindings = {}
     for r in records:
+        drop_legacy_file_hashes(r["profile"])
         validate(r)
         n = r["name"]
         require(n not in names, "duplicate unit")
@@ -550,7 +552,9 @@ def execute(mode, recoveries=()):
     for path in ACTIVE.glob("*.json"):
         last = json.loads(path.read_text())
         if "contract" in last:
-            serving[path.stem] = json.loads((BASE / "contracts" / last["contract"]).read_text())
+            previous = json.loads((BASE / "contracts" / last["contract"]).read_text())
+            drop_legacy_file_hashes(previous["profile"])
+            serving[path.stem] = previous
         elif path.stem in by_name:
             serving[path.stem] = by_name[path.stem]
     if serving:

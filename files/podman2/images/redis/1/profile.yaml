@@ -17,7 +17,6 @@ executables:
   path: /usr/local/bin/docker-entrypoint.sh
   type: sunet_podman2_redis_entry_exec_t
   target: /usr/local/bin/docker-entrypoint.sh
-  sha256: be109211c4c6ba8aed2a90d56db8327fcf29a04f8d44cf53d841ebbaf1110e57
   alias_targets: {}
   interpreter:
   - /bin/busybox
@@ -30,7 +29,6 @@ executables:
   path: /bin/sh
   type: sunet_podman2_redis_busybox_exec_t
   target: /bin/busybox
-  sha256: f3547b3d78d08a028a4833ddb83b77cf012838c078bfd2b76355f53d1d8bba62
   alias_targets:
     /usr/bin/readlink: /bin/busybox
     /usr/bin/basename: /bin/busybox
@@ -40,13 +38,11 @@ executables:
   path: /usr/local/bin/redis-server
   type: sunet_podman2_redis_server_exec_t
   target: /usr/local/bin/redis-server
-  sha256: 50a92c30a0222a2c790c8815ccb484ff2d78d4ac2a91f59644c7ef05b3faea87
   alias_targets: {}
 - access: runtime
   path: /usr/local/bin/redis-cli
   type: sunet_podman2_redis_cli_exec_t
   target: /usr/local/bin/redis-cli
-  sha256: 0584f3d86bf6b617d18fdb3750ac9554b41a7f42d04656b4b1672ef20e5ad3c9
   alias_targets: {}
 module: sunet_podman2_redis
 revision: '1'

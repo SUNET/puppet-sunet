@@ -18,7 +18,6 @@ executables:
   path: /usr/local/bin/docker-entrypoint.sh
   type: sunet_podman2_postgres_entry_exec_t
   target: /usr/local/bin/docker-entrypoint.sh
-  sha256: 48647812e68165e2943abe82a1a7cb8364d6e9f8b6b6aefc179868b66a327c46
   alias_targets: {}
   interpreter:
   - /bin/busybox
@@ -36,7 +35,6 @@ executables:
   path: /usr/bin/env
   type: sunet_podman2_postgres_busybox_exec_t
   target: /bin/busybox
-  sha256: 01a989eb4d1d04b0d146c790ac536abd88f374ec74a2e110c58910b840d42045
   alias_targets:
     /bin/sh: /bin/busybox
     /usr/bin/awk: /bin/busybox
@@ -50,43 +48,36 @@ executables:
   path: /bin/bash
   type: sunet_podman2_postgres_bash_exec_t
   target: /bin/bash
-  sha256: 4f1116dffe86666baf79f8d253da19779ce425153018424c85c15daaee6767c7
   alias_targets: {}
 - access: child
   path: /usr/bin/getent
   type: sunet_podman2_postgres_getent_exec_t
   target: /usr/bin/getent
-  sha256: f225def553bce0cb435ff78686b9272c2f4dd0e34ebe3d79855e775a66d9c6ef
   alias_targets: {}
 - access: child
   path: /usr/local/bin/initdb
   type: sunet_podman2_postgres_initdb_exec_t
   target: /usr/local/bin/initdb
-  sha256: f4e2bd508528857afbe5ed06b07cd2099a893f63b31b79bacccdc18897936140
   alias_targets: {}
 - access: child
   path: /usr/local/bin/postgres
   type: sunet_podman2_postgres_postgres_exec_t
   target: /usr/local/bin/postgres
-  sha256: b620d2cdd7119673b2ffdb2c2b04d175a3ad8d4593f6bb110d75993c361a5087
   alias_targets: {}
 - access: child
   path: /usr/local/bin/pg_ctl
   type: sunet_podman2_postgres_pg_ctl_exec_t
   target: /usr/local/bin/pg_ctl
-  sha256: 265b7228f429d523d087b80a7683c15662dfaf3249d18a8835797d2fa26c092b
   alias_targets: {}
 - access: child
   path: /usr/local/bin/psql
   type: sunet_podman2_postgres_psql_exec_t
   target: /usr/local/bin/psql
-  sha256: 25b85b8c78aab0ded21b1f6e317b9c91b4d9d1838000bdf54bcc005a1ac9952d
   alias_targets: {}
 - access: runtime
   path: /usr/local/bin/pg_isready
   type: sunet_podman2_postgres_pg_isready_exec_t
   target: /usr/local/bin/pg_isready
-  sha256: 5420dfba3b86eb89cffbf8fd9c02ba1dbaa5f7f267dd8a32e6d09d6065d188d9
   alias_targets: {}
 module: sunet_podman2_postgres
 revision: '1'

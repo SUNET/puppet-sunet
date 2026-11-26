@@ -100,10 +100,8 @@ def read_image(root, request):
         if not stat.S_ISREG(mode) or not mode & 0o111:
             raise ValueError(f"{path} must be a regular executable")
         with target.open("rb") as stream:
-            digest = hashlib.file_digest(stream, "sha256").hexdigest()
-            stream.seek(0)
             header = stream.readline(256)
-        row = {**entry, "target": path, "sha256": digest}
+        row = {**entry, "target": path}
         row.pop("interpreter", None)
         row["alias_targets"] = {alias: resolve(root, alias) for alias in row.get("aliases", [])}
         if header.startswith(b"#!"):
@@ -119,9 +117,16 @@ def read_image(root, request):
         file = root / canonical.lstrip("/")
         if not file.is_file():
             raise ValueError(f"expected regular file at {path}")
-        with file.open("rb") as stream:
-            inputs[path] = {"target": canonical, "sha256": hashlib.file_digest(stream, "sha256").hexdigest()}
+        inputs[path] = {"target": canonical}
     print(json.dumps({"executables": rows, **({"reviewed_files": inputs} if inputs else {})}))
+
+
+def drop_legacy_file_hashes(profile):
+    # Older site profiles can still be present when the module tag advances.
+    for entry in profile["executables"]:
+        entry.pop("sha256", None)
+    for entry in profile.get("reviewed_files", {}).values():
+        entry.pop("sha256", None)
 
 
 def inspect(profile, identity):
@@ -176,13 +181,15 @@ def main():
     p.add_argument("--emit", action="store_true", help="write proposed profile to stdout instead of diff")
     args = p.parse_args()
     profile = yaml.safe_load(args.profile.read_text())
+    before = dump(profile)
+    drop_legacy_file_hashes(profile)
     new = inspect(profile, args.image or profile["tag"])
     if args.emit:
         print(dump(new), end="")
     else:
         diff = list(
             difflib.unified_diff(
-                dump(profile).splitlines(True),
+                before.splitlines(True),
                 dump(new).splitlines(True),
                 fromfile=str(args.profile),
                 tofile="candidate/profile.yaml",

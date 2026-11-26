@@ -63,7 +63,6 @@ executables:
   path: /app/docker-entrypoint.sh
   type: sunet_podman2_hittade_entry_exec_t
   target: /app/docker-entrypoint.sh
-  sha256: aa4dc2bdaf4ed091e530029fe991be749f9969a091b53c148c050cbf586f57f4
   alias_targets: {}
   interpreter:
   - /usr/bin/bash
@@ -71,25 +70,21 @@ executables:
   path: /bin/bash
   type: sunet_podman2_hittade_bash_exec_t
   target: /usr/bin/bash
-  sha256: 223fe8564b60636bc738b6178d3ba9a50ef7d791266b0efae6363bb716e4c47f
   alias_targets: {}
 - access: child
   path: /usr/bin/sleep
   type: sunet_podman2_hittade_sleep_exec_t
   target: /usr/bin/sleep
-  sha256: 0637e6d47579929cb72efa46f361861b319d62c62fe8a9d10731fd7655eb5936
   alias_targets: {}
 - access: both
   path: /app/bin/python
   type: sunet_podman2_hittade_python_exec_t
   target: /usr/local/bin/python3.13
-  sha256: 88ec9342403c9259d17bd68177ecb460753075937f3f56c98073dadf48d0e80d
   alias_targets: {}
 - access: child
   path: /usr/local/bin/sass
   type: sunet_podman2_hittade_sass_exec_t
   target: /opt/dart-sass/sass
-  sha256: dc1d6ea39e61af298156f1a4b97f4725cf4df48e75d225e8156eb73135885e2e
   alias_targets: {}
   interpreter:
   - /usr/bin/dash
@@ -97,31 +92,26 @@ executables:
   path: /bin/sh
   type: sunet_podman2_hittade_dash_exec_t
   target: /usr/bin/dash
-  sha256: a6f559e00b69a4aa4d8cb607be18d9386c5aee55c509e2c075549dcf00e00fc7
   alias_targets: {}
 - access: child
   path: /usr/bin/dirname
   type: sunet_podman2_hittade_dirname_exec_t
   target: /usr/bin/dirname
-  sha256: 088e052097e35176c2714238a7cea6240c82ae3873f02ab77234b30263566768
   alias_targets: {}
 - access: child
   path: /usr/bin/readlink
   type: sunet_podman2_hittade_readlink_exec_t
   target: /usr/bin/readlink
-  sha256: 1dcaf494f4dec175292b1684b3e978d18a4c3c703c52f81606d9e8eea30eb6db
   alias_targets: {}
 - access: child
   path: /opt/dart-sass/src/dart
   type: sunet_podman2_hittade_dart_exec_t
   target: /opt/dart-sass/src/dart
-  sha256: 4a738ee5865c3eaefd91a78f95bbe8c5f0cf97e2f3ed3a2021695614f00bc8f5
   alias_targets: {}
 - access: child
   path: /app/bin/granian
   type: sunet_podman2_hittade_granian_exec_t
   target: /app/bin/granian
-  sha256: 2905aea6410da94f4ec6c48ae5184f5a2b35eee26d7b38ed9d3fe68e79c211cc
   alias_targets: {}
   interpreter:
   - /usr/local/bin/python3.13

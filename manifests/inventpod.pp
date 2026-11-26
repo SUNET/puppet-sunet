@@ -28,8 +28,8 @@ class sunet::inventpod (
     }
     [$provider, $image, $revision] = split($receiver_profile, '/')
     $approved = parseyaml(file("${provider}/podman2/images/${image}/${revision}/profile.yaml"))
-    if $approved['reviewed_files']['/app/main.py']['sha256'] !~ /\A[0-9a-f]{64}\z/ {
-      fail('Public receiver approval must cover the bytes of the authorization implementation')
+    if $approved['tag'] == 'docker.sunet.se/invent/receiver:0.0.2-1' {
+      fail('Public HTTPS requires an image tag for the corrected receiver')
     }
     if $site_redirect_service {
       if $facts['sunet_nftables_enabled'] == 'yes' {
