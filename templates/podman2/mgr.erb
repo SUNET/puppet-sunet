@@ -1,0 +1,3 @@
+#!/bin/sh
+# Address <%= @workload_user %>'s systemd user manager from the root login.
+exec /usr/bin/systemctl --user --machine=<%= @workload_user %>@.host "$@"

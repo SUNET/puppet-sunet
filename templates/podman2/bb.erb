@@ -1,0 +1,10 @@
+#!/bin/sh
+# Run Podman with the <%= @workload_user %> account's rootless storage and user bus.
+exec /usr/sbin/runuser -u <%= @workload_user %> -- /bin/sh -ec '
+    XDG_RUNTIME_DIR="/run/user/$(id -u)"
+    export XDG_RUNTIME_DIR
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+    # Root usually logs in to /root, which <%= @workload_user %> cannot traverse.
+    cd -P . 2>/dev/null || cd "$HOME"
+    exec /usr/bin/podman "$@"
+' bb "$@"

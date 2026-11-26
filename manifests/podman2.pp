@@ -1,5 +1,7 @@
 # Rootless Quadlet host. The distribution's useradd allocates subordinate IDs
 # for a regular local account. Never replace an existing container store's map.
+# Root operators can use bb for the workload user's Podman store and mgr for
+# its systemd user manager. From /root, bb starts in the workload user's home.
 class sunet::podman2 (
   Pattern[/\A[a-z_][a-z0-9_-]*\z/] $workload_user = 'barnbarn',
   Boolean $lockdown = false,
@@ -55,5 +57,16 @@ class sunet::podman2 (
     command => "/usr/bin/loginctl enable-linger ${workload_user}",
     creates => "/var/lib/systemd/linger/${workload_user}",
     require => File[$home],
+  }
+
+  ['bb', 'mgr'].each |String $command| {
+    file { "/usr/local/sbin/${command}":
+      ensure  => file,
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0755',
+      content => template("sunet/podman2/${command}.erb"),
+      require => [Class['sunet::packages::podman'], Exec["enable linger for ${workload_user}"]],
+    }
   }
 }
