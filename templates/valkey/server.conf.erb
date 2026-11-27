@@ -1,6 +1,9 @@
 appendonly yes
 bind * -::*
 <% if @cluster %>
+# Detect dead client/peer connections (default 300s)
+tcp-keepalive <%= @tcp_keepalive %>
+
 cluster-config-file nodes.conf
 cluster-enabled yes
 cluster-node-timeout <%= @cluster_node_timeout %>
@@ -17,6 +20,11 @@ tls-replication yes
 # Automatically reload TLS certificates within X seconds
 tls-auto-reload-interval <%= @tls_reload_interval %>
 <% if @cluster %>
+# Replication liveness: a silent link is dropped after X seconds
+# repl-timeout (60s = default) must stay larger than repl-ping-replica-period (10s = default).
+repl-timeout <%= @repl_timeout %>
+repl-ping-replica-period <%= @repl_ping_replica_period %>
+
 tls-cluster yes
 # cluster-announce-port 0 - Explicitly disables advertising a non-TLS port
 cluster-announce-port 0
@@ -35,6 +43,9 @@ port <%= @valkeyportnum %>
 maxmemory <%= @maxmemory %>
 maxmemory-policy <%= @maxmemory_policy %>
 <% end %>
+# Record main-thread stalls of X ms or more (visible via LATENCY commands) (0 is default (=disabled))
+latency-monitor-threshold <%= @latency_monitor_threshold %>
+
 # Slow execution (microseconds, 10000 = 10ms)
 commandlog-execution-slower-than 10000
 commandlog-slow-execution-max-len 128
