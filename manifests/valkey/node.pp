@@ -1,17 +1,25 @@
 # A valkey cluster class
-
+#
 # @param cluster_nodes             A list of all valkey cluster member FQDN's. Used when bootstrapping the cluster.
 # @param cluster_ports             Default ports to use in the cluster, override if needed.
-# @param cluster_node_timeout      The maximum amount of time a Valkey Cluster node can be unavailable, without it being considered as failing.
-# @param repl_timeout              Seconds of silence on a replication link (no data or ping from the primary, or no ACK from the replica) before the connection is dropped and re-established (Valkey default is 60)
-# @param repl_ping_replica_period  How often (in seconds) the primary pings its replicas to keep the replication link alive; Valkey default is 10, and repl-timeout must be larger than this value.
-# @param tcp_keepalive             Interval in seconds at which TCP keepalive probes are sent on idle connections, so dead peers are detected sooner and firewalls don't expire idle sessions; Valkey default is 300.
-# @param latency_monitor_threshold Records events that block the main thread for at least this many milliseconds, so they can be inspected with the LATENCY commands; 0 (the default) disables it.
+# @param cluster_node_timeout      The maximum amount of time a Valkey Cluster node can be unavailable, without it being
+#                                  considered as failing.
+# @param repl_timeout              Seconds of silence on a replication link (no data or ping from the primary, or no ACK
+#                                  from the replica) before the connection is dropped and re-established (Valkey default
+#                                  is 60)
+# @param repl_ping_replica_period  How often (in seconds) the primary pings its replicas to keep the replication link
+#                                  alive; Valkey default is 10, and repl-timeout must be larger than this value.
+# @param tcp_keepalive             Interval in seconds at which TCP keepalive probes are sent on idle connections, so dead
+#                                  peers are detected sooner and firewalls don't expire idle sessions; Valkey default is
+#                                  300.
+# @param latency_monitor_threshold Records events that block the main thread for at least this many milliseconds, so they
+#                                  can be inspected with the LATENCY commands; 0 (the default) disables it.
 # @param ca_cert_path              Path to CA root cert, override if you use a different CA
 # @param enable_redis_insight      Deploy a redis-insight container accessable only via localhost
 # @param valkey_loglevel           Configure the loglevel for valkey
 # @param allow_clients             This is a list of client prefixes that should be allowed to talk to valkey
-# @param allow_peers               This is the list of valkey server prefixes that are part of the cluster (used for nftables)
+# @param allow_peers               This is the list of valkey server prefixes that are part of the cluster (used for
+#                                  nftables)
 # @param tls_reload_interval       The automatic reload interval of TLS materials (in seconds)
 class sunet::valkey::node(
   Integer           $numnodes = 3,
