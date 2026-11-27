@@ -4,8 +4,13 @@ VALKEY_PORT=6379
 FQDN=$(hostname --fqdn)
 INFRA_CERT_PATH="/opt/valkey/cert/cert.pem"
 INFRA_KEY_PATH="/opt/valkey/cert/privkey.pem"
-CA_CERT_PATH=<%= @ca_cert_path %>
+CA_CERT_PATH=/etc/ssl/certs/infra-2-prod.crt
 
+LOCK_FILE="/var/lock/valkey-connect.lock"
+FAILOVER_TIMEOUT=60   # seconds to wait for a role change
+SYNC_TIMEOUT=300      # seconds to wait for replica resync before fail back
+
+PW=""
 
 # Function to display usage
 function usage() {
@@ -24,6 +29,9 @@ function usage() {
   echo "  --latency          Show latency metrics and diagnostics"
   echo "  --config-rewrite   Rewrite the server config to disk"
   echo "  --custom-command   Run a custom Valkey command (e.g. --custom-command 'GET mykey')"
+  echo "  --roles            Show role and link state of the nodes on this VM"
+  echo "  --drain            Gracefully fail over all master roles on this VM to replicas on other VMs"
+  echo "  --undrain          Take back master roles until masters are evenly spread over the VMs"
   exit 1
 }
 
@@ -33,76 +41,282 @@ function get_valkey_password() {
   echo "$valkey_password"
 }
 
-function connect() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT"
+# Run valkey-cli against any node in the cluster.
+# Usage: vcli <host> <port> [valkey-cli args...]
+# Host must be the hostname (not the IP) so TLS certificate verification keeps working.
+# The password is passed via environment, so it does not show up in the process list.
+# $PW must be set (see main section at the bottom).
+function vcli() {
+  local host="$1" port="$2"
+  shift 2
+  VALKEYCLI_AUTH="$PW" REDISCLI_AUTH="$PW" valkey-cli --no-auth-warning \
+    -h "$host" -p "$port" \
+    --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" \
+    "$@"
 }
 
-function ping() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" PING
+# Shorthand for the local default node
+function vlocal() {
+  vcli "$FQDN" "$VALKEY_PORT" "$@"
 }
 
-function server_info() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO SERVER
-}
-
-function cluster_nodes() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CLUSTER NODES
-}
-
-function cluster_info() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CLUSTER INFO
-}
-
-function list_keys() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" SCAN 0
-}
-
-function stats() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO STATS
-}
-
-function client_info() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO CLIENTS
-}
-
-function info_memory() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" INFO MEMORY
-}
+function connect()        { vlocal; }
+function ping()           { vlocal PING; }
+function server_info()    { vlocal INFO SERVER; }
+function cluster_nodes()  { vlocal CLUSTER NODES; }
+function cluster_info()   { vlocal CLUSTER INFO; }
+function list_keys()      { vlocal SCAN 0; }
+function stats()          { vlocal INFO STATS; }
+function client_info()    { vlocal INFO CLIENTS; }
+function info_memory()    { vlocal INFO MEMORY; }
+function config_rewrite() { vlocal CONFIG REWRITE; }
 
 function latency() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" LATENCY LATEST
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" LATENCY DOCTOR
-}
-
-function config_rewrite() {
-  local valkey_password=$(get_valkey_password)
-  <%= @cli_client %> -a "$valkey_password" --no-auth-warning -h $FQDN --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" -p "$VALKEY_PORT" CONFIG REWRITE
+  vlocal LATENCY LATEST
+  vlocal LATENCY DOCTOR
 }
 
 function custom_command() {
-  local command="$1"
-  local valkey_password=$(get_valkey_password)
-
-  <%= @cli_client %> -a "$valkey_password" \
-    --no-auth-warning \
-    -h "$FQDN" \
-    --tls --cert "$INFRA_CERT_PATH" --key "$INFRA_KEY_PATH" --cacert "$CA_CERT_PATH" \
-    -p "$VALKEY_PORT" \
-    $command
+  local -a args
+  read -r -a args <<< "$1"
+  vlocal "${args[@]}"
 }
 
+# ---------------------------------------------------------------------------
+# Drain / undrain support. No state is kept on disk: the target layout is
+# derived from the live cluster topology every time.
+#
+# CLUSTER NODES line format:
+#   <id> <ip:port@cport,hostname> <flags> <master-id|-> <ping> <pong> <epoch> <link-state> [slots...]
+# ---------------------------------------------------------------------------
+
+# Local nodes (matched on hostname) that currently are masters: "<id> <port>"
+function local_masters() {
+  vlocal CLUSTER NODES | awk -v fqdn="$FQDN" '
+    $3 ~ /master/ && $3 !~ /fail/ {
+      split($2, a, ","); if (a[2] != fqdn) next
+      split(a[1], b, "[:@]"); print $1, b[2]
+    }'
+}
+
+# Healthy, connected replicas of master $1 that live on OTHER hosts: "<hostname> <port>"
+function remote_replicas() {
+  vlocal CLUSTER NODES | awk -v id="$1" -v fqdn="$FQDN" '
+    $4 == id && $3 ~ /(slave|replica)/ && $3 !~ /fail/ && $8 == "connected" {
+      split($2, a, ","); if (a[2] == fqdn) next
+      split(a[1], b, "[:@]"); print a[2], b[2]
+    }'
+}
+
+# "<host> <master-count>" for every host in the cluster (hosts with 0 masters included)
+function masters_per_host() {
+  vlocal CLUSTER NODES | awk '
+    {
+      split($2, a, ","); h = a[2]
+      if ($3 ~ /fail|noaddr|handshake/ || h == "") next
+      if (!(h in n)) n[h] = 0
+      if ($3 ~ /master/) n[h]++
+    }
+    END { for (h in n) print h, n[h] }'
+}
+
+# Local replicas as "<master-count-of-their-current-master-host> <local-port>",
+# most overloaded master host first
+function failback_candidates() {
+  vlocal CLUSTER NODES | awk -v fqdn="$FQDN" '
+    {
+      split($2, a, ","); split(a[1], b, "[:@]")
+      host[$1] = a[2]; port[$1] = b[2]; flags[$1] = $3; mid[$1] = $4; ids[NR] = $1
+    }
+    END {
+      for (i in ids) {
+        id = ids[i]
+        if (flags[id] ~ /master/ && flags[id] !~ /fail/) load[host[id]]++
+      }
+      for (i in ids) {
+        id = ids[i]
+        if (host[id] == fqdn && flags[id] ~ /(slave|replica)/ && flags[id] !~ /fail/ && (mid[id] in host))
+          print load[host[mid[id]]] + 0, port[id]
+      }
+    }' | sort -k1,1nr -k2,2n
+}
+
+# Best remote replica of master $1: the one on the host with the fewest masters
+function pick_replica() {
+  awk 'NR == FNR { cnt[$1] = $2; next }
+       { print (($1 in cnt) ? cnt[$1] : 0), $1, $2 }' \
+    <(masters_per_host) <(remote_replicas "$1") | sort -n | head -1 | cut -d' ' -f2-
+}
+
+function node_role() {   # host port -> master|slave
+  vcli "$1" "$2" ROLE | head -1 | tr -d '\r'
+}
+
+function wait_for_role() {   # host port expected_role timeout_seconds
+  local i
+  for ((i = 0; i < $4; i++)); do
+    [ "$(node_role "$1" "$2")" = "$3" ] && return 0
+    sleep 1
+  done
+  return 1
+}
+
+function wait_for_sync() {   # host port timeout_seconds  (replica link must be up)
+  local i
+  for ((i = 0; i < $3; i++)); do
+    if vcli "$1" "$2" INFO replication | tr -d '\r' | grep -q '^master_link_status:up'; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
+function cluster_ok() {
+  vlocal CLUSTER INFO | tr -d '\r' | grep -q '^cluster_state:ok'
+}
+
+function take_lock() {
+  exec 9>"$LOCK_FILE"
+  if ! flock -n 9; then
+    echo "ERROR: another valkey-connect drain/undrain is running on this host" >&2
+    return 1
+  fi
+}
+
+function roles() {
+  vlocal CLUSTER NODES | awk -v fqdn="$FQDN" '
+    { split($2, a, ","); if (a[2] == fqdn) print $2, $3, $8 }'
+}
+
+function drain() {
+  take_lock || return 1
+
+  if ! cluster_ok; then
+    echo "ERROR: cluster_state is not ok, refusing to drain" >&2
+    return 1
+  fi
+
+  local masters
+  masters=$(local_masters)
+  if [ -z "$masters" ]; then
+    echo "No master roles on $FQDN, nothing to drain."
+    return 0
+  fi
+
+  # Preflight: every local master needs a healthy replica on another host,
+  # checked BEFORE anything is touched.
+  local id port
+  while read -r id port <&3; do
+    if [ -z "$(remote_replicas "$id")" ]; then
+      echo "ERROR: master $id (port $port) has no healthy replica on another host" >&2
+      return 1
+    fi
+  done 3<<< "$masters"
+
+  local rhost rport
+  while read -r id port <&3; do
+    # Re-evaluate candidates each round, topology changes after each failover
+    read -r rhost rport <<< "$(pick_replica "$id")"
+    if [ -z "$rhost" ]; then
+      echo "ERROR: lost the replica candidate for master $id (port $port)" >&2
+      return 1
+    fi
+    echo "Failing over local master :$port -> $rhost:$rport"
+    vcli "$rhost" "$rport" CLUSTER FAILOVER || return 1
+    if ! wait_for_role "$FQDN" "$port" slave "$FAILOVER_TIMEOUT"; then
+      echo "ERROR: :$port did not become a replica within ${FAILOVER_TIMEOUT}s" >&2
+      return 1
+    fi
+  done 3<<< "$masters"
+
+  local remaining
+  remaining=$(local_masters | wc -l)
+  echo "Drain complete. Remaining master roles on $FQDN: $remaining"
+  [ "$remaining" -eq 0 ]
+}
+
+# Take back master roles until this VM holds its fair share
+# (total masters / number of VMs). Safe to re-run: does nothing when balanced.
+function undrain() {
+  take_lock || return 1
+
+  if ! cluster_ok; then
+    echo "ERROR: cluster_state is not ok, refusing to fail back" >&2
+    return 1
+  fi
+
+  local total hosts target mine mload port
+  local changed=0
+  while :; do
+    read -r total hosts <<< "$(masters_per_host | awk '{t += $2; h++} END {print t, h}')"
+    if [ "${hosts:-0}" -eq 0 ] || [ "${total:-0}" -eq 0 ]; then
+      echo "ERROR: could not determine cluster layout (are hostnames announced in CLUSTER NODES?)" >&2
+      return 1
+    fi
+    target=$(( total / hosts ))
+    mine=$(local_masters | wc -l)
+    if [ "$mine" -ge "$target" ]; then
+      break
+    fi
+
+    read -r mload port <<< "$(failback_candidates | head -1)"
+    # Only take a master from a host that is above its fair share
+    if [ -z "$port" ] || [ "$mload" -le "$target" ]; then
+      break
+    fi
+
+    echo "Waiting for local :$port to be in sync with its master..."
+    if ! wait_for_sync "$FQDN" "$port" "$SYNC_TIMEOUT"; then
+      echo "ERROR: :$port replication link not up after ${SYNC_TIMEOUT}s, not failing back" >&2
+      return 1
+    fi
+    echo "Restoring master role on local :$port"
+    vcli "$FQDN" "$port" CLUSTER FAILOVER || return 1
+    if ! wait_for_role "$FQDN" "$port" master "$FAILOVER_TIMEOUT"; then
+      echo "ERROR: :$port did not become master within ${FAILOVER_TIMEOUT}s" >&2
+      return 1
+    fi
+    changed=$((changed + 1))
+  done
+
+  mine=$(local_masters | wc -l)
+  if [ "$changed" -eq 0 ]; then
+    echo "No changes made: $FQDN has $mine master(s), target is $target."
+  else
+    echo "Undrain done: took back $changed master role(s), $FQDN now has $mine (target $target)."
+  fi
+  if [ "$mine" -lt "$target" ]; then
+    echo "WARNING: below target, no suitable replica to fail back (cluster still syncing?)" >&2
+    return 1
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
 # Parse the options
-OPTIONS=$(getopt -o '' --long connect,ping,server-info,client-info,cluster-nodes,cluster-info,list-keys,stats,info-memory,latency,config-rewrite,custom-command: -- "$@")
+LONG_OPTIONS=(
+  connect
+  ping
+  server-info
+  client-info
+  cluster-nodes
+  cluster-info
+  list-keys
+  stats
+  info-memory
+  latency
+  config-rewrite
+  custom-command:
+  roles
+  drain
+  undrain
+)
+# getopt wants a comma-separated list
+LONG_OPTIONS_CSV=$(IFS=,; echo "${LONG_OPTIONS[*]}")
+OPTIONS=$(getopt -o '' --long "$LONG_OPTIONS_CSV" -- "$@")
 if [ $? -ne 0 ]; then
   usage
 fi
@@ -112,68 +326,92 @@ if [ $# -eq 0 ]; then
   usage
 fi
 
+# Fetch the password once (not once per valkey-cli call)
+PW=$(get_valkey_password)
+if [ -z "$PW" ]; then
+  echo "ERROR: could not read valkey_password from eyaml" >&2
+  exit 1
+fi
+
+RC=0
+
 # Evaluate the parsed options
 eval set -- "$OPTIONS"
 while true; do
   case "$1" in
     --connect)
-      connect
+      connect; RC=$?
       shift
       break
       ;;
     --ping)
-      ping
+      ping; RC=$?
       shift
       break
       ;;
     --server-info)
-      server_info
+      server_info; RC=$?
       shift
       break
       ;;
     --client-info)
-      client_info
+      client_info; RC=$?
       shift
       break
       ;;
     --cluster-nodes)
-      cluster_nodes
+      cluster_nodes; RC=$?
       shift
       break
       ;;
     --cluster-info)
-      cluster_info
+      cluster_info; RC=$?
       shift
       break
       ;;
     --list-keys)
-      list_keys
+      list_keys; RC=$?
       shift
       break
       ;;
     --stats)
-      stats
+      stats; RC=$?
       shift
       break
       ;;
     --info-memory)
-      info_memory
+      info_memory; RC=$?
       shift
       break
       ;;
     --latency)
-      latency
+      latency; RC=$?
       shift
       break
       ;;
     --config-rewrite)
-      config_rewrite
+      config_rewrite; RC=$?
       shift
       break
       ;;
     --custom-command)
-      custom_command "$2"
+      custom_command "$2"; RC=$?
       shift 2
+      break
+      ;;
+    --roles)
+      roles; RC=$?
+      shift
+      break
+      ;;
+    --drain)
+      drain; RC=$?
+      shift
+      break
+      ;;
+    --undrain)
+      undrain; RC=$?
+      shift
       break
       ;;
     --)
@@ -186,4 +424,4 @@ while true; do
   esac
 done
 
-exit 0
+exit $RC
