@@ -1,7 +1,15 @@
 #!/usr/bin/python3
-"""Puppet convergence for the dedicated barnbarn Podman store."""
+"""Reconcile Puppet's container catalog with barnbarn's rootless Podman store.
+
+Root installs the SELinux policy and publishes the labelled bind sources and
+Quadlets. Image inspection and container operations run as barnbarn. Each
+active release receipt records the image ID, mounts and generated service
+that guard.py checks when systemd starts the unit.
+"""
 
 import collections
+import contextlib
+import errno
 import fcntl
 import graphlib
 import hashlib
@@ -31,10 +39,12 @@ SAFE_PATH = r"/(?:[A-Za-z0-9_.-]+/)*[A-Za-z0-9_.-]+"
 
 
 def run(*argv, **kwargs):
+    """Run a command with path-like arguments and raise on a nonzero exit."""
     return subprocess.run(list(map(str, argv)), check=True, **kwargs)
 
 
 def as_user(*args):
+    """Build the command line for barnbarn's Podman store and systemd user bus."""
     return [
         "runuser",
         "-u",
@@ -49,10 +59,12 @@ def as_user(*args):
 
 
 def out(*args):
+    """Return a successful command's stdout as stripped text."""
     return run(*args, stdout=subprocess.PIPE, text=True).stdout.strip()
 
 
 def save(path, data, mode=0o644):
+    """Atomically publish UTF-8 text, preserving the inode if the bytes match."""
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() and path.read_bytes() == data.encode():
         return
@@ -69,27 +81,45 @@ def save(path, data, mode=0o644):
 
 
 def encoded(obj):
+    """Serialize catalog data deterministically for hashing and comparison."""
     return json.dumps(obj, sort_keys=True, separators=(",", ":"))
 
 
-def context(path, typ, level, apply, tree=False):
+def context(path, typ, level, apply, tree=False, staged=None):
+    """Check or apply the persistent SELinux type and range for a host path.
+
+    For a directory tree, the persistent rule also covers descendants. For a
+    staged executable, look up the final path's context and apply it to the
+    temporary inode so that it already has the right label at rename time.
+    """
     expected = typ + ":" + level
     expr = re.escape(str(path)) + ("(/.*)?" if tree else "")
-    current = out("matchpathcon", "-n", path).split(":", 2)[2]
+    current = out("matchpathcon", "-n", path).split(":", 2)[-1]
     if current != expected:
         require(apply, f"persistent file context needs reconciliation: {path}")
         # -a refuses a conflicting existing local entry. A migration needs review.
-        run("semanage", "fcontext", "-a", "-t", typ, "-r", level, expr)
+        run("semanage", "fcontext", "-N", "-a", "-t", typ, "-r", level, expr)
+    if staged is not None:
+        # Label the new inode for its final path while it is still private.
+        run("chcon", out("matchpathcon", "-n", path), staged)
+        require(guard.label(staged) == expected, f"incorrect staged context for {path}")
+        return
     if apply and guard.label(path) != expected:
         run("restorecon", "-F", path)
     require(guard.label(path) == expected, f"incorrect context on {path}")
 
 
 def valid_path(path):
+    """Return whether a catalog path is absolute and has only allowed components."""
     return re.fullmatch(SAFE_PATH, path) and not {".", ".."}.intersection(path.split("/"))
 
 
 def validate(record):
+    """Reject inconsistent profile bindings or unapproved Quadlet directives.
+
+    Dataset and executable targets share one container mount namespace.
+    Duplicate or nested targets could hide a path covered by the profile.
+    """
     p = record["profile"]
     name = record["name"]
     require(
@@ -199,6 +229,12 @@ def validate(record):
 
 
 def install_policy(records, apply, check_dependencies=True):
+    """Verify the requested modules and effective SELinux grants for each domain.
+
+    In apply mode, install changed CIL at priority 400. When checking a
+    dependency outside this catalog, use the retained provider's CIL to
+    verify the identity of the installed module.
+    """
     modules = {r["profile"]["module"]: r for r in records}
     domains = {}
     installed = out("semodule", "-lfull", "-m").splitlines()
@@ -267,6 +303,11 @@ def install_policy(records, apply, check_dependencies=True):
 
 
 def qualify(group):
+    """Return the candidate image ID after every consumer of the tag accepts it.
+
+    Each profile must match the paths and startup settings observed in that
+    same image. The local service tag moves later, during activation.
+    """
     p = group[0]["profile"]
     tag = p["tag"]
     ident = out(*as_user("python3", SCRIPTS / "image.py", "_stage", tag, p["platform"]))
@@ -295,6 +336,7 @@ def qualify(group):
 
 
 def host_id(value, mapping):
+    """Translate a container UID or GID using the rootless namespace map."""
     for inside, outside, length in mapping:
         if inside <= value < inside + length:
             return outside + value - inside
@@ -302,6 +344,12 @@ def host_id(value, mapping):
 
 
 def data_mount(r, key, ds, maps, apply):
+    """Check or provision a dataset binding and return its mount receipt.
+
+    A new directory gets the host IDs corresponding to the payload's UID and
+    GID. A populated directory with a different label needs a separate
+    migration because relabelling it can change access for existing users.
+    """
     b = r["bindings"][key]
     path = Path(b["path"])
     # Ancestors of a root-managed binding must be administrator-owned directories.
@@ -350,31 +398,48 @@ def data_mount(r, key, ds, maps, apply):
     return {"source": str(path), "target": ds["target"], "label": expected, "rw": ds["access"] == "rw"}
 
 
-def prepare(r, ident, apply):
+def stage_executable(path, entry, ident, apply, staged, cleanup):
+    """Prepare a root-owned executable for the qualified image ID.
+
+    Consumers of one tag share the staged mapping from final path to temporary
+    file. Activation publishes each replacement once. The caller's ExitStack
+    removes temporary files if preparation or activation fails.
+    """
+    if path in staged:
+        return
+    if path.exists():
+        guard.check_executable(path)
+        if guard.executable_image(path) == ident:
+            context(path, entry["type"], "s0", apply)
+            return
+
+    require(apply, f"executable update pending: {path}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as f:
+        tmp = Path(f.name)
+        cleanup.callback(tmp.unlink, missing_ok=True)
+        # Root owns the open destination. The rootless image reader only needs
+        # its stdout descriptor to supply the bytes from the selected image.
+        run(
+            *as_user("podman", "unshare", "python3", SCRIPTS / "image.py", "_read", ident),
+            input=encoded({"copy": entry["target"]}).encode(),
+            stdout=f,
+        )
+        f.flush()
+        os.fchmod(f.fileno(), 0o555)
+        os.setxattr(f.fileno(), guard.IMAGE_ATTR, ident.encode())
+        context(path, entry["type"], "s0", apply, staged=tmp)
+        os.fsync(f.fileno())
+    staged[path] = tmp
+
+
+def prepare(r, ident, apply, directory, staged, cleanup):
+    """Prepare one unit's executable and dataset mounts and return its receipt."""
     p = r["profile"]
     mounts = []
-    # A new image gets fresh inodes even when its tag and paths stay the same.
-    directory = BASE / "releases" / p["module"] / "by-image" / ident.removeprefix("sha256:")
     for e in p["executables"]:
         path = directory / e["type"] / e["target"].lstrip("/")
-        if not path.exists() and apply:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as f:
-                tmp = Path(f.name)
-                try:
-                    run(
-                        *as_user("podman", "unshare", "python3", SCRIPTS / "image.py", "_read", ident),
-                        input=encoded({"copy": e["target"]}).encode(),
-                        stdout=f,
-                    )
-                    f.flush()
-                    os.fchmod(f.fileno(), 0o555)
-                    os.fsync(f.fileno())
-                    os.replace(tmp, path)
-                finally:
-                    tmp.unlink(missing_ok=True)
-        guard.check_executable(path)
-        context(path, e["type"], "s0", apply)
+        stage_executable(path, e, ident, apply, staged, cleanup)
         mounts.append(
             {
                 "source": str(path),
@@ -393,6 +458,7 @@ def prepare(r, ident, apply):
     mounts.extend(data_mount(r, k, ds, maps, apply) for k, ds in p["datasets"].items())
     return {
         "image": ident,
+        "stable_executables": True,
         "tag": p["tag"],
         "domain": p["domain"],
         "level": r["level"],
@@ -401,7 +467,63 @@ def prepare(r, ident, apply):
     }
 
 
+def prune_executables(apply):
+    """Retire managed executable copies unreferenced by any active receipt.
+
+    Recognize legacy copies by layout and current copies by their image
+    attribute. Remove only a matching local file-context rule. Check mode
+    reports pending cleanup so Puppet can schedule an apply.
+    """
+    root = BASE / "releases"
+    in_use = {
+        Path(m["source"])
+        for receipt in ACTIVE.glob("*.json")
+        for m in json.loads(receipt.read_text())["mounts"]
+        if guard.executable_mount(m)
+    }
+    local_rules = None
+    for path in list(root.rglob("*")):
+        if path in in_use or path.is_symlink() or not path.is_file():
+            continue
+        parts = path.relative_to(root).parts
+        if not re.fullmatch(IDENT, parts[0]):
+            continue
+        # Earlier versions used either the file hash or by-image/<image ID>.
+        if len(parts) == 3 and re.fullmatch(r"[0-9a-f]{64}", parts[1]):
+            typ = parts[2]
+        elif len(parts) >= 5 and parts[1] == "by-image" and re.fullmatch(r"[0-9a-f]{64}", parts[2]):
+            typ = parts[3]
+        elif guard.executable_image(path) is not None:
+            typ = guard.label(path).split(":")[0]
+        else:
+            continue
+        if not re.fullmatch(IDENT, typ) or guard.label(path) != typ + ":s0":
+            continue
+        guard.check_executable(path)
+        require(apply, f"obsolete executable: {path}")
+        if local_rules is None:
+            local_rules = {
+                (fields[0], fields[-1].split(":", 2)[-1])
+                for line in out("semanage", "fcontext", "-l", "-C", "-n").splitlines()
+                if (fields := line.split())
+            }
+        expr = re.escape(str(path))
+        if (expr, typ + ":s0") in local_rules:
+            run("semanage", "fcontext", "-N", "-d", expr)
+        path.unlink()
+        for parent in path.parents:
+            if parent == root:
+                break
+            try:
+                parent.rmdir()
+            except OSError as exc:
+                if exc.errno != errno.ENOTEMPTY:
+                    raise
+                break
+
+
 def unit(r, release):
+    """Render the Quadlet with the qualified tag, recorded mounts and guard hooks."""
     n = r["name"]
     lines = [
         r["quadlet"].strip(),
@@ -446,6 +568,7 @@ def unit(r, release):
 
 
 def preview(name, contents):
+    """Dry-run the user Quadlet generator and return the expected service hash."""
     # Generate from one root-owned source outside all drop-in search paths.
     directory = BASE / "preview" / name
     source = directory / (name + ".container")
@@ -459,21 +582,25 @@ def preview(name, contents):
         header == f"---{name}.service---" and "ExecStart=/usr/bin/podman run " in body,
         "Quadlet generation failed",
     )
+    # systemd will report the installed path when the guard reads the live unit.
     body = body.replace(f"SourcePath={source}", f"SourcePath={UNITS / source.name}")
     return guard.generated_hash(body)
 
 
 def ctl(*args):
+    """Run systemctl against barnbarn's user manager and return its output."""
     return out(*as_user("systemctl", "--user", *args))
 
 
 def hold(name):
+    """Record an operator hold before stopping a unit that failed verification."""
     save(BASE / "operator-holds" / name, "confinement or activation failed\n")
     ctl("stop", name + ".service")
     print(f"ALERT {name} stopped; inspect journal and repair before clearing hold", file=sys.stderr)
 
 
 def check_live(name):
+    """Verify the running container and the source of its effective systemd unit."""
     run(*as_user(SCRIPTS / "guard.py", "live", name))
     require(ctl("show", name, "-p", "DropInPaths", "--value") == "", "unexpected service drop-in")
     require(
@@ -483,6 +610,7 @@ def check_live(name):
 
 
 def reload_caddy(r, apply):
+    """Reload a changed Caddyfile and record its digest after Caddy accepts it."""
     source = Path("/etc/sunet-podman2/Caddyfile")
     applied = BASE / "reloaded" / r["name"]
     expected = guard.digest(source)
@@ -496,7 +624,13 @@ def reload_caddy(r, apply):
         save(applied, expected)
 
 
-def execute(mode, recoveries=()):
+def execute(mode, recoveries, cleanup):
+    """Reconcile the catalog under the host lock, grouping consumers by image tag.
+
+    Boot verifies the serving policy before the user manager starts. Check
+    qualifies candidates and reports pending changes. Apply publishes changes
+    and recreates affected units. Recover also retries the named held units.
+    """
     records = [
         json.loads(line)
         for line in Path("/etc/sunet-podman2/catalog").read_text().splitlines()
@@ -623,13 +757,29 @@ def execute(mode, recoveries=()):
                     hold(name)
         raise
     save(guard.BOOT, guard.policy_generation())
+    # A policy module may serve multiple tags (including a rejected release
+    # that is still serving). Those instances need independent stable files.
+    module_users = collections.defaultdict(set)
+    for name, r in [*by_name.items(), *serving.items()]:
+        if name in names:
+            module_users[r["profile"]["module"]].add((name, r["profile"]["tag"]))
     for tag, ident in candidates.items():
+        staged = {}
         changes = []
+        group_names = {r["name"] for r in groups[tag]}
         for r in groups[tag]:
             name = r["name"]
             target = UNITS / (name + ".container")
             state = ACTIVE / (name + ".json")
-            release = prepare(r, ident, apply)
+            module = r["profile"]["module"]
+            directory = BASE / "releases" / module
+            previous = json.loads(state.read_text()) if state.exists() else {}
+            private = directory / ("unit-" + name)
+            if any(n not in group_names and t != tag for n, t in module_users[module]) or any(
+                Path(m["source"]).is_relative_to(private) for m in previous.get("mounts", [])
+            ):
+                directory = private
+            release = prepare(r, ident, apply, directory, staged, cleanup)
             contract = encoded({"profile": r["profile"], "cil": r["cil"]})
             release["contract"] = hashlib.sha256(contract.encode()).hexdigest()
             contract_path = BASE / "contracts" / release["contract"]
@@ -647,8 +797,8 @@ def execute(mode, recoveries=()):
             )
             if (
                 name not in recoveries
-                and state.exists()
-                and json.loads(state.read_text()) == release
+                and not any(Path(m["source"]) in staged for m in release["mounts"])
+                and previous == release
                 and target.read_text() == contents
             ):
                 if any(b.get("caddyfile") for b in r["bindings"].values()):
@@ -670,6 +820,10 @@ def execute(mode, recoveries=()):
                         ctl("is-active", dep) == "active", f"{dep} must be active before starting {r['name']}"
                     )
             try:
+                # A running bind mount still pins its old inode after rename.
+                # Restart each affected unit below to bind the replacement.
+                for path, tmp in staged.items():
+                    os.replace(tmp, path)
                 for r, release, target, state, contents in changes:
                     save(target, contents)
                     save(state, encoded(release))
@@ -703,6 +857,8 @@ def execute(mode, recoveries=()):
                 raise
     if rejected:
         raise ValueError("; ".join(rejected))
+    # A failed group may still need its old sources for startup or recovery.
+    prune_executables(apply)
 
 
 if __name__ == "__main__":
@@ -716,6 +872,7 @@ if __name__ == "__main__":
     with open("/run/sunet-podman2.lock", "a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         try:
-            execute(mode, names)
+            with contextlib.ExitStack() as cleanup:
+                execute(mode, names, cleanup)
         except Exception as exc:
             sys.exit(f"podman2 {mode}: {exc}")
