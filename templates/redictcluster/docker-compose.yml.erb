@@ -19,6 +19,7 @@ services:
       - /opt/redict/node-<%= i %>:/data
 <% if @tls == true -%>
       - /etc/ssl:/etc/ssl
+      - /opt/redict/cert:/cert
 <% end %>
     command: redict-server /data/server.conf
     restart: always
