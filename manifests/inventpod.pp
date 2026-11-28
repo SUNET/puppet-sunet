@@ -39,9 +39,18 @@ class sunet::inventpod (
       Service[$site_redirect_service] -> Exec['qualify rootless podman2 releases']
     } elsif $facts['sunet_nftables_enabled'] == 'yes' {
       include sunet::nftables::init
+      # Locally generated inventory traffic uses OUTPUT, while remote clients use PREROUTING.
+      $redirect_rules = [
+        'add table ip podman2_https',
+        'add chain ip podman2_https prerouting { type nat hook prerouting priority dstnat; }',
+        "add rule ip podman2_https prerouting iifname \"${interface}\" ip daddr ${listen_address} tcp dport 443 redirect to :${https_port}",
+        'add chain ip podman2_https output { type nat hook output priority dstnat; }',
+        "add rule ip podman2_https output ip daddr ${listen_address} tcp dport 443 dnat to ${listen_address}:${https_port}",
+        "add rule inet filter input iifname \"${interface}\" ip daddr ${listen_address} ct original proto-dst 443 ct status dnat tcp dport ${https_port} accept",
+      ]
       sunet::nftables::rule { 'podman2_https_redirect':
         group => 'podman2_https',
-        rule  => "add table ip podman2_https\nadd chain ip podman2_https prerouting { type nat hook prerouting priority dstnat; }\nadd rule ip podman2_https prerouting iifname \"${interface}\" ip daddr ${listen_address} tcp dport 443 redirect to :${https_port}\nadd rule inet filter input iifname \"${interface}\" ip daddr ${listen_address} ct original proto-dst 443 ct status dnat tcp dport ${https_port} accept",
+        rule  => join($redirect_rules, "\n"),
       }
       Service['nftables'] -> Exec['qualify rootless podman2 releases']
     } else {
